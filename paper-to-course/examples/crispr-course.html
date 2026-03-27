@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRISPR: The Molecular Scissors That Changed Biology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --color-bg:             #FAF7F2;
+  --color-bg-warm:        #F5F0E8;
+  --color-bg-code:        #1E1E2E;
+  --color-text:           #2C2A28;
+  --color-text-secondary: #6B6560;
+  --color-text-muted:     #9E9790;
+  --color-border:         #E5DFD6;
+  --color-border-light:   #EEEBE5;
+  --color-surface:        #FFFFFF;
+  --color-surface-warm:   #FDF9F3;
+
+  /* Forest green accent — fits biology/genetics */
+  --color-accent:         #2D8B55;
+  --color-accent-hover:   #24704A;
+  --color-accent-light:   #E8F5EE;
+  --color-accent-muted:   #5AAF7A;
+
+  --color-success:        #2D8B55;
+  --color-success-light:  #E8F5EE;
+  --color-error:          #C93B3B;
+  --color-error-light:    #FDE8E8;
+  --color-info:           #2A7B9B;
+  --color-info-light:     #E4F2F7;
+  --color-warning:        #D4A843;
+  --color-warning-light:  #FDF6E4;
+
+  --color-concept-1:      #2D8B55;
+  --color-concept-2:      #D94F30;
+  --color-concept-3:      #7B6DAA;
+  --color-concept-4:      #D4A843;
+  --color-concept-5:      #2A7B9B;
+  --color-concept-6:      #E06B56;
+
+  --font-display:  'Bricolage Grotesque', Georgia, serif;
+  --font-body:     'DM Sans', -apple-system, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
+  --text-6xl:  3.75rem;
+
+  --leading-tight:  1.15;
+  --leading-snug:   1.3;
+  --leading-normal: 1.6;
+  --leading-loose:  1.8;
+
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  --content-width:      800px;
+  --content-width-wide: 1000px;
+  --nav-height:         50px;
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-full: 9999px;
+
+  --shadow-sm:  0 1px 2px rgba(44, 42, 40, 0.05);
+  --shadow-md:  0 4px 12px rgba(44, 42, 40, 0.08);
+  --shadow-lg:  0 8px 24px rgba(44, 42, 40, 0.1);
+  --shadow-xl:  0 16px 48px rgba(44, 42, 40, 0.12);
+
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast:   150ms;
+  --duration-normal: 300ms;
+  --duration-slow:   500ms;
+  --stagger-delay:   120ms;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background: var(--color-bg);
+  background-image: radial-gradient(
+    ellipse at 20% 50%,
+    rgba(45, 139, 85, 0.03) 0%,
+    transparent 50%
+  );
+}
+h1, h2, h3, h4 { font-family: var(--font-display); }
+p { max-width: 65ch; }
+button { font-family: var(--font-body); }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+
+/* ===== NAVIGATION ===== */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--nav-height);
+  background: rgba(250, 247, 242, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 1000;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.progress-bar {
+  position: absolute; top: 0; left: 0; height: 3px;
+  background: var(--color-accent);
+  width: 0%; transition: width 100ms linear;
+}
+.nav-inner {
+  max-width: var(--content-width-wide);
+  margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 100%; padding: 0 var(--space-6);
+}
+.nav-title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: var(--text-sm); color: var(--color-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 50%;
+}
+.nav-dots { display: flex; gap: var(--space-3); }
+.nav-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid var(--color-text-muted);
+  background: transparent; cursor: pointer;
+  transition: all var(--duration-fast);
+  padding: 0;
+}
+.nav-dot.current {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(45, 139, 85, 0.2);
+}
+.nav-dot.visited {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.nav-dot:hover { border-color: var(--color-accent); }
+
+/* ===== MODULE STRUCTURE ===== */
+.module {
+  min-height: 100dvh;
+  min-height: 100vh;
+  scroll-snap-align: start;
+  padding: var(--space-16) var(--space-6);
+  padding-top: calc(var(--nav-height) + var(--space-12));
+}
+.module-content {
+  max-width: var(--content-width);
+  margin: 0 auto;
+}
+.module-header { margin-bottom: var(--space-12); }
+.module-number {
+  font-family: var(--font-display);
+  font-size: var(--text-6xl);
+  font-weight: 800;
+  color: var(--color-accent);
+  opacity: 0.15;
+  line-height: var(--leading-tight);
+}
+.module-title {
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  margin-top: var(--space-2);
+  color: var(--color-text);
+}
+.module-subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-3);
+  max-width: 55ch;
+}
+
+/* ===== SCREENS ===== */
+.screen { margin-bottom: var(--space-16); }
+.screen-heading {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  margin-bottom: var(--space-6);
+  line-height: var(--leading-snug);
+}
+.screen p {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-lg);
+  line-height: var(--leading-normal);
+}
+
+/* ===== ANIMATIONS ===== */
+.animate-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--duration-slow) var(--ease-out),
+              transform var(--duration-slow) var(--ease-out);
+}
+.animate-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.stagger-children > .animate-in {
+  transition-delay: calc(var(--stagger-index, 0) * var(--stagger-delay));
+}
+
+/* ===== TRANSLATION BLOCKS ===== */
+.translation-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin: var(--space-8) 0;
+}
+.translation-notation {
+  background: var(--color-bg-code);
+  color: #CDD6F4;
+  padding: var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  position: relative;
+  overflow-x: hidden;
+}
+.translation-notation .notation-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: hidden;
+}
+.translation-english {
+  background: var(--color-surface-warm);
+  padding: var(--space-6);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  border-left: 3px solid var(--color-accent);
+}
+.translation-label {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-3);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+}
+.translation-english .translation-label {
+  color: var(--color-text-muted);
+}
+.translation-english { position: relative; }
+.tl { margin-bottom: var(--space-3); font-size: var(--text-sm); }
+.tl:last-child { margin-bottom: 0; }
+
+/* ===== MATH BLOCKS ===== */
+.math-block {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  background: var(--color-bg-code);
+  color: #CDD6F4;
+  border-radius: var(--radius-md);
+  margin: var(--space-6) 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: hidden;
+}
+.math-fraction {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+}
+.math-fraction .numerator {
+  border-bottom: 1.5px solid #CDD6F4;
+  padding: 0 var(--space-2) var(--space-1);
+}
+.math-fraction .denominator {
+  padding: var(--space-1) var(--space-2) 0;
+}
+.notation-keyword  { color: #CBA6F7; }
+.notation-variable { color: #89B4FA; }
+.notation-number   { color: #FAB387; }
+.notation-function { color: #A6E3A1; }
+.notation-comment  { color: #6C7086; }
+.notation-string   { color: #F9E2AF; }
+.notation-operator { color: #94E2D5; }
+.notation-accent   { color: #F38BA8; }
+.math-inline {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  color: var(--color-accent);
+}
+
+/* ===== CONCEPT CARDS ===== */
+.concept-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-6) 0;
+}
+.concept-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  border-top: 3px solid var(--card-color);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast), box-shadow var(--duration-fast);
+}
+.concept-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.card-icon { font-size: 1.5rem; margin-bottom: var(--space-2); }
+.card-title {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: var(--text-base); margin-bottom: var(--space-2);
+}
+.card-desc { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-normal); }
+
+/* ===== CALLOUT BOXES ===== */
+.callout {
+  display: flex; gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  margin: var(--space-6) 0;
+  border-left: 4px solid;
+}
+.callout-insight { background: var(--color-accent-light); border-color: var(--color-accent); }
+.callout-caveat { background: var(--color-warning-light); border-color: var(--color-warning); }
+.callout-context { background: var(--color-info-light); border-color: var(--color-info); }
+.callout-icon { font-size: 1.5rem; flex-shrink: 0; }
+.callout-content { font-size: var(--text-sm); line-height: var(--leading-normal); }
+
+/* ===== GLOSSARY TOOLTIPS ===== */
+.glossary-term {
+  border-bottom: 2px dashed var(--color-accent-muted);
+  cursor: pointer;
+  position: relative;
+}
+.glossary-tooltip {
+  position: fixed;
+  background: var(--color-text);
+  color: white;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  max-width: 300px;
+  z-index: 10000;
+  box-shadow: var(--shadow-lg);
+  line-height: var(--leading-normal);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+.glossary-tooltip.visible { opacity: 1; }
+.glossary-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 20px;
+  border: 6px solid transparent;
+  border-bottom-color: var(--color-text);
+}
+
+/* ===== QUIZZES ===== */
+.quiz-container { margin: var(--space-8) 0; }
+.quiz-question-block { margin-bottom: var(--space-8); }
+.quiz-question {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+  line-height: var(--leading-snug);
+}
+.quiz-options { display: flex; flex-direction: column; gap: var(--space-3); }
+.quiz-option {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer; width: 100%;
+  text-align: left;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  transition: border-color var(--duration-fast), background var(--duration-fast);
+}
+.quiz-option:hover { border-color: var(--color-accent-muted); }
+.quiz-option.selected { border-color: var(--color-accent); background: var(--color-accent-light); }
+.quiz-option.correct { border-color: var(--color-success); background: var(--color-success-light); }
+.quiz-option.incorrect { border-color: var(--color-error); background: var(--color-error-light); }
+.quiz-option-radio {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--color-border);
+  transition: all var(--duration-fast);
+  flex-shrink: 0;
+}
+.quiz-option.selected .quiz-option-radio {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: inset 0 0 0 3px white;
+}
+.quiz-option.correct .quiz-option-radio {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  box-shadow: inset 0 0 0 3px white;
+}
+.quiz-option.incorrect .quiz-option-radio {
+  border-color: var(--color-error);
+  background: var(--color-error);
+  box-shadow: inset 0 0 0 3px white;
+}
+.quiz-feedback {
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: max-height var(--duration-normal), opacity var(--duration-normal), padding var(--duration-normal);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  border-radius: var(--radius-sm);
+}
+.quiz-feedback.show { max-height: 300px; opacity: 1; padding: var(--space-3); margin-top: var(--space-2); }
+.quiz-feedback.success { background: var(--color-success-light); color: #1a5e36; }
+.quiz-feedback.error { background: var(--color-error-light); color: #8b2525; }
+.quiz-feedback.warning { background: var(--color-warning-light); color: #8b6e1a; }
+.quiz-check-btn {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-accent); color: white;
+  border: none; border-radius: var(--radius-full);
+  font-weight: 600; cursor: pointer;
+  transition: background var(--duration-fast);
+}
+.quiz-check-btn:hover { background: var(--color-accent-hover); }
+.quiz-reset-btn {
+  margin-top: var(--space-2); margin-left: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: transparent; color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-weight: 600; cursor: pointer;
+  transition: border-color var(--duration-fast);
+}
+.quiz-reset-btn:hover { border-color: var(--color-text-muted); }
+
+/* ===== ROUNDTABLE ===== */
+.roundtable-container {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+  margin: var(--space-8) 0;
+}
+.roundtable-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap; gap: var(--space-3);
+}
+.roundtable-header h3 {
+  font-size: var(--text-lg); font-weight: 700;
+}
+.roundtable-play {
+  background: var(--color-accent); color: white;
+  border: none; border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-5);
+  font-family: var(--font-body); font-size: var(--text-sm);
+  cursor: pointer; transition: background var(--duration-fast);
+}
+.roundtable-play:hover { background: var(--color-accent-hover); }
+.roundtable-play:disabled { opacity: 0.6; cursor: not-allowed; }
+.rt-message {
+  display: flex; gap: var(--space-3); align-items: flex-start;
+  margin-bottom: var(--space-4);
+  opacity: 0; transform: translateY(10px);
+  transition: opacity var(--duration-normal), transform var(--duration-normal);
+}
+.rt-message.visible { opacity: 1; transform: translateY(0); }
+.rt-message.right { flex-direction: row-reverse; }
+.rt-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: var(--text-xs);
+  font-weight: 600; color: white; flex-shrink: 0;
+  background: var(--speaker-color);
+}
+.rt-bubble {
+  background: var(--color-surface-warm);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  max-width: 75%;
+  border: 1px solid var(--color-border-light);
+}
+.rt-message.right .rt-bubble {
+  background: color-mix(in srgb, var(--speaker-color) 8%, white);
+}
+.rt-name {
+  font-size: var(--text-xs); font-weight: 600;
+  color: var(--speaker-color);
+  margin-bottom: var(--space-1);
+}
+.rt-bubble p {
+  font-size: var(--text-sm); margin: 0;
+}
+.rt-typing {
+  display: flex; gap: 4px; padding: var(--space-2) var(--space-3);
+}
+.rt-typing span {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--color-text-muted);
+  animation: typingBounce 1.4s infinite;
+}
+.rt-typing span:nth-child(2) { animation-delay: 0.2s; }
+.rt-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+/* ===== PIPELINE ===== */
+.pipeline-container {
+  position: relative;
+  padding: var(--space-8) var(--space-4);
+  margin: var(--space-8) 0;
+}
+.pipeline-play {
+  display: block; margin: 0 auto var(--space-6);
+  background: var(--color-accent); color: white;
+  border: none; border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-5);
+  font-family: var(--font-body); font-size: var(--text-sm);
+  cursor: pointer; transition: background var(--duration-fast);
+}
+.pipeline-play:hover { background: var(--color-accent-hover); }
+.pipeline-steps {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: var(--space-3);
+}
+.pipeline-step {
+  display: flex; flex-direction: column; align-items: center;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  min-width: 120px; max-width: 160px;
+  transition: all var(--duration-normal) var(--ease-out);
+  text-align: center;
+}
+.pipeline-step.active {
+  border-color: var(--step-color);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--step-color) 15%, transparent);
+  transform: scale(1.05);
+}
+.pipeline-icon { font-size: 1.5rem; margin-bottom: var(--space-2); }
+.pipeline-label {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: var(--text-sm);
+}
+.pipeline-detail {
+  font-size: var(--text-xs); color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+  max-height: 0; overflow: hidden; opacity: 0;
+  transition: all var(--duration-normal);
+}
+.pipeline-step.active .pipeline-detail {
+  max-height: 100px; opacity: 1; margin-top: var(--space-2);
+}
+.pipeline-arrow {
+  font-size: var(--text-xl); color: var(--color-text-muted);
+  transition: color var(--duration-fast);
+}
+.pipeline-arrow.active { color: var(--color-accent); }
+
+/* ===== COMPARISON ===== */
+.comparison {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-4); align-items: stretch;
+  margin: var(--space-8) 0;
+}
+.comparison-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+.comparison-card.before { border-top: 3px solid var(--color-text-muted); }
+.comparison-card.after { border-top: 3px solid var(--color-accent); }
+.comparison-badge {
+  font-size: var(--text-xs); font-family: var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+.comparison-card h4 {
+  font-size: var(--text-lg); margin: var(--space-2) 0 var(--space-3);
+}
+.comparison-card ul {
+  list-style: none; padding: 0;
+}
+.comparison-card li {
+  font-size: var(--text-sm); padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
+}
+.comparison-card li:last-child { border-bottom: none; }
+.comparison-vs {
+  display: flex; align-items: center;
+  font-family: var(--font-display); font-weight: 800;
+  font-size: var(--text-2xl); color: var(--color-text-muted);
+}
+
+/* ===== FLOW DIAGRAM ===== */
+.flow-diagram {
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-2); margin: var(--space-6) 0;
+}
+.flow-step {
+  display: flex; gap: var(--space-4); align-items: center;
+  background: var(--color-surface); padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+  max-width: var(--content-width); width: 100%;
+}
+.flow-step-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--color-accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; flex-shrink: 0;
+}
+.flow-step-content strong { font-family: var(--font-display); }
+.flow-step-content p { font-size: var(--text-sm); color: var(--color-text-secondary); margin: 0; }
+.flow-arrow { font-size: var(--text-xl); color: var(--color-accent); }
+
+/* ===== FLAW CHALLENGE ===== */
+.flaw-challenge {
+  background: var(--color-warning-light);
+  border: 2px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  padding: var(--space-6); margin: var(--space-8) 0;
+}
+.flaw-header {
+  font-family: var(--font-display); font-weight: 700;
+  color: var(--color-warning);
+}
+.flaw-claim {
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4); margin: var(--space-4) 0;
+}
+.flaw-source {
+  font-size: var(--text-xs); color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+.flaw-text {
+  font-family: var(--font-display); font-size: var(--text-lg);
+  font-weight: 600; font-style: italic; margin-top: var(--space-2);
+}
+.flaw-options { display: flex; flex-direction: column; gap: var(--space-3); }
+.flaw-option {
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer; width: 100%; text-align: left;
+  font-size: var(--text-sm); font-family: var(--font-body);
+  transition: border-color var(--duration-fast);
+}
+.flaw-option:hover { border-color: var(--color-warning); }
+.flaw-option.correct-reveal { border-color: var(--color-success); background: var(--color-success-light); }
+.flaw-option.incorrect-reveal { border-color: var(--color-error); background: var(--color-error-light); }
+.flaw-explanation {
+  margin-top: var(--space-4); font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  display: none;
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+.flaw-explanation.visible { display: block; }
+
+/* ===== STEP CARDS ===== */
+.step-cards {
+  display: flex; flex-direction: column;
+  gap: var(--space-4); margin: var(--space-6) 0;
+}
+.step-card {
+  display: flex; gap: var(--space-4); align-items: flex-start;
+  background: var(--color-surface); padding: var(--space-5);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+}
+.step-num {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--color-accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; flex-shrink: 0;
+  font-size: var(--text-sm);
+}
+.step-card-content { flex: 1; }
+.step-card-content strong {
+  font-family: var(--font-display); display: block;
+  margin-bottom: var(--space-1);
+}
+.step-card-content p { font-size: var(--text-sm); color: var(--color-text-secondary); margin: 0; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  :root {
+    --text-4xl: 1.875rem;
+    --text-5xl: 2.25rem;
+    --text-6xl: 3rem;
+  }
+  .translation-block { grid-template-columns: 1fr; }
+  .translation-english { border-left: none; border-top: 3px solid var(--color-accent); }
+  .concept-cards { grid-template-columns: 1fr 1fr; }
+  .comparison { grid-template-columns: 1fr; }
+  .comparison-vs { justify-content: center; }
+  .nav-title { max-width: 35%; }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --text-4xl: 1.5rem;
+    --text-5xl: 1.875rem;
+    --text-6xl: 2.25rem;
+  }
+  .module { padding: var(--space-8) var(--space-4); }
+  .concept-cards { grid-template-columns: 1fr; }
+  .pipeline-steps { flex-direction: column; }
+  .pipeline-arrow { transform: rotate(90deg); }
+  .rt-bubble { max-width: 85%; }
+}
+
+/* ===== HERO ===== */
+.hero-module {
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  background: var(--color-bg);
+  min-height: 100dvh; min-height: 100vh;
+}
+.hero-content { max-width: 700px; }
+.hero-paper-badge {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: var(--text-xs);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--color-accent); background: var(--color-accent-light);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-6);
+}
+.hero-title {
+  font-size: var(--text-5xl); font-weight: 800;
+  line-height: var(--leading-tight);
+  margin-bottom: var(--space-4);
+}
+.hero-subtitle {
+  font-size: var(--text-xl);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+  max-width: 50ch; margin: 0 auto var(--space-8);
+}
+.hero-meta {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.hero-scroll-hint {
+  margin-top: var(--space-12);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  animation: scrollHintPulse 2s infinite;
+}
+@keyframes scrollHintPulse {
+  0%, 100% { opacity: 0.5; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(4px); }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" role="navigation" aria-label="Course navigation">
+  <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0"></div>
+  <div class="nav-inner">
+    <span class="nav-title">CRISPR: Molecular Scissors</span>
+    <div class="nav-dots">
+      <button class="nav-dot" data-target="hero" data-tooltip="Start" role="tab" aria-label="Start"></button>
+      <button class="nav-dot" data-target="module-1" data-tooltip="The Discovery" role="tab" aria-label="Module 1"></button>
+      <button class="nav-dot" data-target="module-2" data-tooltip="Key Concepts" role="tab" aria-label="Module 2"></button>
+      <button class="nav-dot" data-target="module-3" data-tooltip="The Problem Before" role="tab" aria-label="Module 3"></button>
+      <button class="nav-dot" data-target="module-4" data-tooltip="How It Works" role="tab" aria-label="Module 4"></button>
+      <button class="nav-dot" data-target="module-5" data-tooltip="The Evidence" role="tab" aria-label="Module 5"></button>
+      <button class="nav-dot" data-target="module-6" data-tooltip="Limitations" role="tab" aria-label="Module 6"></button>
+      <button class="nav-dot" data-target="module-7" data-tooltip="Impact & Future" role="tab" aria-label="Module 7"></button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="module hero-module" id="hero" style="background: var(--color-bg);">
+  <div class="hero-content animate-in">
+    <span class="hero-paper-badge">INTERACTIVE COURSE</span>
+    <h1 class="hero-title">CRISPR: The Molecular Scissors That Changed Biology</h1>
+    <p class="hero-subtitle">How a bacterial immune system became the most powerful tool for rewriting the code of life -- and why it won a Nobel Prize.</p>
+    <p class="hero-meta">Based on Jinek et al. (2012), <em>"A Programmable Dual-RNA-Guided DNA Endonuclease in Adaptive Bacterial Immunity"</em>, Science 337(6096)</p>
+    <div class="hero-scroll-hint">Scroll down to begin</div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- MODULE 1: THE DISCOVERY -->
+<!-- ================================================================ -->
+<section class="module" id="module-1" style="background: var(--color-bg-warm);">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">What This Paper Found -- and Why You Should Care</h1>
+      <p class="module-subtitle">Scientists discovered how to program a natural protein to cut any DNA sequence they choose -- like a molecular search-and-replace.</p>
+    </header>
+
+    <div class="module-body">
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Imagine You Could Edit a Typo in a Book</h2>
+        <p>Think of your <span class="glossary-term" data-definition="DNA (deoxyribonucleic acid) is the molecule that carries the genetic instructions for life. It's like a very long instruction manual written in a 4-letter alphabet (A, T, G, C) that tells your cells how to build and maintain your body.">DNA</span> as a massive instruction manual -- about 3 billion letters long -- that tells your body how to build and maintain itself. Sometimes there's a typo: a single wrong letter that causes a disease like sickle cell anemia or cystic fibrosis.</p>
+        <p>Before this paper, fixing those typos was like trying to correct one letter in a specific book inside the Library of Congress -- while blindfolded.</p>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Breakthrough</h2>
+        <p>In June 2012, Jennifer Doudna and Emmanuelle Charpentier published a paper showing that a <span class="glossary-term" data-definition="A protein is a molecular machine made of amino acids. Proteins do most of the work inside cells -- they digest food, fight infections, carry oxygen, and (in the case of Cas9) cut DNA. Think of them as the workers in your body's factory.">protein</span> called <span class="glossary-term" data-definition="Cas9 is a protein that acts like molecular scissors. It's naturally found in bacteria, where it fights viruses. The 'Cas' stands for 'CRISPR-associated,' meaning it works alongside the CRISPR system. The '9' just means it was the ninth Cas protein discovered.">Cas9</span> -- which bacteria naturally use to fight viruses -- could be reprogrammed to cut <em>any</em> <span class="glossary-term" data-definition="A DNA sequence is a specific series of the four chemical 'letters' (bases) -- A, T, G, and C -- that make up DNA. Like letters forming words, the order of these bases encodes biological information. A gene might be thousands of bases long.">DNA sequence</span> the researchers chose.</p>
+
+        <div class="concept-cards stagger-children">
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-1)">
+            <div class="card-icon">&#9986;</div>
+            <h4 class="card-title">Programmable Cutting</h4>
+            <p class="card-desc">Design a short RNA guide, and Cas9 will find and cut that exact DNA spot</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-2)">
+            <div class="card-icon">&#9881;</div>
+            <h4 class="card-title">Simple to Use</h4>
+            <p class="card-desc">Only two components needed: the Cas9 protein and a single guide RNA</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-5)">
+            <div class="card-icon">&#127793;</div>
+            <h4 class="card-title">Universal</h4>
+            <p class="card-desc">Works on DNA from bacteria, plants, animals, and humans</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Paper Jargon, Decoded</h2>
+        <div class="translation-block">
+          <div class="translation-notation">
+            <span class="translation-label">FROM THE PAPER</span>
+            <div class="notation-content"><span class="notation-keyword">"A programmable</span> <span class="notation-variable">dual-RNA-guided</span> <span class="notation-function">DNA endonuclease</span> <span class="notation-keyword">in adaptive bacterial immunity"</span></div>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>"A programmable"</strong> -- you can customize it to target whatever DNA you want.</p>
+              <p class="tl"><strong>"dual-RNA-guided"</strong> -- it uses two small RNA molecules as a GPS address (the paper then showed these can be fused into one).</p>
+              <p class="tl"><strong>"DNA endonuclease"</strong> -- a protein that cuts DNA from the inside (endo = within, nuclease = DNA cutter).</p>
+              <p class="tl"><strong>"in adaptive bacterial immunity"</strong> -- this system originally evolved in bacteria to remember and destroy invading viruses.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <div class="callout callout-insight">
+          <div class="callout-icon">&#128161;</div>
+          <div class="callout-content">
+            <strong>Transferable insight:</strong> Many of the most transformative technologies come from studying nature's existing solutions. Bacteria evolved CRISPR over millions of years to solve their own survival problem -- scientists just figured out how to repurpose it. When you see a breakthrough, ask: "What natural system inspired this?"
+          </div>
+        </div>
+      </section>
+
+      <!-- Module 1 Quiz -->
+      <section class="screen animate-in" id="quiz-m1">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+        <div class="quiz-container">
+          <div class="quiz-question-block" data-question="m1q1" data-correct="m1q1-b">
+            <h3 class="quiz-question">A friend tells you: "Scientists invented CRISPR from scratch in a lab." Based on what you just learned, what's wrong with this claim?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m1q1-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Nothing -- CRISPR was invented in the lab</span>
+              </button>
+              <button class="quiz-option" data-value="m1q1-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>CRISPR wasn't invented -- it was discovered in bacteria and then repurposed as a tool</span>
+              </button>
+              <button class="quiz-option" data-value="m1q1-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>CRISPR was actually discovered in plants, not in a lab</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m1q1-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-question="m1q2" data-correct="m1q2-c">
+            <h3 class="quiz-question">Why is the word "programmable" in the paper's title so significant?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m1q2-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It means you need a computer to use CRISPR</span>
+              </button>
+              <button class="quiz-option" data-value="m1q2-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It means Cas9 can cut DNA faster than before</span>
+              </button>
+              <button class="quiz-option" data-value="m1q2-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It means researchers can choose any DNA target -- making Cas9 a general-purpose tool rather than one locked to a single target</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m1q2-feedback"></div>
+          </div>
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-m1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-m1')">Try Again</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- MODULE 2: KEY CONCEPTS -->
+<!-- ================================================================ -->
+<section class="module" id="module-2" style="background: var(--color-bg);">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Cast of Characters</h1>
+      <p class="module-subtitle">The key molecular players you need to know to follow the paper's story.</p>
+    </header>
+
+    <div class="module-body">
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Think of It Like a GPS-Guided Missile</h2>
+        <p>The CRISPR-Cas9 system has two essential parts, like a GPS-guided missile has a guidance system and a warhead. The <span class="glossary-term" data-definition="RNA (ribonucleic acid) is a molecule similar to DNA but usually single-stranded. It acts as a messenger and workhorse in cells. In CRISPR, a short piece of RNA serves as a 'guide' that tells the Cas9 protein exactly where to cut. Think of RNA as DNA's more versatile cousin.">guide RNA</span> is the GPS (it finds the target), and <span class="glossary-term" data-definition="Cas9 is the protein that does the actual cutting. It's an endonuclease -- a molecular machine that can slice through both strands of a DNA double helix. Without a guide RNA, Cas9 just floats around doing nothing. It only becomes active when it's loaded with a guide.">Cas9</span> is the missile (it cuts the target).</p>
+
+        <div class="concept-cards stagger-children">
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-1)">
+            <div class="card-icon">&#128270;</div>
+            <h4 class="card-title">crRNA</h4>
+            <p class="card-desc">The "search query" -- a 20-letter RNA sequence that matches the DNA target. Like typing a search term into a text editor.</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-2)">
+            <div class="card-icon">&#128279;</div>
+            <h4 class="card-title">tracrRNA</h4>
+            <p class="card-desc">The "adapter" -- helps the crRNA dock onto Cas9. Like a USB adapter that connects your search query to the cutting machine.</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-5)">
+            <div class="card-icon">&#9986;</div>
+            <h4 class="card-title">Cas9 Protein</h4>
+            <p class="card-desc">The "scissors" -- a protein that cuts both strands of DNA. Inert until loaded with a guide RNA.</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-4)">
+            <div class="card-icon">&#127919;</div>
+            <h4 class="card-title">PAM Sequence</h4>
+            <p class="card-desc">The "landing pad" -- a short DNA motif (NGG) next to the target that Cas9 checks before cutting. A security checkpoint.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Paper's Key Innovation: One Guide Instead of Two</h2>
+        <p>In nature, Cas9 needs <em>two</em> separate RNA molecules (crRNA + tracrRNA) working together. Doudna and Charpentier showed they could fuse these into a single <span class="glossary-term" data-definition="A single guide RNA (sgRNA) is an engineered RNA molecule that combines the crRNA and tracrRNA into one continuous piece. This was the paper's key engineering breakthrough -- it made CRISPR much simpler to use in the lab because you only need to design one molecule instead of two.">single guide RNA (sgRNA)</span>. This was the engineering breakthrough that made CRISPR practical.</p>
+
+        <div class="translation-block">
+          <div class="translation-notation">
+            <span class="translation-label">FROM THE PAPER</span>
+            <div class="notation-content"><span class="notation-keyword">"We propose an alternative methodology</span>
+<span class="notation-keyword">based on a</span> <span class="notation-accent">chimeric RNA</span><span class="notation-keyword">,</span>
+<span class="notation-keyword">the</span> <span class="notation-variable">single-guide RNA</span> <span class="notation-keyword">(sgRNA),</span>
+<span class="notation-keyword">which combines</span> <span class="notation-variable">tracrRNA</span> <span class="notation-keyword">and</span>
+<span class="notation-variable">crRNA</span> <span class="notation-keyword">into a single construct"</span></div>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>"chimeric RNA"</strong> -- chimera means a mix of two things (like the mythical creature). They stitched two RNA pieces into one hybrid molecule.</p>
+              <p class="tl"><strong>"single-guide RNA (sgRNA)"</strong> -- one molecule that does the job of two. This is the key simplification that made CRISPR a practical lab tool.</p>
+              <p class="tl"><strong>"combines tracrRNA and crRNA"</strong> -- the adapter and the search query become one piece, so researchers only need to design and make one molecule.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The PAM: Nature's Safety Lock</h2>
+        <p>Cas9 doesn't just cut anywhere the guide matches. It also checks for a short <span class="glossary-term" data-definition="PAM stands for Protospacer Adjacent Motif. It's a short DNA sequence (usually NGG, where N is any base) that must sit right next to the target site. Cas9 won't cut unless it sees the PAM. Think of it as a security badge check -- even if you have the right ID (guide RNA), you still need the badge (PAM) to get through.">PAM</span> sequence (usually NGG) right next to the target. Think of it like a combination lock on a safe: even if you have the right key (guide RNA), the safe won't open unless the combination (PAM) is correct too.</p>
+        <p>This exists because in bacteria, CRISPR needs to cut viral DNA but <em>not</em> the bacterium's own DNA. The PAM acts as a "self vs. non-self" marker.</p>
+
+        <div class="callout callout-insight">
+          <div class="callout-icon">&#128161;</div>
+          <div class="callout-content">
+            <strong>Transferable insight:</strong> Biological systems often have built-in safety mechanisms. When evaluating any gene-editing technology, always ask: "What prevents it from cutting in the wrong place?" The PAM requirement is one such safeguard, but it's not perfect -- and that imperfection matters for real-world applications.
+          </div>
+        </div>
+      </section>
+
+      <!-- Module 2 Quiz -->
+      <section class="screen animate-in" id="quiz-m2">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+        <div class="quiz-container">
+          <div class="quiz-question-block" data-question="m2q1" data-correct="m2q1-b">
+            <h3 class="quiz-question">A biotech company tells you their new CRISPR tool "can target literally any location in the human genome." Based on what you know about the PAM requirement, is this accurate?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m2q1-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes -- the guide RNA can be designed to match any sequence</span>
+              </button>
+              <button class="quiz-option" data-value="m2q1-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Not quite -- Cas9 also needs a PAM sequence next to the target, so some locations can't be targeted</span>
+              </button>
+              <button class="quiz-option" data-value="m2q1-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No -- CRISPR only works on bacterial DNA</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m2q1-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-question="m2q2" data-correct="m2q2-a">
+            <h3 class="quiz-question">Why was fusing the crRNA and tracrRNA into a single guide RNA such a big deal for practical use?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m2q2-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It simplified the system -- researchers only need to design and produce one RNA molecule instead of two, making experiments faster and cheaper</span>
+              </button>
+              <button class="quiz-option" data-value="m2q2-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The single guide cuts DNA twice as fast as two separate RNAs</span>
+              </button>
+              <button class="quiz-option" data-value="m2q2-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It made CRISPR work in human cells for the first time</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m2q2-feedback"></div>
+          </div>
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-m2')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-m2')">Try Again</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- MODULE 3: THE PROBLEM BEFORE -->
+<!-- ================================================================ -->
+<section class="module" id="module-3" style="background: var(--color-bg-warm);">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Problem Before CRISPR</h1>
+      <p class="module-subtitle">Gene editing existed before 2012, but it was slow, expensive, and error-prone. Here's what scientists were struggling with.</p>
+    </header>
+
+    <div class="module-body">
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Editing Genes the Hard Way</h2>
+        <p>Imagine you're editing a document, but instead of a "find and replace" tool, you have to manually scroll through millions of pages to find the one word you want to change. That was gene editing before CRISPR.</p>
+        <p>Two earlier technologies -- <span class="glossary-term" data-definition="Zinc Finger Nucleases (ZFNs) are proteins engineered to cut DNA at specific locations. Each 'zinc finger' recognizes 3 DNA letters. To target a specific site, scientists had to custom-build a chain of zinc fingers -- a process that took months and often failed. Think of them as hand-carved keys for specific locks.">ZFNs</span> and <span class="glossary-term" data-definition="TALENs (Transcription Activator-Like Effector Nucleases) are another type of engineered DNA-cutting protein. They're more predictable than ZFNs but still require building a custom protein for each target -- typically weeks of work and thousands of dollars per target.">TALENs</span> -- could target specific DNA, but they required building an entirely new custom protein for each target.</p>
+      </section>
+
+      <section class="screen animate-in">
+        <div class="comparison">
+          <div class="comparison-card before">
+            <span class="comparison-badge">BEFORE (ZFNs / TALENs)</span>
+            <h4>Custom Protein for Each Target</h4>
+            <ul>
+              <li>Months to design each new target</li>
+              <li>$5,000 - $25,000 per target</li>
+              <li>Required specialized protein engineering</li>
+              <li>High failure rate -- many designs didn't work</li>
+              <li>Only expert labs could use them</li>
+            </ul>
+          </div>
+          <div class="comparison-vs">vs</div>
+          <div class="comparison-card after">
+            <span class="comparison-badge">AFTER (CRISPR-Cas9)</span>
+            <h4>Same Protein, New Guide RNA</h4>
+            <ul>
+              <li>Days to design a new target</li>
+              <li>Under $100 per target</li>
+              <li>Only need to order a short RNA sequence</li>
+              <li>High success rate with well-designed guides</li>
+              <li>Any biology lab can use it</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Paper Jargon, Decoded</h2>
+        <div class="translation-block">
+          <div class="translation-notation">
+            <span class="translation-label">FROM THE PAPER</span>
+            <div class="notation-content"><span class="notation-keyword">"The ability to</span> <span class="notation-accent">program the complex</span>
+<span class="notation-keyword">to cleave essentially</span>
+<span class="notation-accent">any DNA sequence</span> <span class="notation-keyword">...contrasts with
+existing techniques for</span> <span class="notation-variable">genome
+engineering</span> <span class="notation-keyword">that require the design
+of a</span> <span class="notation-accent">new protein</span> <span class="notation-keyword">for each
+target sequence"</span></div>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>"program the complex"</strong> -- customize Cas9's target by swapping in a new guide RNA. No need to rebuild the entire molecular machine.</p>
+              <p class="tl"><strong>"cleave essentially any DNA sequence"</strong> -- cut whatever DNA you want (with the PAM constraint). Enormous flexibility.</p>
+              <p class="tl"><strong>"require the design of a new protein"</strong> -- the old way: for each new target, you had to engineer a whole new protein from scratch. Like building a new car for every road trip.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <div class="callout callout-context">
+          <div class="callout-icon">&#128218;</div>
+          <div class="callout-content">
+            <strong>Field context:</strong> By 2012, the CRISPR sequences had been observed in bacterial DNA since 1987, but nobody understood what they did. It took 25 years of detective work by dozens of labs before Doudna and Charpentier's paper showed how to turn this biological curiosity into a practical tool. Great discoveries often need decades of groundwork.
+          </div>
+        </div>
+      </section>
+
+      <!-- Module 3 Quiz -->
+      <section class="screen animate-in" id="quiz-m3">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+        <div class="quiz-container">
+          <div class="quiz-question-block" data-question="m3q1" data-correct="m3q1-c">
+            <h3 class="quiz-question">A colleague says: "CRISPR was the first technology that could edit genes." How would you correct them?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m3q1-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>They're right -- before CRISPR, there was no way to edit genes</span>
+              </button>
+              <button class="quiz-option" data-value="m3q1-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>CRISPR was the first to use RNA for gene editing, but DNA-based methods existed</span>
+              </button>
+              <button class="quiz-option" data-value="m3q1-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>ZFNs and TALENs could already edit genes, but they required custom proteins for each target -- CRISPR made it dramatically easier and cheaper</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m3q1-feedback"></div>
+          </div>
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-m3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-m3')">Try Again</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- MODULE 4: HOW IT WORKS -->
+<!-- ================================================================ -->
+<section class="module" id="module-4" style="background: var(--color-bg);">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">How CRISPR-Cas9 Actually Works</h1>
+      <p class="module-subtitle">Follow the step-by-step process of how Cas9 finds and cuts its target, like tracking a delivery through a postal system.</p>
+    </header>
+
+    <div class="module-body">
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Delivery Route: From Guide to Cut</h2>
+        <p>Think of the CRISPR process like a postal delivery. The <span class="glossary-term" data-definition="The guide RNA is a short RNA molecule (about 20 nucleotides long for the targeting part) that serves as the address label. It tells Cas9 exactly which DNA sequence to find and cut. You design this in a computer and order it from a lab supply company.">guide RNA</span> is the address label, Cas9 is the delivery truck, and the DNA target is the destination. Let's follow the package.</p>
+
+        <div class="pipeline-container" id="pipeline-crispr">
+          <button class="pipeline-play" onclick="playPipeline('pipeline-crispr')">Trace the process</button>
+          <div class="pipeline-steps">
+            <div class="pipeline-step" data-step="1" style="--step-color: var(--color-concept-1)">
+              <div class="pipeline-icon">&#128295;</div>
+              <div class="pipeline-label">Design Guide</div>
+              <div class="pipeline-detail">Researchers design a 20-letter RNA matching their target DNA</div>
+            </div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-step" data-step="2" style="--step-color: var(--color-concept-2)">
+              <div class="pipeline-icon">&#128300;</div>
+              <div class="pipeline-label">Load Cas9</div>
+              <div class="pipeline-detail">The guide RNA docks onto the Cas9 protein, activating it</div>
+            </div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-step" data-step="3" style="--step-color: var(--color-concept-3)">
+              <div class="pipeline-icon">&#128269;</div>
+              <div class="pipeline-label">Scan DNA</div>
+              <div class="pipeline-detail">Cas9 slides along DNA, checking for PAM sequences (NGG)</div>
+            </div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-step" data-step="4" style="--step-color: var(--color-concept-4)">
+              <div class="pipeline-icon">&#127919;</div>
+              <div class="pipeline-label">Match &amp; Unwind</div>
+              <div class="pipeline-detail">At a PAM site, Cas9 unzips DNA and checks if the guide matches</div>
+            </div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-step" data-step="5" style="--step-color: var(--color-concept-5)">
+              <div class="pipeline-icon">&#9986;</div>
+              <div class="pipeline-label">Cut</div>
+              <div class="pipeline-detail">If all 20 letters match: both DNA strands are cut (double-strand break)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Cutting Mechanism: Two Blades</h2>
+        <p>Cas9 has two molecular "blades" -- called <span class="glossary-term" data-definition="A nuclease domain is a region within a protein that can cut a strand of DNA or RNA. Cas9 has two nuclease domains: RuvC (which cuts one DNA strand) and HNH (which cuts the other). Together, they make a double-strand break. Think of them as the two blades of a pair of scissors.">nuclease domains</span> -- named <span class="glossary-term" data-definition="RuvC is one of the two cutting domains in Cas9. It's named after a DNA repair protein in bacteria. RuvC cuts the DNA strand that is NOT paired with the guide RNA (the 'non-target strand'). The paper showed that mutating RuvC disabled one blade but left the other working.">RuvC</span> and <span class="glossary-term" data-definition="HNH is the other cutting domain in Cas9. It cuts the DNA strand that IS paired with the guide RNA (the 'target strand'). HNH is named for a conserved amino acid motif (histidine-asparagine-histidine). Together with RuvC, it creates a clean double-strand break.">HNH</span>. Each blade cuts one strand of the DNA double helix. Think of it like scissors: you need both blades working together to make a clean cut.</p>
+
+        <div class="translation-block">
+          <div class="translation-notation">
+            <span class="translation-label">FROM THE PAPER</span>
+            <div class="notation-content"><span class="notation-keyword">"Cas9 uses its</span> <span class="notation-variable">RuvC</span><span class="notation-keyword">- and</span> <span class="notation-variable">HNH</span><span class="notation-keyword">-like</span>
+<span class="notation-function">nuclease domains</span> <span class="notation-keyword">to generate
+a</span> <span class="notation-accent">blunt-ended</span> <span class="notation-keyword">double-stranded break
+...3 base pairs upstream of the
+PAM sequence"</span></div>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>"RuvC- and HNH-like nuclease domains"</strong> -- the two molecular blades. RuvC cuts one DNA strand, HNH cuts the other. Named after their structural shapes.</p>
+              <p class="tl"><strong>"blunt-ended double-stranded break"</strong> -- a clean cut straight through both strands of the DNA helix, like cutting a rope cleanly rather than fraying it.</p>
+              <p class="tl"><strong>"3 base pairs upstream of the PAM"</strong> -- the cut happens at a precise location: exactly 3 letters before the PAM landing pad. This predictability is critical for precision editing.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What Happens After the Cut?</h2>
+        <p>The paper focused on the cutting mechanism, but what happens next is where gene editing gets powerful. The cell's own repair machinery kicks in, and researchers can exploit this.</p>
+        <div class="concept-cards stagger-children">
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-6)">
+            <div class="card-icon">&#128683;</div>
+            <h4 class="card-title">Gene Knockout (NHEJ)</h4>
+            <p class="card-desc">The cell rushes to fix the break, often making small errors that disable the gene. Like hastily taping a broken wire -- it doesn't work the same anymore.</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-1)">
+            <div class="card-icon">&#128221;</div>
+            <h4 class="card-title">Gene Correction (HDR)</h4>
+            <p class="card-desc">Provide a template with the "correct" DNA and the cell copies it during repair. Like giving a contractor blueprints for the fix you want.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-caveat">
+          <div class="callout-icon">&#9888;</div>
+          <div class="callout-content">
+            <strong>Important caveat:</strong> The 2012 paper demonstrated cutting, not the full gene-editing pipeline in living cells. The repair pathways (<span class="glossary-term" data-definition="NHEJ (Non-Homologous End Joining) is a fast but sloppy DNA repair pathway. When DNA is broken, NHEJ glues the ends back together quickly but often inserts or deletes a few bases at the break site. These small errors can disrupt (knock out) a gene. It's the cell's 'quick and dirty' repair.">NHEJ</span> and <span class="glossary-term" data-definition="HDR (Homology-Directed Repair) is a precise DNA repair pathway. If a template with the desired sequence is provided, the cell can use it to repair the break accurately. This is how researchers insert new DNA or correct mutations. It's the cell's 'careful' repair -- but it only works in certain cell types and at low efficiency.">HDR</span>) were already known -- the breakthrough was showing Cas9 could be programmed to make the initial cut.
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <div class="callout callout-insight">
+          <div class="callout-icon">&#128161;</div>
+          <div class="callout-content">
+            <strong>Transferable insight:</strong> In biology (and engineering), making a precise break is often harder than fixing one. Cells already have repair machinery -- the hard part was targeting exactly where to intervene. This pattern appears everywhere: the value of a medical diagnostic isn't just knowing something is wrong, but knowing <em>precisely where</em>.
+          </div>
+        </div>
+      </section>
+
+      <!-- Module 4 Quiz -->
+      <section class="screen animate-in" id="quiz-m4">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+        <div class="quiz-container">
+          <div class="quiz-question-block" data-question="m4q1" data-correct="m4q1-b">
+            <h3 class="quiz-question">A researcher wants to disable a gene that causes drug resistance in cancer cells. Which repair pathway would be more useful for this goal?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m4q1-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>HDR -- because it makes precise corrections</span>
+              </button>
+              <button class="quiz-option" data-value="m4q1-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>NHEJ -- because its error-prone repair would disrupt the gene, disabling it</span>
+              </button>
+              <button class="quiz-option" data-value="m4q1-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Neither -- you'd need a different tool entirely</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m4q1-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-question="m4q2" data-correct="m4q2-c">
+            <h3 class="quiz-question">Why does Cas9 check for a PAM sequence BEFORE checking if the guide RNA matches the target?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m4q2-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>The PAM is easier to see because it sticks out of the DNA</span>
+              </button>
+              <button class="quiz-option" data-value="m4q2-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Cas9 was designed by researchers to check PAM first</span>
+              </button>
+              <button class="quiz-option" data-value="m4q2-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Checking a 3-letter PAM is fast and filters out most of the genome, so Cas9 only needs to do the slower guide-matching at promising sites -- like scanning house numbers before reading full addresses</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m4q2-feedback"></div>
+          </div>
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-m4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-m4')">Try Again</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- MODULE 5: THE EVIDENCE -->
+<!-- ================================================================ -->
+<section class="module" id="module-5" style="background: var(--color-bg-warm);">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">The Evidence: How They Proved It Works</h1>
+      <p class="module-subtitle">The experiments that turned an idea into proof -- and how to read the evidence like a scientist.</p>
+    </header>
+
+    <div class="module-body">
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Research Pipeline</h2>
+        <p>Good science follows a logical chain: question, hypothesis, experiment, evidence. Let's trace the paper's evidence chain like following a trail of breadcrumbs through a forest.</p>
+
+        <!-- Research Pipeline Animation -->
+        <div class="pipeline-container" id="pipeline-evidence">
+          <button class="pipeline-play" onclick="playPipeline('pipeline-evidence')">Trace the evidence</button>
+          <div class="pipeline-steps">
+            <div class="pipeline-step" data-step="1" style="--step-color: var(--color-concept-1)">
+              <div class="pipeline-icon">&#10067;</div>
+              <div class="pipeline-label">Question</div>
+              <div class="pipeline-detail">"Can Cas9 be directed to cut any DNA using just RNA guides?"</div>
+            </div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-step" data-step="2" style="--step-color: var(--color-concept-2)">
+              <div class="pipeline-icon">&#129514;</div>
+              <div class="pipeline-label">In Vitro Tests</div>
+              <div class="pipeline-detail">Test Cas9 cutting in a tube with purified components</div>
+            </div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-step" data-step="3" style="--step-color: var(--color-concept-3)">
+              <div class="pipeline-icon">&#128256;</div>
+              <div class="pipeline-label">Multiple Targets</div>
+              <div class="pipeline-detail">Test against 5 different DNA targets to prove programmability</div>
+            </div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-step" data-step="4" style="--step-color: var(--color-concept-4)">
+              <div class="pipeline-icon">&#128300;</div>
+              <div class="pipeline-label">Mutant Analysis</div>
+              <div class="pipeline-detail">Disable RuvC or HNH separately to confirm each blade's role</div>
+            </div>
+            <div class="pipeline-arrow">&rarr;</div>
+            <div class="pipeline-step" data-step="5" style="--step-color: var(--color-concept-5)">
+              <div class="pipeline-icon">&#128200;</div>
+              <div class="pipeline-label">sgRNA Proof</div>
+              <div class="pipeline-detail">Show that the single guide RNA works as well as the natural two-RNA system</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Key Experiments, Explained</h2>
+        <div class="step-cards stagger-children">
+          <div class="step-card animate-in">
+            <div class="step-num">1</div>
+            <div class="step-card-content">
+              <strong>Plasmid Cleavage Assay</strong>
+              <p>They mixed Cas9 + guide RNA + circular DNA (<span class="glossary-term" data-definition="A plasmid is a small, circular piece of DNA commonly used in lab experiments. Scientists use plasmids as 'test dummies' -- they put a known DNA sequence into a plasmid, then test whether their tool (here, Cas9) can find and cut it. If the circular plasmid gets cut, it changes shape, which is easy to detect on a gel.">plasmid</span>) in a tube. If Cas9 cuts, the circular DNA becomes linear -- visible on a <span class="glossary-term" data-definition="Gel electrophoresis is a technique that separates DNA fragments by size. DNA is placed in a gel and an electric field pulls it through. Smaller pieces move faster, larger pieces move slower. It's like sorting rocks by size by rolling them through increasingly fine mesh -- you can see the different sizes as distinct bands.">gel</span>. Result: clear cutting at the expected site.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num">2</div>
+            <div class="step-card-content">
+              <strong>Five Different Targets</strong>
+              <p>They designed guide RNAs for 5 different sites in the same gene. All 5 worked -- proving the system is truly programmable, not just lucky with one target.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num">3</div>
+            <div class="step-card-content">
+              <strong>Domain Mutation Experiments</strong>
+              <p>They mutated RuvC (D10A mutation) and HNH (H840A mutation) separately. Each mutation disabled one blade. This confirmed the two-blade model and created "nickases" that cut only one strand -- useful for precision editing.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num">4</div>
+            <div class="step-card-content">
+              <strong>Single Guide RNA Validation</strong>
+              <p>They engineered the chimeric sgRNA and showed it guided Cas9 to cut just as effectively as the natural two-RNA system. This was the practical breakthrough.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Paper Jargon, Decoded</h2>
+        <div class="translation-block">
+          <div class="translation-notation">
+            <span class="translation-label">FROM THE PAPER</span>
+            <div class="notation-content"><span class="notation-keyword">"Cleavage of both strands of</span>
+<span class="notation-keyword">the target DNA occurs at a
+specific site</span> <span class="notation-accent">3 bp upstream</span> <span class="notation-keyword">of
+the PAM ...generating</span> <span class="notation-variable">blunt ends</span>
+<span class="notation-keyword">as demonstrated by</span> <span class="notation-function">sequencing</span>
+<span class="notation-keyword">across the cleavage site"</span></div>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>"3 bp upstream of the PAM"</strong> -- the cut happens exactly 3 DNA letters before the PAM landing pad. This precision matters because it means the cut location is predictable.</p>
+              <p class="tl"><strong>"blunt ends"</strong> -- a clean, straight cut across both strands (not staggered). Important for how the cell repairs the break.</p>
+              <p class="tl"><strong>"demonstrated by sequencing"</strong> -- they read the DNA letters around the cut to confirm exactly where the break occurred. This is the gold standard of proof in molecular biology.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <div class="callout callout-insight">
+          <div class="callout-icon">&#128161;</div>
+          <div class="callout-content">
+            <strong>Transferable insight:</strong> Notice how the paper doesn't just show that something works -- it systematically varies the conditions (different targets, different mutations, different guide designs) to prove <em>why</em> it works. This is the difference between a demo and a proof. When evaluating any technology claim, ask: "Did they test it under multiple conditions, or just show one success story?"
+          </div>
+        </div>
+      </section>
+
+      <!-- Module 5 Quiz -->
+      <section class="screen animate-in" id="quiz-m5">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+        <div class="quiz-container">
+          <div class="quiz-question-block" data-question="m5q1" data-correct="m5q1-b">
+            <h3 class="quiz-question">Why did the researchers test 5 different target sites instead of just one?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m5q1-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>They needed more data points for statistical significance</span>
+              </button>
+              <button class="quiz-option" data-value="m5q1-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>To prove the system is truly programmable -- one success could be a fluke, but five different targets show it works generally</span>
+              </button>
+              <button class="quiz-option" data-value="m5q1-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>They were trying to find the one target that worked best</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m5q1-feedback"></div>
+          </div>
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-m5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-m5')">Try Again</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- MODULE 6: LIMITATIONS -->
+<!-- ================================================================ -->
+<section class="module" id="module-6" style="background: var(--color-bg);">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">What the Paper Doesn't Prove</h1>
+      <p class="module-subtitle">Every paper has boundaries. Understanding the limitations makes you a sharper reader -- and helps you spot hype.</p>
+    </header>
+
+    <div class="module-body">
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Reading Between the Lines</h2>
+        <p>The 2012 paper was groundbreaking, but it's important to understand what it did and did <em>not</em> demonstrate. Think of it as reading a restaurant review -- a rave about the appetizer doesn't tell you anything about the dessert.</p>
+
+        <div class="concept-cards stagger-children">
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-6)">
+            <div class="card-icon">&#129514;</div>
+            <h4 class="card-title">Test Tube Only</h4>
+            <p class="card-desc">All experiments were in vitro (in a tube). The paper did NOT show CRISPR working inside living cells.</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-2)">
+            <div class="card-icon">&#128168;</div>
+            <h4 class="card-title">Off-Target Cutting</h4>
+            <p class="card-desc">The paper didn't measure how often Cas9 cuts at the wrong place. This later emerged as a major concern.</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-3)">
+            <div class="card-icon">&#128300;</div>
+            <h4 class="card-title">No Human Cells</h4>
+            <p class="card-desc">Working in a tube with purified molecules is very different from working inside the complex environment of a human cell.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Paper Jargon, Decoded</h2>
+        <div class="translation-block">
+          <div class="translation-notation">
+            <span class="translation-label">FROM THE PAPER</span>
+            <div class="notation-content"><span class="notation-keyword">"We show herein that the</span>
+<span class="notation-variable">Cas9</span><span class="notation-keyword">-</span><span class="notation-variable">tracrRNA</span><span class="notation-keyword">:</span><span class="notation-variable">crRNA</span> <span class="notation-keyword">complex
+constitutes a</span> <span class="notation-accent">family of endonucleases</span>
+<span class="notation-keyword">that use</span> <span class="notation-variable">dual-RNAs</span> <span class="notation-keyword">for site-
+specific DNA cleavage ...opening
+the door to</span> <span class="notation-accent">RNA-programmed
+genome engineering</span><span class="notation-keyword">"</span></div>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>"family of endonucleases"</strong> -- a new category of DNA-cutting tools, not just one. The authors recognized this could be a whole toolkit.</p>
+              <p class="tl"><strong>"dual-RNAs for site-specific"</strong> -- two RNA molecules working together to target a precise spot. (Later simplified to one.)</p>
+              <p class="tl"><strong>"opening the door to RNA-programmed genome engineering"</strong> -- careful wording. They said "opening the door," not "we've done it." They demonstrated the mechanism; others would need to show it works inside cells.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Spot the Hype</h2>
+        <div class="flaw-challenge">
+          <h3 class="flaw-header">Spot the Flaw</h3>
+          <div class="flaw-claim">
+            <span class="flaw-source">Social media post, 2012:</span>
+            <p class="flaw-text">"Scientists have created a gene-editing tool that can cure genetic diseases! CRISPR just needs to be injected and it fixes your DNA automatically."</p>
+          </div>
+          <div class="flaw-options">
+            <button class="flaw-option" data-correct="false" onclick="checkFlaw(this)">
+              The flaw is that CRISPR can't be injected -- it only works in a lab
+            </button>
+            <button class="flaw-option" data-correct="true" onclick="checkFlaw(this)">
+              Multiple flaws: the 2012 paper only showed cutting in a test tube -- not curing diseases, not in living organisms, not "automatically" fixing anything
+            </button>
+            <button class="flaw-option" data-correct="false" onclick="checkFlaw(this)">
+              The post is basically accurate -- that's what the paper showed
+            </button>
+          </div>
+          <div class="flaw-explanation" id="flaw-expl-1">
+            <strong>Key lesson:</strong> The paper showed that Cas9 can be programmed to cut specific DNA sequences in a test tube. The jump from "cuts DNA in a tube" to "cures diseases in humans" requires proving it works in cells, in animals, is safe, is efficient, can be delivered to the right tissues, and doesn't cause harmful off-target effects. Each of those steps took years of additional research. When you see a headline about a single paper "curing" a disease, always ask: "Was this in a tube, in cells, in mice, or in humans?"
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <div class="callout callout-insight">
+          <div class="callout-icon">&#128161;</div>
+          <div class="callout-content">
+            <strong>Transferable insight:</strong> Scientists use careful language for a reason. "Opening the door to" is very different from "we have achieved." When reading about new technologies, pay attention to the verbs: "demonstrates," "suggests," "enables," and "opens the door to" are humble and precise. "Proves," "cures," and "revolutionizes" in a headline usually mean someone is overstating what the paper actually showed.
+          </div>
+        </div>
+      </section>
+
+      <!-- Expert Roundtable -->
+      <section class="screen animate-in">
+        <div class="roundtable-container" id="roundtable-limitations">
+          <div class="roundtable-header">
+            <h3>The Skeptic vs. The Optimist</h3>
+            <button class="roundtable-play" onclick="playRoundtable('roundtable-limitations')">Watch the discussion</button>
+          </div>
+          <div class="roundtable-messages">
+            <div class="rt-message" data-speaker="Skeptic" data-delay="0" style="--speaker-color: var(--color-concept-2)">
+              <div class="rt-avatar">SKP</div>
+              <div class="rt-bubble">
+                <div class="rt-name">The Skeptic</div>
+                <p>This is all in a test tube. How do we know it works inside an actual living cell?</p>
+              </div>
+            </div>
+            <div class="rt-message right" data-speaker="Optimist" data-delay="1" style="--speaker-color: var(--color-concept-1)">
+              <div class="rt-bubble">
+                <div class="rt-name">The Optimist</div>
+                <p>Fair point. But proving the mechanism in vitro is the necessary first step. You have to show the engine works before putting it in a car.</p>
+              </div>
+              <div class="rt-avatar">OPT</div>
+            </div>
+            <div class="rt-message" data-speaker="Skeptic" data-delay="2" style="--speaker-color: var(--color-concept-2)">
+              <div class="rt-avatar">SKP</div>
+              <div class="rt-bubble">
+                <div class="rt-name">The Skeptic</div>
+                <p>And what about off-target effects? They didn't measure whether Cas9 cuts at wrong locations. That could be dangerous.</p>
+              </div>
+            </div>
+            <div class="rt-message right" data-speaker="Optimist" data-delay="3" style="--speaker-color: var(--color-concept-1)">
+              <div class="rt-bubble">
+                <div class="rt-name">The Optimist</div>
+                <p>Absolutely a real concern. But the PAM requirement limits where Cas9 can cut, and the 20-base-pair matching adds specificity. It's not perfect, but it's a solid starting point.</p>
+              </div>
+              <div class="rt-avatar">OPT</div>
+            </div>
+            <div class="rt-message" data-speaker="Skeptic" data-delay="4" style="--speaker-color: var(--color-concept-2)">
+              <div class="rt-avatar">SKP</div>
+              <div class="rt-bubble">
+                <div class="rt-name">The Skeptic</div>
+                <p>I'll concede the mechanism is elegant and the simplicity is remarkable. But the gap between "cuts DNA in a tube" and "treats human disease" is enormous.</p>
+              </div>
+            </div>
+            <div class="rt-message right" data-speaker="Optimist" data-delay="5" style="--speaker-color: var(--color-concept-1)">
+              <div class="rt-bubble">
+                <div class="rt-name">The Optimist</div>
+                <p>Agreed. That gap is where the next decade of research lives. But this paper just handed thousands of labs the cheapest, simplest gene-cutting tool in history. The applications will follow.</p>
+              </div>
+              <div class="rt-avatar">OPT</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Module 6 Quiz -->
+      <section class="screen animate-in" id="quiz-m6">
+        <h2 class="screen-heading">Check Your Understanding</h2>
+        <div class="quiz-container">
+          <div class="quiz-question-block" data-question="m6q1" data-correct="m6q1-c">
+            <h3 class="quiz-question">A biotech startup pitches investors: "Using the proven CRISPR technology from the 2012 Doudna paper, we will cure sickle cell disease in patients within 2 years." What should an informed investor ask?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m6q1-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Nothing -- the 2012 paper already proved CRISPR works for gene therapy</span>
+              </button>
+              <button class="quiz-option" data-value="m6q1-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>"Is CRISPR patented?" -- the business risk is the main concern</span>
+              </button>
+              <button class="quiz-option" data-value="m6q1-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>"The 2012 paper was in vitro only. What evidence do you have that this works in human cells, with acceptable off-target rates, and can be delivered to the right tissues?"</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m6q1-feedback"></div>
+          </div>
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-m6')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-m6')">Try Again</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- MODULE 7: IMPACT & FUTURE -->
+<!-- ================================================================ -->
+<section class="module" id="module-7" style="background: var(--color-bg-warm);">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">07</span>
+      <h1 class="module-title">The Ripple Effect</h1>
+      <p class="module-subtitle">How a 2012 paper about bacterial immunity reshaped medicine, agriculture, and won a Nobel Prize.</p>
+    </header>
+
+    <div class="module-body">
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Fastest Scientific Impact in Modern History</h2>
+        <p>Within months of publication, labs worldwide were using CRISPR-Cas9. Within two years, it worked in human cells. Within eight years, it won the <span class="glossary-term" data-definition="The Nobel Prize in Chemistry is one of the most prestigious awards in science, given annually by the Royal Swedish Academy of Sciences. In 2020, Jennifer Doudna and Emmanuelle Charpentier received it for developing CRISPR-Cas9 as a genome editing tool -- remarkably fast for a Nobel, which typically takes decades to be awarded.">Nobel Prize in Chemistry</span> (2020). Think of the paper as striking a match that lit a thousand fires.</p>
+
+        <div class="step-cards stagger-children">
+          <div class="step-card animate-in">
+            <div class="step-num" style="background: var(--color-concept-1);">&#127981;</div>
+            <div class="step-card-content">
+              <strong>2013: First Use in Human Cells</strong>
+              <p>Feng Zhang (MIT) and George Church (Harvard) independently showed CRISPR-Cas9 editing in human cells -- just 6 months after the paper.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num" style="background: var(--color-concept-2);">&#127793;</div>
+            <div class="step-card-content">
+              <strong>2014-2016: Agriculture Revolution</strong>
+              <p>Disease-resistant crops, hornless cattle, non-browning mushrooms -- CRISPR entered agriculture at unprecedented speed.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num" style="background: var(--color-concept-3);">&#128138;</div>
+            <div class="step-card-content">
+              <strong>2019: First Clinical Trials</strong>
+              <p>CRISPR-based therapies entered human clinical trials for sickle cell disease and beta-thalassemia.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num" style="background: var(--color-concept-4);">&#127942;</div>
+            <div class="step-card-content">
+              <strong>2020: Nobel Prize</strong>
+              <p>Doudna and Charpentier shared the Nobel Prize in Chemistry -- just 8 years after their paper, unusually fast for a Nobel.</p>
+            </div>
+          </div>
+          <div class="step-card animate-in">
+            <div class="step-num" style="background: var(--color-concept-5);">&#9989;</div>
+            <div class="step-card-content">
+              <strong>2023: First Approved Therapy</strong>
+              <p>Casgevy (exagamglogene autotemcel) became the first CRISPR-based therapy approved by regulators for sickle cell disease.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Paper Jargon, Decoded</h2>
+        <div class="translation-block">
+          <div class="translation-notation">
+            <span class="translation-label">FROM THE PAPER (FINAL PARAGRAPH)</span>
+            <div class="notation-content"><span class="notation-keyword">"The</span> <span class="notation-accent">simplicity</span> <span class="notation-keyword">of the Cas9-
+guide RNA complex ...makes it
+an attractive tool for</span>
+<span class="notation-accent">genome-engineering applications</span><span class="notation-keyword">"</span></div>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>"simplicity"</strong> -- the understated word that made all the difference. Two components, one cut, any target. Previous tools required months of protein engineering per target.</p>
+              <p class="tl"><strong>"genome-engineering applications"</strong> -- they foresaw this could be used to edit the DNA of any organism. This one phrase predicted a revolution that generated billions in biotech investment and spawned entirely new fields.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The Ethical Frontier</h2>
+        <p>With great power comes great debate. CRISPR raised ethical questions that society is still grappling with. Understanding the technology helps you engage with these questions thoughtfully.</p>
+
+        <div class="concept-cards stagger-children">
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-6)">
+            <div class="card-icon">&#128118;</div>
+            <h4 class="card-title">Germline Editing</h4>
+            <p class="card-desc">Editing embryo DNA changes every future generation. In 2018, He Jiankui created the first gene-edited babies -- widely condemned by scientists.</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-4)">
+            <div class="card-icon">&#9878;</div>
+            <h4 class="card-title">Access & Equity</h4>
+            <p class="card-desc">CRISPR therapies cost millions per patient. Who gets access? Could gene editing widen inequality?</p>
+          </div>
+          <div class="concept-card animate-in" style="--card-color: var(--color-concept-3)">
+            <div class="card-icon">&#127758;</div>
+            <h4 class="card-title">Gene Drives</h4>
+            <p class="card-desc">CRISPR can force genes to spread through wild populations (e.g., to eliminate malaria-carrying mosquitoes). But what are the ecological risks?</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <div class="callout callout-insight">
+          <div class="callout-icon">&#128161;</div>
+          <div class="callout-content">
+            <strong>Transferable insight:</strong> The most powerful technologies create the hardest ethical questions. Understanding the science doesn't tell you what <em>should</em> be done -- but it's impossible to have a meaningful ethical debate without understanding what <em>can</em> be done. This is why scientific literacy matters for everyone, not just scientists. You now understand enough about CRISPR to meaningfully participate in these conversations.
+          </div>
+        </div>
+      </section>
+
+      <!-- Module 7 Quiz -->
+      <section class="screen animate-in" id="quiz-m7">
+        <h2 class="screen-heading">Final Check</h2>
+        <div class="quiz-container">
+          <div class="quiz-question-block" data-question="m7q1" data-correct="m7q1-b">
+            <h3 class="quiz-question">A policymaker asks you: "Should we ban all CRISPR research because it could be used to make designer babies?" Using what you've learned, what's the most thoughtful response?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m7q1-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Yes -- the risks are too high and the technology is too dangerous</span>
+              </button>
+              <button class="quiz-option" data-value="m7q1-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>Banning all CRISPR research would also halt legitimate medical therapies like sickle cell treatment. A better approach is regulating specific applications (like germline editing) while allowing therapeutic research to continue.</span>
+              </button>
+              <button class="quiz-option" data-value="m7q1-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>No -- scientists should be free to do whatever they want with any technology</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m7q1-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block" data-question="m7q2" data-correct="m7q2-c">
+            <h3 class="quiz-question">Looking back at the full paper: what made this single 2012 study so transformative compared to other scientific papers?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="m7q2-a" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It was the first paper to discover CRISPR sequences in bacteria</span>
+              </button>
+              <button class="quiz-option" data-value="m7q2-b" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It showed CRISPR curing diseases in human patients</span>
+              </button>
+              <button class="quiz-option" data-value="m7q2-c" onclick="selectOption(this)">
+                <div class="quiz-option-radio"></div>
+                <span>It proved that Cas9 could be programmed with a simple guide RNA to cut any DNA target -- making gene editing dramatically simpler, cheaper, and more accessible than anything before</span>
+              </button>
+            </div>
+            <div class="quiz-feedback" id="m7q2-feedback"></div>
+          </div>
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-m7')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-m7')">Try Again</button>
+        </div>
+      </section>
+
+      <!-- Course Completion -->
+      <section class="screen animate-in">
+        <div style="text-align: center; padding: var(--space-12) 0;">
+          <div style="font-size: 3rem; margin-bottom: var(--space-4);">&#127891;</div>
+          <h2 class="screen-heading" style="text-align: center;">Course Complete</h2>
+          <p style="margin: 0 auto; text-align: center;">You now understand the core ideas behind one of the most important scientific papers of the 21st century. You can explain what CRISPR-Cas9 does, how it works, what the paper proved (and didn't prove), and why it matters -- both scientifically and ethically.</p>
+          <div class="callout callout-context" style="margin-top: var(--space-8); text-align: left;">
+            <div class="callout-icon">&#128218;</div>
+            <div class="callout-content">
+              <strong>Want to go deeper?</strong> Read the original paper: Jinek, M., Chylinski, K., Fonfara, I., Hauer, M., Doudna, J.A. &amp; Charpentier, E. (2012). "A Programmable Dual-RNA-Guided DNA Endonuclease in Adaptive Bacterial Immunity." <em>Science</em>, 337(6096), 816-821. You'll now recognize the key terms, experiments, and arguments.
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+(function() {
+  'use strict';
+
+  // ===== SCROLL ANIMATIONS =====
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
+
+  document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
+
+  // Stagger children
+  document.querySelectorAll('.stagger-children').forEach(parent => {
+    Array.from(parent.children).forEach((child, i) => {
+      child.style.setProperty('--stagger-index', i);
+    });
+  });
+
+  // ===== PROGRESS BAR =====
+  const progressBar = document.getElementById('progress-bar');
+  function updateProgressBar() {
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+    progressBar.setAttribute('aria-valuenow', Math.round(progress));
+  }
+  window.addEventListener('scroll', () => {
+    requestAnimationFrame(updateProgressBar);
+  }, { passive: true });
+
+  // ===== NAV DOTS =====
+  const navDots = document.querySelectorAll('.nav-dot');
+  const modules = document.querySelectorAll('.module');
+  const visitedModules = new Set();
+
+  navDots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const target = document.getElementById(dot.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  function updateNavDots() {
+    const scrollPos = window.scrollY + window.innerHeight / 3;
+    let currentIdx = 0;
+    modules.forEach((mod, i) => {
+      if (scrollPos >= mod.offsetTop) currentIdx = i;
+    });
+    visitedModules.add(currentIdx);
+    navDots.forEach((dot, i) => {
+      dot.classList.remove('current');
+      dot.classList.remove('visited');
+      if (i === currentIdx) dot.classList.add('current');
+      else if (visitedModules.has(i)) dot.classList.add('visited');
+    });
+  }
+  window.addEventListener('scroll', () => {
+    requestAnimationFrame(updateNavDots);
+  }, { passive: true });
+
+  // ===== KEYBOARD NAVIGATION =====
+  let currentModuleIdx = 0;
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      currentModuleIdx = Math.min(currentModuleIdx + 1, modules.length - 1);
+      modules[currentModuleIdx].scrollIntoView({ behavior: 'smooth' });
+    }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      currentModuleIdx = Math.max(currentModuleIdx - 1, 0);
+      modules[currentModuleIdx].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // ===== GLOSSARY TOOLTIPS =====
+  let tooltip = null;
+
+  function showTooltip(term) {
+    if (tooltip) tooltip.remove();
+    tooltip = document.createElement('div');
+    tooltip.className = 'glossary-tooltip';
+    tooltip.textContent = term.dataset.definition;
+    document.body.appendChild(tooltip);
+
+    const rect = term.getBoundingClientRect();
+    const tipRect = tooltip.getBoundingClientRect();
+
+    let left = rect.left + rect.width / 2 - tipRect.width / 2;
+    let top = rect.bottom + 8;
+
+    if (left < 8) left = 8;
+    if (left + tipRect.width > window.innerWidth - 8) left = window.innerWidth - tipRect.width - 8;
+    if (top + tipRect.height > window.innerHeight - 8) top = rect.top - tipRect.height - 8;
+
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+    requestAnimationFrame(() => tooltip.classList.add('visible'));
+  }
+
+  function hideTooltip() {
+    if (tooltip) { tooltip.remove(); tooltip = null; }
+  }
+
+  document.addEventListener('mouseover', (e) => {
+    const term = e.target.closest('.glossary-term');
+    if (term) showTooltip(term);
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest('.glossary-term')) hideTooltip();
+  });
+  document.addEventListener('click', (e) => {
+    const term = e.target.closest('.glossary-term');
+    if (term) { e.preventDefault(); showTooltip(term); }
+    else hideTooltip();
+  });
+
+  // ===== QUIZ SYSTEM =====
+  const quizExplanations = {
+    'm1q1-b': { correct: 'CRISPR evolved naturally in bacteria as an immune system. Scientists discovered how it worked and then repurposed it as a tool. This is a pattern throughout science -- many transformative technologies are borrowed from nature.', wrong: 'CRISPR wasn\'t invented from scratch. It evolved naturally in bacteria as a defense against viruses. The 2012 paper showed how to harness this natural system as a programmable tool.' },
+    'm1q1-a': { wrong: 'Actually, CRISPR evolved naturally in bacteria over millions of years. The scientists\' contribution was figuring out how it works and showing it could be reprogrammed.' },
+    'm1q1-c': { wrong: 'CRISPR was discovered in bacteria, not plants. It\'s a bacterial immune system that fights off viruses. Scientists then showed how to use it as a gene-editing tool.' },
+    'm1q2-c': { correct: '"Programmable" means the same Cas9 protein can target any DNA sequence just by changing the guide RNA. This is what made CRISPR transformative -- you don\'t need to build a new tool for each target.', wrong: '"Programmable" doesn\'t mean it needs a computer. It means researchers can direct Cas9 to any DNA sequence by designing a matching guide RNA -- making it a universal, flexible tool.' },
+    'm1q2-a': { wrong: '"Programmable" doesn\'t mean computer-controlled. It means you can "program" Cas9 to target different DNA sequences by swapping in different guide RNAs.' },
+    'm1q2-b': { wrong: '"Programmable" refers to target flexibility, not speed. It means Cas9 can be directed to essentially any DNA sequence by changing the guide RNA.' },
+    'm2q1-b': { correct: 'The PAM requirement (usually NGG) means Cas9 can only cut next to these specific 3-letter sequences. While NGG is common in the genome, it\'s not everywhere -- so some locations are out of reach. Newer Cas variants with different PAM requirements help expand the targetable range.', wrong: 'Cas9 needs a PAM sequence (NGG) adjacent to the target. Since not every location in the genome has an NGG nearby, some spots can\'t be directly targeted. This is a real constraint.' },
+    'm2q1-a': { wrong: 'While the guide RNA can be designed for any 20-base sequence, Cas9 also requires a PAM sequence (NGG) right next to the target. This limits which locations can actually be cut.' },
+    'm2q1-c': { wrong: 'CRISPR works on DNA from many organisms, including human cells. The limitation being discussed here is the PAM requirement, not species compatibility.' },
+    'm2q2-a': { correct: 'Exactly. In the natural system, researchers would need to produce and deliver two separate RNA molecules. By fusing them into one, the system became simpler, cheaper, and more reliable. This practical simplification is what made CRISPR accessible to labs worldwide.', wrong: 'The single guide RNA simplified the system. Instead of making two RNA molecules and hoping they pair correctly, researchers just design one. This made CRISPR dramatically more practical.' },
+    'm2q2-b': { wrong: 'The single guide RNA doesn\'t cut faster. Its value is in simplicity: one molecule to design, produce, and deliver instead of two. This made experiments easier and more reliable.' },
+    'm2q2-c': { wrong: 'The paper didn\'t test in human cells at all (it was all in vitro). The sgRNA innovation was about simplifying the system from two RNA components to one.' },
+    'm3q1-c': { correct: 'Gene editing existed before CRISPR, but it was like custom-building a car for every road trip. ZFNs and TALENs required engineering new proteins for each target. CRISPR\'s revolution was making gene editing as simple as designing a short RNA sequence.', wrong: 'Gene editing technologies (ZFNs, TALENs) existed before CRISPR. What CRISPR changed was the ease and cost -- from months and thousands of dollars per target to days and under $100.' },
+    'm3q1-a': { wrong: 'ZFNs (Zinc Finger Nucleases) and TALENs existed before CRISPR and could edit genes. The difference is that they required custom protein engineering for each new target.' },
+    'm3q1-b': { wrong: 'The key distinction isn\'t RNA vs. DNA methods. It\'s that prior tools (ZFNs, TALENs) needed a new custom protein for each target, while CRISPR uses the same protein with a swappable RNA guide.' },
+    'm4q1-b': { correct: 'If you want to disable (knock out) a gene, NHEJ\'s error-prone repair is actually your friend. The small insertions and deletions it introduces at the cut site will likely disrupt the gene\'s reading frame, rendering it non-functional. This is how many CRISPR experiments work in practice.', wrong: 'For gene knockout (disabling a gene), NHEJ is the right choice. Its "sloppy" repair introduces errors that disrupt the gene. HDR is for when you want to make a precise correction.' },
+    'm4q1-a': { wrong: 'HDR makes precise corrections -- useful for fixing a mutation, not for disabling a gene. To disable a gene, you actually want the error-prone NHEJ pathway to scramble it.' },
+    'm4q1-c': { wrong: 'CRISPR can absolutely be used for gene knockout. The NHEJ repair pathway naturally introduces errors at the cut site, which disrupts the gene.' },
+    'm4q2-c': { correct: 'This is an elegant efficiency trick. PAM sites (NGG) are short and easy to scan for. Most of the genome won\'t have a PAM at any given position, so checking PAM first eliminates the vast majority of false starts. Only when Cas9 finds a PAM does it do the slower, more thorough guide-matching check.', wrong: 'Checking the 3-letter PAM first is an efficiency strategy. It\'s a quick filter that eliminates most of the genome, so Cas9 only needs to do the more thorough 20-base guide matching at the relatively rare PAM sites.' },
+    'm4q2-a': { wrong: 'The PAM doesn\'t physically protrude. Cas9 checks PAM first because it\'s a fast, 3-letter check that eliminates most sites, saving the slower 20-base guide comparison for promising locations.' },
+    'm4q2-b': { wrong: 'Cas9 wasn\'t designed by researchers -- it evolved in bacteria. The PAM-first checking is how the natural protein works, likely because it\'s an efficient search strategy.' },
+    'm5q1-b': { correct: 'Testing multiple targets is essential for proving generality. If they\'d only shown one target working, a reviewer could say "maybe that sequence is unusually easy to cut." Five different targets (all in the same gene, GFP) demonstrated that the programmability is real and reproducible.', wrong: 'Multiple targets prove generality. One success could be a coincidence; five different targets show the system is truly programmable -- the core claim of the paper.' },
+    'm5q1-a': { wrong: 'This isn\'t about statistical significance in the traditional sense. It\'s about proving the system is programmable: that changing the guide RNA reliably redirects Cas9 to a new target.' },
+    'm5q1-c': { wrong: 'They weren\'t searching for the best target -- they were proving that ANY target works. The goal was to show programmability, not to optimize for a single site.' },
+    'm6q1-c': { correct: 'This is the critical thinking the course has been building toward. The 2012 paper proved the mechanism in a test tube. Between that proof-of-concept and a working therapy lie years of research on cell delivery, off-target effects, tissue targeting, safety, and clinical trials. An informed investor asks about each gap.', wrong: 'The 2012 paper was an in vitro proof of concept. A working therapy requires additional evidence at every level: cells, animals, humans, with safety data throughout.' },
+    'm6q1-a': { wrong: 'The 2012 paper proved cutting in a test tube, not gene therapy in patients. There\'s a huge gap between in vitro mechanism and clinical treatment.' },
+    'm6q1-b': { wrong: 'While patents are a business concern, the more fundamental question is scientific: has this been shown to work safely and effectively in humans? The 2012 paper didn\'t address this.' },
+    'm7q1-b': { correct: 'Nuanced thinking is the goal. CRISPR is simultaneously a powerful medical tool (approved therapies for sickle cell disease) and a potential ethical minefield (germline editing). Good policy targets specific risky applications rather than banning an entire technology that has legitimate life-saving uses.', wrong: 'A blanket ban would halt legitimate medical advances. Smart regulation distinguishes between therapeutic use (editing a patient\'s own cells to treat disease) and controversial applications (editing embryos, enhancement).' },
+    'm7q1-a': { wrong: 'A total ban would also prevent legitimate medical therapies that are already helping patients (like the approved sickle cell treatment). The ethical challenge is distinguishing acceptable from unacceptable applications.' },
+    'm7q1-c': { wrong: 'Complete freedom without regulation ignores real ethical concerns. The He Jiankui case (gene-edited babies) showed what happens without oversight. The answer lies between total ban and total freedom.' },
+    'm7q2-c': { correct: 'You\'ve captured the essence of the paper. It demonstrated that a single protein (Cas9) could be directed to cut any DNA sequence using a customizable RNA guide -- and that the natural two-RNA system could be simplified to a single guide RNA. This combination of programmability and simplicity is what made CRISPR a revolution.', wrong: 'The paper\'s impact came from proving programmability and simplicity. Same protein + swappable guide RNA = universal gene editing tool accessible to any lab.' },
+    'm7q2-a': { wrong: 'CRISPR sequences were first noticed in 1987 by Yoshizumi Ishino. The 2012 paper\'s contribution was showing how to use the Cas9 protein as a programmable DNA cutting tool.' },
+    'm7q2-b': { wrong: 'The 2012 paper was entirely in vitro (test tube). It didn\'t show CRISPR in human patients -- that came years later. The paper proved the mechanism that made everything else possible.' }
+  };
+
+  window.selectOption = function(btn) {
+    const block = btn.closest('.quiz-question-block');
+    block.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+    btn.classList.add('selected');
+  };
+
+  window.checkQuiz = function(sectionId) {
+    const container = document.querySelector('#' + sectionId + ' .quiz-container');
+    if (!container) return;
+    const questions = container.querySelectorAll('.quiz-question-block');
+
+    questions.forEach(q => {
+      const selected = q.querySelector('.quiz-option.selected');
+      const feedback = q.querySelector('.quiz-feedback');
+      const correctValue = q.dataset.correct;
+
+      if (!selected) {
+        feedback.textContent = 'Pick an answer first!';
+        feedback.className = 'quiz-feedback show warning';
+        return;
+      }
+
+      const selectedValue = selected.dataset.value;
+      const explanationData = quizExplanations[selectedValue] || quizExplanations[correctValue] || {};
+
+      if (selectedValue === correctValue) {
+        selected.classList.add('correct');
+        feedback.innerHTML = '<strong>Exactly!</strong> ' + (explanationData.correct || '');
+        feedback.className = 'quiz-feedback show success';
+      } else {
+        selected.classList.add('incorrect');
+        const correctBtn = q.querySelector('[data-value="' + correctValue + '"]');
+        if (correctBtn) correctBtn.classList.add('correct');
+        const wrongExpl = explanationData.wrong || (quizExplanations[correctValue] ? quizExplanations[correctValue].wrong : '');
+        feedback.innerHTML = '<strong>Not quite.</strong> ' + wrongExpl;
+        feedback.className = 'quiz-feedback show error';
+      }
+
+      q.querySelectorAll('.quiz-option').forEach(o => o.disabled = true);
+    });
+  };
+
+  window.resetQuiz = function(sectionId) {
+    const container = document.querySelector('#' + sectionId + ' .quiz-container');
+    if (!container) return;
+    container.querySelectorAll('.quiz-option').forEach(o => {
+      o.classList.remove('selected', 'correct', 'incorrect');
+      o.disabled = false;
+    });
+    container.querySelectorAll('.quiz-feedback').forEach(f => {
+      f.className = 'quiz-feedback';
+      f.innerHTML = '';
+    });
+  };
+
+  // ===== FLAW CHALLENGE =====
+  window.checkFlaw = function(btn) {
+    const challenge = btn.closest('.flaw-challenge');
+    const isCorrect = btn.dataset.correct === 'true';
+    const explanation = challenge.querySelector('.flaw-explanation');
+    const options = challenge.querySelectorAll('.flaw-option');
+
+    options.forEach(o => {
+      o.disabled = true;
+      if (o.dataset.correct === 'true') o.classList.add('correct-reveal');
+      else o.classList.add('incorrect-reveal');
+    });
+
+    explanation.classList.add('visible');
+  };
+
+  // ===== ROUNDTABLE =====
+  window.playRoundtable = function(id) {
+    const container = document.getElementById(id);
+    if (!container) return;
+    const messages = container.querySelectorAll('.rt-message');
+    const btn = container.querySelector('.roundtable-play');
+    btn.disabled = true;
+    btn.textContent = 'Playing...';
+
+    // Reset
+    messages.forEach(m => {
+      m.classList.remove('visible');
+      m.style.opacity = '0';
+      m.style.transform = 'translateY(10px)';
+    });
+
+    messages.forEach((msg, i) => {
+      setTimeout(() => {
+        const bubble = msg.querySelector('.rt-bubble');
+        const typing = document.createElement('div');
+        typing.className = 'rt-typing';
+        typing.innerHTML = '<span></span><span></span><span></span>';
+        bubble.prepend(typing);
+        msg.style.opacity = '1';
+        msg.style.transform = 'translateY(0)';
+
+        setTimeout(() => {
+          typing.remove();
+          msg.classList.add('visible');
+        }, 800);
+      }, i * 2000);
+    });
+
+    setTimeout(() => {
+      btn.textContent = 'Replay';
+      btn.disabled = false;
+    }, messages.length * 2000 + 1000);
+  };
+
+  // ===== PIPELINE =====
+  window.playPipeline = function(id) {
+    const container = document.getElementById(id);
+    if (!container) return;
+    const steps = container.querySelectorAll('.pipeline-step');
+    const arrows = container.querySelectorAll('.pipeline-arrow');
+
+    steps.forEach(s => s.classList.remove('active'));
+    arrows.forEach(a => a.classList.remove('active'));
+
+    steps.forEach((step, i) => {
+      setTimeout(() => {
+        if (i > 0) steps[i - 1].classList.remove('active');
+        step.classList.add('active');
+        if (i > 0) arrows[i - 1].classList.add('active');
+      }, i * 1500);
+    });
+  };
+
+  // Initial updates
+  updateProgressBar();
+  updateNavDots();
+})();
+</script>
+</body>
+</html>

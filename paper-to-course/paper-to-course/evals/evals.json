@@ -1,0 +1,23 @@
+{
+  "skill_name": "paper-to-course",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Turn the 'Attention Is All You Need' paper into a course",
+      "expected_output": "A single self-contained HTML file with interactive modules teaching the Transformer paper to non-experts, including equation translations, animated methodology flow, expert roundtable, quizzes, and glossary tooltips",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "Make a course from this paper: https://arxiv.org/abs/2301.02111",
+      "expected_output": "A single self-contained HTML file teaching the Chain-of-Thought prompting paper, with proper handling of the arXiv link, interactive elements, and plain-English explanations of the prompting technique",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I found this interesting paper about CRISPR gene editing but I can't understand it — can you turn it into a course?",
+      "expected_output": "Either a first-run welcome message asking which specific CRISPR paper, or a course built from a well-known CRISPR paper (e.g., Doudna & Charpentier 2014), demonstrating the skill works for non-CS domains",
+      "files": []
+    }
+  ]
+}
