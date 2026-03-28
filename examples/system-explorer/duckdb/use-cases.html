@@ -3,220 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Use Cases — DuckDB Course</title>
+  <title>Use Cases &amp; Case Studies — DuckDB Course</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context:
+    system: "DuckDB"
+    description: "an embedded analytical (OLAP) database management system"
+    page: "Use Cases & Case Studies"
+    level: "Beginner-Intermediate"
+  -->
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms}
-    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
-    html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}*,*::before,*::after{box-sizing:border-box}
-    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap}.nav-brand{text-decoration:none;display:flex;flex-direction:column}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted)}.nav-links{display:flex;align-items:center;gap:var(--space-4)}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0}.nav-page-list li a{display:flex;align-items:center;padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background .15s ease,color .15s ease}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text)}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2)}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px}@media(max-width:768px){.nav-hamburger{display:flex}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3)}.nav-links.open{display:flex}.nav-page-list{flex-direction:column;width:100%}.nav-page-list li a{padding:var(--space-2) var(--space-3)}}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-3) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:.05em}.page-level-badge.beginner{background:var(--color-success-light);color:var(--color-success)}
-    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:var(--space-6) 0 var(--space-3)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
-    /* DECISION TREE */
-    .decision-tree{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0}.dt-title{font-family:var(--font-display);font-weight:700;margin:0 0 var(--space-4)}.dt-breadcrumb{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4);min-height:28px}.dt-crumb{font-size:var(--text-xs);font-family:var(--font-mono);padding:2px var(--space-2);border-radius:var(--radius-sm)}.dt-crumb.yes{background:var(--color-success-light);color:var(--color-success)}.dt-crumb.no{background:var(--color-error-light);color:var(--color-error)}.dt-step{display:none;animation:dtFadeIn var(--duration-normal) var(--ease-out)}.dt-step.active{display:block}@keyframes dtFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.dt-question{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;margin:0 0 var(--space-4)}.dt-actions{display:flex;gap:var(--space-3)}.dt-btn{padding:var(--space-3) var(--space-6);border-radius:var(--radius-sm);border:2px solid;font-family:var(--font-body);font-size:var(--text-base);font-weight:600;cursor:pointer;transition:all var(--duration-fast)}.dt-yes{border-color:var(--color-success);color:var(--color-success);background:var(--color-success-light)}.dt-yes:hover{background:var(--color-success);color:white}.dt-no{border-color:var(--color-error);color:var(--color-error);background:var(--color-error-light)}.dt-no:hover{background:var(--color-error);color:white}.dt-recommendation{padding:var(--space-5);border-radius:var(--radius-md);font-size:var(--text-base);line-height:var(--leading-normal)}.dt-recommendation.good{background:var(--color-success-light);border-left:4px solid var(--color-success)}.dt-recommendation.alt{background:var(--color-warning-light);border-left:4px solid var(--color-warning)}.dt-reset{margin-top:var(--space-4);padding:var(--space-2) var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);cursor:pointer;transition:all var(--duration-fast)}.dt-reset:hover{border-color:var(--color-accent);color:var(--color-accent)}
-    /* CONCEPT CARDS */
-    .concept-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin:var(--space-6) 0}.concept-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-top:3px solid var(--card-color,var(--color-accent));box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}.concept-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}.concept-card .card-icon{font-size:1.5rem;margin-bottom:var(--space-2)}.concept-card .card-title{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-2)}.concept-card .card-desc{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal);margin:0}@media(max-width:768px){.concept-cards{grid-template-columns:1fr}}
-    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}.callout-tip{background:var(--color-success-light);border-color:var(--color-success)}.callout-info{background:var(--color-info-light);border-color:var(--color-info)}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}.callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}.callout-content strong{color:var(--color-text)}
-    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}.glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s ease}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
-    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}.site-footer p{margin:0}
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
-    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;}
+    *,*::before,*::after{box-sizing:border-box;}html{scroll-behavior:smooth;}::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full);}
+    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased;}
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap;}.nav-brand{text-decoration:none;display:flex;flex-direction:column;}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2;}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);}
+    .nav-links{display:flex;align-items:center;}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0;}.nav-page-list li a{padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background 0.15s,color 0.15s;display:block;}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text);}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600;}
+    .nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2);}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;}
+    @media(max-width:768px){.nav-hamburger{display:flex;}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3);}.nav-links.open{display:flex;}.nav-page-list{flex-direction:column;width:100%;}}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3);}.page-header-content{flex:1;min-width:0;}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin-bottom:var(--space-3);line-height:1.15;}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;}.page-level-badge.mixed{background:var(--color-warning-light);color:var(--color-warning);}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6);}.content-section{margin-bottom:var(--space-10);}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin-bottom:var(--space-4);}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;margin-bottom:var(--space-3);}.content-section p{font-size:var(--text-base);line-height:1.7;margin-bottom:var(--space-4);}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg);}
+
+    /* Decision tree */
+    .decision-tree{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0;}.dt-title{font-family:var(--font-display);font-weight:700;margin-bottom:var(--space-4);}.dt-breadcrumb{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4);min-height:28px;}.dt-crumb{font-size:var(--text-xs);font-family:var(--font-mono);background:var(--color-accent-light);color:var(--color-accent);padding:2px var(--space-2);border-radius:var(--radius-sm);}.dt-crumb.yes{background:var(--color-success-light);color:var(--color-success);}.dt-crumb.no{background:var(--color-error-light);color:var(--color-error);}
+    .dt-step{display:none;animation:dtFadeIn var(--duration-normal) var(--ease-out);}.dt-step.active{display:block;}@keyframes dtFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    .dt-question{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-4);}.dt-actions{display:flex;gap:var(--space-3);}.dt-btn{padding:var(--space-3) var(--space-6);border-radius:var(--radius-sm);border:2px solid;font-family:var(--font-body);font-size:var(--text-base);font-weight:600;cursor:pointer;transition:all var(--duration-fast);}.dt-yes{border-color:var(--color-success);color:var(--color-success);background:var(--color-success-light);}.dt-yes:hover{background:var(--color-success);color:white;}.dt-no{border-color:var(--color-error);color:var(--color-error);background:var(--color-error-light);}.dt-no:hover{background:var(--color-error);color:white;}
+    .dt-recommendation{padding:var(--space-5);border-radius:var(--radius-md);font-size:var(--text-base);line-height:var(--leading-normal);}.dt-recommendation.good{background:var(--color-success-light);border-left:4px solid var(--color-success);}.dt-recommendation.alt{background:var(--color-warning-light);border-left:4px solid var(--color-warning);}
+    .dt-reset{margin-top:var(--space-4);padding:var(--space-2) var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);cursor:pointer;}.dt-reset:hover{border-color:var(--color-accent);color:var(--color-accent);}
+
+    /* Case study cards */
+    .case-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin:var(--space-6) 0;}
+    .case-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);box-shadow:var(--shadow-sm);border-top:3px solid var(--color-accent);transition:transform var(--duration-fast),box-shadow var(--duration-fast);}.case-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+    .case-card h4{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-1);}.case-card .case-industry{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-2);}.case-card p{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.5;margin:0;}.case-card .case-metric{font-family:var(--font-display);font-weight:700;color:var(--color-success);font-size:var(--text-lg);display:block;margin-top:var(--space-2);}
+
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid;}.callout-tip{background:var(--color-success-light);border-color:var(--color-success);}.callout-info{background:var(--color-info-light);border-color:var(--color-info);}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning);}
+    .callout-icon{font-size:1.3rem;flex-shrink:0;}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal);}
+
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer;}.glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast);}.glossary-tooltip.visible{opacity:1;}
+
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap;}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light);}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light);}
+    .copy-markdown-btn .btn-icon{font-size:var(--text-base);line-height:1;}.copy-markdown-btn .btn-label{display:inline;}@media(max-width:640px){.copy-markdown-btn .btn-label{display:none;}}
+
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted);display:inline;}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px;}
+
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md);}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);display:flex;align-items:center;gap:var(--space-2);}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3);}.reference-item{display:flex;align-items:baseline;gap:var(--space-3);}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center;}.reference-content{display:flex;flex-direction:column;gap:var(--space-1);}.reference-title{font-size:var(--text-sm);font-weight:600;}.reference-title a{color:var(--color-accent);text-decoration:none;}.reference-title a:hover{text-decoration:underline;}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);}
+
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light);}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;}.page-nav-footer .prev::before{content:"\2190\00a0";}.page-nav-footer .next::after{content:"\00a0\2192";}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4);}
+    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out);}.animate-in.visible{opacity:1;transform:translateY(0);}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl);}.page-nav-footer{flex-direction:column;gap:var(--space-4);}}
   </style>
 </head>
 <body>
-
-  <nav class="site-nav" role="navigation"><a href="index.html" class="nav-brand"><span class="nav-brand-name">DuckDB</span><span class="nav-brand-label">Interactive Course</span></a><button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button><div class="nav-links" id="nav-links"><ul class="nav-page-list"><li><a href="index.html">Home</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="architecture.html">Architecture</a></li><li><a href="how-it-works.html">How It Works</a></li><li><a href="implementation.html">Implementation</a></li><li class="active"><a href="use-cases.html">Use Cases</a></li><li><a href="ecosystem.html">Ecosystem</a></li><li><a href="faq.html">FAQ</a></li><li><a href="tradeoffs.html">Trade-offs</a></li></ul></div></nav>
+  <nav class="site-nav" role="navigation" aria-label="Course navigation">
+    <a href="index.html" class="nav-brand"><span class="nav-brand-name">DuckDB</span><span class="nav-brand-label">Interactive Course</span></a>
+    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button>
+    <div class="nav-links" id="nav-links"><ul class="nav-page-list">
+      <li><a href="index.html">Home</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="architecture.html">Architecture</a></li><li><a href="how-it-works.html">How It Works</a></li><li><a href="implementation.html">Implementation</a></li>
+      <li class="active"><a href="use-cases.html">Use Cases</a></li>
+      <li><a href="ecosystem.html">Ecosystem</a></li><li><a href="faq.html">FAQ</a></li><li><a href="tradeoffs.html">Trade-offs</a></li>
+    </ul></div>
+  </nav>
 
   <header class="page-header animate-in">
-    <span class="page-level-badge beginner">Beginner</span>
-    <h1>Use Cases</h1>
+    <div class="page-header-content"><span class="page-level-badge mixed">Beginner-Intermediate</span><h1>Use Cases &amp; Case Studies</h1></div>
+    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button>
   </header>
 
   <main class="content-area">
 
-    <section class="content-section animate-in">
-      <h2>When to Use DuckDB</h2>
-      <p>DuckDB shines for single-machine analytical workloads. Here are the use cases where it fits best:</p>
-
-      <div class="concept-cards">
-        <div class="concept-card" style="--card-color: var(--color-accent)">
-          <div class="card-icon">&#x1F50D;</div>
-          <div class="card-title">Ad-hoc Data Analysis</div>
-          <p class="card-desc">SQL on local files with zero setup. Faster than pandas for aggregations and joins on large datasets.</p>
-        </div>
-        <div class="concept-card" style="--card-color: var(--color-info)">
-          <div class="card-icon">&#x1F504;</div>
-          <div class="card-title">ETL Pipelines</div>
-          <p class="card-desc">Read from multiple formats (CSV, Parquet, JSON), transform with SQL, and write output -- all without a server.</p>
-        </div>
-        <div class="concept-card" style="--card-color: var(--color-success)">
-          <div class="card-icon">&#x1F9ED;</div>
-          <div class="card-title">Data Exploration</div>
-          <p class="card-desc">Query CSVs, Parquet, and JSON files directly without an import step. Auto-detects schemas and types.</p>
-        </div>
-        <div class="concept-card" style="--card-color: #7B6DAA">
-          <div class="card-icon">&#x1F4CA;</div>
-          <div class="card-title">Embedded Analytics</div>
-          <p class="card-desc">Add analytical query capabilities to your application without deploying a separate database server.</p>
-        </div>
-        <div class="concept-card" style="--card-color: #E06B56">
-          <div class="card-icon">&#x2705;</div>
-          <div class="card-title">CI/CD Data Testing</div>
-          <p class="card-desc">Fast startup, no infrastructure -- ideal for validating data pipelines in automated testing environments.</p>
-        </div>
-        <div class="concept-card" style="--card-color: var(--color-error)">
-          <div class="card-icon">&#x1F512;</div>
-          <div class="card-title">Privacy-Sensitive Analysis</div>
-          <p class="card-desc">Data never leaves the local machine. No cloud uploads, no network traffic -- just local computation.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="content-section animate-in">
+    <section class="content-section animate-in" data-level="beginner">
       <h2>Should You Use DuckDB?</h2>
-      <p>Use this interactive decision tree to determine if DuckDB fits your specific scenario.</p>
+      <p>Use this interactive decision tree to determine if DuckDB is the right fit for your use case.</p>
 
       <div class="decision-tree" id="dt-1">
-        <h3 class="dt-title">Is DuckDB Right for Your Use Case?</h3>
+        <h3 class="dt-title">Is DuckDB Right for Your Project?</h3>
         <div class="dt-breadcrumb" id="dt-1-breadcrumb"></div>
-
         <div class="dt-step active" data-step="start">
-          <p class="dt-question">Is your workload primarily analytical (scans, aggregations, joins) rather than transactional (single-row inserts/updates)?</p>
-          <div class="dt-actions">
-            <button class="dt-btn dt-yes" onclick="dtNavigate('dt-1','data-size')">Yes</button>
-            <button class="dt-btn dt-no" onclick="dtNavigate('dt-1','rec-oltp')">No</button>
-          </div>
+          <p class="dt-question">Is your primary workload analytical queries (aggregations, scans, joins over many rows)?</p>
+          <div class="dt-actions"><button class="dt-btn dt-yes" onclick="dtNavigate('dt-1','analytical')">Yes</button><button class="dt-btn dt-no" onclick="dtNavigate('dt-1','transactional')">No</button></div>
         </div>
-
-        <div class="dt-step" data-step="data-size">
-          <p class="dt-question">Does your dataset fit on a single machine (under ~2 TB)?</p>
-          <div class="dt-actions">
-            <button class="dt-btn dt-yes" onclick="dtNavigate('dt-1','concurrency')">Yes</button>
-            <button class="dt-btn dt-no" onclick="dtNavigate('dt-1','rec-distributed')">No</button>
-          </div>
+        <div class="dt-step" data-step="analytical">
+          <p class="dt-question">Do you need multiple processes writing to the same database concurrently?</p>
+          <div class="dt-actions"><button class="dt-btn dt-yes" onclick="dtNavigate('dt-1','multi-writer')">Yes</button><button class="dt-btn dt-no" onclick="dtNavigate('dt-1','single-writer')">No</button></div>
         </div>
-
-        <div class="dt-step" data-step="concurrency">
-          <p class="dt-question">Do you need many concurrent users writing to the same database simultaneously?</p>
-          <div class="dt-actions">
-            <button class="dt-btn dt-yes" onclick="dtNavigate('dt-1','rec-warehouse')">Yes</button>
-            <button class="dt-btn dt-no" onclick="dtNavigate('dt-1','rec-duckdb')">No</button>
-          </div>
+        <div class="dt-step" data-step="single-writer">
+          <p class="dt-question">Is your dataset larger than 1 TB?</p>
+          <div class="dt-actions"><button class="dt-btn dt-yes" onclick="dtNavigate('dt-1','large-data')">Yes</button><button class="dt-btn dt-no" onclick="dtNavigate('dt-1','rec-good')">No</button></div>
         </div>
-
-        <div class="dt-step" data-step="rec-duckdb">
-          <div class="dt-recommendation good">
-            <strong>DuckDB is an excellent fit.</strong> Your workload is analytical, fits on one machine, and does not require many concurrent writers. You will benefit from zero-configuration deployment, fast vectorized execution, and direct file querying.
-          </div>
+        <div class="dt-step" data-step="transactional">
+          <div class="dt-recommendation alt"><strong>Consider SQLite or PostgreSQL.</strong> DuckDB is optimized for analytical (OLAP) workloads. For high-frequency small transactions (OLTP), a row-oriented database will perform better.</div>
         </div>
-
-        <div class="dt-step" data-step="rec-oltp">
-          <div class="dt-recommendation alt">
-            <strong>Consider PostgreSQL or MySQL instead.</strong> DuckDB is optimized for analytical scans and aggregations, not transactional workloads with frequent single-row inserts and updates.
-          </div>
+        <div class="dt-step" data-step="multi-writer">
+          <div class="dt-recommendation alt"><strong>Consider ClickHouse or a traditional data warehouse.</strong> DuckDB's single-writer constraint means only one process can write at a time. For multi-writer distributed systems, you need a server-based solution.</div>
         </div>
-
-        <div class="dt-step" data-step="rec-distributed">
-          <div class="dt-recommendation alt">
-            <strong>Consider ClickHouse, Snowflake, or Spark.</strong> For datasets beyond ~2 TB, you need a distributed system. DuckDB runs on a single machine and has no built-in sharding or replication.
-          </div>
+        <div class="dt-step" data-step="large-data">
+          <div class="dt-recommendation alt"><strong>Consider a distributed system.</strong> For multi-TB workloads, ClickHouse, BigQuery, or Snowflake can distribute queries across a cluster. DuckDB handles larger-than-memory datasets by spilling to disk, but multi-TB joins will be slow.</div>
         </div>
-
-        <div class="dt-step" data-step="rec-warehouse">
-          <div class="dt-recommendation alt">
-            <strong>Consider a cloud data warehouse or MotherDuck.</strong> DuckDB supports only a single writer. For team-wide concurrent access, use Snowflake, BigQuery, or MotherDuck (cloud-hosted DuckDB with shared databases).
-          </div>
+        <div class="dt-step" data-step="rec-good">
+          <div class="dt-recommendation good"><strong>DuckDB is an excellent fit!</strong> For analytical queries on datasets up to hundreds of GB with a single writer process, DuckDB delivers outstanding performance with zero infrastructure overhead. Just <code>pip install duckdb</code> and go.</div>
         </div>
-
         <button class="dt-reset" onclick="dtReset('dt-1')">Start Over</button>
       </div>
     </section>
 
-    <section class="content-section animate-in">
-      <h2>Real-World Usage</h2>
-      <p>Companies across industries have adopted DuckDB for production workloads:</p>
+    <section class="content-section animate-in" data-level="beginner">
+      <h2>When to Use DuckDB</h2>
+      <ul style="font-size:var(--text-base);line-height:1.8;padding-left:var(--space-6);">
+        <li><strong>Local data analysis:</strong> Query CSV, Parquet, or JSON files with SQL without a server</li>
+        <li><strong>Embedded analytics:</strong> Add analytical capabilities to desktop, mobile, or web apps (DuckDB-Wasm)</li>
+        <li><strong>ETL/ELT pipelines:</strong> Process and transform data locally before pushing to a warehouse</li>
+        <li><strong>CI/CD data testing:</strong> Validate data quality with near-zero startup time</li>
+        <li><strong>Replacing pandas:</strong> Process large datasets with SQL using a fraction of the memory</li>
+      </ul>
 
-      <div class="concept-cards">
-        <div class="concept-card" style="--card-color: var(--color-accent)">
-          <div class="card-icon">&#x1F30D;</div>
-          <div class="card-title">Watershed</div>
-          <p class="card-desc">Uses DuckDB for data pipeline operations, converting activity data into carbon footprint calculations by querying Parquet files directly.</p>
+      <div class="callout callout-warning">
+        <div class="callout-icon">&#x26A0;&#xFE0F;</div>
+        <div class="callout-content">
+          <strong>When NOT to use DuckDB:</strong> High-concurrency OLTP workloads, multi-writer distributed systems, real-time streaming ingestion, multi-user server deployments, or multi-TB datasets needing distributed processing.
         </div>
-        <div class="concept-card" style="--card-color: var(--color-info)">
-          <div class="card-icon">&#x2601;&#xFE0F;</div>
-          <div class="card-title">MotherDuck</div>
-          <p class="card-desc">Cloud service built on DuckDB. Users <code>ATTACH 'md:'</code> to offload heavy queries to cloud compute while keeping the local DuckDB experience.</p>
+      </div>
+    </section>
+
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Real-World Case Studies</h2>
+      <p>Companies using DuckDB in production with measurable results:</p>
+
+      <div class="case-cards">
+        <div class="case-card animate-in">
+          <div class="case-industry">Finance</div>
+          <h4>FinQore</h4>
+          <p>Replaced Postgres-based data processing for complex financial pipelines.</p>
+          <span class="case-metric">60x speedup</span>
         </div>
-        <div class="concept-card" style="--card-color: var(--color-success)">
-          <div class="card-icon">&#x1F4C8;</div>
-          <div class="card-title">Rill Data</div>
-          <p class="card-desc">Built their BI dashboard engine on DuckDB, powering interactive exploration of large datasets with sub-second query times.</p>
+        <div class="case-card animate-in">
+          <div class="case-industry">Sustainability</div>
+          <h4>Watershed</h4>
+          <p>Queries Parquet files on GCS for carbon footprint calculations. 75K daily queries.</p>
+          <span class="case-metric">10x performance</span>
         </div>
-        <div class="concept-card" style="--card-color: #7B6DAA">
-          <div class="card-icon">&#x1F310;</div>
-          <div class="card-title">Evidence</div>
-          <p class="card-desc">Built Universal SQL with DuckDB-Wasm, enabling browser-based interactive dashboards that query data locally in WebAssembly.</p>
+        <div class="case-card animate-in">
+          <div class="case-industry">Security</div>
+          <h4>Okta</h4>
+          <p>Processes authentication and security analytics at massive scale.</p>
+          <span class="case-metric">7.5T records</span>
+        </div>
+        <div class="case-card animate-in">
+          <div class="case-industry">Analytics</div>
+          <h4>Hex</h4>
+          <p>Migrated to DuckDB architecture querying remote Arrow data from S3.</p>
+          <span class="case-metric">5-10x speedup</span>
+        </div>
+        <div class="case-card animate-in">
+          <div class="case-industry">BI</div>
+          <h4>Rill</h4>
+          <p>Selected DuckDB over SQLite after analytical query benchmarks.</p>
+          <span class="case-metric">3-30x faster</span>
+        </div>
+        <div class="case-card animate-in">
+          <div class="case-industry">AI</div>
+          <h4>Hugging Face</h4>
+          <p>Direct SQL access to 150K+ AI datasets via the <code>hf://</code> protocol.</p>
+          <span class="case-metric">150K+ datasets</span>
         </div>
       </div>
 
-      <div class="callout callout-tip">
-        <div class="callout-icon">&#x1F4A1;</div>
+      <div class="callout callout-info">
+        <div class="callout-icon">&#x2139;&#xFE0F;</div>
         <div class="callout-content">
-          <strong>Tip:</strong> A common production pattern is replacing expensive cloud analytics services (BigQuery, Athena) with DuckDB running in scheduled <span class="glossary-term" data-definition="Serverless compute services like AWS Lambda or GCP Cloud Run that execute code on demand without managing servers. DuckDB's fast startup and zero-dependency nature make it ideal for these environments.">cloud functions</span>, processing log files and Parquet from object storage at a fraction of the cost.
+          <strong>Common pattern:</strong> The Ibis Project processed 1.1 billion rows of PyPI package data in ~38 seconds on a laptop using ~1 GB RAM, demonstrating DuckDB's efficiency for large-scale analysis on commodity hardware.
         </div>
       </div>
     </section>
 
   </main>
 
-  <nav class="page-nav-footer">
-    <a href="implementation.html" class="prev">Implementation</a>
-    <a href="ecosystem.html" class="next">Ecosystem</a>
-  </nav>
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://motherduck.com/blog/15-companies-duckdb-in-prod/" target="_blank" rel="noopener noreferrer">15 Companies Using DuckDB in Production</a></span><span class="reference-domain">motherduck.com</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/why_duckdb" target="_blank" rel="noopener noreferrer">Why DuckDB</a></span><span class="reference-domain">duckdb.org</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://endjin.com/blog/2025/04/duckdb-in-practice-enterprise-integration-architectural-patterns" target="_blank" rel="noopener noreferrer">DuckDB Enterprise Integration Patterns</a></span><span class="reference-domain">endjin.com</span></div></li>
+    </ul>
+  </section>
 
+  <nav class="page-nav-footer"><a href="implementation.html" class="prev">Implementation</a><a href="ecosystem.html" class="next">Ecosystem</a></nav>
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
   <script>
-    (function(){document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.nav-hamburger'),l=document.getElementById('nav-links');if(!b||!l)return;b.addEventListener('click',function(){var o=l.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false');});l.addEventListener('click',function(e){if(e.target.closest('a')){l.classList.remove('open');b.setAttribute('aria-expanded','false');}});});})();
-    (function(){var o=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){o.observe(el);});})();
+    (function(){'use strict';document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.nav-hamburger'),l=document.getElementById('nav-links');if(!b||!l)return;b.addEventListener('click',function(){var o=l.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false');});l.addEventListener('click',function(e){if(e.target.closest('a')){l.classList.remove('open');b.setAttribute('aria-expanded','false');}});});})();
+    var observer=new IntersectionObserver(function(e){e.forEach(function(en){if(en.isIntersecting){en.target.classList.add('visible');observer.unobserve(en.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el);});
 
     /* Decision tree */
-    (function(){
-      var treeHistory={};
-      window.dtNavigate=function(treeId,targetStep){
-        var tree=document.getElementById(treeId);
-        var current=tree.querySelector('.dt-step.active');
-        var questionText=current.querySelector('.dt-question')?current.querySelector('.dt-question').textContent:'';
-        var isYes=event.target.classList.contains('dt-yes');
-        if(!treeHistory[treeId])treeHistory[treeId]=[];
-        treeHistory[treeId].push({question:questionText,answer:isYes?'Yes':'No'});
-        renderBreadcrumbs(treeId);
-        current.classList.remove('active');
-        tree.querySelector('[data-step="'+targetStep+'"]').classList.add('active');
-      };
-      window.dtReset=function(treeId){
-        var tree=document.getElementById(treeId);
-        tree.querySelectorAll('.dt-step').forEach(function(s){s.classList.remove('active');});
-        tree.querySelector('[data-step="start"]').classList.add('active');
-        treeHistory[treeId]=[];
-        renderBreadcrumbs(treeId);
-      };
-      function renderBreadcrumbs(treeId){
-        var container=document.getElementById(treeId+'-breadcrumb');
-        var history=treeHistory[treeId]||[];
-        container.innerHTML=history.map(function(h){
-          var cls=h.answer==='Yes'?'yes':'no';
-          var short=h.question.length>50?h.question.substring(0,47)+'...':h.question;
-          return '<span class="dt-crumb '+cls+'">'+short+' &rarr; '+h.answer+'</span>';
-        }).join('');
-      }
-    })();
+    (function(){var treeHistory={};window.dtNavigate=function(treeId,targetStep){var tree=document.getElementById(treeId);var current=tree.querySelector('.dt-step.active');var q=current.querySelector('.dt-question');var questionText=q?q.textContent:'';var isYes=event.target.classList.contains('dt-yes');if(!treeHistory[treeId])treeHistory[treeId]=[];treeHistory[treeId].push({question:questionText,answer:isYes?'Yes':'No'});renderBreadcrumbs(treeId);current.classList.remove('active');tree.querySelector('[data-step="'+targetStep+'"]').classList.add('active');};window.dtReset=function(treeId){var tree=document.getElementById(treeId);tree.querySelectorAll('.dt-step').forEach(function(s){s.classList.remove('active');});tree.querySelector('[data-step="start"]').classList.add('active');treeHistory[treeId]=[];renderBreadcrumbs(treeId);};function renderBreadcrumbs(treeId){var container=document.getElementById(treeId+'-breadcrumb');var history=treeHistory[treeId]||[];container.innerHTML=history.map(function(h){var cls=h.answer==='Yes'?'yes':'no';var short=h.question.length>40?h.question.substring(0,37)+'...':h.question;return '<span class="dt-crumb '+cls+'">'+short+' &rarr; '+h.answer+'</span>';}).join('');}})();
 
-    (function(){var tooltip=null;function show(t){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=t.dataset.definition;document.body.appendChild(tooltip);var r=t.getBoundingClientRect(),tr=tooltip.getBoundingClientRect(),left=r.left+r.width/2-tr.width/2,top=r.bottom+8;if(left<8)left=8;if(left+tr.width>window.innerWidth-8)left=window.innerWidth-tr.width-8;if(top+tr.height>window.innerHeight-8)top=r.top-tr.height-8;tooltip.style.left=left+'px';tooltip.style.top=top+'px';requestAnimationFrame(function(){tooltip.classList.add('visible');});}function hide(){if(tooltip){tooltip.remove();tooltip=null;}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide();});document.addEventListener('click',function(e){var t=e.target.closest('.glossary-term');if(t){e.preventDefault();show(t);}else hide();});})();
+    /* Glossary */
+    (function(){var t=null;function s(term){if(t)t.remove();t=document.createElement('div');t.className='glossary-tooltip';t.textContent=term.dataset.definition;document.body.appendChild(t);var r=term.getBoundingClientRect(),tr=t.getBoundingClientRect(),l=r.left+r.width/2-tr.width/2,tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;t.style.left=l+'px';t.style.top=tp+'px';requestAnimationFrame(function(){t.classList.add('visible');});}function h(){if(t){t.remove();t=null;}}document.addEventListener('mouseover',function(e){var tm=e.target.closest('.glossary-term');if(tm)s(tm);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))h();});document.addEventListener('click',function(e){var tm=e.target.closest('.glossary-term');if(tm){e.preventDefault();s(tm);}else h();});})();
+
+    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var m=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(m){m[1].split('\n').forEach(function(l){var x=l.match(/(\w+):\s*"(.+)"/);if(x)ctx[x[1]]=x[2];});}var md='# '+(ctx.system||'')+': '+(ctx.page||document.title)+'\n> Level: '+(ctx.level||'')+'\n\n';var c=document.querySelector('.content-area');if(c)c.querySelectorAll('h2,h3,p,ul,ol').forEach(function(n){var tag=n.tagName.toLowerCase();if(tag==='h2')md+='\n## '+n.textContent.trim()+'\n\n';else if(tag==='h3')md+='\n### '+n.textContent.trim()+'\n\n';else if(tag==='p')md+=n.textContent.trim()+'\n\n';else if(tag==='ul'||tag==='ol')n.querySelectorAll(':scope>li').forEach(function(li,i){md+=(tag==='ol'?(i+1)+'. ':'- ')+li.textContent.trim()+'\n';});});md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn'),lbl=btn.querySelector('.btn-label'),orig=lbl.textContent;lbl.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){lbl.textContent=orig;btn.classList.remove('copied');},2000);});}
   </script>
-
 </body>
 </html>

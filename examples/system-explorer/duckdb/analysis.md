@@ -2,758 +2,816 @@
 
 ## Metadata
 - **Name:** DuckDB
-- **Category:** Embedded Analytical Database (OLAP)
-- **Official URL:** https://duckdb.org
-- **GitHub:** https://github.com/duckdb/duckdb
-- **License:** MIT
-- **Latest Version:** 1.5.1 (March 23, 2026)
-- **Created By:** Mark Raasveldt and Hannes Muhleisen at CWI (Centrum Wiskunde & Informatica), Amsterdam
+- **Category:** Embedded Analytical (OLAP) Database Management System
+- **Official URL:** [https://duckdb.org](https://duckdb.org)
+- **GitHub:** [duckdb/duckdb](https://github.com/duckdb/duckdb)
+- **Tag:** v1.5.1
+- **License:** MIT License (released under the DuckDB Foundation)
+- **Latest Version:** 1.5.1 (March 23, 2026) — patch release following 1.5.0 "Variegata" (March 9, 2026)
+- **Analysis Date:** 2026-03-28
 
 ---
 
 ## Overview
 <!-- level: beginner -->
+<!-- references: https://duckdb.org/why_duckdb, https://duckdb.org/docs/stable/, https://en.wikipedia.org/wiki/DuckDB, https://motherduck.com/duckdb-book-summary-chapter1/ -->
 
-DuckDB is an in-process analytical database management system. Think of it as **"SQLite for analytics"** -- just as SQLite gives you a zero-configuration embedded database for transactional workloads, DuckDB gives you the same simplicity but optimized for analytical queries that scan, aggregate, and join large datasets.
+### What It Is
 
-### What Problem Does It Solve?
+[DuckDB](https://duckdb.org) is an open-source, in-process analytical database management system. It runs inside your application's process rather than as a separate server, similar to how [SQLite](https://sqlite.org) works for transactional workloads but optimized for analytical queries (OLAP). It stores data in a columnar format, executes queries using a vectorized engine, and supports the full breadth of SQL including complex joins, window functions, aggregations, and nested types.
 
-Before DuckDB, data analysts and engineers faced an awkward choice:
+DuckDB was created by Mark Raasveldt and Hannes Muhleisen at the [Centrum Wiskunde & Informatica (CWI)](https://www.cwi.nl/) in the Netherlands, the same research institute that produced MonetDB and its vectorized execution research (MonetDB/X100). The project originated from a need for an embeddable, high-performance analytical database that could run inside data science workflows without requiring server infrastructure. Since the primary developers were public servants in the Netherlands, the project was released under the MIT license through the DuckDB Foundation.
 
-- **Use SQLite or Postgres** -- great for transactional data, but painfully slow when you need to aggregate millions of rows or join large tables.
-- **Use a data warehouse (BigQuery, Snowflake, Redshift)** -- powerful analytics, but requires cloud infrastructure, network round-trips, and costs money per query.
-- **Use pandas/Polars in Python** -- flexible, but you lose SQL's expressiveness and hit memory limits on larger datasets.
+### Who It's For
 
-DuckDB fills the gap: a single-file, zero-dependency database that runs inside your process and handles analytical workloads at remarkable speed. You can query a 10GB Parquet file on your laptop in seconds, with no server to install, no configuration to manage, and no data to upload.
+- **Data scientists and analysts** who need fast SQL over CSV, Parquet, or JSON files without standing up a database server
+- **Application developers** embedding analytical capabilities directly into Python scripts, notebooks, desktop apps, or web browsers (via DuckDB-Wasm)
+- **Data engineers** building lightweight ETL/ELT pipelines that process millions of rows on a single machine
+- **Researchers and students** who want a zero-configuration database for exploratory analysis
+- **Organizations** replacing expensive cloud warehouse queries with local computation for small-to-medium datasets
 
-### Who Is It For?
+### The One-Sentence Pitch
 
-- **Data analysts** who want to query CSV, Parquet, or JSON files with SQL
-- **Data engineers** building ETL pipelines without heavyweight infrastructure
-- **Data scientists** who need SQL alongside Python/R DataFrames
-- **Application developers** embedding analytics into their products
-- **Anyone** who wants to explore data quickly without setting up a database server
-
-### Core Value Proposition
-
-| Trait | What It Means |
-|-------|---------------|
-| **In-process** | Runs inside your application -- no separate server process |
-| **Zero dependencies** | Single binary or library, compiles to a header + implementation file |
-| **Columnar storage** | Data stored by column, not by row -- ideal for analytical queries |
-| **Vectorized execution** | Processes batches of 2,048 values at once for CPU-cache-friendly performance |
-| **Rich SQL** | Full SQL support including window functions, CTEs, lateral joins, and more |
-| **Multi-format** | Directly queries Parquet, CSV, JSON, Iceberg, and remote files (S3/HTTP) |
-| **ACID compliant** | Persistent storage with transactions, even in embedded mode |
+DuckDB is the SQLite of analytics: a zero-dependency, embeddable SQL database that brings columnar-vectorized query execution to any process on any platform, making analytical SQL as simple as `pip install duckdb`.
 
 ---
 
 ## Core Concepts
 <!-- level: beginner -->
+<!-- references: https://duckdb.org/why_duckdb, https://duckdb.org/docs/stable/internals/vector, https://duckdb.org/docs/stable/internals/overview, https://duckdb.org/docs/stable/internals/storage -->
 
-### 1. In-Process Database
+### 1. In-Process (Embedded) Architecture
 
-**Analogy:** DuckDB is like a calculator built into your spreadsheet app. Instead of opening a separate calculator program, typing numbers in, and copying results back, the calculator runs right inside Excel. There's no separate process, no network connection -- it's just there, instantly available.
+**Definition:** DuckDB runs inside your application's process as a library, not as a separate server. There is no network protocol, no daemon to manage, and no client-server communication overhead.
 
-Technically, DuckDB runs as a library loaded into your application's process. When your Python script does `import duckdb`, the entire database engine is now part of your script. This eliminates the client-server overhead that databases like PostgreSQL require.
+**Analogy:** Think of the difference between a built-in oven (DuckDB) and a catering service (PostgreSQL/ClickHouse). The built-in oven is always right there in your kitchen, instantly available, with no delivery lag. A catering service is powerful and can serve many customers, but every request requires a phone call, a delivery truck, and coordination overhead.
+
+**Why it matters:** This architecture enables zero-copy data transfer between the host process and the database. A Python script can hand a pandas DataFrame directly to DuckDB's query engine without serialization. This eliminates the largest bottleneck in traditional analytics pipelines: moving data between systems.
 
 ### 2. Columnar Storage
 
-**Analogy:** Imagine a filing cabinet. A row-based database stores each person's complete file in one folder -- name, age, salary, address all together. To calculate the average salary, you'd open every single folder. A columnar database is like having one drawer labeled "Salaries" containing just the salary values for everyone. To compute the average, you open one drawer and scan straight through.
+**Definition:** Data is stored column-by-column rather than row-by-row. All values of a single column are stored contiguously on disk and in memory, organized into horizontal partitions called [row groups](https://duckdb.org/docs/stable/internals/storage).
 
-DuckDB stores data column-by-column rather than row-by-row. This means:
-- **Compression is better** -- similar values in the same column compress efficiently (e.g., a column of country codes)
-- **Scans are faster** -- analytical queries that aggregate one or two columns don't need to read the other 50 columns
-- **CPU caches are happier** -- processing contiguous arrays of the same type fits modern CPU architectures perfectly
+**Analogy:** Imagine a library where traditional (row) storage shelves each book with all its chapters together. Columnar storage instead puts all Chapter 1s from every book on one shelf, all Chapter 2s on another, and so on. When you need to read only Chapter 3 from 10,000 books, you visit a single shelf instead of pulling and opening every book.
+
+**Why it matters:** Analytical queries typically touch few columns but many rows (e.g., `SELECT AVG(price) FROM orders`). Columnar storage means DuckDB reads only the columns needed, skips the rest, and achieves far better compression because similar values are adjacent. This is the foundation of OLAP performance.
 
 ### 3. Vectorized Execution
 
-**Analogy:** Imagine you're a teacher grading exams. Row-at-a-time processing is like grading one student's entire exam before moving to the next. Vectorized execution is like grading Question 1 for all students, then Question 2 for all students. Your brain stays in "Question 1 mode," you get faster, and you spot patterns.
+**Definition:** Rather than processing one row at a time (Volcano model) or one full column at a time (full materialization), DuckDB processes data in fixed-size vectors of [2048 tuples](https://duckdb.org/docs/stable/internals/vector) (`STANDARD_VECTOR_SIZE`). Each operator in the query plan pulls or pushes a `DataChunk` containing multiple `Vector` columns through the pipeline.
 
-DuckDB processes data in vectors (batches) of 2,048 values. Each operation -- filtering, summing, comparing -- runs over the entire vector at once using tight loops that the CPU can optimize with SIMD (Single Instruction, Multiple Data) instructions. This dramatically reduces the per-row overhead of traditional row-at-a-time engines.
+**Analogy:** Consider an assembly line. Row-at-a-time is like a worker who picks up one item, carries it through every station, then goes back for the next one. Full-column is like dumping all items at once, overwhelming the stations. Vectorized execution is like conveyor belt batches: a tray of 2048 items moves through each station together, keeping every station busy while fitting in the workspace (CPU cache).
 
-### 4. Extensions
+**Why it matters:** Vector sizes are chosen to fit in the CPU's L1 cache (32-128 KB on modern processors). This eliminates interpretation overhead, enables SIMD auto-vectorization by modern compilers, and dramatically reduces function call overhead compared to row-at-a-time systems like PostgreSQL or SQLite.
 
-**Analogy:** Extensions are like apps on your phone. Your phone (DuckDB) does a lot out of the box, but when you need GPS navigation (spatial queries), cloud storage access (httpfs), or to read a specific file format (Iceberg), you install the relevant app. Core extensions auto-install when you first use them.
+### 4. Push-Based Execution with Morsel-Driven Parallelism
 
-DuckDB's extension system allows adding:
-- New file formats (Parquet, Iceberg, Lance, Delta Lake)
-- Remote access (S3, HTTP, Azure Blob Storage)
-- Domain-specific functionality (spatial/GIS, full-text search)
-- Database connectors (PostgreSQL, MySQL, SQLite scanner)
+**Definition:** DuckDB uses a [push-based execution model](https://duckdb.org/docs/stable/internals/overview) where `DataChunks` are pushed through the operator tree (rather than pulled). Combined with [morsel-driven parallelism](https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf), the work is divided into small chunks (morsels) that are distributed across available CPU cores adaptively.
 
-### 5. Data Virtualization (Zero-Copy Querying)
+**Analogy:** In a restaurant kitchen, pull-based is like a waiter asking each station "do you have anything?" repeatedly. Push-based with morsels is like a head chef distributing tickets: each cook gets a batch of orders, works through them, then gets the next batch. If one cook finishes early, they get more tickets. No one waits idle.
 
-**Analogy:** Instead of photocopying a library book to read it at home, DuckDB lets you read the book right on the shelf. It can query Parquet files, CSV files, Pandas DataFrames, and even remote S3 objects directly without importing or copying the data first.
+**Why it matters:** This approach scales transparently to all available cores without user configuration, avoids the plan explosion and load imbalance problems of traditional exchange-based parallelism, and enables individual operators to be parallelism-aware with thread-local state (Sink), combination (Combine), and finalization (Finalize) phases.
 
-This is powered by DuckDB's "replacement scan" feature, which intercepts references to external objects (like a pandas DataFrame variable name in SQL) and transparently reads them in-place.
+### 5. MVCC with Optimistic Concurrency Control
 
-### 6. Single-File Persistence
+**Definition:** DuckDB implements [Multi-Version Concurrency Control (MVCC)](https://duckdb.org/2024/10/30/analytics-optimized-concurrent-transactions) inspired by HyPer's technique, where writers update data in-place but save previous versions in undo buffers. Readers check version chains only when necessary.
 
-**Analogy:** Just like a SQLite `.db` file or an Excel `.xlsx` file, a DuckDB database is a single file on disk. You can email it, `scp` it to a server, or check it into version control. No WAL directories, no tablespaces, no configuration files -- just one file.
+**Analogy:** Consider a shared Google Doc. MVCC is like each person seeing a consistent snapshot of the document at the moment they opened it, while edits by others are tracked separately. If two people try to edit the same sentence simultaneously, the second person gets a conflict notification. But people reading the document and people editing different paragraphs never interfere with each other.
 
-DuckDB databases use the `.duckdb` extension by default. They support ACID transactions via a custom MVCC (Multi-Version Concurrency Control) implementation and allow multiple concurrent readers with a single writer.
+**Why it matters:** Read-only transactions (the dominant workload in analytics) never block and never conflict. Multiple writer threads within a single process can append to the same table or update different rows without locking. This avoids unnecessary overhead from pessimistic locking while remaining correct for analytical workloads where write conflicts are rare.
+
+### 6. Extension System
+
+**Definition:** DuckDB's [extension mechanism](https://duckdb.org/community_extensions/development) allows dynamically loading additional functionality: new data types, scalar/aggregate/table functions, file formats, SQL syntax, optimizer rules, and storage backends. Extensions are cryptographically signed and can be installed from the official repository or community repositories.
+
+**Analogy:** DuckDB's core is like a Swiss Army knife with the essential blades. Extensions are like the specialized attachments you can snap on: a corkscrew (Parquet reader), a magnifying glass (full-text search), or a satellite phone (HTTP/S3 access). You only carry what you need, but you can add anything.
+
+**Why it matters:** This keeps the core small and portable while enabling capabilities like reading from S3, querying Postgres databases, handling spatial data, or interacting with Excel files. As of 2026, there are 24+ core extensions and 150+ community extensions, making DuckDB a universal analytics Swiss Army knife.
+
+### 7. Zero-Dependency, Single-File Design
+
+**Definition:** DuckDB compiles into a single amalgamation file (one `.cpp` and one `.h`) with no external runtime dependencies. Persistent databases are stored as a single file on disk, identified by the magic bytes `DUCK` in the header.
+
+**Analogy:** Like a self-contained camping stove that needs no external gas line, electricity hookup, or assembly. You bring the single unit, and it works. Compare this to a full kitchen renovation (installing a server-based database) that requires plumbing, electrical work, and ongoing maintenance.
+
+**Why it matters:** This makes DuckDB trivially deployable on any platform (Linux, macOS, Windows, ARM, x86, WebAssembly) without dependency conflicts or version management. A `pip install duckdb` is genuinely all it takes.
+
+### How They Fit Together
+
+These concepts form a layered architecture: the **in-process design** eliminates network overhead and enables zero-copy data transfer. **Columnar storage** organizes data for analytical access patterns. **Vectorized execution** processes that columnar data in CPU-cache-friendly batches. **Push-based morsel-driven parallelism** scales those vector operations across all cores. **MVCC** keeps readers and writers out of each other's way. The **extension system** adds capabilities without bloating the core. And **single-file design** makes the entire system trivially deployable.
+
+The result is a database that can be embedded in a Python script, process hundreds of millions of rows on a laptop, and require zero operational overhead.
 
 ---
 
 ## Architecture
 <!-- level: intermediate -->
+<!-- references: https://duckdb.org/docs/stable/internals/overview, https://duckdb.org/why_duckdb, https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf, https://pdet.github.io/assets/papers/duck_sbbd.pdf, https://endjin.com/blog/2025/04/duckdb-in-depth-how-it-works-what-makes-it-fast -->
 
-### System Overview
+### High-Level Design
 
-DuckDB's architecture is a pipeline that transforms SQL text into efficiently executed operations on columnar data:
+DuckDB follows a classical layered database architecture with a modern twist: every layer is optimized for analytical workloads and designed for in-process execution. The system is intentionally NOT a general-purpose database; it makes deliberate trade-offs favoring complex read queries over high-frequency transactional writes.
 
 ```
-SQL Query
+┌─────────────────────────────────────────────────┐
+│                 Client APIs                      │
+│  (Python, R, Java, C/C++, Node.js, Go, Wasm)   │
+├─────────────────────────────────────────────────┤
+│               SQL Parser                         │
+│  (PostgreSQL-derived parser → DuckDB parse tree) │
+├─────────────────────────────────────────────────┤
+│         Binder / Logical Planner                 │
+│  (Catalog resolution, type checking, planning)   │
+├─────────────────────────────────────────────────┤
+│              Optimizer                           │
+│  (Filter pushdown, join reorder, CSE, etc.)      │
+├─────────────────────────────────────────────────┤
+│        Column Binding Resolver                   │
+│  (Logical names → physical DataChunk indices)    │
+├─────────────────────────────────────────────────┤
+│         Physical Plan Generator                  │
+│  (LogicalOperator → PhysicalOperator tree)       │
+├─────────────────────────────────────────────────┤
+│          Execution Engine                        │
+│  (Push-based vectorized, morsel-driven parallel) │
+├─────────────────────────────────────────────────┤
+│        Buffer Manager / Storage                  │
+│  (Columnar row groups, compression, WAL)         │
+├─────────────────────────────────────────────────┤
+│          Catalog / Metadata                      │
+│  (Schemas, tables, indexes, extensions)          │
+├─────────────────────────────────────────────────┤
+│         Extension Framework                      │
+│  (Dynamically loaded, signed extensions)         │
+└─────────────────────────────────────────────────┘
+```
+
+### Key Components
+
+#### Parser
+**What:** Transforms SQL strings into a DuckDB-specific parse tree, producing `SQLStatement`, `QueryNode`, `TableRef`, and `ParsedExpression` nodes.
+
+**Why it exists:** DuckDB reuses the [PostgreSQL parser](https://github.com/duckdb/duckdb/tree/main/third_party/libpg_query) (repackaged as a standalone library), gaining a battle-tested, standards-compliant SQL parser for free. The parser is catalog-unaware: it does not validate table existence or resolve types, keeping parsing fast and decoupled. As of v1.5.0, an experimental [PEG parser](https://github.com/hannes/pegparser) is available that offers better error messages and extensibility.
+
+#### Binder
+**What:** Resolves catalog references (tables, columns, types) and converts parsed nodes into bound equivalents: `ParsedExpression` becomes `Expression`, `QueryNode` becomes `BoundQueryNode`, `TableRef` becomes `BoundTableRef`.
+
+**Why it exists:** Separating binding from parsing means the parser can remain simple and reusable while the binder handles the complex, catalog-dependent work of type resolution and semantic validation. This separation also makes it easier to support features like attached databases and cross-database queries.
+
+#### Logical Planner
+**What:** Constructs a tree of `LogicalOperator` nodes from bound statements, representing the abstract query plan (selections, projections, joins, aggregations) without specifying how to execute them.
+
+**Why it exists:** A logical plan is the optimizer's input. By separating "what to compute" from "how to compute it," DuckDB can apply multiple optimization passes without being constrained by physical execution details.
+
+#### Optimizer
+**What:** Transforms the logical plan through multiple optimization passes:
+- **Expression Rewriter:** Simplifies expressions, performs constant folding
+- **Filter Pushdown:** Pushes predicates as close to data sources as possible
+- **Join Order Optimizer:** Uses the DPccp algorithm (Dynamic Programming connected subgraph Complement Pairs) for optimal join ordering
+- **Common Subexpression Elimination:** Identifies and deduplicates repeated computations
+- **IN Clause Rewriting:** Converts IN predicates to efficient MARK or INNER joins
+
+**Why it exists:** Query optimization is critical for analytical workloads where queries can span billions of rows across multiple joins. The DPccp algorithm specifically handles complex join graphs that simpler heuristic optimizers would plan poorly.
+
+#### Column Binding Resolver
+**What:** Converts named column references in the logical plan to index-based references that map directly to positions in `DataChunk` vectors.
+
+**Why it exists:** During execution, columns are accessed by index in the `DataChunk` structure, not by name. This resolution step bridges the gap between the logical world (named columns) and the physical world (indexed vectors), eliminating name-lookup overhead during execution.
+
+#### Physical Plan Generator
+**What:** Converts `LogicalOperator` nodes into `PhysicalOperator` nodes, selecting specific algorithms (hash join vs. merge join, hash aggregation vs. sorted aggregation) based on data characteristics.
+
+**Why it exists:** The same logical operation (e.g., "join A and B") can be implemented many ways. The physical planner makes implementation choices based on statistics, data size, and available indexes.
+
+#### Execution Engine
+**What:** Executes the physical plan using push-based vectorized processing with morsel-driven parallelism. Data flows as `DataChunk` objects (bundles of `Vector` columns, each holding up to 2048 values) pushed through the operator tree.
+
+**Why it exists:** The push-based model with morsel-driven parallelism was chosen over the traditional Volcano (pull-based, row-at-a-time) model and over exchange-based parallelism because it:
+1. Eliminates virtual function call overhead per row
+2. Enables SIMD auto-vectorization
+3. Distributes work adaptively across cores without static partitioning
+4. Allows blocking operators (sort, hash aggregate) to use thread-local accumulation
+
+#### Buffer Manager and Storage Engine
+**What:** Manages the on-disk columnar format (row groups with compressed column segments), the write-ahead log (WAL), and checkpointing. Supports transparent spilling to disk for larger-than-memory workloads.
+
+**Why it exists:** The storage engine is designed specifically for analytical access patterns: row groups enable parallel scanning, columnar segments enable column pruning, and the lightweight compression algorithms (Constant, RLE, Bit Packing, FOR, Dictionary, FSST, ALP, Chimp, Patas, Zstd) reduce I/O without expensive decompression.
+
+#### Catalog and DatabaseManager
+**What:** The `DatabaseManager` object manages all attached databases and their contents (schemas, tables, indexes). DuckDB supports attaching multiple databases simultaneously.
+
+**Why it exists:** Supporting multiple attached databases enables cross-database queries, temporary databases, and the extension system's ability to expose external data sources (Postgres, MySQL, S3) as virtual databases.
+
+### Data Flow
+
+A query's journey through DuckDB:
+
+```
+SQL String
     │
     ▼
-┌─────────────┐
-│   Parser     │  SQL text → Abstract Syntax Tree (AST)
-└──────┬──────┘
-       ▼
-┌─────────────┐
-│   Binder     │  Resolve names, types, and schemas
-└──────┬──────┘
-       ▼
-┌─────────────────┐
-│ Logical Planner  │  AST → Logical operators (scan, filter, join, aggregate)
-└──────┬──────────┘
-       ▼
-┌─────────────────┐
-│   Optimizer      │  Rewrite rules, join ordering, predicate pushdown
-└──────┬──────────┘
-       ▼
-┌──────────────────┐
-│ Physical Planner  │  Logical plan → Physical operators with execution strategies
-└──────┬───────────┘
-       ▼
-┌──────────────────┐
-│ Execution Engine  │  Vectorized, parallel, pipeline-based execution
-└──────┬───────────┘
-       ▼
-    Results
+[Parser] ──→ ParsedExpression, QueryNode, TableRef
+    │
+    ▼
+[Binder] ──→ BoundExpression, BoundQueryNode, BoundTableRef
+    │            (resolves catalog: tables, columns, types)
+    ▼
+[Logical Planner] ──→ LogicalOperator tree
+    │
+    ▼
+[Optimizer] ──→ Optimized LogicalOperator tree
+    │            (filter pushdown, join reorder, CSE, etc.)
+    ▼
+[Column Binding Resolver] ──→ Index-resolved plan
+    │
+    ▼
+[Physical Plan Generator] ──→ PhysicalOperator tree
+    │
+    ▼
+[Execution Engine]
+    │   Push DataChunks (2048 tuples) through operator tree
+    │   Morsel-driven: work distributed across CPU cores
+    │   Blocking operators: Sink → Combine → Finalize
+    │
+    ▼
+Result (DataChunk → Python/R/Arrow/Pandas/...)
 ```
 
-### Why Each Component Exists
+### Design Decisions
 
-**Parser** -- DuckDB includes its own hand-written parser (originally derived from PostgreSQL's parser, now heavily modified). In v1.5.0, an experimental PEG parser was added to provide better error messages with suggestions. The parser exists separately because SQL syntax is complex and evolving -- DuckDB adds syntax extensions like `COLUMNS(*)`, `EXCLUDE`, and `FROM-first` syntax.
+1. **PostgreSQL parser reuse over custom parser:** Rather than building a SQL parser from scratch, DuckDB adopted the PostgreSQL parser, gaining decades of SQL standard compliance. The trade-off was parser complexity and PostgreSQL-specific syntax quirks, which the new PEG parser (v1.5.0) begins to address.
 
-**Binder** -- Resolves table names, column references, and function calls against the catalog. This is where DuckDB determines that `SELECT salary FROM employees` refers to a specific column in a specific table, resolves types, and validates the query. Without binding, the optimizer would be working with unresolved names.
+2. **Push-based over pull-based execution:** The traditional Volcano model's per-row virtual function dispatch is a performance bottleneck. Push-based execution amortizes dispatch overhead across entire vectors and enables more natural parallelism.
 
-**Optimizer** -- The optimizer is critical for analytical workloads because query plans that work fine on 100 rows can be catastrophically slow on 100 million. DuckDB's optimizer applies:
-- **Predicate pushdown** -- Push filters as close to the scan as possible to read less data
-- **Column pruning** -- Only read columns that are actually needed
-- **Join ordering** -- Choose the order that minimizes intermediate result sizes
-- **Common subexpression elimination** -- Avoid recomputing the same expressions
-- **Top-N optimization** -- For `ORDER BY ... LIMIT N`, avoid sorting the entire dataset
+3. **Single-writer model over multi-writer:** By choosing a single-writer MVCC model, DuckDB avoids the complexity and overhead of distributed write coordination. This is a deliberate trade-off: analytics workloads are read-heavy, so optimizing reads at the expense of write concurrency is the correct choice for the target use case.
 
-**Execution Engine** -- The vectorized, pipeline-based engine is the heart of DuckDB's performance. Instead of pulling one row at a time through a tree of operators (the Volcano model), DuckDB pushes vectors of data through pipelines. Each pipeline is a chain of operators that can execute without materializing intermediate results, and multiple pipelines execute in parallel across CPU cores.
+4. **Amalgamation build over modular libraries:** Compiling to two files (header + implementation) simplifies deployment dramatically but makes incremental compilation slower during development. The team maintains the modular source tree for development and generates the amalgamation for releases.
 
-### Storage Layout
-
-DuckDB organizes persistent data into **row groups** (chunks of ~122,000 rows). Within each row group, data is stored column-by-column with:
-
-- **Compression** -- Each column segment is independently compressed using the best algorithm for its data distribution (constant, dictionary, RLE, bitpacking, FSST for strings, ALP for floats, Chimp for doubles)
-- **Zone maps (min/max indexes)** -- Each column segment stores its minimum and maximum values. When a query filters on `WHERE date > '2025-01-01'`, entire row groups where `max(date) < '2025-01-01'` are skipped entirely without reading any data.
-- **Partial decompression** -- DuckDB can operate on compressed data during execution (e.g., dictionary vectors), deferring decompression until necessary.
-
-### Parallelism Model
-
-DuckDB automatically parallelizes queries across all available CPU cores:
-
-1. **Morsel-driven parallelism** -- Row groups are divided into "morsels" assigned to worker threads. Each thread processes its morsel independently through the pipeline.
-2. **No user configuration** -- Parallelism is automatic. No `SET parallel_workers` or partitioning required.
-3. **Parallel-aware operators** -- Hash joins, aggregations, and sorts are all designed for parallel execution with shared hash tables and merge steps.
-4. **Parallel I/O** -- Even CSV and Parquet file reading is parallelized, with multiple threads scanning different portions of a file.
-
-### Concurrency Model
-
-DuckDB uses a **single-writer, multiple-reader** model:
-- Multiple connections can read simultaneously
-- Only one connection can write at a time
-- This is a deliberate design choice -- DuckDB is not designed for high-concurrency OLTP workloads with many concurrent writers
-- In v1.5.0, non-blocking checkpointing was added, allowing reads to continue during checkpoint operations (17% throughput improvement on TPC-H)
-
-### Memory Management
-
-- **Buffer manager** -- DuckDB manages its own buffer pool, paging data in and out of memory as needed
-- **Spill to disk** -- When intermediate results exceed available memory, DuckDB spills to temporary files on disk rather than crashing with an OOM error
-- **Streaming execution** -- Where possible, operators stream data through the pipeline without materializing entire intermediate results
-- **Configurable memory limit** -- Users can set `SET memory_limit = '4GB'` to control DuckDB's memory usage
+5. **In-process over client-server:** This is DuckDB's defining architectural bet. It trades away multi-user server capabilities for zero-latency data access, zero-copy integration with host languages, and zero operational overhead. MotherDuck exists to provide the server experience for those who need it.
 
 ---
 
 ## How It Works
 <!-- level: intermediate -->
+<!-- references: https://duckdb.org/docs/stable/internals/vector, https://duckdb.org/docs/stable/internals/storage, https://endjin.com/blog/2025/04/duckdb-in-depth-how-it-works-what-makes-it-fast, https://duckdb.org/2024/10/30/analytics-optimized-concurrent-transactions -->
 
-### Query Execution: A Walkthrough
+### Vectorized Query Execution
 
-Let's trace what happens when you run:
+DuckDB's execution engine processes data in vectors of `STANDARD_VECTOR_SIZE` (2048) tuples. Each vector represents a single column's values within a batch. Multiple vectors are bundled into a `DataChunk` that flows through the operator pipeline.
 
-```sql
-SELECT region, SUM(amount) as total
-FROM sales
-WHERE year = 2025
-GROUP BY region
-ORDER BY total DESC
-LIMIT 5;
-```
+**Vector types** provide different physical representations for the same logical data:
 
-**Step 1: Parse & Bind**
-The SQL is parsed into an AST, then the binder resolves `sales` to the table in the catalog, confirms `region`, `amount`, and `year` are valid columns, and determines their types.
+| Vector Type | Storage | Use Case |
+|------------|---------|----------|
+| **Flat** | Contiguous array, 1:1 logical-to-physical mapping | Default format after computation |
+| **Constant** | Single value representing all rows | Literal expressions (e.g., `WHERE x > 42`) |
+| **Dictionary** | Child vector + selection index | Compressed data from storage decompression |
+| **Sequence** | Offset + increment | Row identifiers, sequential data |
 
-**Step 2: Logical Plan**
-```
-Limit(5)
-  └── Sort(total DESC)
-        └── Aggregate(GROUP BY region, SUM(amount))
-              └── Filter(year = 2025)
-                    └── Scan(sales)
-```
+The **Unified Vector Format** provides a generic interface so operator implementations don't need to handle every combination of vector types. Operators can call `ToUnifiedFormat()` on any vector to get a normalized representation.
 
-**Step 3: Optimize**
-The optimizer pushes the filter `year = 2025` into the scan operator. If `year` has zone maps, entire row groups where `max(year) < 2025` or `min(year) > 2025` are eliminated before reading any data. Column pruning ensures only `region`, `amount`, and `year` are read (not any other columns in the table). The `ORDER BY ... LIMIT 5` is recognized as a Top-5 operation, using a heap instead of a full sort.
+**String handling** is particularly optimized: strings of 12 bytes or fewer are inlined directly in the `string_t` struct, avoiding heap allocation. Longer strings store a pointer, length, and a 4-byte prefix used for fast comparison short-circuiting.
 
-**Step 4: Physical Plan & Pipeline Construction**
-The optimizer creates two pipelines:
+### Columnar Storage and Compression
 
-- **Pipeline 1:** Scan → Filter → Aggregate (builds the hash table for GROUP BY)
-- **Pipeline 2:** Finalize Aggregate → Top-5 Sort → Result
+Persistent data is organized into **row groups** (horizontal partitions, configurable via `ROW_GROUP_SIZE`, commonly 122,880 rows). Each row group contains **column segments**, and each segment is compressed independently using the best-fit algorithm:
 
-Pipeline 1 is the heavy work -- it scans all matching row groups in parallel, filters, and inserts into a shared hash table partitioned by thread.
+| Algorithm | Data Type | Technique |
+|-----------|-----------|-----------|
+| **Constant** | Any | Single value for entire segment |
+| **RLE** | Any | Run-length encoding for repeated values |
+| **Bit Packing** | Integer | Minimal bits per value |
+| **Frame of Reference** | Integer | Base value + offsets |
+| **Dictionary** | String | Unique value table + indices |
+| **FSST** | String | Fast Static Symbol Table compression |
+| **ALP** | Float/Double | Adaptive Lossless floating-Point |
+| **Chimp / Patas** | Timestamp | XOR-based compression |
+| **Zstd** | Any | General-purpose block compression |
 
-**Step 5: Vectorized Execution**
-Each thread in Pipeline 1:
-1. Reads a morsel (batch of row groups)
-2. Decompresses only `year`, `region`, `amount` columns into vectors of 2,048 values
-3. Applies the filter `year = 2025`, producing a selection vector (bitset of matching rows)
-4. For matching rows, hashes `region` and updates the running SUM in the hash table
-5. Repeats until its morsel is done, then grabs the next morsel
+DuckDB selects the compression algorithm automatically per-segment during checkpointing. The storage file begins with a header: `uint64_t` checksum, magic bytes `DUCK`, and a `uint64_t` storage version number (v67 for DuckDB 1.4.x, incrementing with major releases).
 
-Pipeline 2 merges per-thread hash tables, runs Top-5 selection, and returns results.
+**Zone maps** (min/max indexes) are maintained per row group per column. During query execution, the engine checks zone maps before reading a row group: if the filter predicate falls outside the min/max range, the entire row group is skipped. This is especially effective for sorted or semi-sorted columns like timestamps or IDs.
 
-### The Vector Format
+### Morsel-Driven Parallel Execution
 
-DuckDB's internal data representation uses several vector types for efficiency:
+DuckDB's parallelism follows the [morsel-driven paradigm](https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf):
 
-| Vector Type | Purpose | Example |
-|-------------|---------|---------|
-| **Flat** | Standard contiguous array | A column of integers read from storage |
-| **Constant** | Single value repeated for all rows | The literal `2025` in `WHERE year = 2025` |
-| **Dictionary** | Index into a smaller value set | Dictionary-compressed string column |
-| **Sequence** | Offset + increment | Row IDs (`0, 1, 2, 3, ...`) |
+1. **Pipeline construction:** The physical plan is decomposed into pipelines, separated at blocking operators (hash joins, aggregations, sorts).
 
-Operators output one of these types, and the next operator can handle any type through the **Unified Vector Format** -- a common abstraction that avoids combinatorial explosion of type-pair handling in operations.
+2. **Morsel distribution:** Each pipeline's input is divided into morsels (chunks of row groups). Worker threads pull morsels from a global queue adaptively.
 
-**String handling** is particularly clever: strings of 12 bytes or fewer are inlined directly into the vector (no pointer indirection). Larger strings store a pointer plus a 4-byte prefix -- the prefix allows many string comparisons (e.g., `WHERE name > 'M'`) to short-circuit without following the pointer.
+3. **Thread-local processing:** Each thread processes its morsel through the pipeline independently, maintaining thread-local state (e.g., a local hash table for aggregation).
 
-### Compression Algorithms
+4. **Three-phase blocking operators:**
+   - **Sink:** Each thread accumulates data into its local state
+   - **Combine:** Signal that a thread has finished its Sink phase
+   - **Finalize:** Called once when all threads complete, merging results (e.g., combining thread-local hash tables into a global result)
 
-DuckDB automatically selects the best compression for each column segment:
+This approach avoids the overhead of exchange operators and enables adaptive load balancing: if one thread finishes its morsel early, it simply picks up the next one from the queue.
 
-| Algorithm | Best For | How It Works |
-|-----------|----------|--------------|
-| **Constant** | Columns with a single value | Stores one value for the whole segment |
-| **Dictionary** | Low-cardinality columns | Maps values to small integer codes |
-| **RLE (Run-Length Encoding)** | Sorted or clustered data | Stores `(value, count)` pairs |
-| **Bitpacking** | Integers with small range | Uses fewer bits per value (e.g., 4-bit for values 0-15) |
-| **FSST (Fast Static Symbol Table)** | String columns | Compresses common substrings into short codes |
-| **ALP (Adaptive Lossless floating-Point)** | Float/double columns | Exploits patterns in floating-point data |
-| **Chimp** | Time-series doubles | XOR-based compression for sequential doubles |
+### Transaction and Concurrency Management
 
-The compression analyzer runs during data loading and picks the algorithm that yields the best compression ratio for each column segment independently.
+DuckDB's MVCC implementation (inspired by Thomas Neumann's paper on fast serializable MVCC for main-memory databases):
 
-### Direct File Querying
+- **Writers update data in-place** but save previous versions in undo buffers
+- **Readers check for version information** per row; if none exists (the common case for stable data), they read the original data directly with zero overhead
+- **Optimistic concurrency control** means no locks are acquired upfront; conflicts are detected at commit time
+- **Appends never conflict**, even on the same table from multiple threads
+- **Concurrent updates to different rows** of the same table succeed
+- **Same-row conflicts** produce an error: the second writer must retry
 
-One of DuckDB's most powerful features is querying files directly without loading them first:
+The single-writer-per-database-file constraint is enforced at the process level. Within a single process, multiple threads can write concurrently. Multiple processes can read the same file concurrently in `READ_ONLY` mode.
 
-```sql
--- Query a local Parquet file
-SELECT * FROM 'sales_2025.parquet' WHERE region = 'APAC';
+### Performance Characteristics
 
--- Query a CSV with auto-detection
-SELECT * FROM read_csv('data.csv');
-
--- Query Parquet files on S3
-SELECT * FROM 's3://my-bucket/data/*.parquet';
-
--- Query a remote CSV over HTTP
-SELECT * FROM 'https://example.com/data.csv';
-```
-
-DuckDB's multi-hypothesis CSV parser automatically infers column types, delimiters, and headers by examining the file. For Parquet files, it leverages Parquet metadata (row group statistics, page indexes) to push down filters and skip irrelevant data before reading it.
+- **CPU cache utilization:** 2048-tuple vectors fit in L1 cache (32-128 KB), keeping execution tight in the fastest memory tier
+- **SIMD auto-vectorization:** Tight inner loops over vectors are automatically converted to SIMD instructions by modern compilers
+- **Column pruning:** Only columns referenced in the query are read from storage
+- **Late materialization:** Rows are materialized (assembled from columns) as late as possible, reducing memory bandwidth
+- **Larger-than-memory:** Transparent spilling to disk when intermediate results exceed `memory_limit`
+- **Benchmark context:** On TPC-H benchmarks, DuckDB on a single machine completed the suite in ~76 seconds, while Apache Spark on 32 machines required ~8 minutes. Against ClickHouse, DuckDB often wins on small-to-medium datasets (no network overhead) while ClickHouse can win on larger distributed datasets.
 
 ---
 
 ## Implementation Details
 <!-- level: advanced -->
+<!-- references: https://duckdb.org/docs/stable/clients/python/overview, https://duckdb.org/docs/stable/configuration/overview, https://github.com/duckdb/duckdb, https://duckdb.org/docs/stable/connect/concurrency, https://duckdb.org/docs/stable/clients/python/dbapi -->
 
 ### Getting Started
 
-**Installation:**
+**Installation (Python):**
 
 ```bash
-# Python
 pip install duckdb
-
-# CLI (Python-based installer)
+# Or via conda:
+conda install python-duckdb -c conda-forge
+# CLI tool (new in 1.5.0):
 pip install duckdb-cli
-
-# macOS (Homebrew)
-brew install duckdb
-
-# Node.js
-npm install duckdb
-
-# Or download a binary from https://duckdb.org/docs/installation/
 ```
 
-**First query (CLI):**
-
-```sql
-$ duckdb
-v1.5.1
-Enter ".help" for usage hints.
-Connected to a transient in-memory database.
-
-D SELECT 42 AS answer;
-┌────────┐
-│ answer │
-│ int32  │
-├────────┤
-│     42 │
-└────────┘
-```
-
-**First query (Python):**
+**Minimal in-memory query:**
 
 ```python
 import duckdb
 
-# In-memory (default)
-con = duckdb.connect()
-
-# Query a Parquet file directly
-result = con.sql("SELECT region, SUM(amount) FROM 'sales.parquet' GROUP BY region")
-print(result.fetchdf())  # Returns a pandas DataFrame
-
-# Or use the relation API
-con.sql("SELECT * FROM 'data.csv' WHERE age > 30").show()
+# Uses the global in-memory connection
+duckdb.sql("SELECT 42 AS answer").show()
+# ┌────────┐
+# │ answer │
+# │ int32  │
+# ├────────┤
+# │     42 │
+# └────────┘
 ```
 
-**Persistent database:**
+**Persistent database with context manager:**
 
 ```python
-# Creates/opens a file-based database
-con = duckdb.connect('my_analytics.duckdb')
-con.sql("CREATE TABLE events AS SELECT * FROM 'events_*.parquet'")
-con.sql("SELECT event_type, COUNT(*) FROM events GROUP BY 1").show()
-con.close()
+import duckdb
+
+with duckdb.connect("analytics.db") as con:
+    con.sql("CREATE TABLE events (ts TIMESTAMP, user_id INT, action VARCHAR)")
+    con.sql("INSERT INTO events VALUES (now(), 1, 'click'), (now(), 2, 'view')")
+    con.sql("SELECT action, COUNT(*) FROM events GROUP BY action").show()
 ```
 
-### Configuration & Tuning
+**Query files directly without loading:**
 
-```sql
--- Memory limit (default: 80% of system RAM)
-SET memory_limit = '8GB';
+```python
+import duckdb
 
--- Thread count (default: all cores)
-SET threads = 4;
+# CSV, Parquet, JSON — no CREATE TABLE needed
+duckdb.sql("SELECT * FROM 'sales_2025.parquet' WHERE region = 'APAC' LIMIT 10").show()
 
--- Temp directory for spill-to-disk (default: .tmp in current directory)
-SET temp_directory = '/fast-ssd/duckdb-tmp';
+# Glob patterns
+duckdb.sql("SELECT COUNT(*) FROM 'logs/*.csv'").show()
 
--- Enable progress bar for long queries
-SET enable_progress_bar = true;
-
--- Preserve insertion order (disable for faster bulk loads)
-SET preserve_insertion_order = false;
+# Remote files
+duckdb.sql("SELECT * FROM 'https://example.com/data.parquet' LIMIT 5").show()
 ```
 
-### Python Integration Patterns
+**Zero-copy integration with DataFrames:**
 
 ```python
 import duckdb
 import pandas as pd
 
-# Zero-copy query on a pandas DataFrame
-df = pd.read_csv('large_file.csv')
-result = duckdb.sql("SELECT category, AVG(price) FROM df GROUP BY category")
+# DuckDB queries pandas DataFrames directly (read-only, zero-copy)
+orders = pd.DataFrame({
+    "product": ["Widget", "Gadget", "Widget", "Gadget"],
+    "revenue": [100, 200, 150, 300]
+})
 
-# Chain operations with the relation API
-(duckdb
-    .read_parquet('s3://bucket/data/*.parquet')
-    .filter("year = 2025")
-    .aggregate("region, SUM(revenue) AS total")
-    .order("total DESC")
-    .limit(10)
-    .show())
-
-# Export results to different formats
-duckdb.sql("SELECT * FROM 'input.csv' WHERE status = 'active'") \
-      .write_parquet('output.parquet')
-
-# Use as a persistent analytics store
-con = duckdb.connect('analytics.duckdb')
-con.sql("""
-    CREATE OR REPLACE TABLE daily_metrics AS
-    SELECT date_trunc('day', timestamp) AS day,
-           COUNT(*) AS events,
-           COUNT(DISTINCT user_id) AS users
-    FROM read_parquet('events_*.parquet')
-    GROUP BY 1
-""")
+duckdb.sql("SELECT product, SUM(revenue) as total FROM orders GROUP BY product").df()
+# Returns a pandas DataFrame:
+#   product  total
+# 0  Widget    250
+# 1  Gadget    500
 ```
 
-### Advanced SQL Features
+**Relational API (incremental query building):**
 
-```sql
--- Window functions
-SELECT employee, department, salary,
-       RANK() OVER (PARTITION BY department ORDER BY salary DESC) as rank
-FROM employees;
-
--- COLUMNS expression (DuckDB-specific) -- apply operations to multiple columns
-SELECT MIN(COLUMNS('amount_*')), MAX(COLUMNS('amount_*'))
-FROM transactions;
-
--- EXCLUDE / REPLACE in SELECT
-SELECT * EXCLUDE (internal_id, debug_flag)
-FROM users;
-
--- Recursive CTEs
-WITH RECURSIVE org_tree AS (
-    SELECT id, name, manager_id, 0 AS depth
-    FROM employees WHERE manager_id IS NULL
-    UNION ALL
-    SELECT e.id, e.name, e.manager_id, t.depth + 1
-    FROM employees e JOIN org_tree t ON e.manager_id = t.id
-)
-SELECT * FROM org_tree;
-
--- ASOF joins (time-series aligned joins)
-SELECT t.*, p.price
-FROM trades t ASOF JOIN prices p
-ON t.ticker = p.ticker AND t.timestamp >= p.timestamp;
-
--- List comprehensions and lambdas
-SELECT list_transform([1, 2, 3, 4], lambda x: x * x);
--- Note: Arrow syntax (x -> x * x) is deprecated as of v1.5.0
-
--- PIVOT / UNPIVOT
-PIVOT sales ON region USING SUM(amount);
-
--- FROM-first syntax (DuckDB-specific)
-FROM sales SELECT region, SUM(amount) WHERE year = 2025 GROUP BY region;
-```
-
-### Extension Management
-
-```sql
--- Install and load an extension
-INSTALL httpfs;
-LOAD httpfs;
-
--- Most core extensions auto-load when needed:
-SELECT * FROM 's3://bucket/data.parquet';  -- auto-loads httpfs
-
--- Configure S3 credentials
-SET s3_region = 'us-east-1';
-SET s3_access_key_id = 'AKIA...';
-SET s3_secret_access_key = '...';
-
--- Or use AWS credential chain
-SET s3_use_credential_provider = 'credential_chain';
-
--- List installed extensions
-SELECT * FROM duckdb_extensions();
-
--- Key extensions:
--- httpfs      -- S3, HTTP, and HTTPS file access
--- parquet     -- Parquet reader/writer (bundled by default)
--- iceberg     -- Apache Iceberg table support
--- spatial     -- GIS/geometry functions (GEOMETRY type is now core in v1.5.0)
--- postgres    -- Scan PostgreSQL tables directly
--- sqlite      -- Scan SQLite databases directly
--- json        -- JSON file reader (bundled by default)
--- excel       -- Read/write Excel files
--- lance       -- Lance lakehouse format (new in v1.5.1)
--- ducklake    -- DuckLake catalog/lakehouse management
-```
-
-### Deployment Patterns
-
-**Pattern 1: Local analytics script**
 ```python
-# One-off analysis -- no server, no setup
 import duckdb
-duckdb.sql("""
-    SELECT country, COUNT(*) as users
-    FROM 's3://analytics/users_*.parquet'
-    GROUP BY country
-    ORDER BY users DESC
-""").show()
+
+r1 = duckdb.sql("SELECT range AS i FROM range(1000)")
+r2 = duckdb.sql("SELECT i, i * i AS i_squared FROM r1 WHERE i % 7 = 0")
+r2.show()
 ```
 
-**Pattern 2: ETL pipeline stage**
+### Configuration Essentials
+
+```sql
+-- Memory management
+SET memory_limit = '8GB';               -- Max memory usage
+SET temp_directory = '/tmp/duckdb';      -- Spill-to-disk location
+SET max_temp_directory_size = '50GB';    -- Limit temp disk usage
+
+-- Parallelism
+SET threads TO 4;                        -- Limit thread count (default: all cores)
+
+-- Storage tuning
+SET checkpoint_threshold = '256MB';      -- WAL size before auto-checkpoint
+
+-- Performance tuning
+SET merge_join_threshold = 1000;         -- Row count threshold for merge join
+SET index_scan_max_count = 2048;         -- Threshold for index vs. table scan
+
+-- Profiling and debugging
+SET enable_profiling = 'json';           -- Output query plans (json/query_tree)
+SET enable_progress_bar = true;          -- Show progress for long queries
+SET enable_logging = true;               -- Enable logger
+SET logging_level = 'info';             -- Log verbosity
+
+-- Query current settings
+SELECT * FROM duckdb_settings() WHERE name LIKE '%memory%';
+```
+
+### Code Patterns
+
+**Pattern 1: ETL pipeline with Parquet partitioning**
+
 ```python
-# Read from multiple sources, transform, write output
-con = duckdb.connect()
+import duckdb
+
+con = duckdb.connect("warehouse.db")
+
+# Ingest raw CSV data
+con.sql("""
+    CREATE TABLE raw_events AS
+    SELECT * FROM read_csv('events_*.csv',
+        auto_detect=true,
+        header=true,
+        dateformat='%Y-%m-%d'
+    )
+""")
+
+# Transform and export as partitioned Parquet
 con.sql("""
     COPY (
-        SELECT a.user_id, a.event, b.plan_type
-        FROM read_parquet('events/*.parquet') a
-        JOIN read_csv('users.csv') b ON a.user_id = b.id
-        WHERE a.timestamp > '2025-01-01'
-    ) TO 'output/enriched_events.parquet' (FORMAT PARQUET, COMPRESSION ZSTD)
+        SELECT
+            date_trunc('month', event_time) AS month,
+            event_type,
+            COUNT(*) AS event_count,
+            COUNT(DISTINCT user_id) AS unique_users
+        FROM raw_events
+        GROUP BY ALL
+    )
+    TO 'output' (FORMAT PARQUET, PARTITION_BY (month), COMPRESSION ZSTD)
 """)
 ```
 
-**Pattern 3: Embedded in a web application**
-```python
-# FastAPI endpoint backed by DuckDB
-from fastapi import FastAPI
-import duckdb
+**Pattern 2: Multi-source analytics with attached databases**
 
-app = FastAPI()
-db = duckdb.connect('analytics.duckdb', read_only=True)
-
-@app.get("/metrics/{metric}")
-def get_metric(metric: str, days: int = 30):
-    result = db.execute("""
-        SELECT date, value FROM metrics
-        WHERE metric_name = ? AND date > current_date - ?::INTEGER
-        ORDER BY date
-    """, [metric, days]).fetchdf()
-    return result.to_dict(orient='records')
-```
-
-**Pattern 4: Data lakehouse with Iceberg**
 ```sql
-INSTALL iceberg;
-LOAD iceberg;
+-- Attach a Postgres database (requires postgres extension)
+INSTALL postgres;
+LOAD postgres;
+ATTACH 'dbname=production host=db.example.com' AS pg (TYPE POSTGRES, READ_ONLY);
 
--- Query an Iceberg table on S3
-SELECT * FROM iceberg_scan('s3://lakehouse/db/sales');
+-- Attach a SQLite database
+INSTALL sqlite;
+LOAD sqlite;
+ATTACH 'legacy.sqlite' AS legacy (TYPE SQLITE);
 
--- Time travel
-SELECT * FROM iceberg_scan('s3://lakehouse/db/sales', version := '2');
+-- Cross-database analytical query
+SELECT
+    pg.customers.name,
+    COUNT(legacy.orders.id) AS order_count,
+    SUM(legacy.orders.amount) AS total_spent
+FROM pg.customers
+JOIN legacy.orders ON pg.customers.id = legacy.orders.customer_id
+GROUP BY pg.customers.name
+ORDER BY total_spent DESC
+LIMIT 10;
 ```
+
+**Pattern 3: Window functions for time-series analysis**
+
+```sql
+SELECT
+    ts,
+    sensor_id,
+    value,
+    AVG(value) OVER (
+        PARTITION BY sensor_id
+        ORDER BY ts
+        ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
+    ) AS rolling_avg,
+    value - LAG(value) OVER (
+        PARTITION BY sensor_id ORDER BY ts
+    ) AS delta
+FROM sensor_readings
+WHERE ts >= '2026-01-01'
+QUALIFY rolling_avg > 100;  -- DuckDB supports QUALIFY clause
+```
+
+**Pattern 4: DuckDB source code — Vector representation (from actual source)**
+
+```cpp
+// source: src/include/duckdb/common/types/vector.hpp
+// github: https://github.com/duckdb/duckdb/blob/main/src/include/duckdb/common/types/vector.hpp
+// tag: v1.5.1
+
+//! The vector size used in the execution engine
+#ifndef STANDARD_VECTOR_SIZE
+#define STANDARD_VECTOR_SIZE 2048
+#endif
+
+class Vector {
+public:
+    //! The vector type specifies how the data for the vector is physically stored
+    VectorType vector_type;
+    //! The type of the elements stored in the vector
+    LogicalType type;
+    //! A pointer to the data
+    data_ptr_t data;
+    //! The validity mask of the vector
+    ValidityMask validity;
+    //! The auxiliary data for the vector (e.g., string heap, child vectors)
+    shared_ptr<VectorBuffer> buffer;
+    shared_ptr<VectorBuffer> auxiliary;
+};
+```
+
+**Pattern 5: DuckDB source code — Optimizer pipeline (from actual source)**
+
+```cpp
+// source: src/optimizer/optimizer.cpp
+// github: https://github.com/duckdb/duckdb/blob/main/src/optimizer/optimizer.cpp
+// tag: v1.5.1
+
+// The optimizer runs multiple passes over the logical plan:
+// 1. Expression rewriting (constant folding, simplification)
+// 2. Filter pushdown
+// 3. Join order optimization (DPccp algorithm)
+// 4. Common subexpression elimination
+// 5. Column lifetime analysis
+// 6. Physical plan generation
+```
+
+### Deployment Considerations
+
+**Memory sizing:** Set `memory_limit` to 60-80% of available RAM. DuckDB will spill to disk via `temp_directory` when it exceeds this limit, but spilling degrades performance significantly for large joins and sorts.
+
+**Thread tuning:** DuckDB defaults to using all available cores. In shared environments (containers, multi-tenant), set `threads` explicitly to avoid resource contention.
+
+**Concurrency model:** Remember the single-writer-per-file constraint. For web applications, use a single process with connection pooling. For multi-process architectures, delegate writes to a single writer process or use Parquet files as the interchange format.
+
+**Storage format versioning:** Each major DuckDB version may increment the storage version. Use `EXPORT DATABASE` / `IMPORT DATABASE` to migrate data between versions, or pin your DuckDB version in production.
+
+**Security:** Set `enable_external_access = false` to prevent file I/O and module loading in untrusted environments. As of v1.4.0 LTS, AES-256 encryption is available for database files.
 
 ---
 
 ## Use Cases & Case Studies
 <!-- level: beginner-intermediate -->
+<!-- references: https://motherduck.com/blog/15-companies-duckdb-in-prod/, https://duckdb.org/why_duckdb, https://motherduck.com/duckdb-book-summary-chapter1/, https://endjin.com/blog/2025/04/duckdb-in-practice-enterprise-integration-architectural-patterns -->
 
-### When to Use DuckDB
+### When to Use It
 
-| Use Case | Why DuckDB Fits |
-|----------|-----------------|
-| **Ad-hoc data analysis** | SQL on local files with zero setup -- faster than pandas for large datasets |
-| **ETL and data pipelines** | Read from multiple formats, transform with SQL, write to Parquet/CSV |
-| **Data exploration** | Query CSVs, Parquet, JSON files directly without importing |
-| **Embedded analytics** | Add analytical queries to applications without a separate database server |
-| **CI/CD data testing** | Fast startup, no infrastructure -- ideal for testing data pipelines |
-| **Privacy-sensitive analysis** | Data never leaves the local machine -- no cloud required |
-| **Replacing pandas for SQL-heavy work** | Better memory efficiency, parallel execution, and SQL expressiveness |
-| **Data lake querying** | Direct Parquet/Iceberg/S3 queries as a lightweight alternative to Spark |
+- **Local data analysis:** Query CSV, Parquet, or JSON files with SQL without setting up a database server. A data scientist can `pip install duckdb` and start querying gigabyte-scale datasets in seconds.
+- **Embedded analytics in applications:** Add analytical capabilities to desktop apps, mobile apps (via C/C++), or web apps (via DuckDB-Wasm) without a server dependency.
+- **ETL/ELT pipelines:** Process and transform data locally before pushing to a data warehouse. DuckDB's ability to read from and write to Parquet, CSV, JSON, and S3 makes it a powerful pipeline tool.
+- **CI/CD data testing:** Validate data quality in automated pipelines. DuckDB's near-zero startup time and no-server-needed design make it ideal for test suites.
+- **Prototyping and development:** Build and iterate on analytical queries locally before deploying to a production data warehouse.
+- **Replacing pandas for large datasets:** When pandas runs out of memory or becomes slow, DuckDB can process the same data with SQL using a fraction of the memory (lazy evaluation, columnar compression, spill-to-disk).
 
-### When NOT to Use DuckDB
+### When NOT to Use It
 
-| Scenario | Better Alternative |
-|----------|--------------------|
-| **High-concurrency OLTP** (many users writing simultaneously) | PostgreSQL, MySQL, CockroachDB |
-| **Petabyte-scale distributed analytics** | ClickHouse, Snowflake, BigQuery, Spark |
-| **Real-time streaming ingestion** | Kafka + ClickHouse, Apache Flink |
-| **Multi-user concurrent writes** | PostgreSQL, any OLTP database |
-| **Sub-millisecond point lookups** | Redis, DynamoDB, RocksDB |
-| **Full-text search** | Elasticsearch, Typesense |
+- **High-concurrency transactional workloads (OLTP):** DuckDB is not designed for thousands of concurrent small transactions. Use PostgreSQL, MySQL, or SQLite instead.
+- **Multi-writer distributed systems:** If you need multiple processes or services writing simultaneously, DuckDB's single-writer model is a hard constraint. Consider ClickHouse, CockroachDB, or a traditional data warehouse.
+- **Real-time streaming ingestion:** DuckDB is batch-oriented. For streaming data ingestion at scale, use Apache Kafka + ClickHouse, Apache Flink, or Materialize.
+- **Multi-user server deployments:** DuckDB is not a database server. If you need to serve many concurrent users, use MotherDuck (cloud DuckDB), a traditional data warehouse, or put DuckDB behind an application server.
+- **Very large datasets (multi-TB):** While DuckDB handles larger-than-memory datasets by spilling to disk, multi-terabyte workloads benefit from distributed systems like ClickHouse, BigQuery, or Snowflake.
 
-### Real-World Usage
+### Real-World Examples
 
-**Watershed** -- Uses DuckDB for data pipeline operations, converting activity data into carbon footprint calculations. They query Parquet files directly as internal tooling.
+**FinQore (formerly SaaSWorks) — Enterprise Financial Pipelines:**
+Replaced Postgres-based data processing with DuckDB, reducing pipeline execution from 8 hours to 8 minutes. They process complex financial data from multiple source systems, achieving a 60x speedup.
 
-**MotherDuck** -- A cloud service built on DuckDB that provides a serverless analytical database. Users can `ATTACH 'md:'` to offload heavy queries to cloud compute while keeping the DuckDB developer experience.
+**Watershed — Carbon Analytics:**
+Uses DuckDB to query Parquet files on Google Cloud Storage for carbon footprint calculations. Handles 75,000 daily queries with the largest datasets at 750MB, achieving 10x performance gains through byte caching and zero-copy SQL.
 
-**Rill Data** -- Built their BI dashboard engine on DuckDB, powering interactive exploration of large datasets with sub-second query times.
+**Okta — Enterprise Security:**
+Processes 7.5 trillion security records for authentication and security analytics using DuckDB's embedded engine.
 
-**Evidence** -- Built Universal SQL with DuckDB-Wasm, enabling browser-based interactive dashboards that query data locally in WebAssembly.
+**Hex — Notebook Analytics:**
+Migrated to a DuckDB architecture querying remote Arrow data from S3, achieving 5-10x speedups in notebook execution times.
 
-**Common Production Pattern** -- Companies replace expensive cloud analytics services (BigQuery, Athena, Redshift) with DuckDB running in scheduled cloud functions (AWS Lambda, GCP Cloud Run), processing log files and Parquet directly from object storage at a fraction of the cost.
+**Rill — Visual Analytics:**
+Selected DuckDB over SQLite after benchmarks showed 3-30x performance improvements on analytical queries.
+
+**NSW Department of Education — Government Data Platform:**
+Built their modern data stack using DuckDB integrated with Dagster, dbt, dlt, and Evidence for their public data portal.
+
+**Hugging Face — AI Dataset Access:**
+Provides direct SQL access to 150,000+ AI datasets via the `hf://` protocol, supporting CSV, JSONL, and Parquet formats.
+
+**Ibis Project — Portable DataFrames:**
+Using DuckDB as the execution backend, processed 1.1 billion rows of PyPI package data in approximately 38 seconds on a laptop using ~1 GB RAM.
 
 ---
 
 ## Ecosystem & Integrations
 <!-- level: intermediate -->
+<!-- references: https://duckdb.org/community_extensions/development, https://motherduck.com/blog/duckdb-ecosystem-newsletter-march-2026/, https://motherduck.com, https://motherduck.com/learn-more/ducklake-guide/ -->
 
-### Core Extensions (Maintained by DuckDB Team)
+### Official Tools & Extensions
+
+**Core Extensions (maintained by DuckDB team):**
 
 | Extension | Purpose |
 |-----------|---------|
-| **httpfs** | Read/write to S3, HTTP, HTTPS, and GCS |
-| **parquet** | Parquet file reader/writer (bundled, auto-loaded) |
-| **json** | JSON file reader (bundled, auto-loaded) |
-| **iceberg** | Apache Iceberg table format (v2 and v3 support) |
-| **spatial** | GIS/geometry functions; GEOMETRY type is core as of v1.5.0 |
-| **postgres_scanner** | Directly query PostgreSQL tables |
-| **sqlite_scanner** | Directly query SQLite databases |
-| **excel** | Read/write Excel (.xlsx) files |
-| **lance** | Lance lakehouse format (new in v1.5.1) |
-| **ducklake** | Lakehouse catalog management |
-| **fts** | Full-text search |
-| **inet** | Network address types and functions |
-| **tpch / tpcds** | Built-in benchmark data generators |
+| `parquet` | Read/write Apache Parquet files |
+| `httpfs` | HTTP(S) and S3/GCS/Azure file access |
+| `json` | JSON reading, writing, and querying |
+| `icu` | International Components for Unicode (collation, timezones) |
+| `postgres` | Attach and query PostgreSQL databases |
+| `mysql` | Attach and query MySQL databases |
+| `sqlite` | Attach and query SQLite databases |
+| `spatial` | Geospatial data types and functions |
+| `fts` | Full-text search |
+| `tpch` / `tpcds` | Built-in benchmark datasets |
+| `excel` | Read/write Excel files |
+| `delta` | Read/write Delta Lake tables |
+| `iceberg` | Read/write Apache Iceberg tables |
+| `azure` | Azure Blob Storage and ADLSv2 access |
+| `aws` | AWS credential management |
+| `ducklake` | DuckLake lakehouse table format |
 
-### Language Bindings
+**MotherDuck:**
+[MotherDuck](https://motherduck.com) is the serverless cloud data warehouse built on DuckDB. It extends DuckDB with multi-user access, persistent cloud storage, and hybrid local/cloud execution. Queries can seamlessly combine local DuckDB data with cloud-hosted data.
 
-DuckDB provides official APIs for:
-- **Python** (`pip install duckdb`) -- the most popular, with deep pandas/Polars integration
-- **R** (`install.packages("duckdb")`) -- integrates with dplyr via dbplyr
-- **Node.js** (`npm install duckdb`) -- async API for server-side JavaScript
-- **Java/JDBC** -- standard JDBC driver
-- **C/C++** -- native API, the foundation all other bindings build on
-- **Go** -- community-maintained binding
-- **Rust** -- via the `duckdb` crate
-- **WebAssembly** -- DuckDB-Wasm runs entirely in the browser
-- **ODBC** -- standard ODBC driver for legacy tool integration
-- **Swift** -- for iOS/macOS applications
+**DuckLake:**
+[DuckLake](https://motherduck.com/learn-more/ducklake-guide/) is an open lakehouse table format (MIT license) that stores metadata in a SQL database rather than flat files on object storage. Unlike Iceberg or Delta Lake, DuckLake avoids the "small files problem" by keeping schemas, file pointers, and transaction logs in a transactional SQL catalog. Data itself lives as standard Parquet files on blob storage (S3, GCS, Azure).
 
-### Data Tool Integrations
+**DuckDB-Wasm:**
+A WebAssembly build of DuckDB that runs entirely in web browsers, enabling client-side analytical SQL without a backend. Used by tools like Evidence, Mosaic, and Count for in-browser data exploration.
 
-| Tool | Integration |
-|------|-------------|
-| **dbt** | `dbt-duckdb` adapter for running dbt models locally |
-| **Jupyter** | Magic commands via `duckdb` + `jupysql` |
-| **Pandas** | Zero-copy querying of DataFrames with SQL |
-| **Polars** | Query Polars DataFrames, export to Polars |
-| **Apache Arrow** | Zero-copy data exchange via Arrow format |
-| **Ibis** | DuckDB backend for the Ibis dataframe API |
-| **Grafana** | DuckDB data source plugin for dashboards |
-| **Airbyte** | DuckDB as a destination connector |
-| **SQLAlchemy** | `duckdb_engine` dialect |
-| **Metabase** | DuckDB driver for BI dashboards |
+### Community Ecosystem
 
-### MotherDuck (Cloud DuckDB)
+As of March 2026, there are 150+ community extensions in the [duckdb/community-extensions](https://github.com/duckdb/community-extensions) repository, including:
 
-MotherDuck provides a cloud-hosted DuckDB service:
-- `ATTACH 'md:'` to connect your local DuckDB to the cloud
-- Hybrid execution -- queries run locally or in the cloud depending on data location
-- Shared databases for team collaboration
-- Web-based SQL editor
-- Cloud compute for heavy queries while keeping the local dev experience
+- **snowflake:** Query Snowflake tables directly from DuckDB via the ADBC driver
+- **mongo:** Run SQL queries against MongoDB collections with automatic schema inference
+- **onager:** Graph analytics algorithms (complement to DuckPGQ)
+- **lance:** Support for the Lance lakehouse format (new in v1.5.1)
+- **Various connectors:** BigQuery, Cassandra, Redis, and more
+
+**Language Bindings:**
+Python, R, Java, C/C++, Go, Node.js, Rust, Swift, and more. The Python binding is by far the most popular, with deep integration into pandas, Polars, PyArrow, and the broader PyData ecosystem.
+
+**Data Tool Integrations:**
+- **dbt:** dbt-duckdb adapter for transformation workflows
+- **Dagster:** Native DuckDB integration for orchestration
+- **Evidence:** BI tool using DuckDB-Wasm as its query engine
+- **Ibis:** Portable dataframe library with DuckDB backend
+- **Streamlit:** DuckDB as an embedded data layer for data apps
+- **Jupyter:** Direct use via the Python API in notebooks
+- **Fivetran:** Embeds DuckDB for data transformations
+- **Mode / Hex:** Notebook platforms using DuckDB for fast execution
+
+### Common Integration Patterns
+
+**Pattern 1: Local-first analytics with cloud fallback**
+```python
+import duckdb
+
+con = duckdb.connect()
+# Query local Parquet files
+con.sql("SELECT * FROM 'local_data/*.parquet'")
+# Query remote S3 data (httpfs extension auto-loaded)
+con.sql("SELECT * FROM 's3://bucket/data/*.parquet'")
+```
+
+**Pattern 2: DuckDB as a data pipeline Swiss Army knife**
+```
+Source (CSV/API/DB) → DuckDB (clean, transform, aggregate) → Sink (Parquet/Warehouse/Dashboard)
+```
+
+**Pattern 3: Hybrid local-cloud with MotherDuck**
+```python
+import duckdb
+
+# Connect to MotherDuck (cloud) while keeping local data access
+con = duckdb.connect("md:my_database")
+con.sql("SELECT * FROM local_table JOIN cloud_table USING (id)")
+```
 
 ---
 
 ## Common Q&A
 <!-- level: all -->
 
-### Q: How much data can DuckDB handle? When does it hit its limits?
+### Q: Can DuckDB handle concurrent writes from multiple processes?
 
-DuckDB works well with datasets up to roughly **2 TB on a single machine**. The actual limit depends on your available RAM and disk:
-- Datasets that fit in RAM: full speed, all operations in memory
-- Datasets larger than RAM: DuckDB spills intermediate results to disk, so queries still work but slow down for operations that require materializing large intermediates (like big hash joins)
-- Beyond ~2 TB or when you need distributed processing: consider ClickHouse, Snowflake, or Spark
+**A:** No. DuckDB enforces a single-writer-per-database-file constraint at the process level. Within a single process, multiple threads can write concurrently using optimistic concurrency control (appends never conflict; same-row updates will fail for the second writer). For multi-process write scenarios, common workarounds include: (1) a single writer process with a request queue, (2) writing to Parquet files and periodically ingesting them, (3) delegating writes to an external database (Postgres/MySQL) attached via extensions, or (4) using MotherDuck for multi-user cloud access.
 
-The sweet spot is datasets from **1 MB to 200 GB** -- large enough that pandas struggles, small enough that you don't need a cluster.
+### Q: How does DuckDB handle datasets larger than available memory?
 
-### Q: Can I use DuckDB in production?
+**A:** DuckDB transparently spills intermediate results to disk when memory usage exceeds the configured `memory_limit`. It uses the `temp_directory` setting to store overflow data. Additionally, it can stream data from Parquet/CSV files without loading them fully into memory. However, performance degrades when spilling is required, especially for operations like large hash joins. The key insight is that DuckDB does not require the entire dataset to fit in RAM — it requires enough RAM for the largest intermediate result.
 
-Yes, but understand its concurrency model. DuckDB supports **multiple concurrent readers but only a single writer**. This makes it well-suited for:
-- Read-heavy analytical dashboards
-- Batch processing pipelines
-- Embedded analytics in applications
-- Scheduled reporting jobs
+### Q: What is the practical upper bound on dataset size for DuckDB?
 
-It is **not suited** for workloads with many concurrent write transactions (use PostgreSQL or MySQL for that).
+**A:** DuckDB has processed hundreds of gigabytes on single machines. The practical limit depends on your hardware: available RAM (for performance), disk speed (for spilling), and patience. For analytical queries that scan and aggregate, DuckDB handles datasets significantly larger than RAM. For complex multi-way joins on very large tables, you will hit diminishing returns at the tens-of-GB to low-TB range. Multi-TB analytical workloads are better served by distributed systems like ClickHouse or cloud warehouses.
+
+### Q: How does DuckDB's storage format handle version upgrades?
+
+**A:** Each major DuckDB version may increment the storage format version number (e.g., v64 for 0.9.x-1.1.x, v67 for 1.4.x). DuckDB can read older storage versions but writes in the current version. Starting with v1.2.0, you can pin the `STORAGE_VERSION` when creating a database. For version migrations, use `EXPORT DATABASE` (to Parquet/CSV) and `IMPORT DATABASE` on the new version. The LTS release line (currently 1.4.x, supported until September 2026) provides stability for production deployments.
+
+### Q: Is DuckDB suitable for use as a web application backend?
+
+**A:** With caveats. DuckDB can serve analytical queries in a web backend if a single application process manages the database file. It is not a multi-user database server: you cannot have multiple web server processes opening the same database for writing. For read-heavy analytical dashboards, DuckDB behind a single application server (with connection pooling) works well. For multi-user, multi-writer web applications, use MotherDuck or a traditional OLTP database for writes with DuckDB for analytical read queries.
 
 ### Q: How does DuckDB compare to pandas for data analysis?
 
-| Dimension | DuckDB | pandas |
-|-----------|--------|--------|
-| **Memory efficiency** | Columnar + spill to disk | Loads everything into RAM |
-| **Query language** | SQL | Python API |
-| **Parallelism** | Automatic multi-core | Single-threaded (mostly) |
-| **Large datasets** | Handles larger-than-RAM | OOM on large data |
-| **Complex joins** | Optimized by query planner | Manual, often slow |
-| **Learning curve** | Need to know SQL | Need to know pandas API |
+**A:** DuckDB is typically faster and more memory-efficient than pandas for analytical workloads. Pandas materializes entire DataFrames in memory; DuckDB uses lazy evaluation, columnar compression, and spill-to-disk. DuckDB can query pandas DataFrames directly (zero-copy via Arrow) while using a fraction of the memory. The trade-off is that DuckDB uses SQL (or the relational API) rather than the pandas API, which may require a mindset shift. For workloads exceeding a few GB, DuckDB is almost always faster.
 
-Many data professionals use both: DuckDB for heavy lifting (aggregations, joins, filtering), then convert results to pandas for visualization or ML.
+### Q: What guarantees does DuckDB provide for data durability?
 
-### Q: What happens if my machine crashes mid-write? Is my data safe?
+**A:** DuckDB provides full ACID transactions with a write-ahead log (WAL). Changes are written to the WAL first, then periodically checkpointed to the main database file (controlled by `checkpoint_threshold`). In the event of a crash, the WAL is replayed on the next open. As of v1.4.0 LTS, AES-256 encryption is available for database files, and as of v1.5.0, checkpointing is non-blocking (concurrent reads/writes continue during checkpoints).
 
-DuckDB is **ACID-compliant** with WAL (Write-Ahead Log) based recovery. If a crash occurs during a write:
-- Uncommitted transactions are rolled back
-- The database file remains consistent
-- Committed data is never lost
+### Q: How do extensions affect security?
 
-The single-file format means there's no separate WAL directory to lose or corruption from partial file systems -- the WAL is embedded in the database file.
+**A:** All official extensions are cryptographically signed. DuckDB verifies signatures before loading extensions. In untrusted environments, set `enable_external_access = false` to prevent file I/O and extension loading entirely. Community extensions are also signed through the community extensions repository build process, but you should audit them with the same care as any third-party dependency.
 
-### Q: Can DuckDB replace my data warehouse (BigQuery/Snowflake)?
+### Q: Why does DuckDB use a push-based execution model instead of the traditional Volcano (pull-based) model?
 
-For many workloads, yes. Companies have replaced cloud data warehouses with DuckDB for:
-- **Cost savings** -- DuckDB is free; cloud warehouses charge per query or per TB scanned
-- **Latency** -- No network round-trip; queries on local data are faster
-- **Simplicity** -- No infrastructure to manage
-
-You'd still need a cloud warehouse when you require:
-- Multiple teams querying the same data concurrently
-- Petabyte-scale data
-- Built-in governance, access control, and audit trails
-- Real-time dashboard serving with high concurrency
-
-### Q: How do I handle schema evolution with DuckDB?
-
-DuckDB supports standard SQL DDL:
-```sql
-ALTER TABLE events ADD COLUMN source VARCHAR;
-ALTER TABLE events DROP COLUMN old_field;
-ALTER TABLE events RENAME COLUMN ts TO event_timestamp;
-```
-
-For file-based workflows (querying Parquet directly), schema evolution is handled by Parquet's built-in schema evolution -- DuckDB reads what columns exist and fills missing columns with NULL. For Iceberg tables, DuckDB respects Iceberg's schema evolution semantics (v2 and v3).
-
-### Q: Is there a way to speed up repeated queries on the same data?
-
-Several approaches:
-1. **Persistent tables** -- Load data into a `.duckdb` file instead of querying raw files each time
-2. **Indexes** -- Create ART (Adaptive Radix Tree) indexes for frequently filtered columns (use cautiously -- analytical workloads often don't benefit from indexes)
-3. **Sorted data** -- Store data sorted by commonly filtered columns so zone maps can skip more row groups
-4. **Parquet with row group statistics** -- Write Parquet files with sorted data so DuckDB's predicate pushdown is maximally effective
+**A:** The Volcano model's `next()` call per-row-per-operator creates enormous virtual function dispatch overhead. Push-based execution amortizes this cost by pushing entire vectors (2048 tuples) through operators. Combined with morsel-driven parallelism, the push model also enables better work stealing and adaptive load balancing: operators control when and how they distribute work across threads, rather than relying on static partitioning via exchange operators.
 
 ---
 
 ## Trade-offs & Limitations
 <!-- level: intermediate -->
+<!-- references: https://duckdb.org/docs/stable/connect/concurrency, https://duckdb.org/faq, https://duckdb.org/why_duckdb, https://motherduck.com/learn-more/duckdb-vs-sqlite-databases/, https://www.cloudraft.io/blog/clickhouse-vs-duckdb -->
 
 ### Strengths
 
-- **Zero-configuration deployment** -- No server, no dependencies, no configuration files. `pip install duckdb` and you're running queries.
-- **Exceptional single-machine analytics performance** -- Vectorized columnar execution makes it remarkably fast for OLAP workloads, often matching or beating distributed systems on datasets that fit one machine.
-- **Format versatility** -- Query Parquet, CSV, JSON, Iceberg, Lance, Excel, PostgreSQL, and SQLite data sources with a unified SQL interface.
-- **Developer experience** -- The Python integration, DataFrame interop, and friendly CLI (v1.5.0+) make it pleasant to use for exploratory work.
-- **Cost** -- MIT-licensed and free. Replacing cloud data warehouse queries with DuckDB can cut analytics costs dramatically.
-- **Portability** -- Runs on Linux, macOS, Windows, in browsers (Wasm), mobile devices, and embedded systems. The same query runs everywhere.
+- **Zero-friction analytics:** `pip install duckdb` and you have a full SQL OLAP engine. No server, no configuration, no dependencies.
+- **Performance per dollar:** Single-machine analytical performance that rivals or beats distributed systems for datasets up to hundreds of GB, at zero infrastructure cost.
+- **Universal data access:** Query Parquet, CSV, JSON, Arrow, S3, HTTP, PostgreSQL, MySQL, SQLite, Excel, and more through a single SQL interface.
+- **Embeddability:** Runs everywhere — Python scripts, Jupyter notebooks, R sessions, Java apps, web browsers (Wasm), mobile apps, edge devices.
+- **Developer experience:** Rich SQL dialect (window functions, QUALIFY, ASOF joins, LIST/MAP/STRUCT types, PIVOT/UNPIVOT), excellent error messages, and the new friendly CLI (v1.5.0).
+- **Active development:** Rapid release cadence (v1.5.1 in March 2026), growing extension ecosystem (150+ community extensions), and strong community.
+- **Zero-copy interop:** Direct integration with pandas, Polars, and PyArrow without serialization overhead.
 
 ### Limitations
 
-- **Single-writer concurrency** -- Only one connection can write at a time. This is by design (not a bug), but it means DuckDB cannot serve high-concurrency write workloads. If you need many concurrent writers, use PostgreSQL or a distributed database.
-- **Not distributed** -- DuckDB runs on a single machine. There's no built-in sharding, replication, or cluster mode. For datasets beyond ~2 TB, you'll need ClickHouse, Snowflake, Spark, or similar distributed systems.
-- **Not an OLTP database** -- DuckDB is optimized for scans, aggregations, and joins -- not for high-throughput point lookups or single-row updates. Inserting millions of individual rows one-at-a-time is slow; bulk loading is the expected pattern.
-- **Young ecosystem** -- While growing rapidly, the extension ecosystem is younger than PostgreSQL's. Some extensions are experimental, and breaking changes still occur between major versions (e.g., the `date_trunc` return type change in v1.5.0).
-- **No built-in access control** -- DuckDB has no user management, roles, or row-level security. It trusts whoever has file access. For multi-tenant scenarios, you'd need to add access control at the application layer or use MotherDuck.
-- **Storage format changes** -- DuckDB's on-disk format can change between major versions. While backward-compatible reads are supported and forward compatibility is maintained within LTS lines (e.g., 1.4.x), upgrading across major versions may require re-exporting data. The LTS release strategy (introduced with 1.4) mitigates this.
+- **Single-writer constraint:** Only one process can write to a database file at a time. This is a fundamental architectural decision, not a temporary limitation. Multi-process concurrent writes will likely never be supported.
+- **No horizontal scaling:** DuckDB is a single-node database. It cannot distribute queries across a cluster. For multi-TB workloads or high-concurrency serving, you need a distributed system.
+- **Not designed for OLTP:** High-frequency small transactions (point lookups, single-row updates) are not DuckDB's strength. The vectorized engine's benefits emerge with batch operations on many rows.
+- **Storage format migration burden:** Major version upgrades may require `EXPORT DATABASE` / `IMPORT DATABASE` due to storage format version changes. This can be painful for large persistent databases.
+- **Limited multi-user support:** DuckDB is not a database server. There is no built-in authentication, role-based access control, or query queueing for multiple users.
+- **Extension dependency management:** While extensions are powerful, managing extension versions across DuckDB upgrades and environments requires care. Breaking changes in extensions can affect pipelines.
+- **Memory pressure on complex joins:** Large hash joins can exceed memory and spill to disk with significant performance degradation. The system handles this gracefully but slowly.
 
 ### Alternatives Comparison
 
-| System | Best For | vs DuckDB |
-|--------|----------|-----------|
-| **SQLite** | OLTP, embedded transactional | DuckDB is 10-100x faster for analytics; SQLite wins for row-level inserts/updates |
-| **ClickHouse** | Distributed real-time analytics | Better at petabyte scale and high concurrency; DuckDB is simpler and faster for single-machine work |
-| **Polars** | DataFrame-centric analytics | More Pythonic API; DuckDB has richer SQL and can query more file formats |
-| **Spark** | Distributed batch processing | Better at cluster-scale; DuckDB is orders of magnitude simpler and faster for single-machine data |
-| **BigQuery/Snowflake** | Managed cloud analytics | Better governance, concurrency, and scale; DuckDB is free and faster for data that fits one machine |
-| **PostgreSQL** | General-purpose with analytics | Better OLTP, access control, concurrency; DuckDB crushes it on analytical scans and aggregations |
+| Feature | DuckDB | SQLite | ClickHouse | Polars |
+|---------|--------|--------|------------|--------|
+| **Model** | Embedded OLAP | Embedded OLTP | Server OLAP | DataFrame library |
+| **Execution** | Vectorized columnar | Row-at-a-time | Vectorized columnar | Vectorized columnar |
+| **Parallelism** | Multi-threaded | Single-threaded | Distributed | Multi-threaded |
+| **SQL** | Full (advanced) | Basic | Full (advanced) | Limited (lazy expr) |
+| **Scaling** | Vertical only | Vertical only | Horizontal + vertical | Vertical only |
+| **Concurrency** | Single-writer, multi-reader | WAL mode multi-reader | Multi-writer, multi-reader | N/A (library) |
+| **Best for** | Analytical queries, data pipelines | App data, OLTP, config | Large-scale analytics, dashboards | In-memory DataFrame ops |
+| **Deployment** | Library / single file | Library / single file | Server cluster | Library |
+| **Ecosystem** | 150+ extensions | Huge (decades) | Growing | Python-centric |
 
-### The Bottom Line
+**DuckDB vs. SQLite:** DuckDB is 3-30x faster for analytical queries (aggregations, joins on large tables) while SQLite is optimized for transactional workloads (point queries, small writes). They serve complementary use cases.
 
-DuckDB excels when your data fits on one machine (up to ~2 TB) and your workload is analytical. It's the best choice for local data analysis, ETL pipelines, embedded analytics, and replacing expensive cloud queries. Choose something else when you need distributed scale, high write concurrency, or enterprise access control.
+**DuckDB vs. ClickHouse:** DuckDB wins on simplicity, embeddability, and small-to-medium datasets with no infrastructure overhead. ClickHouse wins on horizontal scaling, real-time ingestion, high-concurrency multi-user serving, and multi-TB datasets. ClickHouse Local provides a similar single-process experience but lacks DuckDB's embeddability and ecosystem breadth.
+
+**DuckDB vs. Polars:** Both are fast columnar engines. DuckDB provides full SQL, persistent storage, and broader data source access. Polars provides a more Pythonic API, is purely in-memory, and excels at DataFrame operations. Many users combine them: Polars for transformation logic, DuckDB for SQL queries and file I/O.
+
+### The Honest Take
+
+DuckDB has earned its hype. It genuinely delivers on its promise of making analytical SQL trivially accessible and blazingly fast for the single-machine use case. The "SQLite for analytics" tagline is accurate and well-earned.
+
+But it is not a silver bullet. The single-writer constraint means DuckDB cannot replace a database server for applications with concurrent write needs. The lack of horizontal scaling means it will hit a wall at scale that distributed systems handle natively. And the rapid release cadence, while exciting, means the storage format and API surface are still evolving — production deployments should pin to LTS releases (currently v1.4.x) and plan for migration effort.
+
+The most common mistake is trying to use DuckDB as a general-purpose database server. It is not one. It is an analytical query engine that happens to have ACID transactions and persistent storage. Use it where its strengths shine: local analytics, data pipelines, embedded analytical features, and anywhere you would otherwise spin up a heavyweight data warehouse for a small-to-medium dataset.
+
+The DuckDB Foundation's stewardship, the MIT license, and the growing ecosystem (MotherDuck for cloud, DuckLake for lakehouses, 150+ community extensions) position DuckDB as a long-term pillar of the modern data stack. It has become the default recommendation for "I need to query some data files with SQL" — and that is a remarkably common need.

@@ -7,71 +7,105 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context:
+    system: "DuckDB"
+    description: "an embedded analytical (OLAP) database management system"
+    page: "Trade-offs & Limitations"
+    level: "Intermediate"
+  -->
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms}
-    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
-    html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}*,*::before,*::after{box-sizing:border-box}
-    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap}.nav-brand{text-decoration:none;display:flex;flex-direction:column}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted)}.nav-links{display:flex;align-items:center;gap:var(--space-4)}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0}.nav-page-list li a{display:flex;align-items:center;padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background .15s ease,color .15s ease}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text)}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2)}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px}@media(max-width:768px){.nav-hamburger{display:flex}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3)}.nav-links.open{display:flex}.nav-page-list{flex-direction:column;width:100%}.nav-page-list li a{padding:var(--space-2) var(--space-3)}}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-3) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:.05em}.page-level-badge.intermediate{background:var(--color-warning-light);color:#B8860B}
-    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}.content-section ul{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4);padding-left:var(--space-6)}.content-section li{margin-bottom:var(--space-2)}
-    /* SYSTEM COMPARISON */
-    .sys-comparison{margin:var(--space-8) 0}.sys-comparison-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-4)}.sys-comparison-header h3{font-family:var(--font-display);font-weight:700;margin:0}.sys-comparison-toggles{display:flex;gap:var(--space-3)}.sys-toggle{font-size:var(--text-xs);font-family:var(--font-mono);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;gap:var(--space-1)}.sys-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4)}.sys-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);box-shadow:var(--shadow-sm);border-top:3px solid var(--color-border);transition:box-shadow var(--duration-fast)}.sys-card.current{border-top-color:var(--color-accent);box-shadow:var(--shadow-md)}.sys-card-badge{font-size:var(--text-xs);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--color-accent);margin-bottom:var(--space-2)}.sys-card-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);margin:0 0 var(--space-4)}.sys-card-section{margin-bottom:var(--space-3);transition:max-height var(--duration-normal),opacity var(--duration-normal);overflow:hidden}.sys-card-section.hidden{max-height:0;opacity:0;margin-bottom:0}.sys-section-label{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.05em;margin:0 0 var(--space-2)}.strengths-label{color:var(--color-success)}.weaknesses-label{color:var(--color-error)}.bestfor-label{color:var(--color-info)}.sys-card ul{list-style:none;padding:0;margin:0}.sys-card li{font-size:var(--text-sm);padding:var(--space-1) 0;color:var(--color-text-secondary)}.sys-card li.sys-highlight{color:var(--color-text);font-weight:600}.sys-card .sys-card-section[data-dim="best-for"] p{font-size:var(--text-sm);color:var(--color-text-secondary);margin:0}@media(max-width:768px){.sys-cards{grid-template-columns:1fr}}
-    /* CALLOUT */
-    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}.callout-tip{background:var(--color-success-light);border-color:var(--color-success)}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}.callout-insight{background:#F3EFF8;border-color:#7B6DAA}.callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}.callout-content strong{color:var(--color-text)}
-    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}.glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s ease}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}
-    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}.site-footer p{margin:0}
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
-    /* Bottom line box */
-    .bottom-line{background:var(--color-accent-light);border:2px solid var(--color-accent);border-radius:var(--radius-lg);padding:var(--space-6);margin:var(--space-8) 0}.bottom-line h3{font-family:var(--font-display);font-weight:700;font-size:var(--text-xl);margin:0 0 var(--space-3);color:var(--color-text)}.bottom-line p{font-size:var(--text-base);line-height:1.7;color:var(--color-text);margin:0}
-    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;}
+    *,*::before,*::after{box-sizing:border-box;}html{scroll-behavior:smooth;}::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full);}
+    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased;}
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap;}.nav-brand{text-decoration:none;display:flex;flex-direction:column;}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2;}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);}
+    .nav-links{display:flex;align-items:center;}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0;}.nav-page-list li a{padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background 0.15s,color 0.15s;display:block;}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text);}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600;}
+    .nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2);}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;}
+    @media(max-width:768px){.nav-hamburger{display:flex;}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3);}.nav-links.open{display:flex;}.nav-page-list{flex-direction:column;width:100%;}}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3);}.page-header-content{flex:1;min-width:0;}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin-bottom:var(--space-3);line-height:1.15;}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;}.page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info);}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6);}.content-section{margin-bottom:var(--space-10);}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin-bottom:var(--space-4);}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;margin-bottom:var(--space-3);}.content-section p{font-size:var(--text-base);line-height:1.7;margin-bottom:var(--space-4);}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg);}
+
+    /* Comparison cards */
+    .sys-comparison{margin:var(--space-8) 0;}.sys-comparison-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-4);}.sys-comparison-header h3{font-family:var(--font-display);font-weight:700;}
+    .sys-comparison-toggles{display:flex;gap:var(--space-3);}.sys-toggle{font-size:var(--text-xs);font-family:var(--font-mono);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;gap:var(--space-1);}
+    .sys-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);}
+    .sys-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);box-shadow:var(--shadow-sm);border-top:3px solid var(--color-border);transition:box-shadow var(--duration-fast);}.sys-card.current{border-top-color:var(--color-accent);box-shadow:var(--shadow-md);}
+    .sys-card-badge{font-size:var(--text-xs);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.05em;color:var(--color-accent);margin-bottom:var(--space-2);}.sys-card-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);margin-bottom:var(--space-4);}
+    .sys-card-section{margin-bottom:var(--space-3);transition:max-height var(--duration-normal),opacity var(--duration-normal);overflow:hidden;}.sys-card-section.hidden{max-height:0;opacity:0;margin-bottom:0;}
+    .sys-section-label{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-2);}.strengths-label{color:var(--color-success);}.weaknesses-label{color:var(--color-error);}.bestfor-label{color:var(--color-info);}
+    .sys-card ul{list-style:none;padding:0;margin:0;}.sys-card li{font-size:var(--text-sm);padding:var(--space-1) 0;color:var(--color-text-secondary);}.sys-card li.sys-highlight{color:var(--color-text);font-weight:600;}
+    .sys-card .sys-card-section[data-dim="best-for"] p{font-size:var(--text-sm);color:var(--color-text-secondary);}
+    @media(max-width:768px){.sys-cards{grid-template-columns:1fr;}}
+
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid;}.callout-insight{background:#F3EFF8;border-color:#7B6DAA;}.callout-tip{background:var(--color-success-light);border-color:var(--color-success);}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning);}
+    .callout-icon{font-size:1.3rem;flex-shrink:0;}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal);}
+
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer;}.glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast);}.glossary-tooltip.visible{opacity:1;}
+
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap;}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light);}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light);}
+    .copy-markdown-btn .btn-icon{font-size:var(--text-base);line-height:1;}.copy-markdown-btn .btn-label{display:inline;}@media(max-width:640px){.copy-markdown-btn .btn-label{display:none;}}
+
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted);display:inline;}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px;}
+
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md);}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);display:flex;align-items:center;gap:var(--space-2);}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3);}.reference-item{display:flex;align-items:baseline;gap:var(--space-3);}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center;}.reference-content{display:flex;flex-direction:column;gap:var(--space-1);}.reference-title{font-size:var(--text-sm);font-weight:600;}.reference-title a{color:var(--color-accent);text-decoration:none;}.reference-title a:hover{text-decoration:underline;}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);}
+
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light);}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;}.page-nav-footer .prev::before{content:"\2190\00a0";}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4);}
+    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out);}.animate-in.visible{opacity:1;transform:translateY(0);}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl);}.page-nav-footer{flex-direction:column;gap:var(--space-4);}}
   </style>
 </head>
 <body>
-
-  <nav class="site-nav" role="navigation"><a href="index.html" class="nav-brand"><span class="nav-brand-name">DuckDB</span><span class="nav-brand-label">Interactive Course</span></a><button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button><div class="nav-links" id="nav-links"><ul class="nav-page-list"><li><a href="index.html">Home</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="architecture.html">Architecture</a></li><li><a href="how-it-works.html">How It Works</a></li><li><a href="implementation.html">Implementation</a></li><li><a href="use-cases.html">Use Cases</a></li><li><a href="ecosystem.html">Ecosystem</a></li><li><a href="faq.html">FAQ</a></li><li class="active"><a href="tradeoffs.html">Trade-offs</a></li></ul></div></nav>
+  <nav class="site-nav" role="navigation" aria-label="Course navigation">
+    <a href="index.html" class="nav-brand"><span class="nav-brand-name">DuckDB</span><span class="nav-brand-label">Interactive Course</span></a>
+    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button>
+    <div class="nav-links" id="nav-links"><ul class="nav-page-list">
+      <li><a href="index.html">Home</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="architecture.html">Architecture</a></li><li><a href="how-it-works.html">How It Works</a></li><li><a href="implementation.html">Implementation</a></li><li><a href="use-cases.html">Use Cases</a></li><li><a href="ecosystem.html">Ecosystem</a></li><li><a href="faq.html">FAQ</a></li>
+      <li class="active"><a href="tradeoffs.html">Trade-offs</a></li>
+    </ul></div>
+  </nav>
 
   <header class="page-header animate-in">
-    <span class="page-level-badge intermediate">Intermediate</span>
-    <h1>Trade-offs &amp; Limitations</h1>
+    <div class="page-header-content"><span class="page-level-badge intermediate">Intermediate</span><h1>Trade-offs &amp; Limitations</h1></div>
+    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button>
   </header>
 
   <main class="content-area">
 
-    <section class="content-section animate-in">
+    <section class="content-section animate-in" data-level="intermediate">
       <h2>Strengths</h2>
-      <ul>
-        <li><strong>Zero-configuration deployment</strong> -- No server, no dependencies, no config files. <code>pip install duckdb</code> and you are running queries.</li>
-        <li><strong>Exceptional single-machine analytics performance</strong> -- Vectorized columnar execution often matches or beats distributed systems on data that fits one machine.</li>
-        <li><strong>Format versatility</strong> -- Query Parquet, CSV, JSON, <span class="glossary-term" data-definition="Apache Iceberg is an open table format for huge analytic datasets. It provides features like schema evolution, time travel, and partition evolution, and is designed to work with distributed compute engines.">Iceberg</span>, Lance, Excel, PostgreSQL, and SQLite with a unified SQL interface.</li>
-        <li><strong>Developer experience</strong> -- Python integration, DataFrame interop, and a friendly CLI make exploratory work pleasant.</li>
-        <li><strong>Cost</strong> -- MIT-licensed and free. Replacing cloud data warehouse queries with DuckDB can cut analytics costs dramatically.</li>
-        <li><strong>Portability</strong> -- Runs on Linux, macOS, Windows, in browsers (Wasm), mobile devices, and embedded systems.</li>
+      <ul style="font-size:var(--text-base);line-height:1.8;padding-left:var(--space-6);">
+        <li><strong>Zero-friction analytics:</strong> <code>pip install duckdb</code> gives you a full SQL <span class="glossary-term" data-definition="Online Analytical Processing. A category of database workloads focused on complex queries that aggregate large amounts of data, as opposed to OLTP (transactional) workloads.">OLAP</span> engine with no server, no config, no dependencies</li>
+        <li><strong>Performance per dollar:</strong> Rivals distributed systems for datasets up to hundreds of GB at zero infrastructure cost</li>
+        <li><strong>Universal data access:</strong> Query Parquet, CSV, JSON, Arrow, S3, HTTP, PostgreSQL, MySQL, SQLite, and Excel through one SQL interface</li>
+        <li><strong>Embeddability:</strong> Runs everywhere -- Python, R, Java, browsers (Wasm), mobile apps, edge devices</li>
+        <li><strong>Developer experience:</strong> Rich SQL dialect (QUALIFY, ASOF joins, LIST/MAP/STRUCT types), excellent error messages</li>
+        <li><strong>Zero-copy interop:</strong> Direct pandas, Polars, and PyArrow integration without serialization</li>
       </ul>
     </section>
 
-    <section class="content-section animate-in">
+    <section class="content-section animate-in" data-level="intermediate">
       <h2>Limitations</h2>
-      <ul>
-        <li><strong>Single-writer concurrency</strong> -- Only one connection can write at a time. This is by design, not a bug. If you need many concurrent writers, use PostgreSQL or a distributed database.</li>
-        <li><strong>Not distributed</strong> -- No built-in sharding, replication, or cluster mode. For datasets beyond ~2 TB, you need ClickHouse, Snowflake, or Spark.</li>
-        <li><strong>Not an <span class="glossary-term" data-definition="Online Transaction Processing -- workloads characterized by many short transactions doing single-row inserts, updates, and point lookups. DuckDB is optimized for OLAP (analytical) workloads, not OLTP.">OLTP</span> database</strong> -- Optimized for scans, aggregations, and joins. Inserting millions of individual rows one-at-a-time is slow; bulk loading is the expected pattern.</li>
-        <li><strong>Young ecosystem</strong> -- Growing rapidly, but the extension ecosystem is younger than PostgreSQL's. Some extensions are experimental, and breaking changes still occur between major versions.</li>
-        <li><strong>No built-in access control</strong> -- No user management, roles, or row-level security. It trusts whoever has file access.</li>
-        <li><strong>Storage format changes</strong> -- The on-disk format can change between major versions. The LTS release strategy (introduced with 1.4) mitigates this.</li>
+      <ul style="font-size:var(--text-base);line-height:1.8;padding-left:var(--space-6);">
+        <li><strong>Single-writer constraint:</strong> Only one process can write at a time -- a fundamental architectural decision, not a temporary limitation</li>
+        <li><strong>No horizontal scaling:</strong> Single-node only. Cannot distribute queries across a cluster</li>
+        <li><strong>Not designed for OLTP:</strong> High-frequency small transactions are not DuckDB's strength</li>
+        <li><strong>Storage format migration:</strong> Major versions may require <code>EXPORT/IMPORT DATABASE</code></li>
+        <li><strong>No multi-user support:</strong> No built-in authentication, RBAC, or query queueing</li>
+        <li><strong>Memory pressure:</strong> Large hash joins can exceed memory with significant performance degradation</li>
       </ul>
 
       <div class="callout callout-warning">
         <div class="callout-icon">&#x26A0;&#xFE0F;</div>
         <div class="callout-content">
-          <strong>Warning:</strong> DuckDB has no built-in authentication or authorization. In multi-tenant or shared-server environments, you must implement access control at the application layer or use MotherDuck for team-level access management.
+          <strong>Most common mistake:</strong> Trying to use DuckDB as a general-purpose database server. It is not one. It is an analytical query engine that happens to have ACID transactions and persistent storage.
         </div>
       </div>
     </section>
 
-    <section class="content-section animate-in">
+    <section class="content-section animate-in" data-level="intermediate">
       <h2>Alternatives Comparison</h2>
-      <p>Toggle dimensions to focus on what matters most for your evaluation.</p>
 
       <div class="sys-comparison">
         <div class="sys-comparison-header">
@@ -83,162 +117,73 @@
           </div>
         </div>
         <div class="sys-cards">
-
           <div class="sys-card current">
             <div class="sys-card-badge">This System</div>
             <h4 class="sys-card-name">DuckDB</h4>
-            <div class="sys-card-section" data-dim="strengths">
-              <h5 class="sys-section-label strengths-label">Strengths</h5>
-              <ul>
-                <li class="sys-highlight">Zero-config, runs in-process</li>
-                <li class="sys-highlight">Vectorized columnar execution</li>
-                <li>Multi-format file querying</li>
-                <li>MIT licensed, free</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="weaknesses">
-              <h5 class="sys-section-label weaknesses-label">Weaknesses</h5>
-              <ul>
-                <li>Single-writer only</li>
-                <li>Single machine, no distribution</li>
-                <li>No access control</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="best-for">
-              <h5 class="sys-section-label bestfor-label">Best For</h5>
-              <p>Local analytics, ETL, embedded analytics, data exploration (1 MB -- 2 TB)</p>
-            </div>
+            <div class="sys-card-section" data-dim="strengths"><h5 class="sys-section-label strengths-label">Strengths</h5><ul><li class="sys-highlight">Zero-friction embeddable OLAP</li><li class="sys-highlight">Vectorized columnar execution</li><li>150+ extensions, universal data access</li><li>Zero-copy pandas/Arrow interop</li></ul></div>
+            <div class="sys-card-section" data-dim="weaknesses"><h5 class="sys-section-label weaknesses-label">Weaknesses</h5><ul><li>Single-writer constraint</li><li>No horizontal scaling</li><li>Storage format migration burden</li></ul></div>
+            <div class="sys-card-section" data-dim="best-for"><h5 class="sys-section-label bestfor-label">Best For</h5><p>Analytical queries, data pipelines, embedded analytics, local-first data work</p></div>
           </div>
-
           <div class="sys-card">
             <h4 class="sys-card-name">SQLite</h4>
-            <div class="sys-card-section" data-dim="strengths">
-              <h5 class="sys-section-label strengths-label">Strengths</h5>
-              <ul>
-                <li>Proven, ultra-stable</li>
-                <li>Great for row-level CRUD</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="weaknesses">
-              <h5 class="sys-section-label weaknesses-label">Weaknesses</h5>
-              <ul>
-                <li>10-100x slower for analytics</li>
-                <li>Row-oriented storage</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="best-for">
-              <h5 class="sys-section-label bestfor-label">Best For</h5>
-              <p>Embedded OLTP, mobile apps, simple key-value storage</p>
-            </div>
+            <div class="sys-card-section" data-dim="strengths"><h5 class="sys-section-label strengths-label">Strengths</h5><ul><li>Decades-mature ecosystem</li><li>Excellent for OLTP/config storage</li><li>Universal compatibility</li></ul></div>
+            <div class="sys-card-section" data-dim="weaknesses"><h5 class="sys-section-label weaknesses-label">Weaknesses</h5><ul><li>3-30x slower for analytics</li><li>Single-threaded execution</li><li>Basic SQL dialect</li></ul></div>
+            <div class="sys-card-section" data-dim="best-for"><h5 class="sys-section-label bestfor-label">Best For</h5><p>App data, configuration, OLTP workloads, mobile apps</p></div>
           </div>
-
           <div class="sys-card">
             <h4 class="sys-card-name">ClickHouse</h4>
-            <div class="sys-card-section" data-dim="strengths">
-              <h5 class="sys-section-label strengths-label">Strengths</h5>
-              <ul>
-                <li>Distributed, petabyte-scale</li>
-                <li>High-concurrency reads</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="weaknesses">
-              <h5 class="sys-section-label weaknesses-label">Weaknesses</h5>
-              <ul>
-                <li>Requires server infrastructure</li>
-                <li>Complex operations (harder to set up)</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="best-for">
-              <h5 class="sys-section-label bestfor-label">Best For</h5>
-              <p>Real-time analytics at petabyte scale with many concurrent users</p>
-            </div>
+            <div class="sys-card-section" data-dim="strengths"><h5 class="sys-section-label strengths-label">Strengths</h5><ul><li class="sys-highlight">Horizontal + vertical scaling</li><li>Multi-writer, multi-reader</li><li>Real-time ingestion</li></ul></div>
+            <div class="sys-card-section" data-dim="weaknesses"><h5 class="sys-section-label weaknesses-label">Weaknesses</h5><ul><li>Requires server infrastructure</li><li>More complex to operate</li><li>Not embeddable</li></ul></div>
+            <div class="sys-card-section" data-dim="best-for"><h5 class="sys-section-label bestfor-label">Best For</h5><p>Large-scale analytics, dashboards, multi-TB datasets, high-concurrency serving</p></div>
           </div>
-
           <div class="sys-card">
             <h4 class="sys-card-name">Polars</h4>
-            <div class="sys-card-section" data-dim="strengths">
-              <h5 class="sys-section-label strengths-label">Strengths</h5>
-              <ul>
-                <li>More Pythonic API</li>
-                <li>Lazy evaluation</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="weaknesses">
-              <h5 class="sys-section-label weaknesses-label">Weaknesses</h5>
-              <ul>
-                <li>Less rich SQL support</li>
-                <li>Fewer file format connectors</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="best-for">
-              <h5 class="sys-section-label bestfor-label">Best For</h5>
-              <p>DataFrame-centric analytics in Python with lazy evaluation</p>
-            </div>
+            <div class="sys-card-section" data-dim="strengths"><h5 class="sys-section-label strengths-label">Strengths</h5><ul><li>Pythonic DataFrame API</li><li>Fast columnar engine</li><li>Purely in-memory</li></ul></div>
+            <div class="sys-card-section" data-dim="weaknesses"><h5 class="sys-section-label weaknesses-label">Weaknesses</h5><ul><li>Limited SQL support</li><li>No persistent storage</li><li>Narrower data source access</li></ul></div>
+            <div class="sys-card-section" data-dim="best-for"><h5 class="sys-section-label bestfor-label">Best For</h5><p>In-memory DataFrame ops, Python-centric workflows, transformation logic</p></div>
           </div>
-
-          <div class="sys-card">
-            <h4 class="sys-card-name">BigQuery / Snowflake</h4>
-            <div class="sys-card-section" data-dim="strengths">
-              <h5 class="sys-section-label strengths-label">Strengths</h5>
-              <ul>
-                <li>Managed, serverless</li>
-                <li>Governance &amp; access control</li>
-                <li>Petabyte-scale</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="weaknesses">
-              <h5 class="sys-section-label weaknesses-label">Weaknesses</h5>
-              <ul>
-                <li>Cost per query / per TB</li>
-                <li>Network latency</li>
-                <li>Vendor lock-in</li>
-              </ul>
-            </div>
-            <div class="sys-card-section" data-dim="best-for">
-              <h5 class="sys-section-label bestfor-label">Best For</h5>
-              <p>Enterprise analytics with governance, multi-team access, and petabyte data</p>
-            </div>
-          </div>
-
         </div>
       </div>
     </section>
 
-    <section class="content-section animate-in">
-      <div class="bottom-line">
-        <h3>The Bottom Line</h3>
-        <p>DuckDB excels when your data fits on one machine (up to ~2 TB) and your workload is analytical. It is the best choice for local data analysis, ETL pipelines, embedded analytics, and replacing expensive cloud queries. Choose something else when you need distributed scale, high write concurrency, or enterprise access control.</p>
-      </div>
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>The Honest Take</h2>
+      <p>DuckDB has earned its hype. It genuinely delivers on its promise of making analytical SQL trivially accessible and blazingly fast for the single-machine use case. The "SQLite for analytics" tagline is accurate and well-earned.</p>
+      <p>But it is not a silver bullet. The single-writer constraint means DuckDB cannot replace a database server for applications with concurrent write needs. The lack of horizontal scaling means it hits a wall at scale that distributed systems handle natively.</p>
+      <p>The most common mistake is trying to use DuckDB as a general-purpose database server. Use it where its strengths shine: local analytics, data pipelines, embedded analytical features, and anywhere you would otherwise spin up a heavyweight data warehouse for a small-to-medium dataset.</p>
 
-      <div class="callout callout-tip">
-        <div class="callout-icon">&#x1F4A1;</div>
+      <div class="callout callout-insight">
+        <div class="callout-icon">&#x1F52D;</div>
         <div class="callout-content">
-          <strong>Tip:</strong> DuckDB does not have to be an either/or decision. Many teams use DuckDB for local development and prototyping, then deploy to a cloud warehouse when they need multi-user access and governance. The SQL is largely portable between DuckDB and systems like Snowflake or BigQuery.
+          <strong>Looking ahead:</strong> The DuckDB Foundation's stewardship, MIT license, and growing ecosystem (MotherDuck for cloud, DuckLake for lakehouses, 150+ community extensions) position DuckDB as a long-term pillar of the modern data stack. It has become the default recommendation for "I need to query some data files with SQL" -- and that is a remarkably common need.
         </div>
       </div>
     </section>
 
   </main>
 
-  <nav class="page-nav-footer">
-    <a href="faq.html" class="prev">FAQ</a>
-  </nav>
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/connect/concurrency" target="_blank" rel="noopener noreferrer">DuckDB Concurrency Docs</a></span><span class="reference-domain">duckdb.org</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/faq" target="_blank" rel="noopener noreferrer">DuckDB FAQ</a></span><span class="reference-domain">duckdb.org</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://motherduck.com/learn-more/duckdb-vs-sqlite-databases/" target="_blank" rel="noopener noreferrer">DuckDB vs SQLite</a></span><span class="reference-domain">motherduck.com</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://www.cloudraft.io/blog/clickhouse-vs-duckdb" target="_blank" rel="noopener noreferrer">ClickHouse vs DuckDB</a></span><span class="reference-domain">cloudraft.io</span></div></li>
+    </ul>
+  </section>
 
+  <nav class="page-nav-footer"><a href="faq.html" class="prev">FAQ</a></nav>
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
   <script>
-    (function(){document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.nav-hamburger'),l=document.getElementById('nav-links');if(!b||!l)return;b.addEventListener('click',function(){var o=l.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false');});l.addEventListener('click',function(e){if(e.target.closest('a')){l.classList.remove('open');b.setAttribute('aria-expanded','false');}});});})();
-    (function(){var o=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){o.observe(el);});})();
+    (function(){'use strict';document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.nav-hamburger'),l=document.getElementById('nav-links');if(!b||!l)return;b.addEventListener('click',function(){var o=l.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false');});l.addEventListener('click',function(e){if(e.target.closest('a')){l.classList.remove('open');b.setAttribute('aria-expanded','false');}});});})();
+    var observer=new IntersectionObserver(function(e){e.forEach(function(en){if(en.isIntersecting){en.target.classList.add('visible');observer.unobserve(en.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el);});
 
-    function toggleDimension(checkbox){
-      var dim=checkbox.dataset.dim;
-      document.querySelectorAll('.sys-card-section[data-dim="'+dim+'"]').forEach(function(s){
-        s.classList.toggle('hidden',!checkbox.checked);
-      });
-    }
+    function toggleDimension(checkbox){var dim=checkbox.dataset.dim;document.querySelectorAll('.sys-card-section[data-dim="'+dim+'"]').forEach(function(s){s.classList.toggle('hidden',!checkbox.checked);});}
 
-    (function(){var tooltip=null;function show(t){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=t.dataset.definition;document.body.appendChild(tooltip);var r=t.getBoundingClientRect(),tr=tooltip.getBoundingClientRect(),left=r.left+r.width/2-tr.width/2,top=r.bottom+8;if(left<8)left=8;if(left+tr.width>window.innerWidth-8)left=window.innerWidth-tr.width-8;if(top+tr.height>window.innerHeight-8)top=r.top-tr.height-8;tooltip.style.left=left+'px';tooltip.style.top=top+'px';requestAnimationFrame(function(){tooltip.classList.add('visible');});}function hide(){if(tooltip){tooltip.remove();tooltip=null;}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide();});document.addEventListener('click',function(e){var t=e.target.closest('.glossary-term');if(t){e.preventDefault();show(t);}else hide();});})();
+    (function(){var t=null;function s(term){if(t)t.remove();t=document.createElement('div');t.className='glossary-tooltip';t.textContent=term.dataset.definition;document.body.appendChild(t);var r=term.getBoundingClientRect(),tr=t.getBoundingClientRect(),l=r.left+r.width/2-tr.width/2,tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;t.style.left=l+'px';t.style.top=tp+'px';requestAnimationFrame(function(){t.classList.add('visible');});}function h(){if(t){t.remove();t=null;}}document.addEventListener('mouseover',function(e){var tm=e.target.closest('.glossary-term');if(tm)s(tm);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))h();});document.addEventListener('click',function(e){var tm=e.target.closest('.glossary-term');if(tm){e.preventDefault();s(tm);}else h();});})();
+
+    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var m=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(m){m[1].split('\n').forEach(function(l){var x=l.match(/(\w+):\s*"(.+)"/);if(x)ctx[x[1]]=x[2];});}var md='# '+(ctx.system||'')+': '+(ctx.page||document.title)+'\n> Level: '+(ctx.level||'')+'\n\n';var c=document.querySelector('.content-area');if(c)c.querySelectorAll('h2,h3,p,ul,ol').forEach(function(n){var tag=n.tagName.toLowerCase();if(tag==='h2')md+='\n## '+n.textContent.trim()+'\n\n';else if(tag==='h3')md+='\n### '+n.textContent.trim()+'\n\n';else if(tag==='p')md+=n.textContent.trim()+'\n\n';else if(tag==='ul'||tag==='ol')n.querySelectorAll(':scope>li').forEach(function(li,i){md+=(tag==='ol'?(i+1)+'. ':'- ')+li.textContent.trim()+'\n';});});md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn'),lbl=btn.querySelector('.btn-label'),orig=lbl.textContent;lbl.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){lbl.textContent=orig;btn.classList.remove('copied');},2000);});}
   </script>
-
 </body>
 </html>

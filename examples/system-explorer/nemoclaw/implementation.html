@@ -8,49 +8,36 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--content-width:800px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;}
-    *,*::before,*::after{box-sizing:border-box;}::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full);}html{scroll-behavior:smooth;}
-    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased;}
-    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap;}.nav-brand{text-decoration:none;display:flex;flex-direction:column;}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2;}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);}.nav-links{display:flex;align-items:center;gap:var(--space-4);}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0;}.nav-page-list li a{display:flex;align-items:center;padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background 0.15s ease,color 0.15s ease;}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text);}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600;}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2);}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin-bottom:var(--space-3);line-height:1.15;}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3);}.page-level-badge.advanced{background:var(--color-error-light);color:var(--color-error);}
-    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6);}.content-section{margin-bottom:var(--space-10);}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4);}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3);}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4);}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg);}
-
-    /* Code block */
-    .code-block{background:#1E1E2E;border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md);}.code-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244;}.code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:0.05em;}.code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast);}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4;}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1;}.code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4;}
-    .code-keyword{color:#CBA6F7;}.code-string{color:#F9E2AF;}.code-comment{color:#6C7086;font-style:italic;}.code-function{color:#A6E3A1;}.code-number{color:#FAB387;}.code-variable{color:#89B4FA;}.code-property{color:#F5C2E7;}
-
-    /* Config table */
-    .config-table{width:100%;border-collapse:collapse;margin:var(--space-6) 0;font-size:var(--text-sm);background:var(--color-surface);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);}
-    .config-table th{background:var(--color-accent);color:white;padding:var(--space-3) var(--space-4);text-align:left;font-family:var(--font-display);font-weight:600;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.05em;}
-    .config-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light);vertical-align:top;}
-    .config-table tr:last-child td{border-bottom:none;}
-    .config-table tr:hover td{background:var(--color-surface-warm);}
-    .config-table code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-border-light);padding:1px 4px;border-radius:3px;}
-
-    /* Callout */
-    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid;}.callout-tip{background:var(--color-success-light);border-color:var(--color-success);}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning);}.callout-info{background:var(--color-info-light);border-color:var(--color-info);}.callout-icon{font-size:1.3rem;flex-shrink:0;}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal);}.callout-content strong{color:var(--color-text);}.callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px;}
-
-    /* Accordion for CLI reference */
-    .accordion{margin:var(--space-6) 0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;}
-    .accordion-item{border-bottom:1px solid var(--color-border-light);}.accordion-item:last-child{border-bottom:none;}
-    .accordion-header{width:100%;display:flex;justify-content:space-between;align-items:center;padding:var(--space-4) var(--space-5);background:var(--color-surface);border:none;cursor:pointer;font-family:var(--font-display);font-size:var(--text-base);font-weight:600;color:var(--color-text);text-align:left;transition:background var(--duration-fast);}
-    .accordion-header:hover{background:var(--color-surface-warm);}.accordion-header.active{background:var(--color-surface-warm);}
-    .accordion-icon{font-size:var(--text-xl);font-weight:300;color:var(--color-accent);transition:transform var(--duration-fast);flex-shrink:0;margin-left:var(--space-3);}
-    .accordion-header.active .accordion-icon{transform:rotate(45deg);}
-    .accordion-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out);}
-    .accordion-body-inner{padding:0 var(--space-5) var(--space-5);}
-    .accordion-body code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-border-light);padding:1px var(--space-1);border-radius:3px;}
-    .accordion-body p{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal);margin-bottom:var(--space-2);}
-    .cli-cmd{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--color-accent);display:block;margin-bottom:var(--space-1);}
-    .cli-desc{font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-3);}
-
-    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer;}.glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast);}.glossary-tooltip.visible{opacity:1;}
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out);}.animate-in.visible{opacity:1;transform:translateY(0);}
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light);}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;transition:color 0.15s ease;}.page-nav-footer a:hover{color:var(--color-accent-hover);}.page-nav-footer .prev::before{content:"\2190\00a0";}.page-nav-footer .next::after{content:"\00a0\2192";}
-    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4);}
-    @media(max-width:768px){.nav-hamburger{display:flex;}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3);}.nav-links.open{display:flex;}.nav-page-list{flex-direction:column;width:100%;}.config-table{font-size:var(--text-xs);}.config-table td,.config-table th{padding:var(--space-2);}}
-    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl);}.page-nav-footer{flex-direction:column;gap:var(--space-4);}}
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2A7B9B;--color-accent-hover:#236A86;--color-accent-light:#E4F2F7;--color-accent-muted:#5A9DB5;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(42,123,155,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap}.nav-brand{text-decoration:none;display:flex;flex-direction:column}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted)}.nav-links{display:flex;align-items:center;gap:var(--space-4)}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0}.nav-page-list li a{display:flex;align-items:center;padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background .15s,color .15s}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text)}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2)}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px}
+    @media(max-width:768px){.nav-hamburger{display:flex}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3)}.nav-links.open{display:flex}.nav-page-list{flex-direction:column;width:100%}.nav-page-list li a{padding:var(--space-2) var(--space-3)}}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted);display:inline}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin-bottom:var(--space-3);line-height:1.15;margin-top:var(--space-2)}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.advanced{background:var(--color-error-light);color:var(--color-error)}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}.copy-markdown-btn{padding:var(--space-1) var(--space-2)}}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4)}.content-section ul{margin-bottom:var(--space-4);padding-left:var(--space-6)}.content-section li{margin-bottom:var(--space-2);line-height:1.6}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg)}
+    .level-badge{display:inline-block;font-family:var(--font-mono);font-size:var(--text-xs);font-weight:600;padding:2px var(--space-2);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.03em;vertical-align:middle}.level-advanced{background:var(--color-error-light);color:var(--color-error)}
+    .code-block{background:#1E1E2E;border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md)}.code-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244}.code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:0.05em}.code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1}.code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4}
+    .code-keyword{color:#CBA6F7}.code-string{color:#F9E2AF}.code-comment{color:#6C7086;font-style:italic}.code-function{color:#A6E3A1}.code-number{color:#FAB387}.code-variable{color:#89B4FA}.code-type{color:#89DCEB}.code-operator{color:#94E2D5}
+    .code-block-sourced .code-header{justify-content:flex-start;gap:var(--space-3)}.code-source-path{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.code-source-link{font-family:var(--font-mono);font-size:var(--text-xs);color:#6C7086;text-decoration:none;padding:2px var(--space-2);border:1px solid #45475A;border-radius:var(--radius-sm);white-space:nowrap;transition:all var(--duration-fast);display:flex;align-items:center;gap:var(--space-1)}.code-source-link:hover{color:#CDD6F4;border-color:#CDD6F4}
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}.callout-tip{background:var(--color-success-light);border-color:var(--color-success)}.callout-info{background:var(--color-info-light);border-color:var(--color-info)}.callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}.callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px}
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}.glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}.glossary-tooltip::before{content:'';position:absolute;bottom:100%;left:20px;border:6px solid transparent;border-bottom-color:var(--color-text)}
+    .source-map{max-width:var(--content-width);margin:var(--space-6) auto;border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden}.source-map-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);background:var(--color-surface);cursor:pointer;user-select:none;transition:background var(--duration-fast)}.source-map-header:hover{background:var(--color-bg-warm)}.source-map-header h3{font-family:var(--font-display);font-size:var(--text-base);font-weight:600;margin:0;display:flex;align-items:center;gap:var(--space-2)}.source-map-toggle{font-size:var(--text-sm);color:var(--color-text-muted);transition:transform var(--duration-fast)}.source-map.open .source-map-toggle{transform:rotate(180deg)}.source-map-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}.source-map.open .source-map-body{max-height:500px}.source-map-list{list-style:none;padding:var(--space-3) var(--space-4);margin:0;border-top:1px solid var(--color-border-light)}.source-map-item{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) 0;font-family:var(--font-mono);font-size:var(--text-xs)}.source-map-item a{color:var(--color-accent);text-decoration:none}.source-map-item a:hover{text-decoration:underline}.source-map-repo{padding:var(--space-2) var(--space-4) var(--space-3);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);border-top:1px solid var(--color-border-light)}.source-map-repo a{color:var(--color-accent);text-decoration:none}
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4);display:flex;align-items:center;gap:var(--space-2)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-content{display:flex;flex-direction:column;gap:var(--space-1)}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
   </style>
+  <!-- page-context:
+    system: "NemoClaw"
+    description: "an open-source security and orchestration runtime for AI agents"
+    page: "Implementation Details"
+    level: "Advanced"
+  -->
 </head>
 <body>
   <nav class="site-nav" role="navigation" aria-label="Course navigation">
@@ -71,248 +58,239 @@
   </nav>
 
   <header class="page-header animate-in">
-    <span class="page-level-badge advanced">Advanced</span>
-    <h1>Implementation Details</h1>
+    <div class="page-header-content">
+      <span class="page-level-badge advanced">Advanced</span>
+      <h1>Implementation Details</h1>
+    </div>
+    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button>
   </header>
+
+  <!-- Source Map -->
+  <div class="source-map" id="source-map">
+    <div class="source-map-header" onclick="this.parentElement.classList.toggle('open')">
+      <h3>&#x1F5C2; Source Map</h3>
+      <span class="source-map-toggle">&#x25BC;</span>
+    </div>
+    <div class="source-map-body">
+      <ul class="source-map-list">
+        <li class="source-map-item"><a href="#source-index-ts">nemoclaw/src/index.ts</a><span class="line-range">Lines ~178-202</span></li>
+        <li class="source-map-item"><a href="#source-blueprint-yaml">nemoclaw-blueprint/blueprint.yaml</a><span class="line-range">Manifest</span></li>
+        <li class="source-map-item"><a href="#source-policy-yaml">policies/openclaw-sandbox.yaml</a><span class="line-range">Network policy</span></li>
+      </ul>
+      <div class="source-map-repo">Repository: <a href="https://github.com/NVIDIA/NemoClaw" target="_blank" rel="noopener noreferrer">NVIDIA/NemoClaw</a> @ alpha</div>
+    </div>
+  </div>
 
   <main class="content-area">
 
-    <section class="content-section animate-in">
-      <h2>Getting Started</h2>
-      <p><strong>Prerequisites:</strong> Linux (Ubuntu 22.04+), Docker 20.x+, Node.js 22.16+, npm 10+, 8 GB RAM minimum (16 GB recommended), 20 GB disk (40 GB recommended).</p>
+    <section class="content-section animate-in" data-level="advanced">
+      <h2>Getting Started <span class="level-badge level-advanced">Advanced</span></h2>
+      <h3>Prerequisites</h3>
+      <ul>
+        <li>Ubuntu 22.04 LTS or later (primary); macOS via Colima/Docker Desktop; Windows via WSL + Docker Desktop</li>
+        <li>Node.js 22.16+, npm 10+</li>
+        <li>Docker (primary container runtime)</li>
+        <li>4+ vCPU, 16 GB RAM (recommended), 40 GB free disk</li>
+      </ul>
 
-      <div class="code-block">
+      <h3>Installation</h3>
+      <div class="code-block code-block-sourced" id="source-install">
         <div class="code-header">
           <span class="code-lang">Bash</span>
+          <span class="code-source-path">Single-command installer</span>
+          <a class="code-source-link" href="https://docs.nvidia.com/nemoclaw/latest/get-started/quickstart.html" target="_blank" rel="noopener noreferrer">View docs &#x2197;</a>
           <button class="code-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre class="code-pre"><code><span class="code-comment"># Install NemoClaw</span>
-curl -fsSL https://www.nvidia.com/nemoclaw.sh | bash
-
-<span class="code-comment"># Run the interactive onboarding wizard</span>
-nemoclaw onboard
-
-<span class="code-comment"># Connect to your sandbox</span>
-nemoclaw my-sandbox connect
-
-<span class="code-comment"># You're now inside the secured environment</span>
-<span class="code-comment"># OpenClaw is pre-installed; start your agent</span>
-openclaw</code></pre>
+        <pre class="code-pre"><code>curl -fsSL https://www.nvidia.com/nemoclaw.sh | bash</code></pre>
       </div>
+      <p>The installer handles Node.js installation if needed, runs the interactive onboarding wizard, and creates a sandboxed OpenClaw instance with your chosen inference provider and security policies.</p>
 
-      <p>The <code style="font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-border-light);padding:1px 4px;border-radius:3px;">onboard</code> command walks through: creating the <span class="glossary-term" data-definition="The central control-plane component of OpenShell that intercepts all outbound connections, enforces policies, injects credentials, and provides the real-time approval TUI.">OpenShell gateway</span>, registering inference providers, building the sandbox image (~2.4 GB), creating your first sandbox, and applying the baseline network policy.</p>
-
-      <div class="callout callout-warning">
-        <div class="callout-icon">&#x26A0;&#xFE0F;</div>
-        <div class="callout-content">
-          <strong>Warning:</strong> Do not use piped installs (<code>curl | bash</code>) in automated environments -- they can skip critical prompts. The sandbox image is ~2.4 GB; on machines with less than 8 GB RAM, the build can trigger the OOM killer.
-        </div>
-      </div>
-    </section>
-
-    <section class="content-section animate-in">
-      <h2>Configuration Essentials</h2>
-
-      <table class="config-table">
-        <thead>
-          <tr><th>Config</th><th>Location</th><th>Purpose</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Credentials</strong></td>
-            <td><code>~/.nemoclaw/credentials.json</code></td>
-            <td>API keys for inference providers</td>
-          </tr>
-          <tr>
-            <td><strong>Sandbox metadata</strong></td>
-            <td><code>~/.nemoclaw/sandboxes.json</code></td>
-            <td>Sandbox names, defaults, model assignments</td>
-          </tr>
-          <tr>
-            <td><strong>Network policy</strong></td>
-            <td><code>nemoclaw-blueprint/policies/openclaw-sandbox.yaml</code></td>
-            <td>Allowed endpoints, binaries, methods</td>
-          </tr>
-          <tr>
-            <td><strong>Policy presets</strong></td>
-            <td><code>nemoclaw-blueprint/policies/presets/</code></td>
-            <td>Pre-built rules for PyPI, Docker Hub, Slack, Jira</td>
-          </tr>
-          <tr>
-            <td><strong>OpenShell state</strong></td>
-            <td><code>~/.config/openshell/</code></td>
-            <td>Gateway and cluster state (auto-managed)</td>
-          </tr>
-          <tr>
-            <td><strong>Blueprint config</strong></td>
-            <td><code>nemoclaw-blueprint/blueprint.yaml</code></td>
-            <td>Resource definitions and orchestration</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section class="content-section animate-in">
-      <h2>CLI Reference</h2>
-      <p>NemoClaw provides a comprehensive CLI for sandbox management, policy configuration, and auxiliary services.</p>
-
-      <div class="accordion" id="cli-accordion">
-        <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>Sandbox Management</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <div class="accordion-body-inner">
-              <span class="cli-cmd">nemoclaw onboard</span>
-              <span class="cli-desc">Interactive setup wizard -- creates gateway, registers providers, builds sandbox</span>
-              <span class="cli-cmd">nemoclaw list</span>
-              <span class="cli-desc">List all sandboxes with model/provider/policy info</span>
-              <span class="cli-cmd">nemoclaw &lt;name&gt; connect</span>
-              <span class="cli-desc">SSH into a sandbox</span>
-              <span class="cli-cmd">nemoclaw &lt;name&gt; status</span>
-              <span class="cli-desc">Show sandbox health and inference config</span>
-              <span class="cli-cmd">nemoclaw &lt;name&gt; logs [--follow]</span>
-              <span class="cli-desc">View or stream sandbox logs</span>
-              <span class="cli-cmd">nemoclaw &lt;name&gt; destroy</span>
-              <span class="cli-desc">Permanently delete a sandbox</span>
-            </div>
-          </div>
-        </div>
-        <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>Policy Management</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <div class="accordion-body-inner">
-              <span class="cli-cmd">nemoclaw &lt;name&gt; policy-add</span>
-              <span class="cli-desc">Add a policy preset to a sandbox</span>
-              <span class="cli-cmd">nemoclaw &lt;name&gt; policy-list</span>
-              <span class="cli-desc">List available and applied policy presets</span>
-              <span class="cli-cmd">openshell policy set &lt;policy-file&gt;</span>
-              <span class="cli-desc">Apply a policy to a running sandbox (session-only)</span>
-            </div>
-          </div>
-        </div>
-        <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>Services &amp; Monitoring</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <div class="accordion-body-inner">
-              <span class="cli-cmd">nemoclaw start</span>
-              <span class="cli-desc">Start auxiliary services (Telegram bridge, tunnel)</span>
-              <span class="cli-cmd">nemoclaw stop</span>
-              <span class="cli-desc">Stop all auxiliary services</span>
-              <span class="cli-cmd">nemoclaw status</span>
-              <span class="cli-desc">Show sandbox list and service status</span>
-              <span class="cli-cmd">openshell term</span>
-              <span class="cli-desc">Launch TUI for monitoring and egress approvals</span>
-            </div>
-          </div>
-        </div>
-        <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>Advanced &amp; Platform-specific</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <div class="accordion-body-inner">
-              <span class="cli-cmd">nemoclaw deploy &lt;instance-name&gt;</span>
-              <span class="cli-desc">Deploy to remote GPU via Brev (experimental)</span>
-              <span class="cli-cmd">sudo nemoclaw setup-spark</span>
-              <span class="cli-desc">DGX Spark-specific setup (cgroup/Docker fixes for Ubuntu 24.04)</span>
-              <span class="cli-cmd">/nemoclaw status</span>
-              <span class="cli-desc">Quick health check inside an OpenClaw session (slash command)</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="content-section animate-in">
-      <h2>Code Patterns</h2>
-      <h3>Custom Network Policy</h3>
-      <div class="code-block">
-        <div class="code-header">
-          <span class="code-lang">YAML</span>
-          <button class="code-copy" onclick="copyCode(this)">Copy</button>
-        </div>
-        <pre class="code-pre"><code><span class="code-comment"># my-custom-policy.yaml</span>
-<span class="code-property">policies</span>:
-  <span class="code-property">my_internal_api</span>:
-    <span class="code-property">endpoints</span>:
-      - <span class="code-property">host</span>: <span class="code-string">api.internal.company.com</span>
-        <span class="code-property">port</span>: <span class="code-number">443</span>
-    <span class="code-property">allowed_binaries</span>:
-      - <span class="code-string">/usr/local/bin/claude</span>
-      - <span class="code-string">/usr/local/bin/openclaw</span>
-    <span class="code-property">methods</span>:
-      - <span class="code-variable">GET</span>
-      - <span class="code-variable">POST</span></code></pre>
-      </div>
-
-      <div class="code-block">
+      <h3>First Interaction</h3>
+      <div class="code-block code-block-sourced" id="source-first">
         <div class="code-header">
           <span class="code-lang">Bash</span>
+          <span class="code-source-path">Connecting to your agent</span>
+          <a class="code-source-link" href="https://docs.nvidia.com/nemoclaw/latest/get-started/quickstart.html" target="_blank" rel="noopener noreferrer">View docs &#x2197;</a>
           <button class="code-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre class="code-pre"><code><span class="code-comment"># Apply statically (persists across restarts)</span>
-<span class="code-comment"># Edit nemoclaw-blueprint/policies/openclaw-sandbox.yaml, then:</span>
-nemoclaw onboard
+        <pre class="code-pre"><code><span class="code-comment"># Connect to the sandbox shell</span>
+nemoclaw my-assistant connect
 
-<span class="code-comment"># Apply dynamically (session-only)</span>
-openshell policy set my-sandbox --policy my-custom-policy.yaml</code></pre>
+<span class="code-comment"># Interactive chat (TUI mode)</span>
+openclaw tui
+
+<span class="code-comment"># Single message (CLI mode)</span>
+openclaw agent --agent main --local -m <span class="code-string">"hello"</span> --session-id test</code></pre>
       </div>
 
       <div class="callout callout-tip">
         <div class="callout-icon">&#x1F4A1;</div>
         <div class="callout-content">
-          <strong>Tip:</strong> Start with cloud inference for evaluation -- local GPU setup adds significant complexity. Monitor with <code>openshell term</code> during initial agent runs to see what network access the agent needs, then build your policy around observed behavior.
+          <strong>Tip:</strong> Use <code>nemoclaw my-assistant status</code> to check sandbox health, <code>nemoclaw my-assistant logs --follow</code> to stream logs, and <code>openshell term</code> to open the operator terminal for real-time request approval.
         </div>
       </div>
     </section>
 
-    <section class="content-section animate-in">
-      <h2>Deployment Gotchas</h2>
-      <p>These are the issues that consistently trip up new users. Knowing them in advance will save you hours of debugging.</p>
-      <ul style="font-size:var(--text-base);line-height:1.8;padding-left:var(--space-6);">
-        <li><strong>K3s takes 1-3 minutes</strong> to apply manifests after onboarding; health checks may time out with misleading namespace errors during this window</li>
-        <li><strong>Podman is not supported</strong> -- NemoClaw requires Docker daemon-specific behaviors</li>
-        <li><strong>macOS (Apple Silicon)</strong> has partial support via Colima/Docker Desktop with known issues (Ollama routing, <code style="font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-border-light);padding:1px 4px;border-radius:3px;">/etc/hosts</code> resolution)</li>
-        <li><strong>Intel Macs are unsupported entirely</strong>; WSL2 is experimental with significant manual intervention</li>
-        <li><strong>For DGX Spark:</strong> Run <code style="font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-border-light);padding:1px 4px;border-radius:3px;">sudo nemoclaw setup-spark</code> first to fix cgroup v2 and Docker issues on Ubuntu 24.04</li>
-      </ul>
+    <section class="content-section animate-in" data-level="advanced">
+      <h2>Configuration <span class="level-badge level-advanced">Advanced</span></h2>
 
-      <div class="callout callout-info">
-        <div class="callout-icon">&#x2139;&#xFE0F;</div>
-        <div class="callout-content">
-          <strong>Note:</strong> NemoClaw is alpha software. Known CVEs include CVE-2026-24763 (Docker sandbox command injection) and CVE-2026-22179 (shell parsing bypass). These are classical container escape vectors, not fundamental design flaws, but they underline why NVIDIA labels this as not production-ready.
+      <h3>Host-side State Files</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">Text</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
+        <pre class="code-pre"><code>~/.nemoclaw/credentials.json     <span class="code-comment"># Provider API keys (0o600 permissions)</span>
+~/.nemoclaw/sandboxes.json       <span class="code-comment"># Sandbox metadata and applied policies</span>
+~/.openclaw/openclaw.json        <span class="code-comment"># Host OpenClaw configuration</span></code></pre>
+      </div>
+
+      <h3>Baseline Network Policy</h3>
+      <div class="code-block code-block-sourced" id="source-policy-yaml">
+        <div class="code-header">
+          <span class="code-lang">YAML</span>
+          <span class="code-source-path">policies/openclaw-sandbox.yaml</span>
+          <a class="code-source-link" href="https://docs.nvidia.com/nemoclaw/latest/network-policy/customize-network-policy.html" target="_blank" rel="noopener noreferrer">View docs &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
         </div>
+        <pre class="code-pre"><code><span class="code-comment"># Deny-by-default network policy</span>
+<span class="code-comment"># Each entry defines: endpoints, binaries, and rules</span>
+<span class="code-variable">network</span>:
+  - <span class="code-variable">name</span>: <span class="code-string">inference</span>
+    <span class="code-variable">endpoints</span>:
+      - <span class="code-variable">host</span>: <span class="code-string">inference.local</span>
+        <span class="code-variable">port</span>: <span class="code-number">443</span>
+    <span class="code-variable">binaries</span>:
+      - <span class="code-string">/usr/bin/node</span>
+    <span class="code-variable">rules</span>:
+      - <span class="code-variable">methods</span>: [<span class="code-string">POST</span>]
+        <span class="code-variable">paths</span>: [<span class="code-string">"/v1/*"</span>, <span class="code-string">"/responses"</span>]
+  <span class="code-comment"># Additional entries for required system endpoints</span></code></pre>
+      </div>
+
+      <p>Available presets include: discord, docker, huggingface, jira, npm, outlook, pypi, slack, and telegram. Apply them dynamically:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">Bash</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
+        <pre class="code-pre"><code><span class="code-comment"># Switch inference providers at runtime (no restart required)</span>
+openshell inference set --provider anthropic --model claude-sonnet-4-20250514</code></pre>
+      </div>
+    </section>
+
+    <section class="content-section animate-in" data-level="advanced">
+      <h2>Code Patterns <span class="level-badge level-advanced">Advanced</span></h2>
+
+      <h3>Plugin Entry Point</h3>
+      <p>The plugin registers as an <span class="glossary-term" data-definition="In the OpenClaw ecosystem, a provider is a module that handles inference requests by routing them to a specific model API (NVIDIA, OpenAI, Anthropic, etc.). NemoClaw's provider plugin intercepts these calls and routes them through the gateway.">OpenClaw provider</span>, intercepting inference calls and routing them through the OpenShell gateway.</p>
+
+      <div class="code-block code-block-sourced" id="source-index-ts">
+        <div class="code-header">
+          <span class="code-lang">TypeScript</span>
+          <span class="code-source-path">nemoclaw/src/index.ts:~178-202</span>
+          <a class="code-source-link" href="https://github.com/NVIDIA/NemoClaw/blob/main/nemoclaw/src/index.ts" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-comment">// Simplified inference routing pattern</span>
+
+<span class="code-keyword">async</span> <span class="code-keyword">function</span> <span class="code-function">routeInference</span>(<span class="code-variable">request</span>: <span class="code-type">InferenceRequest</span>): <span class="code-type">Promise</span>&lt;<span class="code-type">InferenceResponse</span>&gt; {
+  <span class="code-comment">// Agent code targets inference.local -- never the real provider</span>
+  <span class="code-keyword">const</span> <span class="code-variable">gatewayUrl</span> <span class="code-operator">=</span> <span class="code-string">"https://inference.local/v1/chat/completions"</span>;
+
+  <span class="code-comment">// POST to the OpenShell gateway, which injects real credentials</span>
+  <span class="code-keyword">const</span> <span class="code-variable">response</span> <span class="code-operator">=</span> <span class="code-keyword">await</span> <span class="code-function">fetch</span>(<span class="code-variable">gatewayUrl</span>, {
+    <span class="code-variable">method</span>: <span class="code-string">"POST"</span>,
+    <span class="code-variable">headers</span>: { <span class="code-string">"Content-Type"</span>: <span class="code-string">"application/json"</span> },
+    <span class="code-variable">body</span>: <span class="code-variable">JSON</span>.<span class="code-function">stringify</span>(<span class="code-variable">request</span>),
+  });
+
+  <span class="code-keyword">return</span> <span class="code-variable">response</span>.<span class="code-function">json</span>();
+}</code></pre>
+      </div>
+
+      <h3>Blueprint Manifest</h3>
+      <div class="code-block code-block-sourced" id="source-blueprint-yaml">
+        <div class="code-header">
+          <span class="code-lang">YAML</span>
+          <span class="code-source-path">nemoclaw-blueprint/blueprint.yaml</span>
+          <a class="code-source-link" href="https://github.com/NVIDIA/NemoClaw/tree/main/nemoclaw-blueprint" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-comment"># Blueprint version and compatibility constraints</span>
+<span class="code-variable">version</span>: <span class="code-string">"0.1.0"</span>
+<span class="code-variable">min_openshell_version</span>: <span class="code-string">"0.4.0"</span>
+<span class="code-variable">min_openclaw_version</span>: <span class="code-string">"2026.1.0"</span>
+<span class="code-variable">digest</span>: <span class="code-string">"sha256:abc123..."</span>  <span class="code-comment"># Computed at release time</span>
+
+<span class="code-variable">inference_profiles</span>:
+  - <span class="code-variable">name</span>: <span class="code-string">nvidia</span>
+    <span class="code-variable">type</span>: <span class="code-string">openai-compatible</span>
+    <span class="code-variable">endpoint</span>: <span class="code-string">integrate.api.nvidia.com</span>
+  - <span class="code-variable">name</span>: <span class="code-string">openai</span>
+    <span class="code-variable">type</span>: <span class="code-string">openai-native</span>
+  - <span class="code-variable">name</span>: <span class="code-string">anthropic</span>
+    <span class="code-variable">type</span>: <span class="code-string">anthropic-native</span>
+  - <span class="code-variable">name</span>: <span class="code-string">ollama</span>
+    <span class="code-variable">type</span>: <span class="code-string">openai-compatible</span>
+    <span class="code-variable">endpoint</span>: <span class="code-string">localhost:11434</span></code></pre>
+      </div>
+
+      <div class="callout callout-warning">
+        <div class="callout-icon">&#x26A0;&#xFE0F;</div>
+        <div class="callout-content">
+          <strong>Warning:</strong> NemoClaw is alpha software. The blueprint schema, CLI commands, and API interfaces are subject to breaking changes between releases. Pin your blueprint version and test upgrades in a non-critical environment first.
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section animate-in" data-level="advanced">
+      <h2>Deployment Patterns <span class="level-badge level-advanced">Advanced</span></h2>
+
+      <h3>Local Inference (Privacy-First)</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">Bash</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
+        <pre class="code-pre"><code><span class="code-comment"># During onboard, select Ollama provider</span>
+<span class="code-comment"># NemoClaw will pull and warm the selected model</span>
+<span class="code-comment"># Supported local models:</span>
+<span class="code-comment">#   - Nemotron 3 Nano 4B (GeForce RTX, ~8 GB VRAM)</span>
+<span class="code-comment">#   - Nemotron 3 Super 120B MoE (DGX Spark 128 GB)</span>
+<span class="code-comment">#   - Qwen 3.5 variants (27B, 9B, 4B)</span></code></pre>
+      </div>
+
+      <h3>DGX Spark Setup</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">Bash</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
+        <pre class="code-pre"><code><span class="code-comment"># Apply required cgroup v2 and Docker fixes for Ubuntu 24.04</span>
+sudo nemoclaw setup-spark</code></pre>
+      </div>
+
+      <h3>Uninstall</h3>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">Bash</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
+        <pre class="code-pre"><code>curl -fsSL https://raw.githubusercontent.com/NVIDIA/NemoClaw/refs/heads/main/uninstall.sh | bash
+<span class="code-comment"># Options: --yes (skip confirmation), --keep-openshell, --delete-models</span></code></pre>
       </div>
     </section>
 
   </main>
 
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/get-started/quickstart.html" target="_blank" rel="noopener noreferrer">NemoClaw Quickstart Guide</a></span><span class="reference-domain">docs.nvidia.com</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4BB;</span><div class="reference-content"><span class="reference-title"><a href="https://github.com/NVIDIA/NemoClaw" target="_blank" rel="noopener noreferrer">NemoClaw GitHub Repository</a></span><span class="reference-domain">github.com</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/reference/commands.html" target="_blank" rel="noopener noreferrer">CLI Commands Reference</a></span><span class="reference-domain">docs.nvidia.com</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/network-policy/customize-network-policy.html" target="_blank" rel="noopener noreferrer">Network Policy Customization</a></span><span class="reference-domain">docs.nvidia.com</span></div></li>
+    </ul>
+  </section>
+
   <nav class="page-nav-footer">
     <a href="how-it-works.html" class="prev">How It Works</a>
     <a href="use-cases.html" class="next">Use Cases</a>
   </nav>
-
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
   <script>
-    (function(){var o=new IntersectionObserver(function(e){e.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');o.unobserve(entry.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){o.observe(el);});})();
-
-    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000);});}
-
-    function toggleAccordion(header){var item=header.parentElement;var body=item.querySelector('.accordion-body');var isActive=header.classList.contains('active');var accordion=item.closest('.accordion');accordion.querySelectorAll('.accordion-header.active').forEach(function(other){if(other!==header){other.classList.remove('active');other.parentElement.querySelector('.accordion-body').style.maxHeight=null;}});if(isActive){header.classList.remove('active');body.style.maxHeight=null;}else{header.classList.add('active');body.style.maxHeight=body.scrollHeight+'px';}}
-
-    (function(){var tooltip=null;function show(t){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=t.dataset.definition;document.body.appendChild(tooltip);var r=t.getBoundingClientRect();var tr=tooltip.getBoundingClientRect();var l=r.left+r.width/2-tr.width/2;var tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;tooltip.style.left=l+'px';tooltip.style.top=tp+'px';requestAnimationFrame(function(){tooltip.classList.add('visible');});}function hide(){if(tooltip){tooltip.remove();tooltip=null;}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide();});document.addEventListener('click',function(e){var t=e.target.closest('.glossary-term');if(t){e.preventDefault();show(t);}else hide();});})();
-
-    (function(){document.addEventListener('DOMContentLoaded',function(){var btn=document.querySelector('.nav-hamburger');var links=document.getElementById('nav-links');if(!btn||!links)return;btn.addEventListener('click',function(){var o=links.classList.toggle('open');btn.setAttribute('aria-expanded',o?'true':'false');});links.addEventListener('click',function(e){if(e.target.closest('a')){links.classList.remove('open');btn.setAttribute('aria-expanded','false');}});});})();
+    (function(){var btn=document.querySelector('.nav-hamburger'),links=document.getElementById('nav-links');if(!btn||!links)return;btn.addEventListener('click',function(){var o=links.classList.toggle('open');btn.setAttribute('aria-expanded',o?'true':'false')});links.addEventListener('click',function(e){if(e.target.closest('a')){links.classList.remove('open');btn.setAttribute('aria-expanded','false')}})})();
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
+    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},2000)})}
+    (function(){var tooltip=null;function show(term){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=term.dataset.definition;document.body.appendChild(tooltip);var r=term.getBoundingClientRect(),tr=tooltip.getBoundingClientRect();var left=r.left+r.width/2-tr.width/2,top=r.bottom+8;if(left<8)left=8;if(left+tr.width>window.innerWidth-8)left=window.innerWidth-tr.width-8;if(top+tr.height>window.innerHeight-8)top=r.top-tr.height-8;tooltip.style.left=left+'px';tooltip.style.top=top+'px';requestAnimationFrame(function(){tooltip.classList.add('visible')})}function hide(){if(tooltip){tooltip.remove();tooltip=null}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t)});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide()});document.addEventListener('click',function(e){var t=e.target.closest('.glossary-term');if(t){e.preventDefault();show(t)}else hide()})})();
+    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var ctxMatch=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(ctxMatch){ctxMatch[1].split('\n').forEach(function(line){var m=line.match(/(\w+):\s*"(.+)"/);if(m)ctx[m[1]]=m[2]})}var md='# '+(ctx.system||'')+': '+(ctx.page||document.title)+'\n';md+='> Source: '+window.location.href+' | Level: '+(ctx.level||'')+'\n\n';var content=document.querySelector('.content-area');if(content){content.querySelectorAll('h2,h3,p,ul,.code-block,.callout').forEach(function(el){var tag=el.tagName?el.tagName.toLowerCase():'';if(/^h/.test(tag))md+='#'.repeat(parseInt(tag[1]))+' '+el.textContent.trim()+'\n\n';else if(tag==='p')md+=el.textContent.trim()+'\n\n';else if(tag==='ul'){el.querySelectorAll('li').forEach(function(li){md+='- '+li.textContent.trim()+'\n'});md+='\n'}else if(el.classList.contains('code-block')){var lang=el.querySelector('.code-lang');var pre=el.querySelector('pre');md+='```'+(lang?lang.textContent.trim().toLowerCase():'')+'\n'+(pre?pre.textContent.trim():'')+'\n```\n\n'}else if(el.classList.contains('callout')){var body=el.querySelector('.callout-content');md+='> '+( body?body.textContent.trim():'')+'\n\n'}})}md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');var label=btn.querySelector('.btn-label');var orig=label.textContent;label.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){label.textContent=orig;btn.classList.remove('copied')},2000)})}
   </script>
 </body>
 </html>

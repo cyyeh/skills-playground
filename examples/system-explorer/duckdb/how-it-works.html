@@ -7,222 +7,220 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context:
+    system: "DuckDB"
+    description: "an embedded analytical (OLAP) database management system"
+    page: "How It Works"
+    level: "Intermediate"
+  -->
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-tight:1.15;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms}
-    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
-    html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}*,*::before,*::after{box-sizing:border-box}
-    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap}.nav-brand{text-decoration:none;display:flex;flex-direction:column}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted)}.nav-links{display:flex;align-items:center;gap:var(--space-4)}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0}.nav-page-list li a{display:flex;align-items:center;padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background .15s ease,color .15s ease}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text)}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2)}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;transition:transform .2s ease,opacity .2s ease}@media(max-width:768px){.nav-hamburger{display:flex}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3)}.nav-links.open{display:flex}.nav-page-list{flex-direction:column;width:100%}.nav-page-list li a{padding:var(--space-2) var(--space-3)}}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-3) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:.05em}.page-level-badge.intermediate{background:var(--color-warning-light);color:#B8860B}
-    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:0 0 var(--space-3)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}.content-section ul,.content-section ol{font-family:var(--font-body);font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4);padding-left:var(--space-6)}.content-section li{margin-bottom:var(--space-2)}.content-section code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-border-light);padding:1px var(--space-1);border-radius:3px}
-    /* FLOW DIAGRAM */
-    .flow-diagram{display:flex;align-items:center;gap:var(--space-2);margin:var(--space-8) 0;overflow-x:auto;padding:var(--space-4) 0;-webkit-overflow-scrolling:touch}
-    .flow-step{display:flex;gap:var(--space-3);align-items:flex-start;background:var(--color-surface);padding:var(--space-4) var(--space-5);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);min-width:180px;max-width:240px;flex-shrink:0;opacity:0;transform:translateY(12px);transition:opacity var(--duration-normal) var(--ease-out),transform var(--duration-normal) var(--ease-out);transition-delay:calc(var(--step-delay) * 0.15s)}
-    .flow-step.visible{opacity:1;transform:translateY(0)}
-    .flow-step-num{width:32px;height:32px;border-radius:50%;background:var(--color-accent);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;flex-shrink:0}
-    .flow-step-content strong{font-family:var(--font-display);font-size:var(--text-sm);display:block;margin-bottom:var(--space-1)}
-    .flow-step-content p{font-size:var(--text-xs);color:var(--color-text-secondary);margin:0}
-    .flow-arrow{font-size:var(--text-xl);color:var(--color-accent);flex-shrink:0;opacity:0;transition:opacity var(--duration-normal);transition-delay:calc(var(--step-delay) * 0.15s)}.flow-arrow.visible{opacity:1}
-    @media(max-width:768px){.flow-diagram{flex-direction:column;align-items:stretch;overflow-x:visible}.flow-step{min-width:auto;max-width:none}.flow-arrow{text-align:center;transform:rotate(90deg)}}
-    /* CODE BLOCK */
-    .code-block{background:#1E1E2E;border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md)}.code-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244}.code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:.05em}.code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1}.code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4}
-    .code-keyword{color:#CBA6F7}.code-string{color:#F9E2AF}.code-comment{color:#6C7086;font-style:italic}.code-function{color:#A6E3A1}.code-number{color:#FAB387}.code-variable{color:#89B4FA}
-    /* CONCEPT CARDS */
-    .concept-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-4);margin:var(--space-6) 0}
-    .concept-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-top:3px solid var(--card-color,var(--color-accent));box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}.concept-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}.concept-card .card-title{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-2)}.concept-card .card-desc{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal);margin:0}
-    @media(max-width:768px){.concept-cards{grid-template-columns:1fr}}
-    /* CALLOUT */
-    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}.callout-tip{background:var(--color-success-light);border-color:var(--color-success)}.callout-insight{background:#F3EFF8;border-color:#7B6DAA}.callout-info{background:var(--color-info-light);border-color:var(--color-info)}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}.callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}.callout-content strong{color:var(--color-text)}.callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px}
-    /* GLOSSARY */
-    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}.glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
-    /* TABLE */
-    .data-table{width:100%;border-collapse:collapse;margin:var(--space-6) 0;font-size:var(--text-sm)}.data-table th{background:var(--color-bg-warm);font-family:var(--font-display);font-weight:600;text-align:left;padding:var(--space-3) var(--space-4);border-bottom:2px solid var(--color-border)}.data-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light)}.data-table tr:hover td{background:var(--color-surface-warm)}.data-table code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-border-light);padding:1px var(--space-1);border-radius:3px}
-    /* NAV FOOTER */
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s ease}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
-    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}.site-footer p{margin:0}
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
-    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;}
+    *,*::before,*::after{box-sizing:border-box;}html{scroll-behavior:smooth;}
+    ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full);}
+    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased;}
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap;}
+    .nav-brand{text-decoration:none;display:flex;flex-direction:column;}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2;}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);}
+    .nav-links{display:flex;align-items:center;}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0;}.nav-page-list li a{padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background 0.15s,color 0.15s;display:block;}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text);}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600;}
+    .nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2);}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;}
+    @media(max-width:768px){.nav-hamburger{display:flex;}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3);}.nav-links.open{display:flex;}.nav-page-list{flex-direction:column;width:100%;}}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3);}.page-header-content{flex:1;min-width:0;}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin-bottom:var(--space-3);line-height:1.15;}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;}.page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info);}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6);}.content-section{margin-bottom:var(--space-10);}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin-bottom:var(--space-4);}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;margin-bottom:var(--space-3);}.content-section p{font-size:var(--text-base);line-height:1.7;margin-bottom:var(--space-4);}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg);}
+
+    /* Tables */
+    .data-table{width:100%;border-collapse:collapse;margin:var(--space-6) 0;font-size:var(--text-sm);}.data-table th{background:var(--color-surface-warm);font-family:var(--font-display);font-weight:600;text-align:left;padding:var(--space-3) var(--space-4);border-bottom:2px solid var(--color-border);}.data-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light);}.data-table tr:hover td{background:var(--color-accent-light);}
+    .data-table code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-border-light);padding:1px var(--space-1);border-radius:3px;}
+
+    /* Performance gauges */
+    .perf-gauges{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0;}
+    .perf-title{font-family:var(--font-display);font-weight:700;margin-bottom:var(--space-5);}
+    .perf-gauge{margin-bottom:var(--space-4);}.perf-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--space-1);}.perf-name{font-family:var(--font-display);font-weight:600;font-size:var(--text-sm);}.perf-value{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);}
+    .perf-bar{height:10px;background:var(--color-border-light);border-radius:var(--radius-full);overflow:hidden;}.perf-fill{height:100%;border-radius:var(--radius-full);width:0;transition:width 1s var(--ease-out);}.perf-green{background:var(--color-success);}.perf-yellow{background:var(--color-warning);}.perf-red{background:var(--color-error);}
+    .perf-note{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-1);display:block;}
+
+    /* Flow diagram */
+    .flow-diagram{display:flex;align-items:center;gap:var(--space-2);margin:var(--space-8) 0;overflow-x:auto;padding:var(--space-4) 0;}
+    .flow-step{display:flex;gap:var(--space-3);align-items:flex-start;background:var(--color-surface);padding:var(--space-4) var(--space-5);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);min-width:150px;max-width:200px;flex-shrink:0;opacity:0;transform:translateY(12px);transition:opacity var(--duration-normal) var(--ease-out),transform var(--duration-normal) var(--ease-out);transition-delay:calc(var(--step-delay)*0.15s);}
+    .flow-step.visible{opacity:1;transform:translateY(0);}
+    .flow-step-num{width:28px;height:28px;border-radius:50%;background:var(--color-accent);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);flex-shrink:0;}
+    .flow-step-content strong{font-family:var(--font-display);font-size:var(--text-sm);display:block;margin-bottom:var(--space-1);}.flow-step-content p{font-size:var(--text-xs);color:var(--color-text-secondary);margin:0;}
+    .flow-arrow{font-size:var(--text-xl);color:var(--color-accent);flex-shrink:0;opacity:0;transition:opacity var(--duration-normal);transition-delay:calc(var(--step-delay)*0.15s);}.flow-arrow.visible{opacity:1;}
+    @media(max-width:768px){.flow-diagram{flex-direction:column;align-items:stretch;}.flow-step{min-width:auto;max-width:none;}.flow-arrow{text-align:center;transform:rotate(90deg);}}
+
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid;}
+    .callout-insight{background:#F3EFF8;border-color:#7B6DAA;}.callout-info{background:var(--color-info-light);border-color:var(--color-info);}.callout-tip{background:var(--color-success-light);border-color:var(--color-success);}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning);}
+    .callout-icon{font-size:1.3rem;flex-shrink:0;}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal);}.callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px;}
+
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer;}
+    .glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast);}.glossary-tooltip.visible{opacity:1;}
+
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap;}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light);}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light);}
+    .copy-markdown-btn .btn-icon{font-size:var(--text-base);line-height:1;}.copy-markdown-btn .btn-label{display:inline;}
+    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none;}}
+
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted);display:inline;}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px;}a[target="_blank"]:hover{text-decoration-color:var(--color-accent);}
+
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md);}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);display:flex;align-items:center;gap:var(--space-2);}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3);}.reference-item{display:flex;align-items:baseline;gap:var(--space-3);}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center;}.reference-content{display:flex;flex-direction:column;gap:var(--space-1);}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;}.reference-title a{color:var(--color-accent);text-decoration:none;}.reference-title a:hover{text-decoration:underline;}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);}
+
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light);}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;}.page-nav-footer .prev::before{content:"\2190\00a0";}.page-nav-footer .next::after{content:"\00a0\2192";}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4);}
+    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out);}.animate-in.visible{opacity:1;transform:translateY(0);}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl);}.page-nav-footer{flex-direction:column;gap:var(--space-4);}}
   </style>
 </head>
 <body>
-
   <nav class="site-nav" role="navigation" aria-label="Course navigation">
     <a href="index.html" class="nav-brand"><span class="nav-brand-name">DuckDB</span><span class="nav-brand-label">Interactive Course</span></a>
     <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button>
-    <div class="nav-links" id="nav-links">
-      <ul class="nav-page-list">
-        <li><a href="index.html">Home</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="architecture.html">Architecture</a></li><li class="active"><a href="how-it-works.html">How It Works</a></li><li><a href="implementation.html">Implementation</a></li><li><a href="use-cases.html">Use Cases</a></li><li><a href="ecosystem.html">Ecosystem</a></li><li><a href="faq.html">FAQ</a></li><li><a href="tradeoffs.html">Trade-offs</a></li>
-      </ul>
-    </div>
+    <div class="nav-links" id="nav-links"><ul class="nav-page-list">
+      <li><a href="index.html">Home</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="architecture.html">Architecture</a></li>
+      <li class="active"><a href="how-it-works.html">How It Works</a></li>
+      <li><a href="implementation.html">Implementation</a></li><li><a href="use-cases.html">Use Cases</a></li><li><a href="ecosystem.html">Ecosystem</a></li><li><a href="faq.html">FAQ</a></li><li><a href="tradeoffs.html">Trade-offs</a></li>
+    </ul></div>
   </nav>
 
   <header class="page-header animate-in">
-    <span class="page-level-badge intermediate">Intermediate</span>
-    <h1>How It Works</h1>
+    <div class="page-header-content"><span class="page-level-badge intermediate">Intermediate</span><h1>How It Works</h1></div>
+    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button>
   </header>
 
   <main class="content-area">
 
-    <section class="content-section animate-in">
-      <h2>Query Execution Walkthrough</h2>
-      <p>Let's trace what happens when you run this query:</p>
-      <div class="code-block">
-        <div class="code-header"><span class="code-lang">SQL</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-keyword">SELECT</span> region, <span class="code-function">SUM</span>(amount) <span class="code-keyword">AS</span> total
-<span class="code-keyword">FROM</span> sales
-<span class="code-keyword">WHERE</span> year = <span class="code-number">2025</span>
-<span class="code-keyword">GROUP BY</span> region
-<span class="code-keyword">ORDER BY</span> total <span class="code-keyword">DESC</span>
-<span class="code-keyword">LIMIT</span> <span class="code-number">5</span>;</code></pre>
-      </div>
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Vectorized Query Execution</h2>
+      <p>DuckDB's execution engine processes data in vectors of <code>STANDARD_VECTOR_SIZE</code> (2,048) tuples. Each vector represents a single column's values within a batch. Multiple vectors are bundled into a <span class="glossary-term" data-definition="A bundle of Vector columns, each holding up to 2,048 values. The fundamental unit of data transfer between operators in DuckDB's execution engine.">DataChunk</span> that flows through the operator pipeline.</p>
 
-      <div class="flow-diagram" id="flow-query">
-        <div class="flow-step animate-in" style="--step-delay:0">
-          <div class="flow-step-num">1</div>
-          <div class="flow-step-content">
-            <strong>Parse &amp; Bind</strong>
-            <p>SQL parsed into AST. Binder resolves <code>sales</code> table, validates columns &amp; types.</p>
-          </div>
+      <h3>Vector Types</h3>
+      <table class="data-table">
+        <thead><tr><th>Vector Type</th><th>Storage</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Flat</strong></td><td>Contiguous array, 1:1 mapping</td><td>Default format after computation</td></tr>
+          <tr><td><strong>Constant</strong></td><td>Single value for all rows</td><td>Literal expressions (<code>WHERE x > 42</code>)</td></tr>
+          <tr><td><strong>Dictionary</strong></td><td>Child vector + selection index</td><td>Compressed data from storage</td></tr>
+          <tr><td><strong>Sequence</strong></td><td>Offset + increment</td><td>Row identifiers, sequential data</td></tr>
+        </tbody>
+      </table>
+      <p>The <strong>Unified Vector Format</strong> provides a generic interface so operators don't need to handle every combination. Operators call <code>ToUnifiedFormat()</code> on any vector to get a normalized representation.</p>
+
+      <div class="callout callout-tip">
+        <div class="callout-icon">&#x1F4A1;</div>
+        <div class="callout-content">
+          <strong>String optimization:</strong> Strings of 12 bytes or fewer are inlined directly in the <code>string_t</code> struct, avoiding heap allocation. Longer strings store a pointer, length, and a 4-byte prefix used for fast comparison short-circuiting.
         </div>
+      </div>
+    </section>
+
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Columnar Storage &amp; Compression</h2>
+      <p>Persistent data is organized into <span class="glossary-term" data-definition="Horizontal partitions of a table. Each row group contains a configurable number of rows (commonly 122,880) and stores each column as a separate compressed segment.">row groups</span> (commonly 122,880 rows). Each row group contains column segments, compressed independently using the best-fit algorithm.</p>
+
+      <table class="data-table">
+        <thead><tr><th>Algorithm</th><th>Data Type</th><th>Technique</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Constant</strong></td><td>Any</td><td>Single value for entire segment</td></tr>
+          <tr><td><strong>RLE</strong></td><td>Any</td><td>Run-length encoding for repeated values</td></tr>
+          <tr><td><strong>Bit Packing</strong></td><td>Integer</td><td>Minimal bits per value</td></tr>
+          <tr><td><strong>Frame of Reference</strong></td><td>Integer</td><td>Base value + offsets</td></tr>
+          <tr><td><strong>Dictionary</strong></td><td>String</td><td>Unique value table + indices</td></tr>
+          <tr><td><strong>FSST</strong></td><td>String</td><td>Fast Static Symbol Table</td></tr>
+          <tr><td><strong>ALP</strong></td><td>Float/Double</td><td>Adaptive Lossless floating-Point</td></tr>
+          <tr><td><strong>Chimp/Patas</strong></td><td>Timestamp</td><td>XOR-based compression</td></tr>
+          <tr><td><strong>Zstd</strong></td><td>Any</td><td>General-purpose block compression</td></tr>
+        </tbody>
+      </table>
+
+      <p><span class="glossary-term" data-definition="Min/max indexes maintained per row group per column. During query execution, the engine checks zone maps before reading a row group to skip groups whose values fall outside the filter predicate range.">Zone maps</span> (min/max indexes) are maintained per row group per column. If the filter predicate falls outside the min/max range, the entire row group is skipped.</p>
+    </section>
+
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Morsel-Driven Parallel Execution</h2>
+      <p>DuckDB's parallelism follows the <a href="https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf" target="_blank" rel="noopener noreferrer">morsel-driven paradigm</a>. Work is divided into small chunks distributed across CPU cores adaptively.</p>
+
+      <div class="flow-diagram" id="flow-morsel">
+        <div class="flow-step animate-in" style="--step-delay:0"><div class="flow-step-num">1</div><div class="flow-step-content"><strong>Pipeline Construction</strong><p>Physical plan decomposed at blocking operators</p></div></div>
         <div class="flow-arrow animate-in" style="--step-delay:1">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:2">
-          <div class="flow-step-num">2</div>
-          <div class="flow-step-content">
-            <strong>Logical Plan</strong>
-            <p>Scan &rarr; Filter &rarr; Aggregate &rarr; Sort &rarr; Limit operators.</p>
-          </div>
-        </div>
+        <div class="flow-step animate-in" style="--step-delay:2"><div class="flow-step-num">2</div><div class="flow-step-content"><strong>Morsel Distribution</strong><p>Input divided into morsels; threads pull from queue</p></div></div>
         <div class="flow-arrow animate-in" style="--step-delay:3">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:4">
-          <div class="flow-step-num">3</div>
-          <div class="flow-step-content">
-            <strong>Optimize</strong>
-            <p><span class="glossary-term" data-definition="An optimization that moves filter conditions as close to the data source as possible, reducing the amount of data read and processed by subsequent operators.">Predicate pushdown</span>, column pruning, Top-5 heap.</p>
-          </div>
-        </div>
+        <div class="flow-step animate-in" style="--step-delay:4"><div class="flow-step-num">3</div><div class="flow-step-content"><strong>Thread-Local Processing</strong><p>Each thread processes morsels independently</p></div></div>
         <div class="flow-arrow animate-in" style="--step-delay:5">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:6">
-          <div class="flow-step-num">4</div>
-          <div class="flow-step-content">
-            <strong>Pipeline Build</strong>
-            <p>Two pipelines: Scan&rarr;Filter&rarr;Aggregate, then Finalize&rarr;Top-5&rarr;Result.</p>
-          </div>
-        </div>
-        <div class="flow-arrow animate-in" style="--step-delay:7">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:8">
-          <div class="flow-step-num">5</div>
-          <div class="flow-step-content">
-            <strong>Vectorized Execute</strong>
-            <p>Threads read morsels, decompress vectors of 2,048 values, filter &amp; aggregate in parallel.</p>
-          </div>
-        </div>
+        <div class="flow-step animate-in" style="--step-delay:6"><div class="flow-step-num">4</div><div class="flow-step-content"><strong>Sink &rarr; Combine &rarr; Finalize</strong><p>Three-phase merge for blocking operators</p></div></div>
       </div>
 
       <div class="callout callout-insight">
         <div class="callout-icon">&#x1F52D;</div>
         <div class="callout-content">
-          <strong>Architecture insight:</strong> The <code>ORDER BY ... LIMIT 5</code> is recognized as a Top-5 operation. DuckDB uses a small heap (size 5) instead of sorting the entire result set -- a huge win when the dataset has millions of groups.
+          <strong>Why morsel-driven?</strong> This approach avoids the overhead of <span class="glossary-term" data-definition="A traditional approach to parallelism where explicit exchange operators are inserted into the query plan to redistribute data between threads. Creates static partitioning and load imbalance problems.">exchange operators</span> and enables adaptive load balancing: if one thread finishes its morsel early, it simply picks up the next one from the queue.
         </div>
       </div>
     </section>
 
-    <section class="content-section animate-in">
-      <h2>The Vector Format</h2>
-      <p>DuckDB's internal data representation uses several <span class="glossary-term" data-definition="A batch of values (typically 2,048) of the same type, processed as a unit by DuckDB's execution engine. Different vector types (Flat, Constant, Dictionary, Sequence) optimize for different data patterns.">vector types</span> for efficiency:</p>
-
-      <div class="concept-cards">
-        <div class="concept-card" style="--card-color: var(--color-accent)">
-          <div class="card-title">Flat Vector</div>
-          <p class="card-desc">Standard contiguous array. A column of integers read from storage. The most common type.</p>
-        </div>
-        <div class="concept-card" style="--card-color: var(--color-info)">
-          <div class="card-title">Constant Vector</div>
-          <p class="card-desc">Single value repeated for all rows. The literal <code>2025</code> in <code>WHERE year = 2025</code> -- stored once, not 2,048 times.</p>
-        </div>
-        <div class="concept-card" style="--card-color: var(--color-success)">
-          <div class="card-title">Dictionary Vector</div>
-          <p class="card-desc">Index into a smaller value set. A dictionary-compressed string column stores codes, not full strings.</p>
-        </div>
-        <div class="concept-card" style="--card-color: #7B6DAA">
-          <div class="card-title">Sequence Vector</div>
-          <p class="card-desc">Offset + increment pattern. Row IDs (0, 1, 2, 3, ...) need only two numbers to represent the entire vector.</p>
-        </div>
-      </div>
-
-      <p>Operators output one of these types, and the next operator handles any type through the <strong>Unified Vector Format</strong> -- a common abstraction that avoids the combinatorial explosion of type-pair handling.</p>
-
-      <div class="callout callout-tip">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content">
-          <strong>Tip:</strong> String handling is particularly clever: strings of 12 bytes or fewer are inlined directly into the vector (no pointer indirection). Larger strings store a pointer plus a 4-byte prefix -- the prefix allows many comparisons (like <code>WHERE name > 'M'</code>) to short-circuit without following the pointer.
-        </div>
-      </div>
-    </section>
-
-    <section class="content-section animate-in">
-      <h2>Compression Algorithms</h2>
-      <p>DuckDB automatically selects the best compression for each column segment. The compression analyzer runs during data loading and picks the algorithm yielding the best ratio independently per segment.</p>
-
-      <table class="data-table">
-        <thead>
-          <tr><th>Algorithm</th><th>Best For</th><th>How It Works</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>Constant</strong></td><td>Single-value columns</td><td>Stores one value for the whole segment</td></tr>
-          <tr><td><strong>Dictionary</strong></td><td>Low-cardinality columns</td><td>Maps values to small integer codes</td></tr>
-          <tr><td><strong><span class="glossary-term" data-definition="Run-Length Encoding compresses sequences of repeated values by storing each value once along with a count of consecutive repetitions. Very effective for sorted or clustered data.">RLE</span></strong></td><td>Sorted/clustered data</td><td>Stores (value, count) pairs</td></tr>
-          <tr><td><strong>Bitpacking</strong></td><td>Small-range integers</td><td>Uses fewer bits per value (e.g., 4-bit for values 0-15)</td></tr>
-          <tr><td><strong><span class="glossary-term" data-definition="Fast Static Symbol Table -- a string compression algorithm that identifies common substrings and replaces them with short codes. Designed for columnar databases where strings share common patterns.">FSST</span></strong></td><td>String columns</td><td>Compresses common substrings into short codes</td></tr>
-          <tr><td><strong>ALP</strong></td><td>Float/double columns</td><td>Exploits patterns in floating-point data</td></tr>
-          <tr><td><strong>Chimp</strong></td><td>Time-series doubles</td><td>XOR-based compression for sequential doubles</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section class="content-section animate-in">
-      <h2>Direct File Querying</h2>
-      <p>One of DuckDB's most powerful features is querying files directly without loading them first. DuckDB's multi-hypothesis CSV parser automatically infers column types, delimiters, and headers. For Parquet files, it leverages metadata (row group statistics, page indexes) to push down filters and skip irrelevant data before reading it.</p>
-
-      <div class="code-block">
-        <div class="code-header"><span class="code-lang">SQL</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-comment">-- Query a local Parquet file</span>
-<span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> <span class="code-string">'sales_2025.parquet'</span> <span class="code-keyword">WHERE</span> region = <span class="code-string">'APAC'</span>;
-
-<span class="code-comment">-- Query a CSV with auto-detection</span>
-<span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> <span class="code-function">read_csv</span>(<span class="code-string">'data.csv'</span>);
-
-<span class="code-comment">-- Query Parquet files on S3</span>
-<span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> <span class="code-string">'s3://my-bucket/data/*.parquet'</span>;
-
-<span class="code-comment">-- Query a remote CSV over HTTP</span>
-<span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> <span class="code-string">'https://example.com/data.csv'</span>;</code></pre>
-      </div>
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Transaction &amp; Concurrency</h2>
+      <p>DuckDB's <span class="glossary-term" data-definition="Multi-Version Concurrency Control. A technique where writers update data in-place but save previous versions in undo buffers. Readers check version chains only when necessary.">MVCC</span> implementation is inspired by Thomas Neumann's paper on fast serializable MVCC:</p>
+      <ul style="font-size:var(--text-base);line-height:1.8;padding-left:var(--space-6);">
+        <li><strong>Writers update data in-place</strong> but save previous versions in undo buffers</li>
+        <li><strong>Readers check for version info</strong> per row; if none exists (common case), they read with zero overhead</li>
+        <li><strong>Optimistic concurrency</strong> means no locks acquired upfront; conflicts detected at commit time</li>
+        <li><strong>Appends never conflict</strong>, even from multiple threads</li>
+        <li><strong>Same-row conflicts</strong> produce an error: the second writer must retry</li>
+      </ul>
 
       <div class="callout callout-warning">
         <div class="callout-icon">&#x26A0;&#xFE0F;</div>
         <div class="callout-content">
-          <strong>Warning:</strong> When querying remote files over S3 or HTTP, the initial query may be slower due to network latency. For repeated queries on the same remote data, consider loading it into a persistent DuckDB table first with <code>CREATE TABLE ... AS SELECT</code>.
+          <strong>Single-writer constraint:</strong> Only one process can write to a database file at a time. Multiple processes can read concurrently in <code>READ_ONLY</code> mode. Within a single process, multiple threads can write concurrently.
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Performance Characteristics</h2>
+
+      <div class="perf-gauges" id="perf-hw">
+        <h3 class="perf-title">Performance Profile</h3>
+        <div class="perf-gauge"><div class="perf-label"><span class="perf-name">CPU Cache Utilization</span><span class="perf-value">Excellent</span></div><div class="perf-bar"><div class="perf-fill perf-green" data-width="95"></div></div><span class="perf-note">2048-tuple vectors fit in L1 cache (32-128 KB)</span></div>
+        <div class="perf-gauge"><div class="perf-label"><span class="perf-name">SIMD Auto-Vectorization</span><span class="perf-value">High</span></div><div class="perf-bar"><div class="perf-fill perf-green" data-width="90"></div></div><span class="perf-note">Tight inner loops auto-converted to SIMD by compilers</span></div>
+        <div class="perf-gauge"><div class="perf-label"><span class="perf-name">Column Pruning Efficiency</span><span class="perf-value">High</span></div><div class="perf-bar"><div class="perf-fill perf-green" data-width="90"></div></div><span class="perf-note">Only referenced columns read from storage</span></div>
+        <div class="perf-gauge"><div class="perf-label"><span class="perf-name">Larger-than-Memory Support</span><span class="perf-value">Functional</span></div><div class="perf-bar"><div class="perf-fill perf-yellow" data-width="60"></div></div><span class="perf-note">Transparent disk spilling; performance degrades on large joins</span></div>
+        <div class="perf-gauge"><div class="perf-label"><span class="perf-name">Horizontal Scalability</span><span class="perf-value">None</span></div><div class="perf-bar"><div class="perf-fill perf-red" data-width="10"></div></div><span class="perf-note">Single-node only. Use MotherDuck or ClickHouse for distributed workloads</span></div>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-icon">&#x2139;&#xFE0F;</div>
+        <div class="callout-content">
+          <strong>Benchmark context:</strong> On TPC-H benchmarks, DuckDB on a single machine completed the suite in ~76 seconds, while Apache Spark on 32 machines required ~8 minutes. Against ClickHouse, DuckDB often wins on small-to-medium datasets (no network overhead) while ClickHouse wins on larger distributed datasets.
         </div>
       </div>
     </section>
 
   </main>
 
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/internals/vector" target="_blank" rel="noopener noreferrer">DuckDB Vector Internals</a></span><span class="reference-domain">duckdb.org</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/internals/storage" target="_blank" rel="noopener noreferrer">DuckDB Storage Format</a></span><span class="reference-domain">duckdb.org</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://endjin.com/blog/2025/04/duckdb-in-depth-how-it-works-what-makes-it-fast" target="_blank" rel="noopener noreferrer">DuckDB In Depth</a></span><span class="reference-domain">endjin.com</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/2024/10/30/analytics-optimized-concurrent-transactions" target="_blank" rel="noopener noreferrer">Analytics-Optimized Concurrent Transactions</a></span><span class="reference-domain">duckdb.org</span></div></li>
+    </ul>
+  </section>
+
   <nav class="page-nav-footer">
     <a href="architecture.html" class="prev">Architecture</a>
-    <a href="implementation.html" class="next">Implementation</a>
+    <a href="implementation.html" class="next">Implementation Details</a>
   </nav>
-
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
   <script>
-    (function(){document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.nav-hamburger'),l=document.getElementById('nav-links');if(!b||!l)return;b.addEventListener('click',function(){var o=l.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false');});l.addEventListener('click',function(e){if(e.target.closest('a')){l.classList.remove('open');b.setAttribute('aria-expanded','false');}});});})();
-    (function(){var o=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){o.observe(el);});})();
-    /* Flow diagram reveal */
-    (function(){var o=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.querySelectorAll('.animate-in').forEach(function(item){item.classList.add('visible');});o.unobserve(entry.target);}});},{threshold:0.2});document.querySelectorAll('.flow-diagram').forEach(function(d){o.observe(d);});})();
-    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000);});}
+    (function(){'use strict';document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.nav-hamburger'),l=document.getElementById('nav-links');if(!b||!l)return;b.addEventListener('click',function(){var o=l.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false');});l.addEventListener('click',function(e){if(e.target.closest('a')){l.classList.remove('open');b.setAttribute('aria-expanded','false');}});});})();
+    var observer=new IntersectionObserver(function(e){e.forEach(function(en){if(en.isIntersecting){en.target.classList.add('visible');observer.unobserve(en.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el);});
+    (function(){var obs=new IntersectionObserver(function(e){e.forEach(function(en){if(en.isIntersecting){en.target.querySelectorAll('.animate-in').forEach(function(i){i.classList.add('visible');});obs.unobserve(en.target);}});},{threshold:0.2});document.querySelectorAll('.flow-diagram').forEach(function(d){obs.observe(d);});})();
+    /* Perf gauge animation */
+    (function(){var obs=new IntersectionObserver(function(e){e.forEach(function(en){if(en.isIntersecting){en.target.querySelectorAll('.perf-fill').forEach(function(f,i){setTimeout(function(){f.style.width=f.dataset.width+'%';},i*150);});obs.unobserve(en.target);}});},{threshold:0.3});document.querySelectorAll('.perf-gauges').forEach(function(g){obs.observe(g);});})();
     /* Glossary */
-    (function(){var tooltip=null;function show(t){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=t.dataset.definition;document.body.appendChild(tooltip);var r=t.getBoundingClientRect(),tr=tooltip.getBoundingClientRect(),left=r.left+r.width/2-tr.width/2,top=r.bottom+8;if(left<8)left=8;if(left+tr.width>window.innerWidth-8)left=window.innerWidth-tr.width-8;if(top+tr.height>window.innerHeight-8)top=r.top-tr.height-8;tooltip.style.left=left+'px';tooltip.style.top=top+'px';requestAnimationFrame(function(){tooltip.classList.add('visible');});}function hide(){if(tooltip){tooltip.remove();tooltip=null;}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide();});document.addEventListener('click',function(e){var t=e.target.closest('.glossary-term');if(t){e.preventDefault();show(t);}else hide();});})();
+    (function(){var t=null;function s(term){if(t)t.remove();t=document.createElement('div');t.className='glossary-tooltip';t.textContent=term.dataset.definition;document.body.appendChild(t);var r=term.getBoundingClientRect(),tr=t.getBoundingClientRect(),l=r.left+r.width/2-tr.width/2,tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;t.style.left=l+'px';t.style.top=tp+'px';requestAnimationFrame(function(){t.classList.add('visible');});}function h(){if(t){t.remove();t=null;}}document.addEventListener('mouseover',function(e){var tm=e.target.closest('.glossary-term');if(tm)s(tm);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))h();});document.addEventListener('click',function(e){var tm=e.target.closest('.glossary-term');if(tm){e.preventDefault();s(tm);}else h();});})();
+    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var m=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(m){m[1].split('\n').forEach(function(l){var x=l.match(/(\w+):\s*"(.+)"/);if(x)ctx[x[1]]=x[2];});}var md='# '+(ctx.system||'')+': '+(ctx.page||document.title)+'\n> Source: '+window.location.href+' | Level: '+(ctx.level||'')+'\n\n';var c=document.querySelector('.content-area');if(c)c.querySelectorAll('h2,h3,p,ul,ol,table').forEach(function(n){var tag=n.tagName.toLowerCase();if(tag==='h2')md+='\n## '+n.textContent.trim()+'\n\n';else if(tag==='h3')md+='\n### '+n.textContent.trim()+'\n\n';else if(tag==='p')md+=n.textContent.trim()+'\n\n';else if(tag==='ul'||tag==='ol')n.querySelectorAll(':scope>li').forEach(function(li,i){md+=(tag==='ol'?(i+1)+'. ':'- ')+li.textContent.trim()+'\n';});});md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn'),lbl=btn.querySelector('.btn-label'),orig=lbl.textContent;lbl.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){lbl.textContent=orig;btn.classList.remove('copied');},2000);});}
   </script>
-
 </body>
 </html>
