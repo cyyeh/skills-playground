@@ -1,0 +1,23 @@
+{
+  "skill_name": "system-to-course",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Generate a course from dist/kafka/analysis.md",
+      "expected_output": "Should produce a complete multi-page static HTML course in dist/kafka/. Includes index.html with hero section (system name, category badge, description, key stats for license/language/version), page cards grid linking to all content pages, and a quick-start section. Generates content pages for all substantial sections found in the analysis: concepts.html, architecture.html, how-it-works.html, implementation.html, use-cases.html, ecosystem.html, faq.html, tradeoffs.html (skipping any sections with insufficient content). Every page has: shared navigation header with current page highlighted, level selector with three toggle buttons (Beginner/Intermediate/Advanced), content sections wrapped in data-level attributes, at least one interactive element (architecture diagram, code snippet, decision tree, comparison cards, flow diagram, concept cards, accordion, or callout box), glossary tooltips on first use of technical terms, and previous/next page footer links. Level selector state persists in localStorage across pages. All CSS and JS are inline — no external dependencies except Google Fonts. Pages use the warm design system palette (off-white backgrounds, Bricolage Grotesque headings, DM Sans body, JetBrains Mono code).",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "Generate a course from this analysis:\n\n## Metadata\n- Name: TinyCache\n- Category: Caching\n- License: MIT\n- Language: Go\n\n## Overview\n<!-- level: beginner -->\nTinyCache is a lightweight in-memory cache with TTL support.\n\n### Quick Start\n```go\nc := tinycache.New(5 * time.Minute)\nc.Set(\"key\", \"value\")\nval, ok := c.Get(\"key\")\n```\n\n## Core Concepts\n<!-- level: beginner -->\n### Cache Entries\nEach entry stores a key, value, and expiration timestamp.\n### TTL\nTime-to-live determines when entries expire and are evicted.\n### Eviction\nExpired entries are removed lazily on access or periodically by a background goroutine.\n\n## Architecture\n<!-- level: intermediate -->\nTinyCache uses a single sync.RWMutex-protected map. A background ticker goroutine runs every 30 seconds to sweep expired entries. No sharding — simplicity over throughput.",
+      "expected_output": "Should produce only 3-4 HTML pages since only 3 sections have content: index.html (with hero, cards for the 2-3 content pages, quick-start code block), concepts.html (beginner-level, covering cache entries, TTL, and eviction with concept cards or card grid), architecture.html (intermediate-level, covering the mutex map, background ticker, and no-sharding design with at least a simple architecture diagram or flow diagram). Does NOT generate pages for missing sections (implementation.html, use-cases.html, ecosystem.html, faq.html, tradeoffs.html). Navigation shows only the pages that exist. Level selector still works — toggling off Intermediate hides architecture.html content while Beginner pages remain. Each generated page has at least one interactive element and one callout box. All pages are self-contained with inline CSS/JS.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Generate a course from dist/redis/analysis.md and make sure beginners can use it",
+      "expected_output": "Should produce the full multi-page course and then verify that toggling the level selector to Beginner-only still produces coherent, useful content on every page. Specifically: (1) Every page that has any beginner-level sections should show meaningful content when Intermediate and Advanced are hidden — not just a title and empty space. (2) Pages that are entirely intermediate or advanced (e.g., implementation.html) should be clearly marked in the nav with their level badge so beginners know to skip them. (3) The index.html page cards should show level badges so beginners can identify which pages are relevant. (4) The concepts.html and use-cases.html pages should have substantial beginner content that stands alone without requiring intermediate context. (5) Glossary tooltips on beginner sections define terms without assuming intermediate knowledge. (6) The self-review phase should explicitly check that hiding intermediate+advanced does not leave any page with only headings and no body content.",
+      "files": []
+    }
+  ]
+}
