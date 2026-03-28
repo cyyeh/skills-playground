@@ -2,11 +2,21 @@
 
 ## Installation
 
+### Claude Code (Marketplace)
+
+Add the marketplace and install plugins:
+
+```
+/plugin marketplace add cyyeh/skills-playground
+/plugin install paper-to-course@skills-playground
+/plugin install system-explorer@skills-playground
+```
+
+### Manual Installation
+
 Each skill lives under `skills/[skill_name]/[skill_name]/`.
 
-### Claude Code
-
-Copy the skill folder(s) into your Claude Code skills directory:
+**Claude Code:**
 
 ```bash
 # paper-to-course
@@ -19,9 +29,7 @@ cp -r skills/system-explorer/system-finder ~/.claude/skills/system-finder
 cp -r skills/system-explorer/system-to-course ~/.claude/skills/system-to-course
 ```
 
-### Codex
-
-Copy the skill folder(s) into your Codex skills directory:
+**Codex:**
 
 ```bash
 # paper-to-course

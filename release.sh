@@ -3,7 +3,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="$REPO_ROOT/skills"
-MARKETPLACE_JSON="$REPO_ROOT/marketplace.json"
+MARKETPLACE_JSON="$REPO_ROOT/.claude-plugin/marketplace.json"
 
 usage() {
   cat <<EOF
