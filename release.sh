@@ -120,7 +120,7 @@ generate_marketplace() {
         continue
       fi
       if [ -f "$subdir/SKILL.md" ]; then
-        skill_paths=$(echo "$skill_paths" | jq --arg p "./skills/$group/$dirname" '. + [$p]')
+        skill_paths=$(echo "$skill_paths" | jq --arg p "./$dirname" '. + [$p]')
       fi
     done
 
