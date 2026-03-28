@@ -197,6 +197,35 @@ cmd_bump() {
   git commit -m "chore($group): bump version to $new_version"
 }
 
+# --- Release ---
+
+cmd_release() {
+  local group="$1"
+
+  # Validate first
+  cmd_build "$group"
+
+  local version
+  version="$(get_version "$group")"
+  local tag="$group/v$version"
+
+  # Check tag doesn't already exist
+  if git rev-parse "$tag" >/dev/null 2>&1; then
+    echo "Error: tag $tag already exists" >&2
+    exit 1
+  fi
+
+  # Create and push tag
+  git tag "$tag"
+  echo ""
+  echo "Created tag: $tag"
+  echo ""
+  echo "To publish this release, push the tag:"
+  echo "  git push origin $tag"
+  echo ""
+  echo "This will trigger the CI workflow to create a GitHub Release."
+}
+
 # --- Main ---
 
 if [ $# -lt 2 ]; then
@@ -219,8 +248,7 @@ case "$COMMAND" in
     cmd_bump "$GROUP" "$1"
     ;;
   release)
-    echo "Error: 'release' not yet implemented" >&2
-    exit 1
+    cmd_release "$GROUP"
     ;;
   *)
     usage
