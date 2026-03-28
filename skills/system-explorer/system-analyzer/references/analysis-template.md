@@ -258,8 +258,8 @@ unique_ptr<SQLStatement> Parser::ParseStatement() {
 
 **Language-specific comment syntax:**
 - C/C++/Java/Go/Rust/JS/TS: `// source: ...`
-- Python/Ruby/Shell: `# source: ...`
-- SQL: `-- source: ...`
+- Python/Ruby/Shell/YAML: `# source: ...`
+- SQL/Lua/Haskell: `-- source: ...`
 - HTML/XML: `<!-- source: ... -->`
 
 ---
