@@ -578,6 +578,296 @@ document.querySelectorAll('.code-copy-btn').forEach(btn => {
 
 ---
 
+## External Link Styling
+
+Links to external URLs (used for inline contextual links and reference footers) get a visual indicator and open in new tabs.
+
+```css
+/* External link indicator */
+a[target="_blank"]::after {
+  content: " \2197";  /* ↗ */
+  font-size: 0.75em;
+  vertical-align: super;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  display: inline;
+}
+a[target="_blank"] {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent-light);
+  text-underline-offset: 2px;
+  transition: text-decoration-color var(--duration-fast) var(--ease-out);
+}
+a[target="_blank"]:hover {
+  text-decoration-color: var(--color-accent);
+}
+```
+
+---
+
+## Reference Footer
+
+Per-page reference section rendered above the prev/next navigation. Shows authoritative sources for the page content.
+
+```css
+/* Reference footer section */
+.references-footer {
+  max-width: var(--content-width);
+  margin: var(--space-10) auto var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-bg-warm);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-md);
+}
+.references-footer h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.references-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.reference-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.reference-type-icon {
+  font-size: var(--text-base);
+  flex-shrink: 0;
+  width: 1.5em;
+  text-align: center;
+}
+.reference-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.reference-title {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.reference-title a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.reference-title a:hover {
+  text-decoration: underline;
+}
+.reference-domain {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+```
+
+---
+
+## Source-Annotated Code Block
+
+Extended code block with a file path header bar and GitHub link. Used for code blocks that have `// source:` annotations.
+
+```css
+/* Source-annotated code block */
+.code-block-sourced .code-header {
+  justify-content: flex-start;
+  gap: var(--space-3);
+}
+.code-source-path {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: #A6ADC8;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.code-source-link {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: #6C7086;
+  text-decoration: none;
+  padding: 2px var(--space-2);
+  border: 1px solid #45475A;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  transition: all var(--duration-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.code-source-link:hover {
+  color: #CDD6F4;
+  border-color: #CDD6F4;
+}
+
+/* Source map summary */
+.source-map {
+  max-width: var(--content-width);
+  margin: var(--space-6) auto;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.source-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--duration-fast);
+}
+.source-map-header:hover {
+  background: var(--color-bg-warm);
+}
+.source-map-header h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.source-map-toggle {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  transition: transform var(--duration-fast);
+}
+.source-map.open .source-map-toggle {
+  transform: rotate(180deg);
+}
+.source-map-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--duration-normal) var(--ease-out);
+}
+.source-map.open .source-map-body {
+  max-height: 500px;
+}
+.source-map-list {
+  list-style: none;
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+  border-top: 1px solid var(--color-border-light);
+}
+.source-map-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+.source-map-item a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.source-map-item a:hover {
+  text-decoration: underline;
+}
+.source-map-item .line-range {
+  color: var(--color-text-muted);
+}
+.source-map-repo {
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border-light);
+}
+.source-map-repo a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+```
+
+---
+
+## Copy as Markdown Button
+
+Per-page button in the page header that copies LLM-friendly markdown content of the page. Only appears on content pages (not index.html).
+
+```css
+/* Copy as Markdown button */
+.copy-markdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+}
+.copy-markdown-btn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+.copy-markdown-btn.copied {
+  color: var(--color-success);
+  border-color: var(--color-success);
+  background: var(--color-success-light);
+}
+.copy-markdown-btn .btn-icon {
+  font-size: var(--text-base);
+  line-height: 1;
+}
+.copy-markdown-btn .btn-label {
+  display: inline;
+}
+
+/* Mobile: icon only */
+@media (max-width: 640px) {
+  .copy-markdown-btn .btn-label {
+    display: none;
+  }
+  .copy-markdown-btn {
+    padding: var(--space-1) var(--space-2);
+  }
+}
+```
+
+**Placement:** Float right in the `.page-header`, aligned with the level badge and title.
+
+```css
+/* Page header layout with copy button */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.page-header-content {
+  flex: 1;
+  min-width: 0;
+}
+```
+
+---
+
 ## Responsive Breakpoints
 
 ```css
