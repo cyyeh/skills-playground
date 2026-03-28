@@ -2,4 +2,4 @@ anthropic-skills
 codex-skills
 .DS_Store
 .superpowers
-dist
+.claude/settings.local.json

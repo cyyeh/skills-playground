@@ -12,35 +12,19 @@ Add the marketplace and install plugins:
 /plugin install system-explorer@skills-playground
 ```
 
-### Manual Installation
+### Codex (Skill Installer)
 
-Each skill lives under `skills/[skill_name]/[skill_name]/`.
+Inside a Codex session, use `$skill-installer` to install from GitHub:
 
-**Claude Code:**
-
-```bash
-# paper-to-course
-cp -r skills/paper-to-course/paper-to-course ~/.claude/skills/paper-to-course
-
-# system-explorer (includes sub-skills: system-analyzer, system-finder, system-to-course)
-cp -r skills/system-explorer/system-explorer ~/.claude/skills/system-explorer
-cp -r skills/system-explorer/system-analyzer ~/.claude/skills/system-analyzer
-cp -r skills/system-explorer/system-finder ~/.claude/skills/system-finder
-cp -r skills/system-explorer/system-to-course ~/.claude/skills/system-to-course
+```
+$skill-installer install https://github.com/cyyeh/skills-playground/tree/main/skills/paper-to-course/paper-to-course
+$skill-installer install https://github.com/cyyeh/skills-playground/tree/main/skills/system-explorer/system-explorer
+$skill-installer install https://github.com/cyyeh/skills-playground/tree/main/skills/system-explorer/system-analyzer
+$skill-installer install https://github.com/cyyeh/skills-playground/tree/main/skills/system-explorer/system-finder
+$skill-installer install https://github.com/cyyeh/skills-playground/tree/main/skills/system-explorer/system-to-course
 ```
 
-**Codex:**
-
-```bash
-# paper-to-course
-cp -r skills/paper-to-course/paper-to-course ~/.agents/skills/paper-to-course
-
-# system-explorer (includes sub-skills: system-analyzer, system-finder, system-to-course)
-cp -r skills/system-explorer/system-explorer ~/.agents/skills/system-explorer
-cp -r skills/system-explorer/system-analyzer ~/.agents/skills/system-analyzer
-cp -r skills/system-explorer/system-finder ~/.agents/skills/system-finder
-cp -r skills/system-explorer/system-to-course ~/.agents/skills/system-to-course
-```
+Restart Codex after installation.
 
 ## Skills
 

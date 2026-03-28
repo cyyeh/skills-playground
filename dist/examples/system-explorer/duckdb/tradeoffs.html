@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trade-offs &amp; Limitations - DuckDB Interactive Course</title>
+  <meta name="description" content="Understand DuckDB's strengths, limitations, and how it compares to SQLite, ClickHouse, PostgreSQL, Polars, Spark, and cloud warehouses.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ===== DESIGN SYSTEM TOKENS ===== */
+    :root {
+      /* BACKGROUNDS */
+      --color-bg: #FAF7F2;
+      --color-bg-warm: #F5F0E8;
+      --color-bg-code: #1E1E2E;
+      --color-text: #2C2A28;
+      --color-text-secondary: #6B6560;
+      --color-text-muted: #9E9790;
+      --color-border: #E5DFD6;
+      --color-border-light: #EEEBE5;
+      --color-surface: #FFFFFF;
+      --color-surface-warm: #FDF9F3;
+
+      /* ACCENT (amber for databases) */
+      --color-accent: #D4A843;
+      --color-accent-hover: #BF9738;
+      --color-accent-light: #FDF6E4;
+      --color-accent-muted: #E0C06A;
+
+      /* SEMANTIC */
+      --color-success: #2D8B55;
+      --color-success-light: #E8F5EE;
+      --color-error: #C93B3B;
+      --color-error-light: #FDE8E8;
+      --color-info: #2A7B9B;
+      --color-info-light: #E4F2F7;
+      --color-warning: #D4A843;
+      --color-warning-light: #FDF6E4;
+
+      /* LEVEL BADGE COLORS */
+      --color-level-beginner: #2D8B55;
+      --color-level-intermediate: #D4A843;
+      --color-level-advanced: #C93B3B;
+
+      /* FONTS */
+      --font-display: 'Bricolage Grotesque', Georgia, serif;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+      /* TYPE SCALE */
+      --text-xs: 0.75rem;
+      --text-sm: 0.875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-xl: 1.25rem;
+      --text-2xl: 1.5rem;
+      --text-3xl: 1.875rem;
+      --text-4xl: 2.25rem;
+      --text-5xl: 3rem;
+      --text-6xl: 3.75rem;
+
+      /* LINE HEIGHTS */
+      --leading-tight: 1.15;
+      --leading-snug: 1.3;
+      --leading-normal: 1.6;
+      --leading-loose: 1.8;
+
+      /* SPACING */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
+      --space-24: 6rem;
+
+      /* LAYOUT */
+      --content-width: 800px;
+      --content-width-wide: 1000px;
+      --nav-height: 60px;
+      --sidebar-width: 240px;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+      /* SHADOWS (warm, never pure black) */
+      --shadow-sm: 0 1px 2px rgba(44, 42, 40, 0.05);
+      --shadow-md: 0 4px 12px rgba(44, 42, 40, 0.08);
+      --shadow-lg: 0 8px 24px rgba(44, 42, 40, 0.1);
+      --shadow-xl: 0 16px 48px rgba(44, 42, 40, 0.12);
+
+      /* ANIMATIONS */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --duration-fast: 150ms;
+      --duration-normal: 300ms;
+      --duration-slow: 500ms;
+      --stagger-delay: 120ms;
+    }
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: var(--leading-normal);
+      color: var(--color-text);
+      background-color: var(--color-bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+    /* ===== NAVIGATION ===== */
+    .site-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(250, 247, 242, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border-light);
+      height: var(--nav-height);
+    }
+
+    .nav-progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-accent-muted));
+      width: 0%;
+      transition: width var(--duration-normal) var(--ease-out);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .nav-inner {
+      max-width: var(--content-width-wide);
+      margin: 0 auto;
+      padding: 0 var(--space-6);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .nav-brand {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: var(--text-lg);
+      color: var(--color-text);
+      flex-shrink: 0;
+      letter-spacing: -0.01em;
+      transition: color var(--duration-fast);
+    }
+    .nav-brand:hover { color: var(--color-accent); }
+
+    .nav-pages {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      flex: 1;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: var(--space-1) 0;
+    }
+    .nav-pages::-webkit-scrollbar { display: none; }
+
+    .nav-page-link {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      transition: all var(--duration-fast);
+    }
+    .nav-page-link:hover {
+      color: var(--color-text);
+      background: var(--color-bg-warm);
+    }
+    .nav-page-link.active {
+      color: var(--color-accent-hover);
+      background: var(--color-accent-light);
+      font-weight: 600;
+    }
+
+    .nav-levels {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      flex-shrink: 0;
+    }
+
+    .level-btn {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--color-border);
+      color: var(--color-text-muted);
+      background: transparent;
+      transition: all var(--duration-fast);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .level-btn:hover { border-color: var(--color-text-muted); }
+
+    .level-btn--beginner.active {
+      background: var(--color-success-light);
+      border-color: var(--color-level-beginner);
+      color: var(--color-level-beginner);
+    }
+    .level-btn--intermediate.active {
+      background: var(--color-warning-light);
+      border-color: var(--color-level-intermediate);
+      color: var(--color-level-intermediate);
+    }
+    .level-btn--advanced.active {
+      background: var(--color-error-light);
+      border-color: var(--color-level-advanced);
+      color: var(--color-level-advanced);
+    }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--color-text);
+      border-radius: 2px;
+      transition: all var(--duration-normal) var(--ease-out);
+      margin: 0 auto;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ===== MOBILE NAV ===== */
+    @media (max-width: 768px) {
+      .nav-hamburger { display: flex; }
+
+      .nav-pages, .nav-levels {
+        display: none;
+      }
+
+      .site-nav.nav-open .nav-pages,
+      .site-nav.nav-open .nav-levels {
+        display: flex;
+      }
+
+      .site-nav.nav-open {
+        height: auto;
+        padding-bottom: var(--space-4);
+      }
+
+      .nav-inner {
+        flex-wrap: wrap;
+      }
+
+      .nav-pages {
+        order: 10;
+        width: 100%;
+        flex-wrap: wrap;
+        gap: var(--space-1);
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--color-border-light);
+        margin-top: var(--space-3);
+      }
+
+      .nav-levels {
+        order: 11;
+        width: 100%;
+        justify-content: flex-start;
+        padding-top: var(--space-3);
+      }
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    main {
+      padding-top: var(--nav-height);
+    }
+
+    .container {
+      max-width: var(--content-width-wide);
+      margin: 0 auto;
+      padding: 0 var(--space-6);
+    }
+
+    .content-container {
+      max-width: var(--content-width);
+      margin: 0 auto;
+      padding: 0 var(--space-6);
+    }
+
+    /* ===== PAGE HERO ===== */
+    .page-hero {
+      padding: var(--space-20) 0 var(--space-12);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--color-accent-light) 0%, transparent 70%);
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-hero .content-container { position: relative; z-index: 1; }
+
+    .page-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-full);
+      margin-bottom: var(--space-6);
+      background: var(--color-warning-light);
+      border: 1px solid var(--color-accent-muted);
+      color: var(--color-accent-hover);
+    }
+
+    .page-hero-title {
+      font-family: var(--font-display);
+      font-size: var(--text-5xl);
+      font-weight: 800;
+      line-height: var(--leading-tight);
+      color: var(--color-text);
+      margin-bottom: var(--space-6);
+      letter-spacing: -0.03em;
+    }
+
+    .page-hero-subtitle {
+      font-size: var(--text-xl);
+      color: var(--color-text-secondary);
+      line-height: var(--leading-normal);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* ===== SECTION TITLES ===== */
+    .section {
+      padding: var(--space-16) 0;
+    }
+
+    .section + .section {
+      padding-top: 0;
+    }
+
+    .section-header {
+      margin-bottom: var(--space-10);
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-accent);
+      margin-bottom: var(--space-3);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: var(--text-3xl);
+      font-weight: 700;
+      line-height: var(--leading-tight);
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+    }
+
+    .section-description {
+      font-size: var(--text-lg);
+      color: var(--color-text-secondary);
+      margin-top: var(--space-4);
+      line-height: var(--leading-normal);
+    }
+
+    /* ===== PERFORMANCE GAUGES ===== */
+    .perf-gauges {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-md);
+      margin: var(--space-8) 0;
+    }
+
+    .perf-gauge {
+      margin-bottom: var(--space-4);
+    }
+
+    .perf-gauge:last-child {
+      margin-bottom: 0;
+    }
+
+    .perf-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--space-2);
+    }
+
+    .perf-name {
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: var(--text-sm);
+    }
+
+    .perf-value {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .perf-bar {
+      height: 8px;
+      background: var(--color-border-light);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .perf-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      width: 0;
+      transition: width 1s ease-out;
+    }
+
+    .perf-green { background: var(--color-success); }
+    .perf-yellow { background: var(--color-warning); }
+    .perf-red { background: var(--color-error); }
+
+    .perf-note {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin-top: var(--space-1);
+      display: block;
+    }
+
+    /* ===== STRENGTHS / LIMITATIONS LISTS ===== */
+    .trait-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6);
+      margin: var(--space-8) 0;
+    }
+
+    @media (max-width: 768px) {
+      .trait-grid { grid-template-columns: 1fr; }
+    }
+
+    .trait-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-sm);
+      border-top: 3px solid var(--color-border);
+    }
+
+    .trait-card--strengths {
+      border-top-color: var(--color-success);
+    }
+
+    .trait-card--limitations {
+      border-top-color: var(--color-error);
+    }
+
+    .trait-card-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      margin-bottom: var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .trait-card-title-icon {
+      font-size: var(--text-2xl);
+      line-height: 1;
+    }
+
+    .trait-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .trait-item {
+      display: flex;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    .trait-icon {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .trait-icon--plus {
+      background: var(--color-success-light);
+      color: var(--color-success);
+    }
+
+    .trait-icon--minus {
+      background: var(--color-error-light);
+      color: var(--color-error);
+    }
+
+    .trait-item-content {
+      flex: 1;
+    }
+
+    .trait-item-title {
+      font-weight: 600;
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-1);
+    }
+
+    .trait-item-desc {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      line-height: var(--leading-normal);
+    }
+
+    /* ===== SYSTEM COMPARISON CARDS ===== */
+    .sys-comparison {
+      margin: var(--space-8) 0;
+    }
+
+    .sys-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .sys-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-sm);
+      border-top: 3px solid var(--color-border);
+      transition: box-shadow var(--duration-normal) var(--ease-out), transform var(--duration-normal) var(--ease-out);
+    }
+
+    .sys-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .sys-card.current {
+      border-top-color: var(--color-accent);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sys-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+
+    .sys-card-name {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 700;
+    }
+
+    .sys-card-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px var(--space-2);
+      border-radius: var(--radius-full);
+      background: var(--color-accent-light);
+      color: var(--color-accent-hover);
+    }
+
+    .sys-card-best {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-4);
+      font-style: italic;
+    }
+
+    .sys-card-toggle {
+      display: flex;
+      gap: var(--space-1);
+      margin-bottom: var(--space-3);
+      border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .sys-toggle-btn {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      padding: var(--space-2) var(--space-3);
+      color: var(--color-text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all var(--duration-fast);
+      margin-bottom: -1px;
+    }
+
+    .sys-toggle-btn:hover {
+      color: var(--color-text-secondary);
+    }
+
+    .sys-toggle-btn.active {
+      color: var(--color-accent-hover);
+      border-bottom-color: var(--color-accent);
+    }
+
+    .sys-card-panel {
+      display: none;
+    }
+
+    .sys-card-panel.active {
+      display: block;
+    }
+
+    .sys-card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .sys-card-list li {
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      line-height: var(--leading-normal);
+      padding-left: var(--space-4);
+      position: relative;
+    }
+
+    .sys-card-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .sys-card-list--strengths li::before {
+      background: var(--color-success);
+    }
+
+    .sys-card-list--weaknesses li::before {
+      background: var(--color-error);
+    }
+
+    .sys-card-list--bestfor li::before {
+      background: var(--color-info);
+    }
+
+    /* ===== CALLOUTS ===== */
+    .callout {
+      border-radius: var(--radius-md);
+      padding: var(--space-5) var(--space-6);
+      margin: var(--space-6) 0;
+      display: flex;
+      gap: var(--space-4);
+      align-items: flex-start;
+    }
+
+    .callout-icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-base);
+      margin-top: 1px;
+    }
+
+    .callout-content {
+      flex: 1;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-2);
+    }
+
+    .callout-text {
+      font-size: var(--text-sm);
+      line-height: var(--leading-normal);
+    }
+
+    .callout--warning {
+      background: var(--color-warning-light);
+      border: 1px solid var(--color-accent-muted);
+    }
+
+    .callout--warning .callout-icon {
+      background: var(--color-warning);
+      color: white;
+    }
+
+    .callout--warning .callout-title {
+      color: var(--color-accent-hover);
+    }
+
+    .callout--warning .callout-text {
+      color: #7A6420;
+    }
+
+    .callout--tip {
+      background: var(--color-success-light);
+      border: 1px solid #A3D4B5;
+    }
+
+    .callout--tip .callout-icon {
+      background: var(--color-success);
+      color: white;
+    }
+
+    .callout--tip .callout-title {
+      color: var(--color-success);
+    }
+
+    .callout--tip .callout-text {
+      color: #1E6B3E;
+    }
+
+    /* ===== GLOSSARY TOOLTIPS ===== */
+    .glossary-term {
+      border-bottom: 1.5px dashed var(--color-accent-muted);
+      cursor: help;
+      position: relative;
+      font-weight: 500;
+    }
+
+    .glossary-term:hover {
+      border-bottom-color: var(--color-accent);
+    }
+
+    .glossary-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: var(--color-bg-code);
+      color: #CDD6F4;
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-xs);
+      line-height: var(--leading-normal);
+      width: 260px;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--duration-fast), transform var(--duration-fast), visibility var(--duration-fast);
+      z-index: 100;
+      pointer-events: none;
+      font-weight: 400;
+    }
+
+    .glossary-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--color-bg-code);
+    }
+
+    .glossary-term:hover .glossary-tooltip,
+    .glossary-term:focus .glossary-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Keep tooltip on screen */
+    .glossary-tooltip.flip-left {
+      left: 0;
+      transform: translateX(0) translateY(4px);
+    }
+    .glossary-term:hover .glossary-tooltip.flip-left,
+    .glossary-term:focus .glossary-tooltip.flip-left {
+      transform: translateX(0) translateY(0);
+    }
+    .glossary-tooltip.flip-left::after {
+      left: 20px;
+    }
+
+    .glossary-tooltip.flip-right {
+      left: auto;
+      right: 0;
+      transform: translateX(0) translateY(4px);
+    }
+    .glossary-term:hover .glossary-tooltip.flip-right,
+    .glossary-term:focus .glossary-tooltip.flip-right {
+      transform: translateX(0) translateY(0);
+    }
+    .glossary-tooltip.flip-right::after {
+      left: auto;
+      right: 20px;
+    }
+
+    /* ===== BOTTOM LINE BOX ===== */
+    .bottom-line {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-8);
+      box-shadow: var(--shadow-md);
+      margin: var(--space-8) 0;
+      border-left: 4px solid var(--color-accent);
+    }
+
+    .bottom-line-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      margin-bottom: var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .bottom-line-text {
+      font-size: var(--text-base);
+      color: var(--color-text-secondary);
+      line-height: var(--leading-normal);
+    }
+
+    .bottom-line-text strong {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    .bottom-line-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-5);
+    }
+
+    .bottom-line-tag {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      background: var(--color-accent-light);
+      color: var(--color-accent-hover);
+      font-weight: 500;
+    }
+
+    /* ===== PAGE NAVIGATION ===== */
+    .page-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-12) 0 var(--space-16);
+    }
+
+    .page-nav-link {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-6);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-md);
+      transition: all var(--duration-normal) var(--ease-out);
+      max-width: 320px;
+    }
+
+    .page-nav-link:hover {
+      border-color: var(--color-accent-muted);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .page-nav-link--prev .page-nav-arrow {
+      order: -1;
+    }
+
+    .page-nav-dir {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-muted);
+    }
+
+    .page-nav-title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: var(--text-base);
+      color: var(--color-text);
+    }
+
+    .page-nav-arrow {
+      width: 20px;
+      height: 20px;
+      color: var(--color-accent);
+      flex-shrink: 0;
+    }
+
+    .page-nav-spacer {
+      flex: 1;
+    }
+
+    .page-nav-home {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-4) var(--space-6);
+      color: var(--color-text-muted);
+      border-radius: var(--radius-md);
+      transition: all var(--duration-fast);
+    }
+
+    .page-nav-home:hover {
+      color: var(--color-accent);
+      background: var(--color-accent-light);
+    }
+
+    .page-nav-home-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .page-nav-home-label {
+      font-size: var(--text-xs);
+      font-weight: 600;
+    }
+
+    /* ===== FOOTER ===== */
+    .site-footer {
+      border-top: 1px solid var(--color-border-light);
+      padding: var(--space-8) 0;
+      text-align: center;
+    }
+
+    .footer-text {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    .footer-brand {
+      font-weight: 600;
+      color: var(--color-accent);
+    }
+
+    /* ===== SCROLL ANIMATIONS ===== */
+    .animate-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity var(--duration-slow) var(--ease-out),
+                  transform var(--duration-slow) var(--ease-out);
+    }
+
+    .animate-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== LEVEL VISIBILITY ===== */
+    .content-block[data-level].level-hidden {
+      display: none;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .page-hero { padding: var(--space-16) 0 var(--space-10); }
+      .page-hero-title { font-size: var(--text-4xl); }
+      .page-hero-subtitle { font-size: var(--text-lg); }
+      .section { padding: var(--space-12) 0; }
+      .section-title { font-size: var(--text-2xl); }
+      .sys-cards { grid-template-columns: 1fr; }
+      .page-nav { flex-direction: column; align-items: stretch; }
+      .page-nav-link { max-width: none; }
+    }
+
+    @media (max-width: 480px) {
+      .page-hero { padding: var(--space-12) 0 var(--space-8); }
+      .page-hero-title { font-size: var(--text-3xl); }
+      .page-hero-subtitle { font-size: var(--text-base); }
+      .content-container { padding: 0 var(--space-4); }
+      .container { padding: 0 var(--space-4); }
+      .nav-inner { padding: 0 var(--space-4); }
+      .perf-gauges { padding: var(--space-4); }
+      .bottom-line { padding: var(--space-5); }
+      .callout { flex-direction: column; gap: var(--space-3); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="site-nav" id="siteNav">
+    <div class="nav-progress-bar" id="progressBar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">DuckDB</a>
+      <div class="nav-pages" id="navPages">
+        <a href="index.html" class="nav-page-link">Home</a>
+        <a href="concepts.html" class="nav-page-link">Concepts</a>
+        <a href="architecture.html" class="nav-page-link">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
+        <a href="implementation.html" class="nav-page-link">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link">FAQ</a>
+        <a href="tradeoffs.html" class="nav-page-link active">Trade-offs</a>
+      </div>
+      <div class="nav-levels" id="navLevels">
+        <button class="level-btn level-btn--beginner active" data-level="beginner">Beginner</button>
+        <button class="level-btn level-btn--intermediate active" data-level="intermediate">Intermediate</button>
+        <button class="level-btn level-btn--advanced active" data-level="advanced">Advanced</button>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ===== PAGE HERO ===== -->
+    <section class="page-hero">
+      <div class="content-container">
+        <div class="animate-in">
+          <div class="page-hero-badge">Intermediate</div>
+        </div>
+        <h1 class="page-hero-title animate-in">Trade-offs &amp; Limitations</h1>
+        <p class="page-hero-subtitle animate-in">
+          Every tool excels at something and struggles at something else.
+          Here is an honest look at where DuckDB shines, where it falls short,
+          and how it stacks up against the alternatives.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== PERFORMANCE PROFILE ===== -->
+    <section class="section" data-level="intermediate">
+      <div class="content-container">
+        <div class="section-header animate-in">
+          <div class="section-label">Performance Profile</div>
+          <h2 class="section-title">DuckDB at a Glance</h2>
+          <p class="section-description">
+            A visual snapshot of DuckDB's capability profile. Green means a core strength; yellow is adequate; red signals a known limitation.
+          </p>
+        </div>
+
+        <div class="perf-gauges animate-in" id="perfGauges">
+          <div class="perf-gauge">
+            <div class="perf-label">
+              <span class="perf-name">Analytical Query Speed</span>
+              <span class="perf-value">95%</span>
+            </div>
+            <div class="perf-bar">
+              <div class="perf-fill perf-green" data-width="95"></div>
+            </div>
+            <span class="perf-note">Vectorized columnar execution, on par with or faster than many distributed engines for single-machine data</span>
+          </div>
+
+          <div class="perf-gauge">
+            <div class="perf-label">
+              <span class="perf-name">Setup Simplicity</span>
+              <span class="perf-value">98%</span>
+            </div>
+            <div class="perf-bar">
+              <div class="perf-fill perf-green" data-width="98"></div>
+            </div>
+            <span class="perf-note">pip install duckdb and you are running queries -- zero configuration, zero dependencies</span>
+          </div>
+
+          <div class="perf-gauge">
+            <div class="perf-label">
+              <span class="perf-name">Format Versatility</span>
+              <span class="perf-value">90%</span>
+            </div>
+            <div class="perf-bar">
+              <div class="perf-fill perf-green" data-width="90"></div>
+            </div>
+            <span class="perf-note">Parquet, CSV, JSON, Iceberg, Lance, Excel, PostgreSQL, SQLite, and more via extensions</span>
+          </div>
+
+          <div class="perf-gauge">
+            <div class="perf-label">
+              <span class="perf-name">Write Concurrency</span>
+              <span class="perf-value">15%</span>
+            </div>
+            <div class="perf-bar">
+              <div class="perf-fill perf-red" data-width="15"></div>
+            </div>
+            <span class="perf-note">Single-writer by design -- only one connection can write at a time</span>
+          </div>
+
+          <div class="perf-gauge">
+            <div class="perf-label">
+              <span class="perf-name">Distributed Scalability</span>
+              <span class="perf-value">10%</span>
+            </div>
+            <div class="perf-bar">
+              <div class="perf-fill perf-red" data-width="10"></div>
+            </div>
+            <span class="perf-note">Single machine only -- no <span class="glossary-term" tabindex="0">sharding<span class="glossary-tooltip">Sharding splits a database across multiple machines so each machine stores a subset of the data. This allows horizontal scaling beyond one server's capacity.</span></span>, <span class="glossary-term" tabindex="0">replication<span class="glossary-tooltip">Replication copies data across multiple servers for fault tolerance and read scalability. If one server fails, others can serve the data.</span></span>, or cluster mode</span>
+          </div>
+
+          <div class="perf-gauge">
+            <div class="perf-label">
+              <span class="perf-name">Access Control</span>
+              <span class="perf-value">5%</span>
+            </div>
+            <div class="perf-bar">
+              <div class="perf-fill perf-red" data-width="5"></div>
+            </div>
+            <span class="perf-note">No built-in users, roles, or row-level security -- rely on OS-level file permissions</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STRENGTHS & LIMITATIONS ===== -->
+    <section class="section" data-level="intermediate">
+      <div class="content-container">
+        <div class="section-header animate-in">
+          <div class="section-label">Honest Assessment</div>
+          <h2 class="section-title">Strengths &amp; Limitations</h2>
+        </div>
+
+        <div class="trait-grid animate-in">
+          <!-- STRENGTHS -->
+          <div class="trait-card trait-card--strengths">
+            <div class="trait-card-title">
+              <span class="trait-card-title-icon">&#x2705;</span>
+              Strengths
+            </div>
+            <ul class="trait-list">
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--plus">+</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Zero-Configuration Deployment</div>
+                  <div class="trait-item-desc"><code style="font-family: var(--font-mono); font-size: var(--text-xs); background: var(--color-bg-warm); padding: 1px 4px; border-radius: 3px;">pip install duckdb</code> and you are running queries. No server process, no config files, no external dependencies.</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--plus">+</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Exceptional Analytics Performance</div>
+                  <div class="trait-item-desc">Vectorized columnar execution delivers blazing-fast scans, aggregations, and joins on a single machine.</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--plus">+</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Format Versatility</div>
+                  <div class="trait-item-desc">Query Parquet, CSV, JSON, Iceberg, Lance, Excel, PostgreSQL, and SQLite -- all from the same SQL interface.</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--plus">+</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Developer Experience</div>
+                  <div class="trait-item-desc">Deep Python integration, seamless DataFrame interop with Pandas and Polars, and a friendly CLI (v1.5.0+).</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--plus">+</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Cost</div>
+                  <div class="trait-item-desc"><span class="glossary-term" tabindex="0">MIT-licensed<span class="glossary-tooltip">The MIT License is one of the most permissive open-source licenses. It allows anyone to use, modify, and distribute the software -- even commercially -- with almost no restrictions.</span></span> and free. Can replace expensive cloud data warehouse queries for many workloads.</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--plus">+</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Portability</div>
+                  <div class="trait-item-desc">Runs on Linux, macOS, Windows, in browsers (Wasm), on mobile devices, and in embedded systems.</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- LIMITATIONS -->
+          <div class="trait-card trait-card--limitations">
+            <div class="trait-card-title">
+              <span class="trait-card-title-icon">&#x26A0;&#xFE0F;</span>
+              Limitations
+            </div>
+            <ul class="trait-list">
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--minus">&ndash;</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Single-Writer Concurrency</div>
+                  <div class="trait-item-desc">Only one connection can write at a time. This is by design, not a bug -- but it rules out high-concurrency write workloads.</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--minus">&ndash;</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Not Distributed</div>
+                  <div class="trait-item-desc">Single machine only. No sharding, replication, or cluster mode. Data must fit on one node (practical limit ~2 TB).</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--minus">&ndash;</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Not an <span class="glossary-term" tabindex="0">OLTP<span class="glossary-tooltip">Online Transaction Processing. Systems optimized for fast, small, row-level reads and writes -- think e-commerce orders or banking transactions. PostgreSQL and MySQL are classic OLTP databases.</span></span> Database</div>
+                  <div class="trait-item-desc">Optimized for <span class="glossary-term" tabindex="0">OLAP<span class="glossary-tooltip">Online Analytical Processing. Systems optimized for complex queries over large datasets -- aggregations, joins, scans. DuckDB, ClickHouse, and BigQuery are OLAP systems.</span></span> (scans, aggregations, joins), not point lookups or single-row updates.</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--minus">&ndash;</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Young Ecosystem</div>
+                  <div class="trait-item-desc">Extensions are younger than PostgreSQL's ecosystem. Breaking changes can occur between versions.</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--minus">&ndash;</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">No Built-in Access Control</div>
+                  <div class="trait-item-desc">No users, roles, or row-level security. You must rely on OS-level file permissions or application-layer auth.</div>
+                </div>
+              </li>
+              <li class="trait-item">
+                <span class="trait-icon trait-icon--minus">&ndash;</span>
+                <div class="trait-item-content">
+                  <div class="trait-item-title">Storage Format Changes</div>
+                  <div class="trait-item-desc">On-disk format can change between major versions, potentially requiring data re-export when upgrading.</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- CALLOUTS -->
+        <div class="callout callout--warning animate-in">
+          <div class="callout-icon">&#x26A0;</div>
+          <div class="callout-content">
+            <div class="callout-title">Storage Format Warning</div>
+            <p class="callout-text">
+              DuckDB's on-disk storage format can change between major versions. While backward-compatible reads are maintained within a version line, upgrading across major versions (e.g., 1.x to 2.x) may require exporting and re-importing your data. Always test upgrades on a copy first.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout callout--tip animate-in">
+          <div class="callout-icon">&#x2714;</div>
+          <div class="callout-content">
+            <div class="callout-title"><span class="glossary-term" tabindex="0">LTS<span class="glossary-tooltip">Long-Term Support. An LTS release receives bug fixes and security patches for an extended period. DuckDB introduced LTS with version 1.4, guaranteeing format stability within the LTS line.</span></span> Release Strategy</div>
+            <p class="callout-text">
+              Starting with version 1.4, DuckDB introduced a Long-Term Support release line. LTS versions guarantee forward-compatible storage within the same line (e.g., all 1.4.x releases can read each other's files). This significantly reduces upgrade risk for production deployments.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ALTERNATIVES COMPARISON ===== -->
+    <section class="section" data-level="intermediate">
+      <div class="content-container">
+        <div class="section-header animate-in">
+          <div class="section-label">Alternatives</div>
+          <h2 class="section-title">How DuckDB Compares</h2>
+          <p class="section-description">
+            Click the tabs on each card to toggle between strengths, weaknesses, and ideal use cases.
+          </p>
+        </div>
+
+        <div class="sys-comparison animate-in">
+          <div class="sys-cards" id="sysCards">
+
+            <!-- DuckDB -->
+            <div class="sys-card current" data-system="duckdb">
+              <div class="sys-card-header">
+                <span class="sys-card-name">DuckDB</span>
+                <span class="sys-card-badge">Current</span>
+              </div>
+              <div class="sys-card-best">Best for: single-machine analytics, local data exploration, embedded analytics</div>
+              <div class="sys-card-toggle">
+                <button class="sys-toggle-btn active" data-panel="strengths">Strengths</button>
+                <button class="sys-toggle-btn" data-panel="weaknesses">Weaknesses</button>
+                <button class="sys-toggle-btn" data-panel="bestfor">Best For</button>
+              </div>
+              <div class="sys-card-panel active" data-panel="strengths">
+                <ul class="sys-card-list sys-card-list--strengths">
+                  <li>Zero-config, embedded deployment</li>
+                  <li>10-100x faster analytics than SQLite</li>
+                  <li>Queries any file format directly</li>
+                  <li>MIT-licensed, truly free</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="weaknesses">
+                <ul class="sys-card-list sys-card-list--weaknesses">
+                  <li>Single-writer concurrency</li>
+                  <li>Not distributed</li>
+                  <li>No access control</li>
+                  <li>Format changes between versions</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="bestfor">
+                <ul class="sys-card-list sys-card-list--bestfor">
+                  <li>Local data analysis and exploration</li>
+                  <li>ETL pipelines on a single machine</li>
+                  <li>Embedded analytics in applications</li>
+                  <li>Replacing expensive cloud queries</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- SQLite -->
+            <div class="sys-card" data-system="sqlite">
+              <div class="sys-card-header">
+                <span class="sys-card-name">SQLite</span>
+              </div>
+              <div class="sys-card-best">Best for: OLTP, embedded transactional workloads, mobile apps</div>
+              <div class="sys-card-toggle">
+                <button class="sys-toggle-btn active" data-panel="strengths">Strengths</button>
+                <button class="sys-toggle-btn" data-panel="weaknesses">Weaknesses</button>
+                <button class="sys-toggle-btn" data-panel="bestfor">Best For</button>
+              </div>
+              <div class="sys-card-panel active" data-panel="strengths">
+                <ul class="sys-card-list sys-card-list--strengths">
+                  <li>Battle-tested, deployed everywhere</li>
+                  <li>Excellent for row-level inserts/updates</li>
+                  <li>Tiny footprint, public domain</li>
+                  <li>Rock-solid stability and compatibility</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="weaknesses">
+                <ul class="sys-card-list sys-card-list--weaknesses">
+                  <li>10-100x slower for analytical queries</li>
+                  <li>Row-oriented storage (bad for scans)</li>
+                  <li>Limited SQL dialect</li>
+                  <li>Single-writer, no concurrent writes</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="bestfor">
+                <ul class="sys-card-list sys-card-list--bestfor">
+                  <li>Mobile and desktop applications</li>
+                  <li>Configuration storage</li>
+                  <li>Small transactional workloads</li>
+                  <li>Edge and IoT devices</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- ClickHouse -->
+            <div class="sys-card" data-system="clickhouse">
+              <div class="sys-card-header">
+                <span class="sys-card-name">ClickHouse</span>
+              </div>
+              <div class="sys-card-best">Best for: distributed real-time analytics at petabyte scale</div>
+              <div class="sys-card-toggle">
+                <button class="sys-toggle-btn active" data-panel="strengths">Strengths</button>
+                <button class="sys-toggle-btn" data-panel="weaknesses">Weaknesses</button>
+                <button class="sys-toggle-btn" data-panel="bestfor">Best For</button>
+              </div>
+              <div class="sys-card-panel active" data-panel="strengths">
+                <ul class="sys-card-list sys-card-list--strengths">
+                  <li>Petabyte-scale distributed queries</li>
+                  <li>High-concurrency read support</li>
+                  <li>Real-time ingestion pipelines</li>
+                  <li>Mature replication and sharding</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="weaknesses">
+                <ul class="sys-card-list sys-card-list--weaknesses">
+                  <li>Complex to set up and operate</li>
+                  <li>Requires server infrastructure</li>
+                  <li>Overkill for single-machine data</li>
+                  <li>Steeper learning curve</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="bestfor">
+                <ul class="sys-card-list sys-card-list--bestfor">
+                  <li>Real-time analytics dashboards</li>
+                  <li>Log and event analytics at scale</li>
+                  <li>Time-series data warehouses</li>
+                  <li>High-concurrency analytical APIs</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- PostgreSQL -->
+            <div class="sys-card" data-system="postgresql">
+              <div class="sys-card-header">
+                <span class="sys-card-name">PostgreSQL</span>
+              </div>
+              <div class="sys-card-best">Best for: general-purpose database with OLTP and some analytics</div>
+              <div class="sys-card-toggle">
+                <button class="sys-toggle-btn active" data-panel="strengths">Strengths</button>
+                <button class="sys-toggle-btn" data-panel="weaknesses">Weaknesses</button>
+                <button class="sys-toggle-btn" data-panel="bestfor">Best For</button>
+              </div>
+              <div class="sys-card-panel active" data-panel="strengths">
+                <ul class="sys-card-list sys-card-list--strengths">
+                  <li>Full ACID, MVCC concurrency</li>
+                  <li>Rich access control (users, roles, RLS)</li>
+                  <li>Massive extension ecosystem</li>
+                  <li>Strong OLTP performance</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="weaknesses">
+                <ul class="sys-card-list sys-card-list--weaknesses">
+                  <li>Much slower for analytical scans</li>
+                  <li>Requires server setup and management</li>
+                  <li>Row-oriented (not optimized for OLAP)</li>
+                  <li>Heavier resource footprint</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="bestfor">
+                <ul class="sys-card-list sys-card-list--bestfor">
+                  <li>Web application backends</li>
+                  <li>Mixed OLTP + light analytics</li>
+                  <li>Enterprise with access control needs</li>
+                  <li>Geospatial (PostGIS)</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Polars -->
+            <div class="sys-card" data-system="polars">
+              <div class="sys-card-header">
+                <span class="sys-card-name">Polars</span>
+              </div>
+              <div class="sys-card-best">Best for: DataFrame-centric analytics in Python and Rust</div>
+              <div class="sys-card-toggle">
+                <button class="sys-toggle-btn active" data-panel="strengths">Strengths</button>
+                <button class="sys-toggle-btn" data-panel="weaknesses">Weaknesses</button>
+                <button class="sys-toggle-btn" data-panel="bestfor">Best For</button>
+              </div>
+              <div class="sys-card-panel active" data-panel="strengths">
+                <ul class="sys-card-list sys-card-list--strengths">
+                  <li>Highly Pythonic API</li>
+                  <li>Lazy evaluation and query optimization</li>
+                  <li>Excellent memory efficiency</li>
+                  <li>Fast growing community</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="weaknesses">
+                <ul class="sys-card-list sys-card-list--weaknesses">
+                  <li>Less mature SQL support</li>
+                  <li>Fewer supported file formats</li>
+                  <li>No persistent storage engine</li>
+                  <li>Smaller extension ecosystem</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="bestfor">
+                <ul class="sys-card-list sys-card-list--bestfor">
+                  <li>Python-first data pipelines</li>
+                  <li>Replacing Pandas for performance</li>
+                  <li>ML feature engineering</li>
+                  <li>Streaming DataFrame workflows</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Spark -->
+            <div class="sys-card" data-system="spark">
+              <div class="sys-card-header">
+                <span class="sys-card-name">Spark</span>
+              </div>
+              <div class="sys-card-best">Best for: distributed batch processing across clusters</div>
+              <div class="sys-card-toggle">
+                <button class="sys-toggle-btn active" data-panel="strengths">Strengths</button>
+                <button class="sys-toggle-btn" data-panel="weaknesses">Weaknesses</button>
+                <button class="sys-toggle-btn" data-panel="bestfor">Best For</button>
+              </div>
+              <div class="sys-card-panel active" data-panel="strengths">
+                <ul class="sys-card-list sys-card-list--strengths">
+                  <li>True distributed computing</li>
+                  <li>Handles petabyte-scale data</li>
+                  <li>Rich ML library (MLlib)</li>
+                  <li>Mature ecosystem and tooling</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="weaknesses">
+                <ul class="sys-card-list sys-card-list--weaknesses">
+                  <li>Orders of magnitude more complex</li>
+                  <li>Requires cluster infrastructure</li>
+                  <li>High latency for small queries</li>
+                  <li>JVM overhead and memory tuning</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="bestfor">
+                <ul class="sys-card-list sys-card-list--bestfor">
+                  <li>Multi-terabyte batch processing</li>
+                  <li>Distributed ML training</li>
+                  <li>Data lake ETL at enterprise scale</li>
+                  <li>Streaming with Structured Streaming</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- BigQuery / Snowflake -->
+            <div class="sys-card" data-system="cloud">
+              <div class="sys-card-header">
+                <span class="sys-card-name">BigQuery / Snowflake</span>
+              </div>
+              <div class="sys-card-best">Best for: managed cloud analytics with governance and scale</div>
+              <div class="sys-card-toggle">
+                <button class="sys-toggle-btn active" data-panel="strengths">Strengths</button>
+                <button class="sys-toggle-btn" data-panel="weaknesses">Weaknesses</button>
+                <button class="sys-toggle-btn" data-panel="bestfor">Best For</button>
+              </div>
+              <div class="sys-card-panel active" data-panel="strengths">
+                <ul class="sys-card-list sys-card-list--strengths">
+                  <li>Fully managed, no ops burden</li>
+                  <li>Elastic scaling to petabytes</li>
+                  <li>Built-in governance and access control</li>
+                  <li>High-concurrency multi-user support</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="weaknesses">
+                <ul class="sys-card-list sys-card-list--weaknesses">
+                  <li>Expensive at scale (per-query pricing)</li>
+                  <li>Network latency for every query</li>
+                  <li>Vendor lock-in risk</li>
+                  <li>Overkill for single-user exploration</li>
+                </ul>
+              </div>
+              <div class="sys-card-panel" data-panel="bestfor">
+                <ul class="sys-card-list sys-card-list--bestfor">
+                  <li>Enterprise data warehousing</li>
+                  <li>Multi-team analytics platforms</li>
+                  <li>Compliance-heavy environments</li>
+                  <li>Workloads requiring governance</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BOTTOM LINE ===== -->
+    <section class="section" data-level="intermediate">
+      <div class="content-container">
+        <div class="bottom-line animate-in">
+          <div class="bottom-line-title">
+            &#x1F3AF; The Bottom Line
+          </div>
+          <p class="bottom-line-text">
+            DuckDB excels when your <strong>data fits on one machine</strong> (up to ~2 TB) and your workload is <strong>analytical</strong>.
+            It is the best choice for local data analysis, ETL pipelines, embedded analytics in applications, and replacing expensive cloud warehouse queries.
+          </p>
+          <p class="bottom-line-text" style="margin-top: var(--space-4);">
+            Choose something else for <strong>distributed scale</strong>, <strong>high write concurrency</strong>, or <strong>enterprise access control</strong>.
+            The right tool depends on where your data lives, how big it is, and who needs to query it.
+          </p>
+          <div class="bottom-line-tags">
+            <span class="bottom-line-tag">Local analysis</span>
+            <span class="bottom-line-tag">ETL pipelines</span>
+            <span class="bottom-line-tag">Embedded analytics</span>
+            <span class="bottom-line-tag">Cloud cost reduction</span>
+            <span class="bottom-line-tag">Data exploration</span>
+            <span class="bottom-line-tag">Single-machine OLAP</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PAGE NAVIGATION ===== -->
+    <section>
+      <div class="content-container">
+        <nav class="page-nav" aria-label="Page navigation">
+          <a href="faq.html" class="page-nav-link page-nav-link--prev">
+            <svg class="page-nav-arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4l-6 6 6 6"/></svg>
+            <div>
+              <div class="page-nav-dir">Previous</div>
+              <div class="page-nav-title">FAQ</div>
+            </div>
+          </a>
+          <a href="index.html" class="page-nav-home" aria-label="Back to home">
+            <svg class="page-nav-home-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l7-7 7 7"/><path d="M5 8v8a1 1 0 001 1h3v-5h2v5h3a1 1 0 001-1V8"/></svg>
+            <span class="page-nav-home-label">Home</span>
+          </a>
+          <div class="page-nav-spacer"></div>
+        </nav>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-text">Generated by <span class="footer-brand">System Explorer</span></p>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      'use strict';
+
+      /* ===== LEVEL SELECTOR ===== */
+      var STORAGE_KEY = 'system-explorer-levels';
+      var levelBtns = document.querySelectorAll('.level-btn');
+      var contentBlocks = document.querySelectorAll('[data-level]');
+
+      function loadLevels() {
+        try {
+          var stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) return JSON.parse(stored);
+        } catch (e) {}
+        return { beginner: true, intermediate: true, advanced: true };
+      }
+
+      function saveLevels(levels) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(levels)); } catch (e) {}
+      }
+
+      var activeLevels = loadLevels();
+
+      function syncUI() {
+        levelBtns.forEach(function(btn) {
+          var level = btn.getAttribute('data-level');
+          btn.classList.toggle('active', !!activeLevels[level]);
+        });
+
+        contentBlocks.forEach(function(block) {
+          var blockLevel = block.getAttribute('data-level');
+          if (blockLevel) {
+            var levels = blockLevel.split(' ');
+            var visible = levels.some(function(l) { return activeLevels[l]; });
+            block.classList.toggle('level-hidden', !visible);
+          }
+        });
+      }
+
+      syncUI();
+
+      levelBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var level = btn.getAttribute('data-level');
+          activeLevels[level] = !activeLevels[level];
+
+          var anyActive = Object.keys(activeLevels).some(function(k) { return activeLevels[k]; });
+          if (!anyActive) {
+            activeLevels[level] = true;
+          }
+
+          saveLevels(activeLevels);
+          syncUI();
+        });
+      });
+
+      /* ===== HAMBURGER MENU ===== */
+      var hamburger = document.getElementById('navHamburger');
+      var siteNav = document.getElementById('siteNav');
+
+      hamburger.addEventListener('click', function() {
+        hamburger.classList.toggle('open');
+        siteNav.classList.toggle('nav-open');
+      });
+
+      document.querySelectorAll('.nav-page-link').forEach(function(link) {
+        link.addEventListener('click', function() {
+          hamburger.classList.remove('open');
+          siteNav.classList.remove('nav-open');
+        });
+      });
+
+      /* ===== SCROLL PROGRESS BAR ===== */
+      var progressBar = document.getElementById('progressBar');
+
+      function updateProgress() {
+        var scrollTop = window.scrollY || document.documentElement.scrollTop;
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        progressBar.style.width = Math.min(progress, 100) + '%';
+        progressBar.setAttribute('aria-valuenow', Math.round(progress));
+      }
+
+      window.addEventListener('scroll', updateProgress, { passive: true });
+      updateProgress();
+
+      /* ===== SCROLL ANIMATIONS (IntersectionObserver) ===== */
+      var animateTargets = document.querySelectorAll('.animate-in');
+
+      if ('IntersectionObserver' in window) {
+        var scrollObserver = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              scrollObserver.unobserve(entry.target);
+            }
+          });
+        }, {
+          threshold: 0.1,
+          rootMargin: '0px 0px -40px 0px'
+        });
+
+        animateTargets.forEach(function(el) {
+          scrollObserver.observe(el);
+        });
+      } else {
+        animateTargets.forEach(function(el) {
+          el.classList.add('visible');
+        });
+      }
+
+      /* ===== PERFORMANCE GAUGE ANIMATION ===== */
+      var perfGauges = document.getElementById('perfGauges');
+      var gaugesAnimated = false;
+
+      function animateGauges() {
+        if (gaugesAnimated) return;
+        gaugesAnimated = true;
+        var fills = perfGauges.querySelectorAll('.perf-fill');
+        fills.forEach(function(fill, index) {
+          var targetWidth = fill.getAttribute('data-width');
+          setTimeout(function() {
+            fill.style.width = targetWidth + '%';
+          }, index * 150);
+        });
+      }
+
+      if ('IntersectionObserver' in window) {
+        var gaugeObserver = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              animateGauges();
+              gaugeObserver.unobserve(entry.target);
+            }
+          });
+        }, {
+          threshold: 0.2
+        });
+
+        gaugeObserver.observe(perfGauges);
+      } else {
+        animateGauges();
+      }
+
+      /* ===== SYSTEM COMPARISON CARD TABS ===== */
+      var sysCards = document.getElementById('sysCards');
+
+      sysCards.addEventListener('click', function(e) {
+        var toggleBtn = e.target.closest('.sys-toggle-btn');
+        if (!toggleBtn) return;
+
+        var card = toggleBtn.closest('.sys-card');
+        var panelName = toggleBtn.getAttribute('data-panel');
+
+        // Deactivate all tabs in this card
+        card.querySelectorAll('.sys-toggle-btn').forEach(function(btn) {
+          btn.classList.remove('active');
+        });
+        toggleBtn.classList.add('active');
+
+        // Show the matching panel
+        card.querySelectorAll('.sys-card-panel').forEach(function(panel) {
+          panel.classList.toggle('active', panel.getAttribute('data-panel') === panelName);
+        });
+      });
+
+      /* ===== GLOSSARY TOOLTIP POSITIONING ===== */
+      function positionTooltips() {
+        var tooltips = document.querySelectorAll('.glossary-tooltip');
+        tooltips.forEach(function(tooltip) {
+          tooltip.classList.remove('flip-left', 'flip-right');
+          var rect = tooltip.getBoundingClientRect();
+          if (rect.left < 8) {
+            tooltip.classList.add('flip-left');
+          } else if (rect.right > window.innerWidth - 8) {
+            tooltip.classList.add('flip-right');
+          }
+        });
+      }
+
+      // Position on load and resize
+      window.addEventListener('load', positionTooltips);
+      window.addEventListener('resize', positionTooltips);
+
+      // Also reposition when a glossary term is hovered
+      document.querySelectorAll('.glossary-term').forEach(function(term) {
+        term.addEventListener('mouseenter', function() {
+          var tooltip = term.querySelector('.glossary-tooltip');
+          if (tooltip) {
+            tooltip.classList.remove('flip-left', 'flip-right');
+            // Force layout recalc
+            void tooltip.offsetWidth;
+            var rect = tooltip.getBoundingClientRect();
+            if (rect.left < 8) {
+              tooltip.classList.add('flip-left');
+            } else if (rect.right > window.innerWidth - 8) {
+              tooltip.classList.add('flip-right');
+            }
+          }
+        });
+      });
+
+    })();
+  </script>
+
+</body>
+</html>
