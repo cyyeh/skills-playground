@@ -8,11 +8,10 @@ Complete CSS design tokens for multi-page system courses. Copy the `:root` block
 3. [Spacing & Layout](#spacing--layout)
 4. [Shadows & Depth](#shadows--depth)
 5. [Navigation CSS](#navigation-css)
-6. [Level Selector CSS](#level-selector-css)
-7. [Code Block CSS](#code-block-css)
-8. [Responsive Breakpoints](#responsive-breakpoints)
-9. [Animations & Transitions](#animations--transitions)
-10. [Scrollbar & Background](#scrollbar--background)
+6. [Code Block CSS](#code-block-css)
+7. [Responsive Breakpoints](#responsive-breakpoints)
+8. [Animations & Transitions](#animations--transitions)
+9. [Scrollbar & Background](#scrollbar--background)
 
 ---
 
@@ -216,11 +215,6 @@ Use warm-tinted RGBA (44, 42, 40) -- never pure black shadows.
       <a href="concepts.html" class="nav-page-link">Concepts</a>
       <a href="architecture.html" class="nav-page-link">Architecture</a>
       <!-- one per page -->
-    </div>
-    <div class="nav-levels" id="navLevels">
-      <button class="level-btn level-btn--beginner active" data-level="beginner">Beginner</button>
-      <button class="level-btn level-btn--intermediate active" data-level="intermediate">Intermediate</button>
-      <button class="level-btn level-btn--advanced active" data-level="advanced">Advanced</button>
     </div>
     <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation">
       <span></span><span></span><span></span>
@@ -434,80 +428,13 @@ window.addEventListener('scroll', () => {
 ```javascript
 const hamburger = document.getElementById('navHamburger');
 const navPages = document.getElementById('navPages');
-const navLevels = document.getElementById('navLevels');
 hamburger.addEventListener('click', () => {
   hamburger.classList.toggle('open');
   navPages.classList.toggle('mobile-open');
-  navLevels.classList.toggle('mobile-open');
 });
 ```
 
 ---
-
-## Level Selector CSS
-
-**Toggle buttons:**
-```css
-.nav-levels {
-  display: flex;
-  gap: var(--space-1);
-  flex-shrink: 0;
-}
-.level-btn {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  border: 2px solid;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-  background: transparent;
-}
-
-/* Beginner */
-.level-btn--beginner {
-  border-color: var(--color-level-beginner);
-  color: var(--color-level-beginner);
-}
-.level-btn--beginner.active {
-  background: var(--color-level-beginner);
-  color: #FFFFFF;
-}
-
-/* Intermediate */
-.level-btn--intermediate {
-  border-color: var(--color-level-intermediate);
-  color: var(--color-level-intermediate);
-}
-.level-btn--intermediate.active {
-  background: var(--color-level-intermediate);
-  color: #FFFFFF;
-}
-
-/* Advanced */
-.level-btn--advanced {
-  border-color: var(--color-level-advanced);
-  color: var(--color-level-advanced);
-}
-.level-btn--advanced.active {
-  background: var(--color-level-advanced);
-  color: #FFFFFF;
-}
-
-/* Hover states (inactive buttons only) */
-.level-btn--beginner:not(.active):hover {
-  background: rgba(45, 139, 85, 0.1);
-}
-.level-btn--intermediate:not(.active):hover {
-  background: rgba(212, 168, 67, 0.1);
-}
-.level-btn--advanced:not(.active):hover {
-  background: rgba(201, 59, 59, 0.1);
-}
-```
 
 **Level badge (inline in content):**
 ```css
@@ -533,69 +460,6 @@ hamburger.addEventListener('click', () => {
   background: var(--color-error-light);
   color: var(--color-level-advanced);
 }
-```
-
-**Content visibility by level:**
-```css
-/* Default: all levels visible */
-[data-level="beginner"]     { display: block; }
-[data-level="intermediate"] { display: block; }
-[data-level="advanced"]     { display: block; }
-
-/* Body classes toggle visibility */
-body.hide-beginner [data-level="beginner"]         { display: none; }
-body.hide-intermediate [data-level="intermediate"] { display: none; }
-body.hide-advanced [data-level="advanced"]         { display: none; }
-```
-
-**Level selector JS:**
-```javascript
-(function() {
-  const STORAGE_KEY = 'system-explorer-levels';
-
-  function getState() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : { beginner: true, intermediate: true, advanced: true };
-    } catch (e) {
-      return { beginner: true, intermediate: true, advanced: true };
-    }
-  }
-
-  function applyState(state) {
-    ['beginner', 'intermediate', 'advanced'].forEach(level => {
-      document.body.classList.toggle('hide-' + level, !state[level]);
-      const btn = document.querySelector('.level-btn[data-level="' + level + '"]');
-      if (btn) btn.classList.toggle('active', state[level]);
-    });
-  }
-
-  function saveState(state) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
-  }
-
-  /* Apply immediately on load to prevent flash of hidden content */
-  const initialState = getState();
-  applyState(initialState);
-
-  document.addEventListener('DOMContentLoaded', () => {
-    applyState(getState());
-    document.querySelectorAll('.level-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const level = btn.dataset.level;
-        const state = getState();
-        state[level] = !state[level];
-        /* Prevent hiding ALL levels */
-        if (!state.beginner && !state.intermediate && !state.advanced) {
-          state[level] = true;
-          return;
-        }
-        saveState(state);
-        applyState(state);
-      });
-    });
-  });
-})();
 ```
 
 ---
@@ -746,12 +610,6 @@ document.querySelectorAll('.code-copy-btn').forEach(btn => {
     padding: var(--space-1) var(--space-2);
   }
 
-  /* Level buttons shrink */
-  .level-btn {
-    padding: var(--space-1) var(--space-2);
-    font-size: 0.65rem;
-  }
-
   /* Content adjustments */
   .page-content-wide {
     max-width: 100%;
@@ -770,12 +628,11 @@ document.querySelectorAll('.code-copy-btn').forEach(btn => {
     --nav-height: 52px;
   }
 
-  /* Show hamburger, hide nav pages and levels by default */
+  /* Show hamburger, hide nav pages by default */
   .nav-hamburger {
     display: flex;
   }
-  .nav-pages,
-  .nav-levels {
+  .nav-pages {
     display: none;
     position: absolute;
     top: var(--nav-height);
@@ -786,19 +643,10 @@ document.querySelectorAll('.code-copy-btn').forEach(btn => {
     box-shadow: var(--shadow-md);
     padding: var(--space-4);
   }
-  .nav-pages.mobile-open,
-  .nav-levels.mobile-open {
-    display: flex;
-  }
   .nav-pages.mobile-open {
+    display: flex;
     flex-direction: column;
     gap: var(--space-1);
-  }
-  .nav-levels.mobile-open {
-    top: auto;
-    border-top: 1px solid var(--color-border-light);
-    justify-content: center;
-    gap: var(--space-2);
   }
 
   /* Stacked layouts */

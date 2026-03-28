@@ -4,1030 +4,156 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>How It Works — NemoClaw Course</title>
-  <meta name="description" content="Five-layer protection model, filesystem access, network policy enforcement, inference routing, and performance characteristics of NemoClaw.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* ===== DESIGN TOKENS ===== */
-    :root {
-      --color-bg:             #FAF7F2;
-      --color-bg-warm:        #F5F0E8;
-      --color-bg-code:        #1E1E2E;
-      --color-text:           #2C2A28;
-      --color-text-secondary: #6B6560;
-      --color-text-muted:     #9E9790;
-      --color-border:         #E5DFD6;
-      --color-border-light:   #EEEBE5;
-      --color-surface:        #FFFFFF;
-      --color-surface-warm:   #FDF9F3;
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;}
+    *,*::before,*::after{box-sizing:border-box;}::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full);}html{scroll-behavior:smooth;}
+    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased;}
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap;}.nav-brand{text-decoration:none;display:flex;flex-direction:column;}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2;}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);}.nav-links{display:flex;align-items:center;gap:var(--space-4);}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0;}.nav-page-list li a{display:flex;align-items:center;padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background 0.15s ease,color 0.15s ease;}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text);}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600;}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2);}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;transition:transform 0.2s ease,opacity 0.2s ease;}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin-bottom:var(--space-3);line-height:1.15;}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3);}.page-level-badge.intermediate{background:var(--color-warning-light);color:var(--color-warning);}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6);}.content-section{margin-bottom:var(--space-10);}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4);}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3);}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4);}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg);}
 
-      --color-accent:       #2D8B55;
-      --color-accent-hover: #257548;
-      --color-accent-light: #E8F5EE;
-      --color-accent-muted: #5AAF7A;
+    /* Protection layer table */
+    .layer-table{width:100%;border-collapse:collapse;margin:var(--space-6) 0;font-size:var(--text-sm);background:var(--color-surface);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);}
+    .layer-table th{background:var(--color-accent);color:white;padding:var(--space-3) var(--space-4);text-align:left;font-family:var(--font-display);font-weight:600;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.05em;}
+    .layer-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light);vertical-align:top;}
+    .layer-table tr:last-child td{border-bottom:none;}
+    .layer-table tr:hover td{background:var(--color-surface-warm);}
+    .layer-table .layer-name{font-family:var(--font-display);font-weight:600;color:var(--color-text);white-space:nowrap;}
+    .layer-table .lock-badge{display:inline-block;font-family:var(--font-mono);font-size:var(--text-xs);padding:1px 6px;border-radius:var(--radius-full);background:var(--color-error-light);color:var(--color-error);font-weight:600;}
+    .layer-table .hot-badge{display:inline-block;font-family:var(--font-mono);font-size:var(--text-xs);padding:1px 6px;border-radius:var(--radius-full);background:var(--color-warning-light);color:var(--color-warning);font-weight:600;}
 
-      --color-success:       #2D8B55;
-      --color-success-light: #E8F5EE;
-      --color-error:         #C93B3B;
-      --color-error-light:   #FDE8E8;
-      --color-info:          #2A7B9B;
-      --color-info-light:    #E4F2F7;
-      --color-warning:       #D4A843;
-      --color-warning-light: #FDF6E4;
+    /* Flow diagram */
+    .flow-diagram{display:flex;align-items:center;gap:var(--space-2);margin:var(--space-8) 0;overflow-x:auto;padding:var(--space-4) 0;}.flow-step{display:flex;gap:var(--space-3);align-items:flex-start;background:var(--color-surface);padding:var(--space-4) var(--space-5);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);min-width:160px;max-width:200px;flex-shrink:0;opacity:0;transform:translateY(12px);transition:opacity var(--duration-normal) var(--ease-out),transform var(--duration-normal) var(--ease-out);transition-delay:calc(var(--step-delay) * 0.15s);}.flow-step.visible{opacity:1;transform:translateY(0);}.flow-step-num{width:32px;height:32px;border-radius:50%;background:var(--color-accent);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;flex-shrink:0;}.flow-step-content strong{font-family:var(--font-display);font-size:var(--text-sm);display:block;margin-bottom:var(--space-1);}.flow-step-content p{font-size:var(--text-xs);color:var(--color-text-secondary);margin:0;}.flow-arrow{font-size:var(--text-xl);color:var(--color-accent);flex-shrink:0;opacity:0;transition:opacity var(--duration-normal);transition-delay:calc(var(--step-delay) * 0.15s);}.flow-arrow.visible{opacity:1;}
 
-      --color-level-beginner:     #2D8B55;
-      --color-level-intermediate: #D4A843;
-      --color-level-advanced:     #C93B3B;
+    /* Filesystem diagram */
+    .fs-diagram{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-6) 0;}
+    .fs-diagram h3{font-family:var(--font-display);font-weight:700;margin-bottom:var(--space-4);}
+    .fs-entry{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);margin-bottom:var(--space-1);font-family:var(--font-mono);font-size:var(--text-sm);cursor:pointer;transition:background var(--duration-fast);}
+    .fs-entry:hover{background:var(--color-surface-warm);}
+    .fs-access{display:inline-block;font-size:var(--text-xs);font-weight:600;padding:1px 8px;border-radius:var(--radius-full);min-width:72px;text-align:center;}
+    .fs-access.rw{background:var(--color-success-light);color:var(--color-success);}
+    .fs-access.ro{background:var(--color-warning-light);color:var(--color-warning);}
+    .fs-access.no{background:var(--color-error-light);color:var(--color-error);}
+    .fs-path{flex:1;}
+    .fs-note{font-size:var(--text-xs);color:var(--color-text-muted);font-family:var(--font-body);}
 
-      --font-display: 'Bricolage Grotesque', Georgia, serif;
-      --font-body:    'DM Sans', -apple-system, sans-serif;
-      --font-mono:    'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    /* Code block */
+    .code-block{background:#1E1E2E;border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md);}.code-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244;}.code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:0.05em;}.code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast);}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4;}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1;}.code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4;}
+    .code-keyword{color:#CBA6F7;}.code-string{color:#F9E2AF;}.code-comment{color:#6C7086;font-style:italic;}.code-function{color:#A6E3A1;}.code-number{color:#FAB387;}.code-variable{color:#89B4FA;}.code-property{color:#F5C2E7;}
 
-      --text-xs:   0.75rem;
-      --text-sm:   0.875rem;
-      --text-base: 1rem;
-      --text-lg:   1.125rem;
-      --text-xl:   1.25rem;
-      --text-2xl:  1.5rem;
-      --text-3xl:  1.875rem;
-      --text-4xl:  2.25rem;
-      --text-5xl:  3rem;
+    /* Callout */
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid;}.callout-tip{background:var(--color-success-light);border-color:var(--color-success);}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning);}.callout-insight{background:#F3EFF8;border-color:#7B6DAA;}.callout-icon{font-size:1.3rem;flex-shrink:0;}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal);}.callout-content strong{color:var(--color-text);}.callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px;}
 
-      --leading-tight:  1.15;
-      --leading-snug:   1.3;
-      --leading-normal: 1.6;
-      --leading-loose:  1.8;
+    /* Glossary */
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer;}.glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast);}.glossary-tooltip.visible{opacity:1;}
 
-      --space-1:  0.25rem;
-      --space-2:  0.5rem;
-      --space-3:  0.75rem;
-      --space-4:  1rem;
-      --space-5:  1.25rem;
-      --space-6:  1.5rem;
-      --space-8:  2rem;
-      --space-10: 2.5rem;
-      --space-12: 3rem;
-      --space-16: 4rem;
-      --space-20: 5rem;
-      --space-24: 6rem;
-
-      --content-width:      800px;
-      --content-width-wide: 1000px;
-      --nav-height:         60px;
-
-      --radius-sm:   8px;
-      --radius-md:   12px;
-      --radius-lg:   16px;
-      --radius-full: 9999px;
-
-      --shadow-sm:  0 1px 2px rgba(44, 42, 40, 0.05);
-      --shadow-md:  0 4px 12px rgba(44, 42, 40, 0.08);
-      --shadow-lg:  0 8px 24px rgba(44, 42, 40, 0.1);
-      --shadow-xl:  0 16px 48px rgba(44, 42, 40, 0.12);
-
-      --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
-      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-      --duration-fast:   150ms;
-      --duration-normal: 300ms;
-      --duration-slow:   500ms;
-      --stagger-delay:   120ms;
-    }
-
-    /* ===== RESET ===== */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: var(--font-body);
-      font-size: var(--text-base);
-      line-height: var(--leading-normal);
-      color: var(--color-text);
-      background: var(--color-bg);
-      background-image: radial-gradient(ellipse at 20% 50%, rgba(45,139,85,0.03) 0%, transparent 50%);
-      -webkit-font-smoothing: antialiased;
-    }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
-    button { font-family: var(--font-body); }
-    a { color: var(--color-accent); }
-
-    /* ===== LEVEL VISIBILITY ===== */
-    body.hide-beginner     [data-level="beginner"]     { display: none !important; }
-    body.hide-intermediate [data-level="intermediate"] { display: none !important; }
-    body.hide-advanced     [data-level="advanced"]     { display: none !important; }
-    body.hide-beginner.hide-intermediate [data-level="beginner intermediate"] { display: none !important; }
-    body.hide-beginner.hide-advanced     [data-level="beginner advanced"]     { display: none !important; }
-    body.hide-intermediate.hide-advanced [data-level="intermediate advanced"] { display: none !important; }
-
-    /* ===== SCROLL ANIMATION ===== */
-    .animate-in {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity var(--duration-slow) var(--ease-out),
-                  transform var(--duration-slow) var(--ease-out);
-    }
-    .animate-in.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ===== NAVIGATION ===== */
-    .site-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-3) var(--space-6);
-      background: var(--color-surface);
-      border-bottom: 1px solid var(--color-border-light);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      flex-wrap: wrap;
-    }
-    .nav-brand {
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-    .nav-brand-name {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: var(--text-base);
-      color: var(--color-text);
-      line-height: 1.2;
-    }
-    .nav-brand-label {
-      font-family: var(--font-body);
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
-    }
-    .nav-page-list {
-      list-style: none;
-      display: flex;
-      gap: var(--space-1);
-      padding: 0;
-      margin: 0;
-    }
-    .nav-page-list li a {
-      display: flex;
-      align-items: center;
-      gap: var(--space-1);
-      padding: var(--space-1) var(--space-2);
-      border-radius: var(--radius-sm);
-      text-decoration: none;
-      font-family: var(--font-body);
-      font-size: var(--text-sm);
-      color: var(--color-text-secondary);
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .nav-page-list li a:hover {
-      background: var(--color-bg-warm);
-      color: var(--color-text);
-    }
-    .nav-page-list li.active a {
-      background: var(--color-accent-light);
-      color: var(--color-accent);
-      font-weight: 600;
-    }
-    .nav-page-level {
-      font-size: 10px;
-      font-weight: 700;
-      width: 16px;
-      height: 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-full);
-      line-height: 1;
-    }
-    .nav-page-level.beginner     { background: var(--color-success-light); color: var(--color-success); }
-    .nav-page-level.intermediate { background: var(--color-info-light);    color: var(--color-info); }
-    .nav-page-level.advanced     { background: var(--color-warning-light); color: var(--color-warning); }
-
-    .level-selector {
-      display: flex;
-      gap: var(--space-1);
-      margin-left: var(--space-4);
-      padding-left: var(--space-4);
-      border-left: 1px solid var(--color-border-light);
-    }
-    .level-toggle-btn {
-      font-family: var(--font-body);
-      font-size: var(--text-xs);
-      font-weight: 600;
-      padding: var(--space-1) var(--space-3);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-full);
-      background: transparent;
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .level-toggle-btn:hover {
-      border-color: var(--color-accent-muted);
-      color: var(--color-accent-muted);
-    }
-    .level-toggle-btn.level-active {
-      background: var(--color-accent);
-      border-color: var(--color-accent);
-      color: #fff;
-    }
-    .level-toggle-btn.level-active:hover {
-      background: var(--color-accent-hover);
-      border-color: var(--color-accent-hover);
-      color: #fff;
-    }
-    .nav-hamburger {
-      display: none;
-      flex-direction: column;
-      gap: 4px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: var(--space-2);
-    }
-    .hamburger-bar {
-      display: block;
-      width: 20px;
-      height: 2px;
-      background: var(--color-text);
-      border-radius: 2px;
-      transition: transform 0.2s ease, opacity 0.2s ease;
-    }
-
-    /* ===== PAGE HEADER ===== */
-    .page-header {
-      max-width: var(--content-width);
-      margin: var(--space-12) auto var(--space-8);
-      padding: 0 var(--space-6);
-    }
-    .page-header h1 {
-      font-family: var(--font-display);
-      font-size: var(--text-3xl);
-      font-weight: 800;
-      color: var(--color-text);
-      margin-bottom: var(--space-3);
-      line-height: var(--leading-tight);
-    }
-    .page-level-badge {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      font-weight: 600;
-      padding: var(--space-1) var(--space-3);
-      border-radius: var(--radius-full);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .page-level-badge.intermediate {
-      background: var(--color-info-light);
-      color: var(--color-info);
-    }
-
-    /* ===== CONTENT AREA ===== */
-    .content-area {
-      max-width: var(--content-width);
-      margin: 0 auto;
-      padding: 0 var(--space-6);
-    }
-    .content-section {
-      margin-bottom: var(--space-10);
-    }
-    .content-section h2 {
-      font-family: var(--font-display);
-      font-size: var(--text-2xl);
-      font-weight: 700;
-      color: var(--color-text);
-      margin-bottom: var(--space-4);
-    }
-    .content-section h3 {
-      font-family: var(--font-display);
-      font-size: var(--text-xl);
-      font-weight: 600;
-      color: var(--color-text);
-      margin-bottom: var(--space-3);
-    }
-    .content-section p {
-      font-family: var(--font-body);
-      font-size: var(--text-base);
-      color: var(--color-text);
-      line-height: 1.7;
-      margin-bottom: var(--space-4);
-    }
-    .content-section:nth-child(even) {
-      background: var(--color-bg-warm);
-      padding: var(--space-8) var(--space-6);
-      margin-left: calc(-1 * var(--space-6));
-      margin-right: calc(-1 * var(--space-6));
-      border-radius: var(--radius-lg);
-    }
-
-    /* ===== PROTECTION TABLE ===== */
-    .protection-table-wrapper {
-      overflow-x: auto;
-      margin: var(--space-6) 0;
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-sm);
-    }
-    .protection-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--color-surface);
-      font-size: var(--text-sm);
-    }
-    .protection-table thead {
-      background: var(--color-bg-warm);
-    }
-    .protection-table th {
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: var(--text-sm);
-      padding: var(--space-3) var(--space-4);
-      text-align: left;
-      border-bottom: 2px solid var(--color-border);
-      color: var(--color-text);
-    }
-    .protection-table td {
-      padding: var(--space-3) var(--space-4);
-      border-bottom: 1px solid var(--color-border-light);
-      color: var(--color-text-secondary);
-      vertical-align: top;
-    }
-    .protection-table tbody tr {
-      transition: background var(--duration-fast);
-    }
-    .protection-table tbody tr:hover {
-      background: var(--color-surface-warm);
-    }
-    .protection-table td:first-child {
-      font-family: var(--font-display);
-      font-weight: 600;
-      color: var(--color-text);
-      white-space: nowrap;
-    }
-    .protection-table .layer-icon {
-      display: inline-block;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      text-align: center;
-      line-height: 24px;
-      font-size: var(--text-xs);
-      margin-right: var(--space-2);
-      vertical-align: middle;
-    }
-    .protection-table .badge-locked {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: var(--radius-full);
-      background: var(--color-error-light);
-      color: var(--color-error);
-    }
-    .protection-table .badge-hot {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: var(--radius-full);
-      background: var(--color-warning-light);
-      color: var(--color-warning);
-    }
-    .protection-table .badge-no {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
-      background: var(--color-success-light);
-      color: var(--color-success);
-    }
-
-    /* ===== FILESYSTEM ACCESS CARDS ===== */
-    .fs-access-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: var(--space-4);
-      margin: var(--space-6) 0;
-    }
-    .fs-card {
-      background: var(--color-surface);
-      border-radius: var(--radius-md);
-      padding: var(--space-5);
-      border-top: 3px solid var(--card-color, var(--color-accent));
-      box-shadow: var(--shadow-sm);
-      transition: transform var(--duration-fast), box-shadow var(--duration-fast);
-    }
-    .fs-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-    .fs-card-icon {
-      font-size: 1.5rem;
-      margin-bottom: var(--space-2);
-    }
-    .fs-card-title {
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: var(--text-base);
-      margin-bottom: var(--space-2);
-    }
-    .fs-card-paths {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .fs-card-paths li {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--color-text-secondary);
-      padding: var(--space-1) 0;
-      border-bottom: 1px solid var(--color-border-light);
-    }
-    .fs-card-paths li:last-child {
-      border-bottom: none;
-    }
-    .fs-card-desc {
-      font-size: var(--text-sm);
-      color: var(--color-text-secondary);
-      line-height: var(--leading-normal);
-      margin-top: var(--space-2);
-    }
-
-    /* ===== CODE BLOCK ===== */
-    .code-block {
-      background: var(--color-bg-code);
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      margin: var(--space-6) 0;
-      box-shadow: var(--shadow-md);
-    }
-    .code-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: var(--space-2) var(--space-4);
-      background: #181825;
-      border-bottom: 1px solid #313244;
-    }
-    .code-lang {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: #CDD6F4;
-      background: #313244;
-      padding: 2px var(--space-2);
-      border-radius: var(--radius-sm);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .code-copy {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: #A6ADC8;
-      background: none;
-      border: 1px solid #45475A;
-      border-radius: var(--radius-sm);
-      padding: 2px var(--space-3);
-      cursor: pointer;
-      transition: all var(--duration-fast);
-    }
-    .code-copy:hover {
-      color: #CDD6F4;
-      border-color: #CDD6F4;
-    }
-    .code-copy.copied {
-      color: #A6E3A1;
-      border-color: #A6E3A1;
-    }
-    .code-pre {
-      padding: var(--space-4) var(--space-5);
-      margin: 0;
-      overflow-x: auto;
-      font-family: var(--font-mono);
-      font-size: var(--text-sm);
-      line-height: 1.7;
-      color: #CDD6F4;
-      -webkit-overflow-scrolling: touch;
-    }
-    .code-keyword  { color: #CBA6F7; }
-    .code-string   { color: #F9E2AF; }
-    .code-comment  { color: #6C7086; font-style: italic; }
-    .code-function { color: #A6E3A1; }
-    .code-number   { color: #FAB387; }
-    .code-variable { color: #89B4FA; }
-    .code-operator { color: #94E2D5; }
-
-    /* ===== FLOW DIAGRAM ===== */
-    .flow-diagram {
-      display: flex;
-      align-items: stretch;
-      gap: var(--space-2);
-      margin: var(--space-8) 0;
-      overflow-x: auto;
-      padding: var(--space-4) 0;
-      -webkit-overflow-scrolling: touch;
-    }
-    .flow-step {
-      display: flex;
-      gap: var(--space-3);
-      align-items: flex-start;
-      background: var(--color-surface);
-      padding: var(--space-4) var(--space-5);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-sm);
-      min-width: 200px;
-      max-width: 260px;
-      flex-shrink: 0;
-      opacity: 0;
-      transform: translateY(12px);
-      transition: opacity var(--duration-normal) var(--ease-out),
-                  transform var(--duration-normal) var(--ease-out),
-                  box-shadow var(--duration-fast);
-      transition-delay: calc(var(--step-delay) * 0.15s);
-      cursor: default;
-    }
-    .flow-step.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .flow-step:hover {
-      box-shadow: var(--shadow-md);
-    }
-    .flow-step-num {
-      width: 32px;
-      height: 32px;
-      min-width: 32px;
-      border-radius: 50%;
-      background: var(--color-accent);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: var(--text-sm);
-      flex-shrink: 0;
-    }
-    .flow-step-content strong {
-      font-family: var(--font-display);
-      font-size: var(--text-sm);
-      display: block;
-      margin-bottom: var(--space-1);
-    }
-    .flow-step-content p {
-      font-size: var(--text-xs);
-      color: var(--color-text-secondary);
-      margin: 0;
-      line-height: var(--leading-normal);
-    }
-    .flow-arrow {
-      font-size: var(--text-xl);
-      color: var(--color-accent);
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      opacity: 0;
-      transition: opacity var(--duration-normal);
-      transition-delay: calc(var(--step-delay) * 0.15s);
-    }
-    .flow-arrow.visible { opacity: 1; }
-
-    /* ===== PERFORMANCE GAUGES ===== */
-    .perf-gauges {
-      background: var(--color-surface);
-      border-radius: var(--radius-lg);
-      padding: var(--space-6);
-      box-shadow: var(--shadow-sm);
-      margin: var(--space-6) 0;
-    }
-    .perf-title {
-      font-family: var(--font-display);
-      font-size: var(--text-xl);
-      font-weight: 700;
-      margin-bottom: var(--space-5);
-      color: var(--color-text);
-    }
-    .perf-gauge {
-      margin-bottom: var(--space-4);
-    }
-    .perf-gauge:last-child {
-      margin-bottom: 0;
-    }
-    .perf-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-1);
-    }
-    .perf-name {
-      font-family: var(--font-body);
-      font-size: var(--text-sm);
-      font-weight: 600;
-      color: var(--color-text);
-    }
-    .perf-value {
-      font-family: var(--font-mono);
-      font-size: var(--text-sm);
-      font-weight: 600;
-      color: var(--color-text-secondary);
-    }
-    .perf-bar {
-      height: 8px;
-      background: var(--color-border-light);
-      border-radius: var(--radius-full);
-      overflow: hidden;
-    }
-    .perf-fill {
-      height: 100%;
-      border-radius: var(--radius-full);
-      width: 0;
-      transition: width 1s var(--ease-out);
-    }
-    .perf-green  { background: var(--color-success); }
-    .perf-yellow { background: var(--color-warning); }
-    .perf-red    { background: var(--color-error); }
-    .perf-note {
-      display: block;
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      margin-top: var(--space-1);
-      line-height: var(--leading-normal);
-    }
-
-    /* ===== CALLOUT ===== */
-    .callout {
-      display: flex;
-      gap: var(--space-4);
-      padding: var(--space-5);
-      border-radius: var(--radius-md);
-      margin: var(--space-6) 0;
-      border-left: 4px solid;
-    }
-    .callout-warning {
-      background: var(--color-warning-light);
-      border-color: var(--color-warning);
-    }
-    .callout-tip {
-      background: var(--color-success-light);
-      border-color: var(--color-success);
-    }
-    .callout-info {
-      background: var(--color-info-light);
-      border-color: var(--color-info);
-    }
-    .callout-icon {
-      font-size: 1.3rem;
-      flex-shrink: 0;
-      line-height: 1;
-    }
-    .callout-content {
-      font-size: var(--text-sm);
-      line-height: var(--leading-normal);
-    }
-    .callout-content strong {
-      display: block;
-      margin-bottom: var(--space-1);
-    }
-    .callout-content code {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      background: rgba(0,0,0,0.06);
-      padding: 1px var(--space-1);
-      border-radius: 3px;
-    }
-
-    /* ===== GLOSSARY TOOLTIPS ===== */
-    .glossary-term {
-      border-bottom: 2px dashed var(--color-accent-muted);
-      cursor: pointer;
-    }
-    .glossary-tooltip {
-      position: fixed;
-      background: var(--color-text);
-      color: white;
-      padding: var(--space-3) var(--space-4);
-      border-radius: var(--radius-sm);
-      font-size: var(--text-sm);
-      max-width: 300px;
-      z-index: 10000;
-      box-shadow: var(--shadow-lg);
-      line-height: var(--leading-normal);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity var(--duration-fast);
-    }
-    .glossary-tooltip.visible { opacity: 1; }
-    .glossary-tooltip::before {
-      content: '';
-      position: absolute;
-      bottom: 100%;
-      left: 20px;
-      border: 6px solid transparent;
-      border-bottom-color: var(--color-text);
-    }
-
-    /* ===== PAGE NAV FOOTER ===== */
-    .page-nav-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: var(--content-width);
-      margin: var(--space-12) auto var(--space-6);
-      padding: var(--space-6);
-      border-top: 1px solid var(--color-border-light);
-    }
-    .page-nav-footer a {
-      font-family: var(--font-body);
-      font-size: var(--text-sm);
-      font-weight: 600;
-      color: var(--color-accent);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      transition: color 0.15s ease;
-    }
-    .page-nav-footer a:hover {
-      color: var(--color-accent-hover);
-    }
-    .page-nav-footer .prev::before { content: "\2190\00a0"; }
-    .page-nav-footer .next::after  { content: "\00a0\2192"; }
-
-    /* ===== SITE FOOTER ===== */
-    .site-footer {
-      text-align: center;
-      padding: var(--space-8) var(--space-6);
-      font-family: var(--font-body);
-      font-size: var(--text-sm);
-      color: var(--color-text-muted);
-      border-top: 1px solid var(--color-border-light);
-      margin-top: var(--space-4);
-    }
-
-    /* ===== RESPONSIVE: TABLET ===== */
-    @media (max-width: 768px) {
-      :root {
-        --text-4xl: 1.875rem;
-        --text-3xl: 1.5rem;
-        --nav-height: 56px;
-      }
-      .nav-hamburger { display: flex; }
-      .nav-links {
-        display: none;
-        flex-direction: column;
-        width: 100%;
-        padding-top: var(--space-3);
-      }
-      .nav-links.open { display: flex; }
-      .nav-page-list {
-        flex-direction: column;
-        width: 100%;
-      }
-      .nav-page-list li a {
-        padding: var(--space-2) var(--space-3);
-      }
-      .level-selector {
-        margin-left: 0;
-        padding-left: 0;
-        border-left: none;
-        padding-top: var(--space-3);
-        border-top: 1px solid var(--color-border-light);
-        justify-content: center;
-      }
-      .flow-diagram {
-        flex-direction: column;
-        align-items: stretch;
-        overflow-x: visible;
-      }
-      .flow-step {
-        min-width: auto;
-        max-width: none;
-      }
-      .flow-arrow {
-        text-align: center;
-        justify-content: center;
-        transform: rotate(90deg);
-      }
-      .fs-access-cards { grid-template-columns: 1fr; }
-      .callout { flex-direction: column; gap: var(--space-3); }
-      .perf-gauges { padding: var(--space-4); }
-    }
-
-    /* ===== RESPONSIVE: MOBILE ===== */
-    @media (max-width: 480px) {
-      :root {
-        --text-4xl: 1.5rem;
-        --text-3xl: 1.25rem;
-        --text-2xl: 1.25rem;
-        --nav-height: 52px;
-      }
-      .page-header {
-        margin-top: var(--space-8);
-      }
-      .content-section:nth-child(even) {
-        margin-left: calc(-1 * var(--space-4));
-        margin-right: calc(-1 * var(--space-4));
-        padding: var(--space-6) var(--space-4);
-      }
-      .content-area { padding: 0 var(--space-4); }
-      .page-nav-footer {
-        flex-direction: column;
-        gap: var(--space-4);
-      }
-    }
+    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out);}.animate-in.visible{opacity:1;transform:translateY(0);}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light);}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s ease;}.page-nav-footer a:hover{color:var(--color-accent-hover);}.page-nav-footer .prev::before{content:"\2190\00a0";}.page-nav-footer .next::after{content:"\00a0\2192";}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4);}
+    @media(max-width:768px){.nav-hamburger{display:flex;}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3);}.nav-links.open{display:flex;}.nav-page-list{flex-direction:column;width:100%;}.nav-page-list li a{padding:var(--space-2) var(--space-3);}.flow-diagram{flex-direction:column;align-items:stretch;}.flow-step{min-width:auto;max-width:none;}.flow-arrow{text-align:center;transform:rotate(90deg);}.layer-table{font-size:var(--text-xs);}.layer-table td,.layer-table th{padding:var(--space-2);}}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl);}.page-nav-footer{flex-direction:column;gap:var(--space-4);}}
   </style>
 </head>
 <body>
-
-  <!-- ============================
-       NAVIGATION
-       ============================ -->
   <nav class="site-nav" role="navigation" aria-label="Course navigation">
-    <a href="index.html" class="nav-brand">
-      <span class="nav-brand-name">NemoClaw</span>
-      <span class="nav-brand-label">Interactive Course</span>
-    </a>
-
-    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation menu" aria-expanded="false">
-      <span class="hamburger-bar"></span>
-      <span class="hamburger-bar"></span>
-      <span class="hamburger-bar"></span>
-    </button>
-
-    <div class="nav-links" id="navLinks">
+    <a href="index.html" class="nav-brand"><span class="nav-brand-name">NemoClaw</span><span class="nav-brand-label">Interactive Course</span></a>
+    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button>
+    <div class="nav-links" id="nav-links">
       <ul class="nav-page-list">
-        <li><a href="concepts.html"><span class="nav-page-title">Concepts</span><span class="nav-page-level beginner">B</span></a></li>
-        <li><a href="architecture.html"><span class="nav-page-title">Architecture</span><span class="nav-page-level intermediate">I</span></a></li>
-        <li class="active"><a href="how-it-works.html"><span class="nav-page-title">How It Works</span><span class="nav-page-level intermediate">I</span></a></li>
-        <li><a href="implementation.html"><span class="nav-page-title">Implementation</span><span class="nav-page-level advanced">A</span></a></li>
-        <li><a href="use-cases.html"><span class="nav-page-title">Use Cases</span><span class="nav-page-level beginner">B</span></a></li>
-        <li><a href="ecosystem.html"><span class="nav-page-title">Ecosystem</span><span class="nav-page-level intermediate">I</span></a></li>
-        <li><a href="faq.html"><span class="nav-page-title">FAQ</span><span class="nav-page-level beginner">B</span></a></li>
-        <li><a href="tradeoffs.html"><span class="nav-page-title">Trade-offs</span><span class="nav-page-level intermediate">I</span></a></li>
+        <li><a href="concepts.html">Concepts</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li class="active"><a href="how-it-works.html">How It Works</a></li>
+        <li><a href="implementation.html">Implementation</a></li>
+        <li><a href="use-cases.html">Use Cases</a></li>
+        <li><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="tradeoffs.html">Trade-offs</a></li>
       </ul>
-
-      <div class="level-selector" role="group" aria-label="Content level filter">
-        <button class="level-toggle-btn level-active" data-level="beginner" aria-pressed="true">Beginner</button>
-        <button class="level-toggle-btn level-active" data-level="intermediate" aria-pressed="true">Intermediate</button>
-        <button class="level-toggle-btn level-active" data-level="advanced" aria-pressed="true">Advanced</button>
-      </div>
     </div>
   </nav>
 
-  <!-- ============================
-       PAGE HEADER
-       ============================ -->
   <header class="page-header animate-in">
     <span class="page-level-badge intermediate">Intermediate</span>
     <h1>How It Works</h1>
-    <p style="color: var(--color-text-secondary); margin-top: var(--space-2); font-size: var(--text-lg); line-height: var(--leading-snug);">
-      Five-layer protection model, filesystem access boundaries, network policy enforcement, inference routing, and real-world performance characteristics.
-    </p>
   </header>
 
-  <!-- ============================
-       CONTENT
-       ============================ -->
   <main class="content-area">
 
-    <!-- ======================================================
-         SECTION 1: FIVE-LAYER PROTECTION MODEL
-         ====================================================== -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section animate-in">
       <h2>Five-Layer Protection Model</h2>
-      <p>
-        NemoClaw's security is built on five distinct isolation layers, each enforced independently.
-        The key insight is that these layers are <strong>independent</strong>: even if one is somehow bypassed,
-        the others remain intact. An agent that tricks its way past network policy still cannot write to
-        system files; an agent that finds a filesystem exploit still cannot reach unapproved network endpoints.
-      </p>
+      <p>NemoClaw's security is built on five distinct isolation layers, each enforced independently. The key insight is that these layers are <strong>independent</strong>: even if one is somehow bypassed, the others remain intact.</p>
 
-      <div class="protection-table-wrapper animate-in">
-        <table class="protection-table">
-          <thead>
-            <tr>
-              <th>Layer</th>
-              <th>Mechanism</th>
-              <th>When Applied</th>
-              <th>Can Agent Override?</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <span class="layer-icon" style="background: #E8F5EE; color: #2D8B55;">1</span>
-                Container Isolation
-              </td>
-              <td><span class="glossary-term" data-definition="Lightweight OS-level virtualization that packages an application and its dependencies into an isolated environment. NemoClaw uses Docker containers with restricted Linux capabilities to prevent agents from accessing host resources.">Docker containers</span> with restricted capabilities</td>
-              <td><span class="badge-locked">Locked at creation</span></td>
-              <td><span class="badge-no">No</span></td>
-            </tr>
-            <tr>
-              <td>
-                <span class="layer-icon" style="background: #E4F2F7; color: #2A7B9B;">2</span>
-                Process Hardening
-              </td>
-              <td>Dropped Linux capabilities, <span class="glossary-term" data-definition="Secure Computing Mode: a Linux kernel feature that restricts which system calls a process can make. NemoClaw uses seccomp to prevent the agent from performing dangerous operations like loading kernel modules or mounting filesystems.">seccomp</span> syscall filtering, <code>ulimit</code> (512 process max)</td>
-              <td><span class="badge-locked">Locked at creation</span></td>
-              <td><span class="badge-no">No</span></td>
-            </tr>
-            <tr>
-              <td>
-                <span class="layer-icon" style="background: #FDF6E4; color: #D4A843;">3</span>
-                Filesystem Integrity
-              </td>
-              <td><span class="glossary-term" data-definition="A Linux Security Module (LSM) that provides unprivileged, fine-grained filesystem access control. Landlock allows NemoClaw to restrict which directories the agent can read, write, or execute without requiring root privileges.">Landlock LSM</span> restricts writes to <code>/sandbox</code> and <code>/tmp</code> only; system dirs read-only</td>
-              <td><span class="badge-locked">Locked at creation</span></td>
-              <td><span class="badge-no">No</span></td>
-            </tr>
-            <tr>
-              <td>
-                <span class="layer-icon" style="background: #FDE8E8; color: #C93B3B;">4</span>
-                Network Control
-              </td>
-              <td><span class="glossary-term" data-definition="A security model where all network connections are blocked by default. Only explicitly whitelisted endpoints in the YAML policy file are reachable. This is the opposite of most development environments and is deliberately restrictive.">Deny-by-default</span> egress with YAML-defined allowlists per binary/endpoint</td>
-              <td><span class="badge-hot">Hot-reloadable</span></td>
-              <td><span class="badge-no">No</span></td>
-            </tr>
-            <tr>
-              <td>
-                <span class="layer-icon" style="background: #F3EFF8; color: #7B6DAA;">5</span>
-                Inference Security
-              </td>
-              <td>All inference calls routed through <span class="glossary-term" data-definition="The central control-plane component that sits between the agent and the outside world. Every network request, inference call, and credential use passes through it. The gateway runs as a separate Linux user from the agent, preventing the agent from modifying it.">gateway</span>; credentials stored on host only</td>
-              <td><span class="badge-hot">Hot-reloadable</span></td>
-              <td><span class="badge-no">No</span></td>
-            </tr>
-          </tbody>
-        </table>
+      <table class="layer-table">
+        <thead>
+          <tr><th>Layer</th><th>Mechanism</th><th>Timing</th><th>Agent Override?</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="layer-name">Container Isolation</td>
+            <td>Docker containers with restricted capabilities</td>
+            <td><span class="lock-badge">Locked</span></td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="layer-name">Process Hardening</td>
+            <td>Dropped <span class="glossary-term" data-definition="Linux capabilities are fine-grained privileges that can be individually enabled or disabled for processes. Dropping capabilities removes specific permissions (like binding to low ports or loading kernel modules) from the container.">Linux capabilities</span>, <span class="glossary-term" data-definition="seccomp (secure computing mode) is a Linux kernel feature that restricts the system calls a process can make. NemoClaw uses it to block dangerous syscalls that could be used for container escape.">seccomp</span> filtering, 512 process max</td>
+            <td><span class="lock-badge">Locked</span></td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="layer-name">Filesystem Integrity</td>
+            <td><span class="glossary-term" data-definition="Landlock is a Linux Security Module (LSM) that allows unprivileged processes to restrict their own filesystem access. NemoClaw uses it to confine agent writes to /sandbox and /tmp only.">Landlock LSM</span> restricts writes to /sandbox and /tmp only</td>
+            <td><span class="lock-badge">Locked</span></td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="layer-name">Network Control</td>
+            <td>Deny-by-default egress with YAML allowlists per binary/endpoint</td>
+            <td><span class="hot-badge">Hot-reload</span></td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="layer-name">Inference Security</td>
+            <td>All inference routed through gateway; credentials on host only</td>
+            <td><span class="hot-badge">Hot-reload</span></td>
+            <td>No</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-insight">
+        <div class="callout-icon">&#x1F52D;</div>
+        <div class="callout-content">
+          <strong>Defense in depth:</strong> An agent that tricks its way past network policy still cannot write to system files. An agent that finds a filesystem exploit still cannot reach unapproved network endpoints. Each layer is a complete barrier on its own.
+        </div>
       </div>
     </section>
 
-    <!-- ======================================================
-         SECTION 2: FILESYSTEM ACCESS MODEL
-         ====================================================== -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section animate-in">
       <h2>Filesystem Access Model</h2>
-      <p>
-        The <span class="glossary-term" data-definition="A Linux Security Module (LSM) that provides unprivileged, fine-grained filesystem access control. Landlock allows NemoClaw to restrict which directories the agent can read, write, or execute without requiring root privileges.">Landlock Linux Security Module</span> enforces strict filesystem boundaries.
-        The agent can do useful work -- write code, create files, generate output -- in its designated workspace,
-        but cannot modify system binaries, tamper with configuration, or access the host filesystem.
-      </p>
+      <p>The Landlock Linux Security Module enforces strict filesystem boundaries. The agent can do useful work in its designated workspace but cannot modify system binaries, tamper with configuration, or access the host filesystem.</p>
 
-      <div class="fs-access-cards stagger-children">
-        <div class="fs-card animate-in" style="--card-color: #2D8B55">
-          <div class="fs-card-icon">&#x270D;&#xFE0F;</div>
-          <div class="fs-card-title">Read-Write</div>
-          <ul class="fs-card-paths">
-            <li>/sandbox</li>
-            <li>/tmp</li>
-            <li>/dev/null</li>
-          </ul>
-          <div class="fs-card-desc">The agent's workspace. All code, files, and outputs live here. This is the only area the agent can modify.</div>
-        </div>
-        <div class="fs-card animate-in" style="--card-color: #2A7B9B">
-          <div class="fs-card-icon">&#x1F4D6;</div>
-          <div class="fs-card-title">Read-Only</div>
-          <ul class="fs-card-paths">
-            <li>/usr, /lib</li>
-            <li>/proc, /dev/urandom</li>
-            <li>/app, /etc, /var/log</li>
-          </ul>
-          <div class="fs-card-desc">System binaries, libraries, and configuration. The agent can read these but never modify them.</div>
-        </div>
-        <div class="fs-card animate-in" style="--card-color: #C93B3B">
-          <div class="fs-card-icon">&#x1F6AB;</div>
-          <div class="fs-card-title">No Access</div>
-          <ul class="fs-card-paths">
-            <li>Everything else</li>
-            <li>Host filesystem</li>
-            <li>Other containers</li>
-          </ul>
-          <div class="fs-card-desc">Completely invisible to the agent. No reading, writing, or directory listing. The host system is unreachable.</div>
-        </div>
+      <div class="fs-diagram">
+        <h3>Sandbox Filesystem Permissions</h3>
+        <div class="fs-entry"><span class="fs-access rw">Read/Write</span><span class="fs-path">/sandbox</span><span class="fs-note">Working directory for agent</span></div>
+        <div class="fs-entry"><span class="fs-access rw">Read/Write</span><span class="fs-path">/tmp</span><span class="fs-note">Temporary files</span></div>
+        <div class="fs-entry"><span class="fs-access rw">Read/Write</span><span class="fs-path">/dev/null</span><span class="fs-note">Discard output</span></div>
+        <div class="fs-entry"><span class="fs-access ro">Read Only</span><span class="fs-path">/usr</span><span class="fs-note">System programs &amp; libraries</span></div>
+        <div class="fs-entry"><span class="fs-access ro">Read Only</span><span class="fs-path">/lib</span><span class="fs-note">Shared libraries</span></div>
+        <div class="fs-entry"><span class="fs-access ro">Read Only</span><span class="fs-path">/proc</span><span class="fs-note">Process information</span></div>
+        <div class="fs-entry"><span class="fs-access ro">Read Only</span><span class="fs-path">/app</span><span class="fs-note">Application code</span></div>
+        <div class="fs-entry"><span class="fs-access ro">Read Only</span><span class="fs-path">/etc</span><span class="fs-note">System configuration</span></div>
+        <div class="fs-entry"><span class="fs-access ro">Read Only</span><span class="fs-path">/var/log</span><span class="fs-note">Log files</span></div>
+        <div class="fs-entry"><span class="fs-access no">No Access</span><span class="fs-path">Everything else</span><span class="fs-note">Host filesystem is invisible</span></div>
       </div>
     </section>
 
-    <!-- ======================================================
-         SECTION 3: NETWORK POLICY ENFORCEMENT
-         ====================================================== -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section animate-in">
       <h2>Network Policy Enforcement</h2>
-      <p>
-        Policies are defined in YAML with granular control over endpoints, allowed binaries, and HTTP methods.
-        The baseline policy (<code style="font-size:inherit;background:var(--color-border-light);padding:1px 4px;border-radius:3px">openclaw-sandbox.yaml</code>) ships with 9 default policy groups covering Claude Code, NVIDIA APIs, GitHub, ClawHub, OpenClaw, npm registry, and Telegram.
-      </p>
+      <p>Policies are defined in YAML with granular control over endpoints, allowed binaries, and HTTP methods. The baseline policy ships with 9 default policy groups covering Claude Code, NVIDIA APIs, GitHub, and more.</p>
 
       <div class="code-block">
         <div class="code-header">
@@ -1035,501 +161,109 @@
           <button class="code-copy" onclick="copyCode(this)">Copy</button>
         </div>
         <pre class="code-pre"><code><span class="code-comment"># Example: Allow GitHub API access only from the gh CLI</span>
-<span class="code-variable">policies</span><span class="code-operator">:</span>
-  <span class="code-variable">github_rest_api</span><span class="code-operator">:</span>
-    <span class="code-variable">endpoints</span><span class="code-operator">:</span>
-      <span class="code-operator">-</span> <span class="code-variable">host</span><span class="code-operator">:</span> <span class="code-string">api.github.com</span>
-        <span class="code-variable">port</span><span class="code-operator">:</span> <span class="code-number">443</span>
-    <span class="code-variable">allowed_binaries</span><span class="code-operator">:</span>
-      <span class="code-operator">-</span> <span class="code-string">/usr/bin/gh</span>
-    <span class="code-variable">methods</span><span class="code-operator">:</span>
-      <span class="code-operator">-</span> <span class="code-string">GET</span>
-      <span class="code-operator">-</span> <span class="code-string">POST</span>
-      <span class="code-operator">-</span> <span class="code-string">PATCH</span>
-      <span class="code-operator">-</span> <span class="code-string">PUT</span>
-      <span class="code-operator">-</span> <span class="code-string">DELETE</span></code></pre>
+<span class="code-property">policies</span>:
+  <span class="code-property">github_rest_api</span>:
+    <span class="code-property">endpoints</span>:
+      - <span class="code-property">host</span>: <span class="code-string">api.github.com</span>
+        <span class="code-property">port</span>: <span class="code-number">443</span>
+    <span class="code-property">allowed_binaries</span>:
+      - <span class="code-string">/usr/bin/gh</span>
+    <span class="code-property">methods</span>:
+      - <span class="code-variable">GET</span>
+      - <span class="code-variable">POST</span>
+      - <span class="code-variable">PATCH</span>
+      - <span class="code-variable">PUT</span>
+      - <span class="code-variable">DELETE</span></code></pre>
       </div>
 
-      <p>
-        This policy allows only the <code style="font-size:inherit;background:var(--color-border-light);padding:1px 4px;border-radius:3px">gh</code> CLI binary to communicate with <code style="font-size:inherit;background:var(--color-border-light);padding:1px 4px;border-radius:3px">api.github.com</code> on port 443. Even if the agent spawns a <code style="font-size:inherit;background:var(--color-border-light);padding:1px 4px;border-radius:3px">curl</code> or <code style="font-size:inherit;background:var(--color-border-light);padding:1px 4px;border-radius:3px">python</code> process targeting the same endpoint, the request will be blocked because only <code style="font-size:inherit;background:var(--color-border-light);padding:1px 4px;border-radius:3px">/usr/bin/gh</code> is in the allowlist.
-      </p>
-    </section>
-
-    <!-- ======================================================
-         SECTION 4: REAL-TIME NETWORK APPROVAL FLOW
-         ====================================================== -->
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>Real-Time Network Approval Flow</h2>
-      <p>
-        When an agent tries to reach an unlisted endpoint, NemoClaw uses a "progressive trust" model
-        where the operator starts with minimal access and selectively expands it as the agent
-        demonstrates legitimate needs.
-      </p>
-
-      <div class="flow-diagram" id="approvalFlow">
-        <div class="flow-step animate-in" style="--step-delay: 0">
-          <div class="flow-step-num">1</div>
-          <div class="flow-step-content">
-            <strong>Intercept &amp; Block</strong>
-            <p><span class="glossary-term" data-definition="The sandboxed execution environment where agents run. OpenShell is a standalone NVIDIA project that NemoClaw configures and orchestrates. Under the hood, it's a K3s Kubernetes cluster running inside a single Docker container.">OpenShell</span> intercepts and blocks the connection, logging the attempt with host, port, and requesting binary.</p>
-          </div>
-        </div>
-        <div class="flow-arrow animate-in" style="--step-delay: 1">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay: 2">
-          <div class="flow-step-num">2</div>
-          <div class="flow-step-content">
-            <strong>TUI Display</strong>
-            <p>The terminal UI (<code style="font-size:inherit;background:rgba(255,255,255,0.1);padding:1px 3px;border-radius:3px">openshell term</code>) shows the blocked request with full details for operator review.</p>
-          </div>
-        </div>
-        <div class="flow-arrow animate-in" style="--step-delay: 3">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay: 4">
-          <div class="flow-step-num">3</div>
-          <div class="flow-step-content">
-            <strong>Operator Decision</strong>
-            <p>The operator reviews the request context and approves or denies it in real time from the TUI.</p>
-          </div>
-        </div>
-        <div class="flow-arrow animate-in" style="--step-delay: 5">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay: 6">
-          <div class="flow-step-num">4</div>
-          <div class="flow-step-content">
-            <strong>Session-Only Persistence</strong>
-            <p>Approved endpoints persist for the current session only -- they are <strong>not</strong> saved to the baseline policy file.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="callout callout-info animate-in">
-        <div class="callout-icon">&#x2139;&#xFE0F;</div>
+      <div class="callout callout-tip">
+        <div class="callout-icon">&#x1F4A1;</div>
         <div class="callout-content">
-          <strong>Progressive trust in practice</strong>
-          During initial agent runs, use <code>openshell term</code> to monitor which endpoints the agent legitimately needs. Once you understand the access pattern, encode those endpoints in your YAML policy for persistent access.
+          <strong>Tip:</strong> Use <code>openshell term</code> during initial agent runs to see what network access the agent actually needs. Build your policy from observed behavior rather than guessing. Approved endpoints in the TUI persist for the session only -- add them to the YAML policy for permanence.
         </div>
       </div>
     </section>
 
-    <!-- ======================================================
-         SECTION 5: INFERENCE ROUTING
-         ====================================================== -->
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>Inference Routing</h2>
-      <p>
-        All model API calls from the sandbox are routed through a local DNS entry
-        (<code style="font-size:inherit;background:var(--color-border-light);padding:1px 4px;border-radius:3px">inference.local</code>)
-        to the OpenShell gateway. The gateway handles credential injection, data classification, and provider routing
-        so the agent never directly touches API keys or external endpoints.
-      </p>
+    <section class="content-section animate-in">
+      <h2>Inference Routing Flow</h2>
+      <p>All model API calls from the sandbox are routed through a local DNS entry (<code style="font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-border-light);padding:1px 4px;border-radius:3px;">inference.local</code>) to the OpenShell gateway. The gateway then processes and routes the request based on data sensitivity.</p>
 
-      <div class="flow-diagram" id="inferenceFlow">
-        <div class="flow-step animate-in" style="--step-delay: 0">
+      <div class="flow-diagram" id="flow-inference">
+        <div class="flow-step animate-in" style="--step-delay:0">
           <div class="flow-step-num">1</div>
           <div class="flow-step-content">
             <strong>Strip Credentials</strong>
-            <p>The gateway removes any credentials from the sandbox request. The agent never had real API keys.</p>
+            <p>Agent request has no API keys to steal</p>
           </div>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay: 1">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay: 2">
+        <div class="flow-arrow animate-in" style="--step-delay:1">&rarr;</div>
+        <div class="flow-step animate-in" style="--step-delay:2">
           <div class="flow-step-num">2</div>
           <div class="flow-step-content">
-            <strong>Classify Sensitivity</strong>
-            <p>The <span class="glossary-term" data-definition="Inspects each inference query and classifies its sensitivity. Queries containing PII, proprietary code, or financial data are routed to local models and never leave your infrastructure.">Privacy Router</span> inspects the query for PII, proprietary code, or financial data.</p>
+            <strong>Classify Data</strong>
+            <p>Privacy Router checks for PII, code, financials</p>
           </div>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay: 3">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay: 4">
+        <div class="flow-arrow animate-in" style="--step-delay:3">&rarr;</div>
+        <div class="flow-step animate-in" style="--step-delay:4">
           <div class="flow-step-num">3</div>
           <div class="flow-step-content">
             <strong>Route to Provider</strong>
-            <p>Sensitive data goes to local <span class="glossary-term" data-definition="NVIDIA's open model family for local inference. Includes Nemotron 3 Super 120B MoE (flagship) and Nemotron 3 Nano 4B (edge). Recommended for on-premise, privacy-sensitive deployments.">Nemotron</span> models. Non-sensitive data goes to configured cloud providers (OpenAI, Anthropic, etc.).</p>
+            <p>Sensitive data to local; general to cloud</p>
           </div>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay: 5">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay: 6">
+        <div class="flow-arrow animate-in" style="--step-delay:5">&rarr;</div>
+        <div class="flow-step animate-in" style="--step-delay:6">
           <div class="flow-step-num">4</div>
           <div class="flow-step-content">
             <strong>Inject Credentials</strong>
-            <p>The gateway adds host-side API keys for the selected provider from <code style="font-size:inherit;background:rgba(255,255,255,0.1);padding:1px 3px;border-radius:3px">~/.nemoclaw/credentials.json</code>.</p>
+            <p>Host-side keys added for selected provider</p>
           </div>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay: 7">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay: 8">
+        <div class="flow-arrow animate-in" style="--step-delay:7">&rarr;</div>
+        <div class="flow-step animate-in" style="--step-delay:8">
           <div class="flow-step-num">5</div>
           <div class="flow-step-content">
             <strong>Forward &amp; Return</strong>
-            <p>The request is forwarded to the model provider. The response flows back through the gateway to the sandbox.</p>
+            <p>Response sent back to sandbox agent</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ======================================================
-         SECTION 6: PERFORMANCE CHARACTERISTICS
-         ====================================================== -->
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>Performance Characteristics</h2>
-      <p>
-        Based on NVIDIA's published benchmarks, NemoClaw-wrapped agents achieve strong inference performance.
-        The sandbox itself adds minimal overhead -- the main performance factor is which inference backend
-        you use (local GPU vs. cloud API).
-      </p>
+    <section class="content-section animate-in">
+      <h2>Real-Time Network Approval</h2>
+      <p>When an agent tries to reach an unlisted endpoint, NemoClaw creates a "progressive trust" model where the operator starts with minimal access and selectively expands it as the agent demonstrates legitimate needs.</p>
+      <ol style="font-size:var(--text-base);line-height:1.8;margin-bottom:var(--space-4);">
+        <li>OpenShell <strong>intercepts and blocks</strong> the connection, logging the attempt</li>
+        <li>The TUI (<code style="font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-border-light);padding:1px 4px;border-radius:3px;">openshell term</code>) displays the blocked request with host, port, and requesting binary</li>
+        <li>The operator <strong>approves or denies</strong> in real time</li>
+        <li>Approved endpoints persist <strong>for the session only</strong> -- they are not saved to the baseline policy</li>
+      </ol>
 
-      <div class="callout callout-warning animate-in">
+      <div class="callout callout-warning">
         <div class="callout-icon">&#x26A0;&#xFE0F;</div>
         <div class="callout-content">
-          <strong>Alpha benchmarks -- not independently verified</strong>
-          All performance numbers below are from NVIDIA's own testing. No independent third-party audits have been published as of March 2026. Early community reviews suggest local inference with Nemotron may be slower than these figures indicate. Treat these as reference points, not guarantees.
+          <strong>Warning:</strong> Session-approved endpoints disappear when the sandbox restarts. If an endpoint is consistently needed, add it to your YAML policy file and re-run <code>nemoclaw onboard</code> for permanence. Otherwise the agent will be blocked again next session.
         </div>
       </div>
-
-      <div class="perf-gauges animate-in" id="perf-1">
-        <h3 class="perf-title">Performance Profile</h3>
-
-        <div class="perf-gauge">
-          <div class="perf-label">
-            <span class="perf-name">PinchBench Score</span>
-            <span class="perf-value">85.6%</span>
-          </div>
-          <div class="perf-bar">
-            <div class="perf-fill perf-green" data-width="85"></div>
-          </div>
-          <span class="perf-note">Highest among open models. PinchBench evaluates autonomous agent task completion across coding, browsing, and tool use.</span>
-        </div>
-
-        <div class="perf-gauge">
-          <div class="perf-label">
-            <span class="perf-name">Token Throughput</span>
-            <span class="perf-value">442 tok/s</span>
-          </div>
-          <div class="perf-bar">
-            <div class="perf-fill perf-green" data-width="88"></div>
-          </div>
-          <span class="perf-note">2.2x more than GPT-OSS-120B and 7.5x more than Qwen3.5-122B at 8k input / 16k output. Context window up to 1M tokens.</span>
-        </div>
-
-        <div class="perf-gauge">
-          <div class="perf-label">
-            <span class="perf-name">Scalability</span>
-            <span class="perf-value">Single-player</span>
-          </div>
-          <div class="perf-bar">
-            <div class="perf-fill perf-yellow" data-width="30"></div>
-          </div>
-          <span class="perf-note">One sandbox per gateway, one trusted operator. No multi-tenant isolation or horizontal scaling. Separate instances needed for multiple agents.</span>
-        </div>
-
-        <div class="perf-gauge">
-          <div class="perf-label">
-            <span class="perf-name">Platform Support</span>
-            <span class="perf-value">Linux-only</span>
-          </div>
-          <div class="perf-bar">
-            <div class="perf-fill perf-red" data-width="20"></div>
-          </div>
-          <span class="perf-note">Linux-first (Ubuntu 22.04+). macOS has partial support with known issues. WSL2 is experimental. Intel Macs are unsupported entirely.</span>
-        </div>
-      </div>
-
-      <p>
-        Additional data points: sandbox image size is approximately 2.4 GB compressed,
-        <span class="glossary-term" data-definition="A lightweight Kubernetes distribution that runs inside a single Docker container. NemoClaw uses K3s to orchestrate the gateway, sandbox, and policy engine as separate services without requiring a full Kubernetes cluster on the host.">K3s</span> takes 1-3 minutes to apply manifests after onboarding,
-        and the container startup time is dependent on local Docker performance.
-      </p>
     </section>
 
   </main>
 
-  <!-- ============================
-       PREVIOUS / NEXT NAVIGATION
-       ============================ -->
   <nav class="page-nav-footer">
     <a href="architecture.html" class="prev">Architecture</a>
     <a href="implementation.html" class="next">Implementation</a>
   </nav>
 
-  <!-- ============================
-       FOOTER
-       ============================ -->
-  <footer class="site-footer">
-    <p>Generated by System Explorer &mdash; an interactive course built from system analysis</p>
-  </footer>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
-  <!-- ============================
-       INLINE JAVASCRIPT
-       ============================ -->
   <script>
-    /* ==============================================
-       LEVEL SELECTOR
-       ============================================== */
-    (function () {
-      'use strict';
-
-      var STORAGE_KEY_LEVELS  = 'system-explorer-levels';
-      var STORAGE_KEY_VISITED = 'system-explorer-visited';
-
-      function getSavedLevels() {
-        try {
-          var raw = localStorage.getItem(STORAGE_KEY_LEVELS);
-          if (raw) { return JSON.parse(raw); }
-        } catch (e) {}
-        return { beginner: true, intermediate: true, advanced: true };
-      }
-
-      function applyLevels(levels) {
-        document.body.classList.toggle('hide-beginner',     !levels.beginner);
-        document.body.classList.toggle('hide-intermediate', !levels.intermediate);
-        document.body.classList.toggle('hide-advanced',     !levels.advanced);
-      }
-
-      function saveLevels(levels) {
-        try {
-          localStorage.setItem(STORAGE_KEY_LEVELS, JSON.stringify(levels));
-        } catch (e) {}
-      }
-
-      function syncButtons(levels) {
-        var buttons = document.querySelectorAll('.level-toggle-btn');
-        for (var i = 0; i < buttons.length; i++) {
-          var btn = buttons[i];
-          var lvl = btn.getAttribute('data-level');
-          if (levels[lvl]) {
-            btn.classList.add('level-active');
-            btn.setAttribute('aria-pressed', 'true');
-          } else {
-            btn.classList.remove('level-active');
-            btn.setAttribute('aria-pressed', 'false');
-          }
-        }
-      }
-
-      var currentLevels = getSavedLevels();
-      applyLevels(currentLevels);
-
-      document.addEventListener('DOMContentLoaded', function () {
-        syncButtons(currentLevels);
-
-        document.querySelectorAll('.level-toggle-btn').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var lvl = this.getAttribute('data-level');
-            currentLevels[lvl] = !currentLevels[lvl];
-
-            var anyActive = currentLevels.beginner || currentLevels.intermediate || currentLevels.advanced;
-            if (!anyActive) {
-              currentLevels[lvl] = true;
-              return;
-            }
-
-            applyLevels(currentLevels);
-            syncButtons(currentLevels);
-            saveLevels(currentLevels);
-          });
-        });
-
-        trackVisit();
-      });
-
-      function trackVisit() {
-        try {
-          var raw = localStorage.getItem(STORAGE_KEY_VISITED);
-          var visited = raw ? JSON.parse(raw) : [];
-          var page = location.pathname.split('/').pop() || 'index.html';
-          if (visited.indexOf(page) === -1) {
-            visited.push(page);
-            localStorage.setItem(STORAGE_KEY_VISITED, JSON.stringify(visited));
-          }
-        } catch (e) {}
-      }
-    })();
-
-    /* ==============================================
-       SCROLL ANIMATIONS
-       ============================================== */
-    (function () {
-      'use strict';
-
-      document.addEventListener('DOMContentLoaded', function () {
-        var els = document.querySelectorAll('.animate-in');
-        if (!('IntersectionObserver' in window)) {
-          for (var i = 0; i < els.length; i++) {
-            els[i].classList.add('visible');
-          }
-          return;
-        }
-
-        var observer = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('visible');
-              observer.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.1 });
-
-        for (var j = 0; j < els.length; j++) {
-          observer.observe(els[j]);
-        }
-      });
-    })();
-
-    /* ==============================================
-       FLOW DIAGRAM ANIMATION
-       ============================================== */
-    (function () {
-      document.addEventListener('DOMContentLoaded', function () {
-        if (!('IntersectionObserver' in window)) return;
-
-        var observer = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              var items = entry.target.querySelectorAll('.animate-in');
-              items.forEach(function (item) { item.classList.add('visible'); });
-              observer.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.2 });
-
-        document.querySelectorAll('.flow-diagram').forEach(function (d) {
-          observer.observe(d);
-        });
-      });
-    })();
-
-    /* ==============================================
-       STAGGER CHILDREN
-       ============================================== */
-    (function () {
-      document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.stagger-children').forEach(function (parent) {
-          Array.from(parent.children).forEach(function (child, i) {
-            child.style.setProperty('--stagger-index', i);
-          });
-        });
-      });
-    })();
-
-    /* ==============================================
-       CODE COPY BUTTON
-       ============================================== */
-    function copyCode(btn) {
-      var pre = btn.closest('.code-block').querySelector('.code-pre');
-      var text = pre.textContent;
-      navigator.clipboard.writeText(text).then(function () {
-        btn.textContent = 'Copied!';
-        btn.classList.add('copied');
-        setTimeout(function () {
-          btn.textContent = 'Copy';
-          btn.classList.remove('copied');
-        }, 2000);
-      });
-    }
-
-    /* ==============================================
-       GLOSSARY TOOLTIPS
-       ============================================== */
-    (function () {
-      var tooltip = null;
-
-      function showTooltip(term) {
-        if (tooltip) tooltip.remove();
-        tooltip = document.createElement('div');
-        tooltip.className = 'glossary-tooltip';
-        tooltip.textContent = term.dataset.definition;
-        document.body.appendChild(tooltip);
-
-        var rect = term.getBoundingClientRect();
-        var tipRect = tooltip.getBoundingClientRect();
-
-        var left = rect.left + rect.width / 2 - tipRect.width / 2;
-        var top = rect.bottom + 8;
-
-        if (left < 8) left = 8;
-        if (left + tipRect.width > window.innerWidth - 8) left = window.innerWidth - tipRect.width - 8;
-        if (top + tipRect.height > window.innerHeight - 8) top = rect.top - tipRect.height - 8;
-
-        tooltip.style.left = left + 'px';
-        tooltip.style.top = top + 'px';
-        requestAnimationFrame(function () { tooltip.classList.add('visible'); });
-      }
-
-      function hideTooltip() {
-        if (tooltip) { tooltip.remove(); tooltip = null; }
-      }
-
-      document.addEventListener('mouseover', function (e) {
-        var term = e.target.closest('.glossary-term');
-        if (term) showTooltip(term);
-      });
-      document.addEventListener('mouseout', function (e) {
-        if (e.target.closest('.glossary-term')) hideTooltip();
-      });
-      document.addEventListener('click', function (e) {
-        var term = e.target.closest('.glossary-term');
-        if (term) { e.preventDefault(); showTooltip(term); }
-        else hideTooltip();
-      });
-    })();
-
-    /* ==============================================
-       PERFORMANCE GAUGE ANIMATION
-       ============================================== */
-    (function () {
-      document.addEventListener('DOMContentLoaded', function () {
-        var perfGauges = document.getElementById('perf-1');
-        if (!perfGauges) return;
-        var gaugesAnimated = false;
-
-        function animateGauges() {
-          if (gaugesAnimated) return;
-          gaugesAnimated = true;
-          var fills = perfGauges.querySelectorAll('.perf-fill');
-          fills.forEach(function (fill, index) {
-            var targetWidth = fill.getAttribute('data-width');
-            setTimeout(function () {
-              fill.style.width = targetWidth + '%';
-            }, index * 150);
-          });
-        }
-
-        if ('IntersectionObserver' in window) {
-          var gaugeObserver = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-              if (entry.isIntersecting) {
-                animateGauges();
-                gaugeObserver.unobserve(entry.target);
-              }
-            });
-          }, { threshold: 0.2 });
-          gaugeObserver.observe(perfGauges);
-        } else {
-          animateGauges();
-        }
-      });
-    })();
-
-    /* ==============================================
-       HAMBURGER TOGGLE
-       ============================================== */
-    (function () {
-      document.addEventListener('DOMContentLoaded', function () {
-        var hamburger = document.getElementById('navHamburger');
-        var navLinks = document.getElementById('navLinks');
-        if (!hamburger || !navLinks) return;
-
-        hamburger.addEventListener('click', function () {
-          var isOpen = navLinks.classList.toggle('open');
-          hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        });
-
-        navLinks.addEventListener('click', function (e) {
-          if (e.target.closest('a')) {
-            navLinks.classList.remove('open');
-            hamburger.setAttribute('aria-expanded', 'false');
-          }
-        });
-      });
-    })();
+    (function(){var o=new IntersectionObserver(function(e){e.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');o.unobserve(entry.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){o.observe(el);});})();
+    (function(){var o=new IntersectionObserver(function(e){e.forEach(function(entry){if(entry.isIntersecting){entry.target.querySelectorAll('.animate-in').forEach(function(item){item.classList.add('visible');});o.unobserve(entry.target);}});},{threshold:0.2});document.querySelectorAll('.flow-diagram').forEach(function(d){o.observe(d);});})();
+    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000);});}
+    (function(){var tooltip=null;function show(t){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=t.dataset.definition;document.body.appendChild(tooltip);var r=t.getBoundingClientRect();var tr=tooltip.getBoundingClientRect();var l=r.left+r.width/2-tr.width/2;var tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;tooltip.style.left=l+'px';tooltip.style.top=tp+'px';requestAnimationFrame(function(){tooltip.classList.add('visible');});}function hide(){if(tooltip){tooltip.remove();tooltip=null;}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide();});document.addEventListener('click',function(e){var t=e.target.closest('.glossary-term');if(t){e.preventDefault();show(t);}else hide();});})();
+    (function(){document.addEventListener('DOMContentLoaded',function(){var btn=document.querySelector('.nav-hamburger');var links=document.getElementById('nav-links');if(!btn||!links)return;btn.addEventListener('click',function(){var o=links.classList.toggle('open');btn.setAttribute('aria-expanded',o?'true':'false');});links.addEventListener('click',function(e){if(e.target.closest('a')){links.classList.remove('open');btn.setAttribute('aria-expanded','false');}});});})();
   </script>
-
 </body>
 </html>

@@ -1,1126 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ecosystem &amp; Integrations &mdash; NemoClaw Course</title>
-<meta name="description" content="Official tools, community resources, and common integration patterns for NemoClaw with OpenClaw, Nemotron, cloud APIs, and enterprise security stacks.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-/* ===== DESIGN TOKENS ===== */
-:root {
-  --color-bg: #FAF7F2;
-  --color-bg-warm: #F5F0E8;
-  --color-bg-code: #1E1E2E;
-  --color-text: #2C2A28;
-  --color-text-secondary: #6B6560;
-  --color-text-muted: #9E9790;
-  --color-border: #E5DFD6;
-  --color-border-light: #EEEBE5;
-  --color-surface: #FFFFFF;
-  --color-surface-warm: #FDF9F3;
-  --color-accent: #2D8B55;
-  --color-accent-hover: #257548;
-  --color-accent-light: #E8F5EE;
-  --color-accent-muted: #5AAF7A;
-  --color-success: #2D8B55;
-  --color-success-light: #E8F5EE;
-  --color-error: #C93B3B;
-  --color-error-light: #FDE8E8;
-  --color-info: #2A7B9B;
-  --color-info-light: #E4F2F7;
-  --color-warning: #D4A843;
-  --color-warning-light: #FDF6E4;
-  --color-level-beginner: #2D8B55;
-  --color-level-intermediate: #D4A843;
-  --color-level-advanced: #C93B3B;
-  --font-display: 'Bricolage Grotesque', Georgia, serif;
-  --font-body: 'DM Sans', -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
-  --text-5xl: 3rem;
-  --leading-tight: 1.15;
-  --leading-snug: 1.3;
-  --leading-normal: 1.6;
-  --leading-loose: 1.8;
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-20: 5rem;
-  --space-24: 6rem;
-  --content-width: 800px;
-  --content-width-wide: 1000px;
-  --nav-height: 50px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-full: 9999px;
-  --shadow-sm: 0 1px 2px rgba(44,42,40,0.05);
-  --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
-  --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
-  --shadow-xl: 0 16px 48px rgba(44,42,40,0.12);
-  --ease-out: cubic-bezier(0.16,1,0.3,1);
-  --ease-in-out: cubic-bezier(0.65,0,0.35,1);
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
-  --stagger-delay: 120ms;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecosystem &amp; Integrations — NemoClaw Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;}
+    *,*::before,*::after{box-sizing:border-box;}::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full);}html{scroll-behavior:smooth;}
+    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased;}
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap;}.nav-brand{text-decoration:none;display:flex;flex-direction:column;}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2;}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);}.nav-links{display:flex;align-items:center;gap:var(--space-4);}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0;}.nav-page-list li a{display:flex;align-items:center;padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background 0.15s ease,color 0.15s ease;}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text);}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600;}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2);}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin-bottom:var(--space-3);line-height:1.15;}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3);}.page-level-badge.intermediate{background:var(--color-warning-light);color:var(--color-warning);}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6);}.content-section{margin-bottom:var(--space-10);}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4);}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3);}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4);}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg);}
 
-/* ===== RESET & BASE ===== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  line-height: var(--leading-normal);
-  color: var(--color-text);
-  background: var(--color-bg);
-  background-image: radial-gradient(ellipse at 20% 50%, rgba(45,139,85,0.03) 0%, transparent 50%);
-  -webkit-font-smoothing: antialiased;
-}
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
-button { font-family: var(--font-body); }
+    /* Concept cards for ecosystem items */
+    .concept-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin:var(--space-6) 0;}
+    .concept-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-top:3px solid var(--card-color,var(--color-accent));box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast);}
+    .concept-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+    .concept-card .card-icon{font-size:1.5rem;margin-bottom:var(--space-2);}
+    .concept-card .card-title{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-2);}
+    .concept-card .card-desc{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal);}
 
-/* ===== LEVEL-BASED VISIBILITY ===== */
-body.hide-beginner     [data-level="beginner"]     { display: none !important; }
-body.hide-intermediate [data-level="intermediate"] { display: none !important; }
-body.hide-advanced     [data-level="advanced"]     { display: none !important; }
-body.hide-beginner.hide-intermediate [data-level="beginner intermediate"] { display: none !important; }
-body.hide-beginner.hide-advanced     [data-level="beginner advanced"]     { display: none !important; }
-body.hide-intermediate.hide-advanced [data-level="intermediate advanced"] { display: none !important; }
+    /* Integration pattern cards */
+    .integration-cards{display:grid;grid-template-columns:1fr;gap:var(--space-4);margin:var(--space-6) 0;}
+    .integration-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);box-shadow:var(--shadow-sm);border-left:4px solid var(--color-accent);transition:transform var(--duration-fast),box-shadow var(--duration-fast);}
+    .integration-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+    .integration-card h4{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-2);color:var(--color-accent);}
+    .integration-card p{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal);margin:0;}
 
-/* ===== SCROLL ANIMATION ===== */
-.animate-in {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-.animate-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ===== SHARED NAVIGATION ===== */
-.site-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-3) var(--space-6);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border-light);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  flex-wrap: wrap;
-}
-.nav-brand {
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.nav-brand-name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--text-base);
-  color: var(--color-text);
-  line-height: 1.2;
-}
-.nav-brand-label {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-.nav-page-list {
-  list-style: none;
-  display: flex;
-  gap: var(--space-1);
-  padding: 0;
-  margin: 0;
-}
-.nav-page-list li a {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  transition: background 0.15s ease, color 0.15s ease;
-}
-.nav-page-list li a:hover {
-  background: var(--color-bg-warm);
-  color: var(--color-text);
-}
-.nav-page-list li.active a {
-  background: var(--color-accent-light);
-  color: var(--color-accent);
-  font-weight: 600;
-}
-.nav-page-level {
-  font-size: 10px;
-  font-weight: 700;
-  width: 16px;
-  height: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-full);
-  line-height: 1;
-}
-.nav-page-level.beginner     { background: var(--color-success-light); color: var(--color-success); }
-.nav-page-level.intermediate { background: var(--color-info-light);    color: var(--color-info); }
-.nav-page-level.advanced     { background: var(--color-warning-light); color: var(--color-warning); }
-.level-selector {
-  display: flex;
-  gap: var(--space-1);
-  margin-left: var(--space-4);
-  padding-left: var(--space-4);
-  border-left: 1px solid var(--color-border-light);
-}
-.level-toggle-btn {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  background: transparent;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.level-toggle-btn:hover {
-  border-color: var(--color-accent-muted);
-  color: var(--color-accent-muted);
-}
-.level-toggle-btn.level-active {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #fff;
-}
-.level-toggle-btn.level-active:hover {
-  background: var(--color-accent-hover);
-  border-color: var(--color-accent-hover);
-  color: #fff;
-}
-.nav-hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 4px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--space-2);
-}
-.hamburger-bar {
-  display: block;
-  width: 20px;
-  height: 2px;
-  background: var(--color-text);
-  border-radius: 2px;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-@media (max-width: 768px) {
-  .nav-hamburger { display: flex; }
-  .nav-links {
-    display: none;
-    flex-direction: column;
-    width: 100%;
-    padding-top: var(--space-3);
-  }
-  .nav-links.open { display: flex; }
-  .nav-page-list {
-    flex-direction: column;
-    width: 100%;
-  }
-  .nav-page-list li a { padding: var(--space-2) var(--space-3); }
-  .level-selector {
-    margin-left: 0;
-    padding-left: 0;
-    border-left: none;
-    padding-top: var(--space-3);
-    border-top: 1px solid var(--color-border-light);
-    justify-content: center;
-    width: 100%;
-  }
-}
-
-/* ===== PAGE HEADER ===== */
-.page-header {
-  max-width: var(--content-width);
-  margin: var(--space-12) auto var(--space-8);
-  padding: 0 var(--space-6);
-}
-.page-header h1 {
-  font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  font-weight: 800;
-  color: var(--color-text);
-  margin-bottom: var(--space-3);
-  line-height: var(--leading-tight);
-}
-.page-header .page-subtitle {
-  font-size: var(--text-lg);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-normal);
-}
-.page-level-badge {
-  display: inline-block;
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-3);
-}
-.page-level-badge.beginner     { background: var(--color-success-light); color: var(--color-success); }
-.page-level-badge.intermediate { background: var(--color-info-light);    color: var(--color-info); }
-.page-level-badge.advanced     { background: var(--color-warning-light); color: var(--color-warning); }
-
-/* ===== CONTENT AREA ===== */
-.content-area {
-  max-width: var(--content-width);
-  margin: 0 auto;
-  padding: 0 var(--space-6);
-}
-.content-section {
-  margin-bottom: var(--space-10);
-}
-.content-section h2 {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: var(--space-4);
-}
-.content-section h3 {
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: var(--space-3);
-}
-.content-section p {
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  color: var(--color-text);
-  line-height: 1.7;
-  margin-bottom: var(--space-4);
-}
-
-/* ===== CONCEPT CARDS ===== */
-.concept-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: var(--space-4);
-  margin: var(--space-6) 0;
-}
-.concept-card {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: var(--space-5);
-  border-top: 3px solid var(--card-color, var(--color-accent));
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--duration-fast), box-shadow var(--duration-fast);
-}
-.concept-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-.concept-card .card-icon {
-  font-size: 1.5rem;
-  margin-bottom: var(--space-2);
-  display: block;
-}
-.concept-card .card-title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--text-base);
-  margin-bottom: var(--space-2);
-  color: var(--color-text);
-}
-.concept-card .card-desc {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-normal);
-}
-.concept-card .card-tag {
-  display: inline-block;
-  font-size: var(--text-xs);
-  font-family: var(--font-mono);
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
-  margin-top: var(--space-2);
-  background: var(--color-bg-warm);
-  color: var(--color-text-muted);
-}
-
-/* ===== FLOW DIAGRAM ===== */
-.flow-diagram {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-md);
-  margin: var(--space-8) 0;
-  overflow: hidden;
-}
-.flow-diagram h3 {
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: 700;
-  margin-bottom: var(--space-6);
-  text-align: center;
-}
-.flow-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-/* Central hub */
-.flow-hub {
-  background: var(--color-accent);
-  color: white;
-  padding: var(--space-4) var(--space-6);
-  border-radius: var(--radius-md);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--text-lg);
-  text-align: center;
-  position: relative;
-  z-index: 2;
-  box-shadow: 0 4px 16px rgba(45, 139, 85, 0.25);
-  transition: transform var(--duration-normal) var(--ease-out);
-}
-.flow-hub:hover {
-  transform: scale(1.03);
-}
-.flow-hub-label {
-  font-size: var(--text-xs);
-  font-weight: 500;
-  opacity: 0.85;
-  display: block;
-  margin-top: var(--space-1);
-}
-
-/* Connection lines */
-.flow-connectors {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-3);
-  position: relative;
-}
-.flow-connector-line {
-  width: 2px;
-  height: 32px;
-  background: var(--color-border);
-  position: relative;
-}
-.flow-connector-line::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: -3px;
-  width: 8px;
-  height: 8px;
-  background: var(--color-accent-muted);
-  border-radius: 50%;
-}
-
-/* Integration nodes grid */
-.flow-nodes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--space-3);
-  width: 100%;
-}
-.flow-node {
-  background: var(--color-surface-warm);
-  border: 1.5px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  text-align: center;
-  transition: all var(--duration-normal) var(--ease-out);
-  cursor: default;
-  position: relative;
-}
-.flow-node:hover {
-  border-color: var(--color-accent-muted);
-  background: var(--color-accent-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-.flow-node.animated {
-  animation: flowNodePulse 0.6s ease;
-}
-@keyframes flowNodePulse {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.04); border-color: var(--color-accent); }
-  100% { transform: scale(1); }
-}
-.flow-node-icon {
-  font-size: 1.5rem;
-  margin-bottom: var(--space-2);
-}
-.flow-node-name {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--text-sm);
-  color: var(--color-text);
-  margin-bottom: var(--space-1);
-}
-.flow-node-desc {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-normal);
-}
-.flow-node-tag {
-  display: inline-block;
-  font-size: 10px;
-  font-family: var(--font-mono);
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
-  margin-top: var(--space-2);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.flow-node-tag.primary { background: var(--color-accent-light); color: var(--color-accent); }
-.flow-node-tag.compute { background: var(--color-info-light); color: var(--color-info); }
-.flow-node-tag.cloud   { background: var(--color-warning-light); color: var(--color-warning); }
-.flow-node-tag.framework { background: #F3E8FF; color: #7B6DAA; }
-.flow-node-tag.security  { background: var(--color-error-light); color: var(--color-error); }
-
-/* ===== CALLOUT ===== */
-.callout {
-  display: flex;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  border-radius: var(--radius-md);
-  margin: var(--space-6) 0;
-  border-left: 4px solid;
-}
-.callout-insight { background: var(--color-accent-light); border-color: var(--color-accent); }
-.callout-info    { background: var(--color-info-light); border-color: var(--color-info); }
-.callout-warning { background: var(--color-warning-light); border-color: var(--color-warning); }
-.callout-icon { font-size: 1.5rem; flex-shrink: 0; }
-.callout-content { font-size: var(--text-sm); line-height: var(--leading-normal); }
-.callout-content strong {
-  font-weight: 600;
-  display: block;
-  margin-bottom: var(--space-1);
-  font-size: var(--text-base);
-}
-
-/* ===== GLOSSARY TOOLTIPS ===== */
-.glossary-term {
-  border-bottom: 2px dashed var(--color-accent-muted);
-  cursor: pointer;
-}
-.glossary-tooltip {
-  position: fixed;
-  background: var(--color-text);
-  color: white;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  max-width: 300px;
-  z-index: 10000;
-  box-shadow: var(--shadow-lg);
-  line-height: var(--leading-normal);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--duration-fast);
-  font-family: var(--font-body);
-}
-.glossary-tooltip.visible { opacity: 1; }
-
-/* ===== PAGE NAV FOOTER ===== */
-.page-nav-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: var(--content-width);
-  margin: var(--space-12) auto var(--space-6);
-  padding: var(--space-6);
-  border-top: 1px solid var(--color-border-light);
-}
-.page-nav-footer a {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-accent);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  transition: color 0.15s ease;
-}
-.page-nav-footer a:hover { color: var(--color-accent-hover); }
-.page-nav-footer .prev::before { content: "\2190\00a0"; }
-.page-nav-footer .next::after  { content: "\00a0\2192"; }
-
-/* ===== SITE FOOTER ===== */
-.site-footer {
-  text-align: center;
-  padding: var(--space-8) var(--space-6);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  border-top: 1px solid var(--color-border-light);
-  margin-top: var(--space-4);
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 640px) {
-  .page-header h1 { font-size: var(--text-2xl); }
-  .concept-cards { grid-template-columns: 1fr; }
-  .flow-nodes { grid-template-columns: 1fr; }
-  .page-nav-footer { flex-direction: column; gap: var(--space-4); }
-}
-</style>
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid;}.callout-tip{background:var(--color-success-light);border-color:var(--color-success);}.callout-info{background:var(--color-info-light);border-color:var(--color-info);}.callout-icon{font-size:1.3rem;flex-shrink:0;}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal);}.callout-content strong{color:var(--color-text);}
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer;}.glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast);}.glossary-tooltip.visible{opacity:1;}
+    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out);}.animate-in.visible{opacity:1;transform:translateY(0);}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light);}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;transition:color 0.15s ease;}.page-nav-footer a:hover{color:var(--color-accent-hover);}.page-nav-footer .prev::before{content:"\2190\00a0";}.page-nav-footer .next::after{content:"\00a0\2192";}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4);}
+    @media(max-width:768px){.nav-hamburger{display:flex;}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3);}.nav-links.open{display:flex;}.nav-page-list{flex-direction:column;width:100%;}.concept-cards{grid-template-columns:1fr;}}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl);}.page-nav-footer{flex-direction:column;gap:var(--space-4);}}
+  </style>
 </head>
 <body>
-
-  <!-- ========================================
-       SHARED NAVIGATION
-       ======================================== -->
   <nav class="site-nav" role="navigation" aria-label="Course navigation">
-    <a href="index.html" class="nav-brand">
-      <span class="nav-brand-name">NemoClaw</span>
-      <span class="nav-brand-label">Interactive Course</span>
-    </a>
-    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
-      <span class="hamburger-bar"></span>
-      <span class="hamburger-bar"></span>
-      <span class="hamburger-bar"></span>
-    </button>
+    <a href="index.html" class="nav-brand"><span class="nav-brand-name">NemoClaw</span><span class="nav-brand-label">Interactive Course</span></a>
+    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button>
     <div class="nav-links" id="nav-links">
       <ul class="nav-page-list">
-        <li><a href="concepts.html"><span class="nav-page-title">Concepts</span><span class="nav-page-level beginner">B</span></a></li>
-        <li><a href="architecture.html"><span class="nav-page-title">Architecture</span><span class="nav-page-level intermediate">I</span></a></li>
-        <li><a href="how-it-works.html"><span class="nav-page-title">How It Works</span><span class="nav-page-level intermediate">I</span></a></li>
-        <li><a href="implementation.html"><span class="nav-page-title">Implementation</span><span class="nav-page-level advanced">A</span></a></li>
-        <li><a href="use-cases.html"><span class="nav-page-title">Use Cases</span><span class="nav-page-level beginner">B</span></a></li>
-        <li class="active"><a href="ecosystem.html"><span class="nav-page-title">Ecosystem</span><span class="nav-page-level intermediate">I</span></a></li>
-        <li><a href="faq.html"><span class="nav-page-title">FAQ</span><span class="nav-page-level beginner">B</span></a></li>
-        <li><a href="tradeoffs.html"><span class="nav-page-title">Trade-offs</span><span class="nav-page-level intermediate">I</span></a></li>
+        <li><a href="concepts.html">Concepts</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="how-it-works.html">How It Works</a></li>
+        <li><a href="implementation.html">Implementation</a></li>
+        <li><a href="use-cases.html">Use Cases</a></li>
+        <li class="active"><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="tradeoffs.html">Trade-offs</a></li>
       </ul>
-      <div class="level-selector" role="group" aria-label="Content level filter">
-        <button class="level-toggle-btn level-active" data-level="beginner" aria-pressed="true">Beginner</button>
-        <button class="level-toggle-btn level-active" data-level="intermediate" aria-pressed="true">Intermediate</button>
-        <button class="level-toggle-btn level-active" data-level="advanced" aria-pressed="true">Advanced</button>
-      </div>
     </div>
   </nav>
 
-  <!-- ========================================
-       PAGE HEADER
-       ======================================== -->
   <header class="page-header animate-in">
     <span class="page-level-badge intermediate">Intermediate</span>
     <h1>Ecosystem &amp; Integrations</h1>
-    <p class="page-subtitle">Official tools, community resources, and the integration patterns that connect NemoClaw to the broader AI agent landscape.</p>
   </header>
 
-  <!-- ========================================
-       CONTENT
-       ======================================== -->
   <main class="content-area">
 
-    <!-- ====== SECTION 1: Official Tools ====== -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section animate-in">
       <h2>Official Tools &amp; Extensions</h2>
-      <p>
-        NemoClaw does not exist in isolation. It orchestrates and integrates with several NVIDIA-maintained projects that handle different parts of the agent infrastructure stack.
-      </p>
+      <p>NemoClaw exists within NVIDIA's broader AI agent ecosystem. These are the official projects that integrate directly with NemoClaw.</p>
 
       <div class="concept-cards">
         <div class="concept-card animate-in" style="--card-color: #2D8B55">
           <div class="card-icon">&#x1F4E6;</div>
-          <h4 class="card-title">OpenShell</h4>
-          <p class="card-desc">The standalone sandboxed runtime that NemoClaw orchestrates. Can be used independently for other agents (Claude Code, Codex, GitHub Copilot). Provides container isolation, <span class="glossary-term" data-term="gateway">gateway</span>, and policy enforcement.</p>
-          <span class="card-tag">Core Runtime</span>
-        </div>
-        <div class="concept-card animate-in" style="--card-color: #2A7B9B">
-          <div class="card-icon">&#x1F9E0;</div>
-          <h4 class="card-title">Nemotron Models</h4>
-          <p class="card-desc">NVIDIA's open model family for local inference. <span class="glossary-term" data-term="nemotron">Nemotron</span> 3 Super 120B MoE (flagship) and Nemotron 3 Nano 4B (edge). Recommended for privacy-sensitive workloads on NVIDIA hardware.</p>
-          <span class="card-tag">Local Inference</span>
+          <div class="card-title">OpenShell</div>
+          <div class="card-desc">The standalone <span class="glossary-term" data-definition="The secure sandboxed execution environment that NemoClaw orchestrates. Can be used independently for other agents like Claude Code, Codex, or GitHub Copilot.">sandbox runtime</span> that NemoClaw orchestrates. Can be used independently for agents beyond OpenClaw.</div>
         </div>
         <div class="concept-card animate-in" style="--card-color: #7B6DAA">
+          <div class="card-icon">&#x1F9E0;</div>
+          <div class="card-title">Nemotron Models</div>
+          <div class="card-desc">NVIDIA's open model family for local inference. Nemotron 3 Super 120B MoE (flagship) and Nemotron 3 Nano 4B (edge).</div>
+        </div>
+        <div class="concept-card animate-in" style="--card-color: #2A7B9B">
           <div class="card-icon">&#x1F680;</div>
-          <h4 class="card-title">AI-Q Blueprint</h4>
-          <p class="card-desc">NVIDIA's development accelerator for agents, ranked top of DeepResearch Bench. Provides pre-built orchestration patterns and workflow templates that complement NemoClaw's security layer.</p>
-          <span class="card-tag">Agent Framework</span>
+          <div class="card-title">AI-Q Blueprint</div>
+          <div class="card-desc">NVIDIA's development accelerator for agents, ranked top of <span class="glossary-term" data-definition="An independent benchmark measuring AI agent capabilities in research-style tasks requiring multiple steps and tool use.">DeepResearch Bench</span>.</div>
         </div>
         <div class="concept-card animate-in" style="--card-color: #D4A843">
           <div class="card-icon">&#x2699;&#xFE0F;</div>
-          <h4 class="card-title">NVIDIA NIM</h4>
-          <p class="card-desc">Local inference serving for NVIDIA models. Experimental integration with NemoClaw allows routing <span class="glossary-term" data-term="privacy-router">Privacy Router</span> queries to NIM-hosted models on local GPU infrastructure.</p>
-          <span class="card-tag">Experimental</span>
+          <div class="card-title">NVIDIA NIM</div>
+          <div class="card-desc">Local inference serving for NVIDIA models. Experimental integration with NemoClaw for on-premise model deployment.</div>
         </div>
       </div>
     </section>
 
-    <!-- ====== SECTION 2: Community Ecosystem ====== -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section animate-in">
       <h2>Community Ecosystem</h2>
-      <p>
-        Despite being in alpha, NemoClaw has attracted active community participation. These community-maintained resources extend the project beyond what NVIDIA ships by default.
-      </p>
-
       <div class="concept-cards">
-        <div class="concept-card animate-in" style="--card-color: #D94F30">
+        <div class="concept-card animate-in" style="--card-color: #E06B56">
           <div class="card-icon">&#x2B50;</div>
-          <h4 class="card-title">awesome-nemoclaw</h4>
-          <p class="card-desc">Community-curated collection of resources, tutorials, and tools on GitHub (VoltAgent/awesome-nemoclaw). The go-to starting point for discovering NemoClaw content beyond the official docs.</p>
-          <span class="card-tag">GitHub</span>
-        </div>
-        <div class="concept-card animate-in" style="--card-color: #2D8B55">
-          <div class="card-icon">&#x1F4D6;</div>
-          <h4 class="card-title">DeepWiki</h4>
-          <p class="card-desc">Auto-generated codebase documentation for the NemoClaw repository. Useful for understanding the internal architecture without reading raw source code line by line.</p>
-          <span class="card-tag">Documentation</span>
+          <div class="card-title">awesome-nemoclaw</div>
+          <div class="card-desc">Community-curated collection of resources, tutorials, and tools on GitHub (VoltAgent/awesome-nemoclaw).</div>
         </div>
         <div class="concept-card animate-in" style="--card-color: #2A7B9B">
-          <div class="card-icon">&#x1F4DD;</div>
-          <h4 class="card-title">Deployment Guides</h4>
-          <p class="card-desc">Community-published tutorials on Medium, DEV Community, DigitalOcean, and Substack covering NemoClaw setup on DigitalOcean Droplets, DGX Spark, and NVIDIA Brev for remote GPU access.</p>
-          <span class="card-tag">Tutorials</span>
+          <div class="card-icon">&#x1F4DA;</div>
+          <div class="card-title">DeepWiki</div>
+          <div class="card-desc">Auto-generated codebase documentation for the NemoClaw repository, useful for deep implementation understanding.</div>
         </div>
-        <div class="concept-card animate-in" style="--card-color: #7B6DAA">
-          <div class="card-icon">&#x1F4CB;</div>
-          <h4 class="card-title">Policy Presets</h4>
-          <p class="card-desc">Community-contributed YAML <span class="glossary-term" data-term="policy">policies</span> for common services: PyPI, Docker Hub, Slack, Jira. Drop-in rules so you do not have to write network policies from scratch for popular integrations.</p>
-          <span class="card-tag">YAML Policies</span>
+        <div class="concept-card animate-in" style="--card-color: #2D8B55">
+          <div class="card-icon">&#x1F4DC;</div>
+          <div class="card-title">Policy Presets</div>
+          <div class="card-desc">Community-contributed YAML policies for common services: PyPI, Docker Hub, Slack, Jira, and more.</div>
         </div>
       </div>
     </section>
 
-    <!-- ====== SECTION 3: Integration Patterns Flow Diagram ====== -->
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>Integration Patterns</h2>
-      <p>
-        NemoClaw connects to the broader agent ecosystem through five primary integration patterns. Each pattern addresses a different deployment need -- from the basic <span class="glossary-term" data-term="openclaw">OpenClaw</span> wrapping to enterprise security stack alignment.
-      </p>
+    <section class="content-section animate-in">
+      <h2>Common Integration Patterns</h2>
+      <p>These are the proven ways teams combine NemoClaw with other tools and services.</p>
 
-      <div class="flow-diagram" id="flow-diagram">
-        <h3>NemoClaw Integration Map</h3>
-        <div class="flow-container">
-          <!-- Central hub -->
-          <div class="flow-hub" id="flow-hub">
-            NemoClaw
-            <span class="flow-hub-label">Security Orchestration Layer</span>
-          </div>
-
-          <!-- Connector lines -->
-          <div class="flow-connectors">
-            <div class="flow-connector-line"></div>
-            <div class="flow-connector-line"></div>
-            <div class="flow-connector-line"></div>
-            <div class="flow-connector-line"></div>
-            <div class="flow-connector-line"></div>
-          </div>
-
-          <!-- Integration nodes -->
-          <div class="flow-nodes" id="flow-nodes">
-            <div class="flow-node" data-integration="openclaw">
-              <div class="flow-node-icon">&#x1F916;</div>
-              <div class="flow-node-name">OpenClaw</div>
-              <div class="flow-node-desc">Primary integration. NemoClaw wraps <span class="glossary-term" data-term="openclaw">OpenClaw</span> with security controls. OpenClaw provides the agent framework; NemoClaw provides the secure runtime.</div>
-              <span class="flow-node-tag primary">Primary</span>
-            </div>
-            <div class="flow-node" data-integration="local-gpu">
-              <div class="flow-node-icon">&#x1F4A1;</div>
-              <div class="flow-node-name">Local GPU</div>
-              <div class="flow-node-desc">Run <span class="glossary-term" data-term="nemotron">Nemotron</span>, Ollama, or vLLM locally on RTX/DGX hardware. <span class="glossary-term" data-term="privacy-router">Privacy Router</span> sends sensitive queries to local inference, general queries to cloud.</div>
-              <span class="flow-node-tag compute">Compute</span>
-            </div>
-            <div class="flow-node" data-integration="cloud-apis">
-              <div class="flow-node-icon">&#x2601;&#xFE0F;</div>
-              <div class="flow-node-name">Cloud APIs</div>
-              <div class="flow-node-desc">Anthropic (Claude), OpenAI, Google Gemini, NVIDIA endpoints. NemoClaw manages <span class="glossary-term" data-term="credential-isolation">credential isolation</span> and policy enforcement while using cloud models.</div>
-              <span class="flow-node-tag cloud">Cloud</span>
-            </div>
-            <div class="flow-node" data-integration="langchain">
-              <div class="flow-node-icon">&#x1F517;</div>
-              <div class="flow-node-name">LangChain</div>
-              <div class="flow-node-desc">NVIDIA has announced LangChain integration for building agent workflows that run inside NemoClaw sandboxes. Combines LangChain orchestration with NemoClaw isolation.</div>
-              <span class="flow-node-tag framework">Framework</span>
-            </div>
-            <div class="flow-node" data-integration="enterprise">
-              <div class="flow-node-icon">&#x1F6E1;&#xFE0F;</div>
-              <div class="flow-node-name">Enterprise Security</div>
-              <div class="flow-node-desc">Partnerships with Cisco, CrowdStrike, Google Cloud, Microsoft Security, and TrendAI for runtime policy management alignment with existing security stacks.</div>
-              <span class="flow-node-tag security">Security</span>
-            </div>
-          </div>
+      <div class="integration-cards">
+        <div class="integration-card animate-in">
+          <h4>NemoClaw + OpenClaw</h4>
+          <p>The primary integration. NemoClaw wraps OpenClaw with security controls. OpenClaw provides the agent framework; NemoClaw provides the secure runtime. This is the default setup created by <code style="font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-border-light);padding:1px 4px;border-radius:3px;">nemoclaw onboard</code>.</p>
+        </div>
+        <div class="integration-card animate-in">
+          <h4>NemoClaw + Local GPU (Nemotron / Ollama / vLLM)</h4>
+          <p>For privacy-sensitive workloads. Run models locally on RTX/DGX hardware, with NemoClaw routing sensitive queries to local inference and general queries to cloud APIs. Best for compliance-heavy environments.</p>
+        </div>
+        <div class="integration-card animate-in">
+          <h4>NemoClaw + Cloud APIs (Anthropic / OpenAI / NVIDIA)</h4>
+          <p>For compute-flexible deployments. NemoClaw manages credential isolation and policy enforcement while using cloud models for inference. The fastest path to evaluation -- no local GPU needed.</p>
+        </div>
+        <div class="integration-card animate-in">
+          <h4>NemoClaw + LangChain</h4>
+          <p>NVIDIA has announced LangChain integration for building agent workflows that run inside NemoClaw sandboxes. Enables complex multi-step agent pipelines with full security containment.</p>
+        </div>
+        <div class="integration-card animate-in">
+          <h4>NemoClaw + Enterprise Security Stack</h4>
+          <p>Partnerships with Cisco, CrowdStrike, Google Cloud, Microsoft Security, and TrendAI for runtime policy management alignment. Bridges NemoClaw's agent-level controls with organization-wide security infrastructure.</p>
         </div>
       </div>
-    </section>
 
-    <!-- ====== Agent Toolkit Callout ====== -->
-    <section class="content-section animate-in" data-level="intermediate">
-      <div class="callout callout-info">
-        <span class="callout-icon">&#x1F30D;</span>
+      <div class="callout callout-tip">
+        <div class="callout-icon">&#x1F4A1;</div>
         <div class="callout-content">
-          <strong>The Broader NVIDIA Agent Toolkit</strong>
-          NemoClaw is one piece of NVIDIA's larger agent infrastructure strategy announced at GTC 2026. The full toolkit includes <span class="glossary-term" data-term="openshell">OpenShell</span> for runtime sandboxing, <span class="glossary-term" data-term="nemotron">Nemotron</span> for local inference, AI-Q Blueprint for agent development, and NVIDIA NIM for model serving. NemoClaw ties these together with security orchestration, but each component is independently useful. OpenShell works with Claude Code, Codex, and Copilot -- not just <span class="glossary-term" data-term="openclaw">OpenClaw</span>.
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== Integration Details ====== -->
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>How the Integrations Work</h2>
-
-      <h3>NemoClaw + OpenClaw</h3>
-      <p>
-        The primary integration and the reason NemoClaw exists. NemoClaw's <span class="glossary-term" data-term="blueprint">Blueprint</span> configures <span class="glossary-term" data-term="openshell">OpenShell</span> specifically for <span class="glossary-term" data-term="openclaw">OpenClaw</span> agents, adding default network <span class="glossary-term" data-term="policy">policies</span>, the onboarding wizard (<code>nemoclaw onboard</code>), CLI commands, and the blueprint lifecycle. The agent framework itself is unchanged -- NemoClaw controls the environment it runs in, not how it thinks.
-      </p>
-
-      <h3>NemoClaw + Local GPU</h3>
-      <p>
-        For privacy-sensitive workloads where data must not leave your infrastructure. Run <span class="glossary-term" data-term="nemotron">Nemotron</span> models (or Ollama/vLLM) locally on RTX or DGX hardware. NemoClaw's <span class="glossary-term" data-term="privacy-router">Privacy Router</span> automatically classifies each inference query and routes sensitive content (PII, proprietary code, financial data) to local models while sending general queries to cloud APIs for cost efficiency.
-      </p>
-
-      <h3>NemoClaw + Cloud APIs</h3>
-      <p>
-        For compute-flexible deployments where not all queries require local processing. NemoClaw supports Anthropic (Claude), OpenAI, Google Gemini, and any OpenAI-compatible or Anthropic-compatible endpoint. <span class="glossary-term" data-term="credential-isolation">Credential isolation</span> ensures API keys are stored on the host and injected by the <span class="glossary-term" data-term="gateway">Gateway</span> at request time -- the agent never sees raw credentials, even when using cloud providers.
-      </p>
-
-      <h3>NemoClaw + LangChain</h3>
-      <p>
-        An announced but still-developing integration. LangChain provides the orchestration framework for building multi-step agent workflows (chains, tools, memory). NemoClaw provides the secure runtime where those workflows execute. The combination allows LangChain-based agents to run with kernel-level isolation and <span class="glossary-term" data-term="deny-by-default">deny-by-default</span> networking.
-      </p>
-
-      <h3>NemoClaw + Enterprise Security Stack</h3>
-      <p>
-        NVIDIA's partnerships with Cisco, CrowdStrike, Google Cloud, Microsoft Security, and TrendAI focus on aligning NemoClaw's runtime <span class="glossary-term" data-term="policy">policy</span> management with existing enterprise security tools. The goal is that NemoClaw policies can be managed and monitored through the same security dashboards and workflows that enterprises already use for their broader infrastructure.
-      </p>
-    </section>
-
-    <!-- ====== Summary Callout ====== -->
-    <section class="content-section animate-in" data-level="intermediate">
-      <div class="callout callout-insight">
-        <span class="callout-icon">&#x1F3AF;</span>
-        <div class="callout-content">
-          <strong>The Key Takeaway</strong>
-          NemoClaw is designed as a composable security layer, not a monolithic platform. It orchestrates OpenShell, integrates with multiple inference backends (local and cloud), and aligns with enterprise security stacks. The ecosystem is young but growing rapidly -- the community is filling gaps with deployment guides, policy presets, and tooling faster than NVIDIA ships official extensions.
+          <strong>Tip:</strong> Start with the NemoClaw + Cloud API pattern for the fastest evaluation path. Add local GPU inference later if privacy requirements demand it. The credential isolation and policy enforcement work the same regardless of which provider you use.
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- ========================================
-       PREVIOUS / NEXT PAGE NAVIGATION
-       ======================================== -->
   <nav class="page-nav-footer">
     <a href="use-cases.html" class="prev">Use Cases</a>
     <a href="faq.html" class="next">FAQ</a>
   </nav>
 
-  <!-- ========================================
-       FOOTER
-       ======================================== -->
-  <footer class="site-footer">
-    <p>Generated by System Explorer &mdash; an interactive course built from system analysis</p>
-  </footer>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
-  <!-- ========================================
-       GLOSSARY TOOLTIP ELEMENT
-       ======================================== -->
-  <div class="glossary-tooltip" id="glossary-tooltip"></div>
-
-  <!-- ========================================
-       INLINE JAVASCRIPT
-       ======================================== -->
   <script>
-  /* ==============================================
-     GLOSSARY DEFINITIONS
-     ============================================== */
-  var GLOSSARY = {
-    'claw': 'A Claw is the OpenClaw term for an autonomous AI agent -- a program that can think, plan, and take actions on its own. Like a new employee at your company: capable, but needs guardrails.',
-    'openclaw': 'OpenClaw is the popular autonomous AI agent framework. NemoClaw wraps OpenClaw with enterprise-grade security controls. You can use OpenClaw without NemoClaw (no security), but NemoClaw requires OpenClaw.',
-    'openshell': 'OpenShell is the sandboxed execution environment where agents run. A K3s Kubernetes cluster inside a single Docker container with multiple isolation layers. Can be used independently for other agents.',
-    'privacy-router': 'The Privacy Router inspects each inference query and classifies its sensitivity. PII and proprietary code stay on local models; non-sensitive queries go to the cloud. Like a mail room sorting confidential vs. regular mail.',
-    'gateway': 'The Gateway is the control-plane component between the agent and the outside world. Every network request, inference call, and credential use passes through it. Runs as a separate Linux user from the agent.',
-    'nemotron': 'Nemotron is NVIDIA\'s open model family for local inference. Nemotron 3 Super 120B MoE (flagship) and Nemotron 3 Nano 4B (edge). Recommended for privacy-sensitive workloads on NVIDIA hardware.',
-    'blueprint': 'A Blueprint is a versioned artifact containing the orchestration logic, default policies, and configuration for setting up NemoClaw. Follows a five-stage lifecycle: Resolve, Verify, Plan, Apply, Status.',
-    'policy': 'Policies are declarative YAML files that define exactly what an agent can and cannot do -- which websites it can reach, which files it can write, which system calls it can make. Deny-by-default: if it is not explicitly allowed, it is blocked.',
-    'deny-by-default': 'A security model where all access is blocked unless explicitly allowed. The opposite of most development environments. If an endpoint is not in the policy YAML, the agent cannot reach it.',
-    'credential-isolation': 'API keys are stored on the host in ~/.nemoclaw/credentials.json (permissions 0600) and injected by the Gateway at request time. The agent never sees raw credentials, preventing theft even if the sandbox is fully compromised.',
-    'landlock': 'Landlock is a Linux Security Module that restricts filesystem access at the kernel level. NemoClaw uses it to limit agent writes to /sandbox and /tmp only.'
-  };
-
-  /* ==============================================
-     LEVEL SELECTOR
-     ============================================== */
-  (function () {
-    'use strict';
-
-    var STORAGE_KEY_LEVELS  = 'system-explorer-levels';
-    var STORAGE_KEY_VISITED = 'system-explorer-visited';
-
-    function getSavedLevels() {
-      try {
-        var raw = localStorage.getItem(STORAGE_KEY_LEVELS);
-        if (raw) { return JSON.parse(raw); }
-      } catch (e) {}
-      return { beginner: true, intermediate: true, advanced: true };
-    }
-
-    function applyLevels(levels) {
-      document.body.classList.toggle('hide-beginner',     !levels.beginner);
-      document.body.classList.toggle('hide-intermediate',  !levels.intermediate);
-      document.body.classList.toggle('hide-advanced',      !levels.advanced);
-    }
-
-    function saveLevels(levels) {
-      try {
-        localStorage.setItem(STORAGE_KEY_LEVELS, JSON.stringify(levels));
-      } catch (e) {}
-    }
-
-    function syncButtons(levels) {
-      var buttons = document.querySelectorAll('.level-toggle-btn');
-      for (var i = 0; i < buttons.length; i++) {
-        var btn = buttons[i];
-        var lvl = btn.getAttribute('data-level');
-        if (levels[lvl]) {
-          btn.classList.add('level-active');
-          btn.setAttribute('aria-pressed', 'true');
-        } else {
-          btn.classList.remove('level-active');
-          btn.setAttribute('aria-pressed', 'false');
-        }
-      }
-    }
-
-    var currentLevels = getSavedLevels();
-    applyLevels(currentLevels);
-
-    document.addEventListener('DOMContentLoaded', function () {
-      var buttons = document.querySelectorAll('.level-toggle-btn');
-      syncButtons(currentLevels);
-
-      for (var i = 0; i < buttons.length; i++) {
-        buttons[i].addEventListener('click', function () {
-          var lvl = this.getAttribute('data-level');
-          currentLevels[lvl] = !currentLevels[lvl];
-          var anyActive = currentLevels.beginner || currentLevels.intermediate || currentLevels.advanced;
-          if (!anyActive) {
-            currentLevels[lvl] = true;
-            return;
-          }
-          applyLevels(currentLevels);
-          syncButtons(currentLevels);
-          saveLevels(currentLevels);
-        });
-      }
-
-      trackVisit();
-    });
-
-    function trackVisit() {
-      try {
-        var raw = localStorage.getItem(STORAGE_KEY_VISITED);
-        var visited = raw ? JSON.parse(raw) : [];
-        var page = location.pathname.split('/').pop() || 'index.html';
-        if (visited.indexOf(page) === -1) {
-          visited.push(page);
-          localStorage.setItem(STORAGE_KEY_VISITED, JSON.stringify(visited));
-        }
-      } catch (e) {}
-    }
-  })();
-
-  /* ==============================================
-     SCROLL ANIMATIONS
-     ============================================== */
-  (function () {
-    'use strict';
-
-    document.addEventListener('DOMContentLoaded', function () {
-      var els = document.querySelectorAll('.animate-in');
-      if (!('IntersectionObserver' in window)) {
-        for (var i = 0; i < els.length; i++) {
-          els[i].classList.add('visible');
-        }
-        return;
-      }
-
-      var observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.1 });
-
-      for (var j = 0; j < els.length; j++) {
-        observer.observe(els[j]);
-      }
-    });
-  })();
-
-  /* ==============================================
-     MOBILE NAV TOGGLE
-     ============================================== */
-  (function () {
-    'use strict';
-    document.addEventListener('DOMContentLoaded', function () {
-      var btn   = document.querySelector('.nav-hamburger');
-      var links = document.getElementById('nav-links');
-      if (!btn || !links) return;
-
-      btn.addEventListener('click', function () {
-        var isOpen = links.classList.toggle('open');
-        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-      });
-
-      links.addEventListener('click', function (e) {
-        if (e.target.closest('a')) {
-          links.classList.remove('open');
-          btn.setAttribute('aria-expanded', 'false');
-        }
-      });
-    });
-  })();
-
-  /* ==============================================
-     GLOSSARY TOOLTIPS
-     ============================================== */
-  (function () {
-    'use strict';
-
-    document.addEventListener('DOMContentLoaded', function () {
-      var tooltip = document.getElementById('glossary-tooltip');
-      if (!tooltip) return;
-
-      var terms = document.querySelectorAll('.glossary-term');
-      for (var i = 0; i < terms.length; i++) {
-        terms[i].addEventListener('mouseenter', showTooltip);
-        terms[i].addEventListener('mouseleave', hideTooltip);
-        terms[i].addEventListener('focus', showTooltip);
-        terms[i].addEventListener('blur', hideTooltip);
-        terms[i].setAttribute('tabindex', '0');
-        terms[i].setAttribute('role', 'button');
-        terms[i].setAttribute('aria-describedby', 'glossary-tooltip');
-      }
-
-      function showTooltip(e) {
-        var term = e.target.getAttribute('data-term');
-        var definition = GLOSSARY[term];
-        if (!definition) return;
-
-        tooltip.textContent = definition;
-        tooltip.classList.add('visible');
-
-        var rect = e.target.getBoundingClientRect();
-        var tooltipRect = tooltip.getBoundingClientRect();
-        var top = rect.top - tooltipRect.height - 8;
-        var left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-
-        if (top < 8) { top = rect.bottom + 8; }
-        if (left < 8) { left = 8; }
-        if (left + tooltipRect.width > window.innerWidth - 8) {
-          left = window.innerWidth - tooltipRect.width - 8;
-        }
-
-        tooltip.style.top = top + 'px';
-        tooltip.style.left = left + 'px';
-      }
-
-      function hideTooltip() {
-        tooltip.classList.remove('visible');
-      }
-    });
-  })();
-
-  /* ==============================================
-     FLOW DIAGRAM ANIMATION
-     ============================================== */
-  (function () {
-    'use strict';
-
-    document.addEventListener('DOMContentLoaded', function () {
-      var nodes = document.querySelectorAll('.flow-node');
-      var hub = document.getElementById('flow-hub');
-
-      if (!nodes.length || !hub) return;
-
-      // Staggered entrance animation when the diagram scrolls into view
-      var diagramEl = document.getElementById('flow-diagram');
-      if (!diagramEl) return;
-
-      var animated = false;
-      var diagObserver = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting && !animated) {
-            animated = true;
-            for (var i = 0; i < nodes.length; i++) {
-              (function (node, delay) {
-                setTimeout(function () {
-                  node.classList.add('animated');
-                  setTimeout(function () {
-                    node.classList.remove('animated');
-                  }, 600);
-                }, delay);
-              })(nodes[i], i * 150);
-            }
-            diagObserver.unobserve(diagramEl);
-          }
-        });
-      }, { threshold: 0.3 });
-
-      diagObserver.observe(diagramEl);
-
-      // Hover interaction: highlight hub when hovering a node
-      for (var j = 0; j < nodes.length; j++) {
-        nodes[j].addEventListener('mouseenter', function () {
-          hub.style.boxShadow = '0 4px 24px rgba(45, 139, 85, 0.35)';
-          hub.style.transform = 'scale(1.03)';
-        });
-        nodes[j].addEventListener('mouseleave', function () {
-          hub.style.boxShadow = '0 4px 16px rgba(45, 139, 85, 0.25)';
-          hub.style.transform = 'scale(1)';
-        });
-      }
-    });
-  })();
+    (function(){var o=new IntersectionObserver(function(e){e.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');o.unobserve(entry.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){o.observe(el);});})();
+    (function(){var tooltip=null;function show(t){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=t.dataset.definition;document.body.appendChild(tooltip);var r=t.getBoundingClientRect();var tr=tooltip.getBoundingClientRect();var l=r.left+r.width/2-tr.width/2;var tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;tooltip.style.left=l+'px';tooltip.style.top=tp+'px';requestAnimationFrame(function(){tooltip.classList.add('visible');});}function hide(){if(tooltip){tooltip.remove();tooltip=null;}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide();});document.addEventListener('click',function(e){var t=e.target.closest('.glossary-term');if(t){e.preventDefault();show(t);}else hide();});})();
+    (function(){document.addEventListener('DOMContentLoaded',function(){var btn=document.querySelector('.nav-hamburger');var links=document.getElementById('nav-links');if(!btn||!links)return;btn.addEventListener('click',function(){var o=links.classList.toggle('open');btn.setAttribute('aria-expanded',o?'true':'false');});links.addEventListener('click',function(e){if(e.target.closest('a')){links.classList.remove('open');btn.setAttribute('aria-expanded','false');}});});})();
   </script>
 </body>
 </html>
