@@ -10,11 +10,11 @@
     {
       "name": "paper-to-course",
       "description": "Turn research papers into interactive HTML courses",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": "./skills/paper-to-course/",
       "strict": false,
       "skills": [
-        "./paper-to-course"
+        "./skills/paper-to-course/paper-to-course"
       ]
     },
     {
@@ -24,10 +24,10 @@
       "source": "./skills/system-explorer/",
       "strict": false,
       "skills": [
-        "./system-analyzer",
-        "./system-explorer",
-        "./system-finder",
-        "./system-to-course"
+        "./skills/system-explorer/system-analyzer",
+        "./skills/system-explorer/system-explorer",
+        "./skills/system-explorer/system-finder",
+        "./skills/system-explorer/system-to-course"
       ]
     }
   ]
