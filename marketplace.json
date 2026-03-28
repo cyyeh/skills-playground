@@ -1,0 +1,34 @@
+{
+  "name": "skills-playground",
+  "owner": {
+    "name": "cyyeh"
+  },
+  "metadata": {
+    "description": "Custom skills for Claude Code and Codex"
+  },
+  "plugins": [
+    {
+      "name": "paper-to-course",
+      "description": "Turn research papers into interactive HTML courses",
+      "version": "0.1.0",
+      "source": "./skills/paper-to-course/",
+      "strict": false,
+      "skills": [
+        "./skills/paper-to-course/paper-to-course"
+      ]
+    },
+    {
+      "name": "system-explorer",
+      "description": "Explore and learn about software systems",
+      "version": "0.1.0",
+      "source": "./skills/system-explorer/",
+      "strict": false,
+      "skills": [
+        "./skills/system-explorer/system-analyzer",
+        "./skills/system-explorer/system-explorer",
+        "./skills/system-explorer/system-finder",
+        "./skills/system-explorer/system-to-course"
+      ]
+    }
+  ]
+}
