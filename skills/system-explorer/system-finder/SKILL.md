@@ -1,6 +1,9 @@
 ---
 name: system-finder
 description: "Discover and compare software systems that match a user's needs. Given a specific system name, software category, or functional requirement, this skill searches for matching systems, validates findings with web research, and presents a structured comparison table so the user can make an informed selection. Trigger this skill when users say 'find systems for', 'what message queues exist', 'compare databases for', 'I need a tool for', 'show me options for', 'what are alternatives to', 'best database for', or 'Kafka vs RabbitMQ'. Also trigger when the user asks about software categories, technology comparisons, tool recommendations, or when they need help choosing between technologies."
+license: Apache-2.0
+metadata:
+  author: cyyeh
 ---
 
 # System Finder

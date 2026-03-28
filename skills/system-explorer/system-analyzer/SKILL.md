@@ -1,6 +1,9 @@
 ---
 name: system-analyzer
 description: "Perform deep-dive research on a software system and produce a structured analysis markdown file organized by depth levels (Beginner/Intermediate/Advanced). Use this skill when someone wants to analyze a system, deep dive into a technology, research how something works, explain a system's architecture, or understand a system's internals. Also trigger when users say 'analyze [system]', 'deep dive into [system]', 'research how X works', 'explain X architecture', 'understand X internals', or when they want to study a specific software system in depth. This skill produces a comprehensive analysis.md that feeds directly into HTML course generation."
+license: Apache-2.0
+metadata:
+  author: cyyeh
 ---
 
 # System Analyzer

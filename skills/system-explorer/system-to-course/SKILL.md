@@ -1,6 +1,9 @@
 ---
 name: system-to-course
 description: "Transform a software system analysis into a beautiful, interactive multi-page static HTML course with level-based content filtering. Reads a structured analysis.md and generates a complete static site with pages for concepts, architecture, implementation, use cases, and more. Users can filter content by depth level (Beginner/Intermediate/Advanced). Trigger when users say 'generate course', 'build HTML for this analysis', 'turn this into a course', 'create a website for this system', 'make an interactive guide', or when there is an analysis.md ready to be converted into HTML."
+license: Apache-2.0
+metadata:
+  author: cyyeh
 ---
 
 # System-to-Course

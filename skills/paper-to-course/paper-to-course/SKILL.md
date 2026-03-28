@@ -1,6 +1,9 @@
 ---
 name: paper-to-course
 description: "Turn any academic or research paper into a beautiful, interactive single-page HTML course that teaches the paper's ideas to non-experts. Use this skill whenever someone wants to create an interactive course, tutorial, or educational walkthrough from a research paper, academic article, or scientific publication. Also trigger when users mention 'turn this paper into a course,' 'explain this paper interactively,' 'teach this research,' 'interactive tutorial from paper,' 'paper walkthrough,' 'learn from this paper,' 'make a course from this arxiv paper,' 'break down this paper for me,' or 'I want to understand this paper.' This skill produces a stunning, self-contained HTML file with scroll-based navigation, animated visualizations, embedded quizzes, and jargon-to-plain-English side-by-side translations."
+license: Apache-2.0
+metadata:
+  author: cyyeh
 ---
 
 # Paper-to-Course

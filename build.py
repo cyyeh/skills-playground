@@ -22,6 +22,7 @@ except ImportError:
 
 ROOT = Path(__file__).parent
 SKILLS_DIR = ROOT / "skills"
+EXAMPLES_DIR = ROOT / "examples"
 DIST_DIR = ROOT / "dist"
 
 md = markdown.Markdown(extensions=["tables", "fenced_code", "toc", "attr_list"])
@@ -108,6 +109,9 @@ def _search_dirs(skill_dir: Path, subdir_name: str):
         skills/my-skill/SKILL.md + skills/my-skill/examples/
     and nested layouts:
         skills/my-skill/inner/SKILL.md + skills/my-skill/examples/
+
+    For examples/, also checks the top-level examples/<group>/ directory
+    (examples are kept outside skills/ to avoid plugin bundling).
     """
     # Sibling first
     candidate = skill_dir / subdir_name
@@ -128,11 +132,19 @@ def _search_dirs(skill_dir: Path, subdir_name: str):
         if candidate.is_dir():
             yield candidate
         parent = parent.parent
+    # Fallback: top-level examples/<group>/ directory
+    if subdir_name == "examples":
+        rel = skill_dir.relative_to(SKILLS_DIR)
+        group = rel.parts[0]
+        candidate = EXAMPLES_DIR / group
+        if candidate.is_dir():
+            yield candidate
 
 
 def discover_skills() -> list[dict]:
     """Find all skills in the skills/ directory."""
     skills = []
+    claimed_group_examples: set[str] = set()
     for skill_md in sorted(SKILLS_DIR.rglob("SKILL.md")):
         skill_dir = skill_md.parent
         text = skill_md.read_text(encoding="utf-8")
@@ -160,13 +172,20 @@ def discover_skills() -> list[dict]:
             break  # Use first found
 
         # Collect example files — search sibling and ancestor dirs
+        # For group-level examples (parent folder), use the group name and
+        # only claim them once so they aren't duplicated per skill.
         examples = []
         example_files_to_copy = []
         example_exts = {".html", ".py", ".js", ".ts", ".json", ".png", ".jpg", ".svg"}
+        group = skill_dir.relative_to(SKILLS_DIR).parts[0]
         for search_dir in _search_dirs(skill_dir, "examples"):
+            is_group_level = search_dir.parent != skill_dir
+            if is_group_level and group in claimed_group_examples:
+                continue
+            example_label = group if is_group_level else name
             for item in sorted(search_dir.iterdir()):
                 if item.is_file() and item.suffix.lower() in example_exts:
-                    web_path = f"examples/{name}/{item.name}"
+                    web_path = f"examples/{example_label}/{item.name}"
                     examples.append({
                         "name": item.stem.replace("-", " ").replace("_", " ").title(),
                         "filename": item.name,
@@ -185,7 +204,7 @@ def discover_skills() -> list[dict]:
                             rel = f.relative_to(search_dir)
                             sub_files.append({
                                 "src_path": str(f),
-                                "web_path": f"examples/{name}/{rel}",
+                                "web_path": f"examples/{example_label}/{rel}",
                             })
                     if sub_files:
                         example_files_to_copy.extend(sub_files)
@@ -203,6 +222,8 @@ def discover_skills() -> list[dict]:
                             "src_path": next(sf["src_path"] for sf in sub_files if sf["web_path"] == entry_wp),
                             "web_path": entry_wp,
                         })
+            if is_group_level:
+                claimed_group_examples.add(group)
             break  # Use first found
 
         # Collect evals — search sibling and ancestor dirs

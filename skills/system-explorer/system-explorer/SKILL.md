@@ -1,6 +1,9 @@
 ---
 name: system-explorer
 description: "The main entry point for exploring and learning about any software system. This skill orchestrates a full pipeline: discover matching systems, deep-dive research, and generate an interactive HTML course -- all with user checkpoints between phases. Trigger when users say 'explore [system]', 'teach me about [system]', 'I want to understand [technology]', 'system explorer', 'help me learn [system]', 'what is [system] and how does it work', 'I need to understand [category] systems', or any general request to learn about, explore, compare, or understand software systems, infrastructure tools, or distributed systems."
+license: Apache-2.0
+metadata:
+  author: cyyeh
 ---
 
 # System Explorer

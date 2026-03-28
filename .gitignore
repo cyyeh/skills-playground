@@ -3,3 +3,4 @@ codex-skills
 .DS_Store
 .superpowers
 .claude/settings.local.json
+dist
