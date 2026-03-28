@@ -5,15 +5,18 @@ Implementation patterns for every interactive element type used in system course
 ## Table of Contents
 1. [Architecture Diagram](#architecture-diagram)
 2. [Code Snippet Block](#code-snippet-block)
-3. [Decision Tree](#decision-tree)
-4. [System Comparison Cards](#system-comparison-cards)
-5. [Performance Gauge](#performance-gauge)
-6. [Flow Diagram](#flow-diagram)
-7. [Concept Cards](#concept-cards)
-8. [Expandable Accordion](#expandable-accordion)
-9. [Callout Boxes](#callout-boxes)
-10. [Glossary Tooltips](#glossary-tooltips)
-11. [Level Badge](#level-badge)
+3. [Source-Annotated Code Block](#source-annotated-code-block)
+4. [Source Map](#source-map)
+5. [Reference Footer](#reference-footer)
+6. [Decision Tree](#decision-tree)
+7. [System Comparison Cards](#system-comparison-cards)
+8. [Performance Gauge](#performance-gauge)
+9. [Flow Diagram](#flow-diagram)
+10. [Concept Cards](#concept-cards)
+11. [Expandable Accordion](#expandable-accordion)
+12. [Callout Boxes](#callout-boxes)
+13. [Glossary Tooltips](#glossary-tooltips)
+14. [Level Badge](#level-badge)
 
 ---
 
@@ -359,6 +362,177 @@ function copyCode(btn) {
 ```
 
 **Usage:** Wrap language keywords, strings, comments, functions, numbers, and variables in the appropriate `<span>` classes. Set the `.code-lang` text to the language name. For line numbers, add the `line-numbers` class to `.code-pre` and wrap each line in `<span class="line">`.
+
+---
+
+## Source-Annotated Code Block
+
+Extended code block for displaying actual source code from the system's codebase. Includes a file path header bar with a link to the source on GitHub. Used when the analysis.md code block has `// source:` annotation comments.
+
+**When to use:** When a code block in the analysis has `// source:` metadata. Regular tutorial/example code blocks without `// source:` should use the standard Code Snippet Block pattern above.
+
+**HTML:**
+```html
+<div class="code-block code-block-sourced" id="source-[UNIQUE_ID]">
+  <div class="code-header">
+    <span class="code-lang">[LANGUAGE]</span>
+    <span class="code-source-path">[FILE_PATH]:[LINE_RANGE]</span>
+    <a class="code-source-link" href="[GITHUB_URL]" target="_blank" rel="noopener noreferrer">
+      View on GitHub &#x2197;
+    </a>
+    <button class="code-copy" onclick="copyCode(this)">Copy</button>
+  </div>
+  <pre class="code-pre"><code>[SYNTAX_HIGHLIGHTED_CODE]</code></pre>
+</div>
+```
+
+**GitHub URL construction:**
+
+```
+https://github.com/{github}/blob/{tag || "main"}/{file_path}#L{start_line}-L{end_line}
+```
+
+Resolution order for `github` and `tag` values:
+1. Code block annotation (`// github:`, `// tag:`) — highest priority
+2. Metadata section (`GitHub`, `Tag` fields) — fallback
+3. Default (`main` for tag; omit link entirely if no github value at any level)
+
+**Parsing source annotations:**
+
+When converting analysis.md code blocks to HTML, check the first 1-3 lines for metadata comments:
+- `// source: src/parser/parser.cpp:142-168` — extract file path and optional line range
+- `// github: duckdb/duckdb` — extract org/repo (optional, overrides Metadata)
+- `// tag: v1.5.1` — extract git ref (optional, overrides Metadata)
+
+Strip these metadata lines from the displayed code. The code body should show only the actual source code.
+
+**Language-specific comment patterns to match:**
+- `// source:` — C, C++, Java, Go, Rust, JavaScript, TypeScript
+- `# source:` — Python, Ruby, Shell, YAML
+- `-- source:` — SQL, Lua, Haskell
+- `<!-- source:` — HTML, XML
+
+Apply the same patterns for `github:` and `tag:` annotations.
+
+**CSS:** Uses `.code-block-sourced` variant from design-system.md. The file path header sits between the language badge and the copy button.
+
+**JS:**
+```javascript
+function copyCode(btn) {
+  var code = btn.closest('.code-block').querySelector('pre').textContent;
+  navigator.clipboard.writeText(code).then(function() {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+```
+
+(Same as standard code copy — metadata lines are already stripped from the DOM.)
+
+---
+
+## Source Map
+
+Collapsible summary at the top of pages that contain source-annotated code blocks. Lists all referenced source files with links to both the on-page code block and the GitHub source.
+
+**When to use:** At the top of the Implementation Details page (and How It Works, if it has source-annotated blocks). Only include if the page has at least 2 source-annotated code blocks.
+
+**HTML:**
+```html
+<div class="source-map" id="source-map">
+  <div class="source-map-header" onclick="this.parentElement.classList.toggle('open')">
+    <h3>&#x1F5C2; Source Map</h3>
+    <span class="source-map-toggle">&#x25BC;</span>
+  </div>
+  <div class="source-map-body">
+    <ul class="source-map-list">
+      <!--
+        Repeat for each source-annotated code block on this page.
+        Link to the on-page anchor and to GitHub.
+      -->
+      <li class="source-map-item">
+        <a href="#source-[UNIQUE_ID]">[FILE_PATH]</a>
+        <span class="line-range">Lines [START]-[END]</span>
+      </li>
+    </ul>
+    <div class="source-map-repo">
+      Repository: <a href="https://github.com/[GITHUB_ORG_REPO]" target="_blank" rel="noopener noreferrer">[GITHUB_ORG_REPO]</a> @ [TAG]
+    </div>
+  </div>
+</div>
+```
+
+**Behavior:**
+- Collapsed by default (no `.open` class)
+- Click header to toggle `.open` class
+- Arrow indicator rotates when open (CSS handles via transform)
+- CSS from design-system.md `.source-map` section handles all styling
+
+**Placement:** Insert immediately after the page header, before the first content section.
+
+---
+
+## Reference Footer
+
+Per-page section listing authoritative sources referenced in the page content. Rendered from the `<!-- references: ... -->` block in the corresponding analysis.md section.
+
+**When to use:** On any content page whose source section in analysis.md has a `<!-- references: ... -->` block. Omit entirely if no references exist for that section.
+
+**HTML:**
+```html
+<section class="references-footer">
+  <h3>&#x1F4DA; References &amp; Resources</h3>
+  <ul class="references-list">
+    <li class="reference-item">
+      <span class="reference-type-icon">[TYPE_ICON]</span>
+      <div class="reference-content">
+        <span class="reference-title">
+          <a href="[URL]" target="_blank" rel="noopener noreferrer">[TITLE]</a>
+        </span>
+        <span class="reference-domain">[DOMAIN]</span>
+      </div>
+    </li>
+    <!-- Repeat for each reference -->
+  </ul>
+</section>
+```
+
+**Type-to-icon mapping:**
+
+| Type | Icon | Emoji |
+|------|------|-------|
+| `official-docs` | Document | &#x1F4C4; (📄) |
+| `paper` | Scroll | &#x1F4DC; (📜) |
+| `blog` | Newspaper | &#x1F4F0; (📰) |
+| `github` | Computer | &#x1F4BB; (💻) |
+| `video` | Camera | &#x1F3A5; (🎥) |
+| `tutorial` | Book | &#x1F4D6; (📖) |
+| `community` | Chat | &#x1F4AC; (💬) |
+
+**Domain hint extraction:** Parse the hostname from the URL. For example:
+- `https://duckdb.org/docs/internals/overview` → `duckdb.org`
+- `https://arxiv.org/abs/2106.00505` → `arxiv.org`
+- `https://github.com/duckdb/duckdb` → `github.com`
+
+**Parsing `<!-- references: ... -->` blocks:**
+
+The references block is an HTML comment in analysis.md, placed after the level tag:
+```
+<!-- references:
+- [Title](URL) | type
+- [Title](URL) | type
+-->
+```
+
+Parse each line as: markdown link + pipe + type string. Extract title, URL, and type.
+
+**Placement:** Above the prev/next page navigation, below the last content section.
+
+**CSS:** Uses `.references-footer` styles from design-system.md.
 
 ---
 
