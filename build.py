@@ -116,6 +116,14 @@ def _search_dirs(skill_dir: Path, subdir_name: str):
     # Walk up toward SKILLS_DIR
     parent = skill_dir.parent
     while parent != SKILLS_DIR and parent != SKILLS_DIR.parent:
+        if (parent / "SKILL.md").is_file():
+            break
+        # If a namesake sibling (parent.name/) owns a SKILL.md and it's not us,
+        # then resources at this level belong to that skill, not ours
+        owner = parent / parent.name
+        if owner.is_dir() and (owner / "SKILL.md").is_file() and owner != skill_dir:
+            parent = parent.parent
+            continue
         candidate = parent / subdir_name
         if candidate.is_dir():
             yield candidate
@@ -153,16 +161,48 @@ def discover_skills() -> list[dict]:
 
         # Collect example files — search sibling and ancestor dirs
         examples = []
+        example_files_to_copy = []
         example_exts = {".html", ".py", ".js", ".ts", ".json", ".png", ".jpg", ".svg"}
         for search_dir in _search_dirs(skill_dir, "examples"):
-            for ex_file in sorted(search_dir.iterdir()):
-                if ex_file.is_file() and ex_file.suffix.lower() in example_exts:
+            for item in sorted(search_dir.iterdir()):
+                if item.is_file() and item.suffix.lower() in example_exts:
+                    web_path = f"examples/{name}/{item.name}"
                     examples.append({
-                        "name": ex_file.stem.replace("-", " ").replace("_", " ").title(),
-                        "filename": ex_file.name,
-                        "src_path": str(ex_file),
-                        "web_path": f"examples/{name}/{ex_file.name}",
+                        "name": item.stem.replace("-", " ").replace("_", " ").title(),
+                        "filename": item.name,
+                        "src_path": str(item),
+                        "web_path": web_path,
                     })
+                    example_files_to_copy.append({
+                        "src_path": str(item),
+                        "web_path": web_path,
+                    })
+                elif item.is_dir():
+                    # Subdirectory example project — copy all files
+                    sub_files = []
+                    for f in sorted(item.rglob("*")):
+                        if f.is_file():
+                            rel = f.relative_to(search_dir)
+                            sub_files.append({
+                                "src_path": str(f),
+                                "web_path": f"examples/{name}/{rel}",
+                            })
+                    if sub_files:
+                        example_files_to_copy.extend(sub_files)
+                        # Find entry point for UI card
+                        entry_wp = next(
+                            (sf["web_path"] for sf in sub_files if sf["web_path"].endswith("/index.html")),
+                            next(
+                                (sf["web_path"] for sf in sub_files if sf["web_path"].endswith(".html")),
+                                sub_files[0]["web_path"],
+                            ),
+                        )
+                        examples.append({
+                            "name": item.name.replace("-", " ").replace("_", " ").title(),
+                            "filename": item.name,
+                            "src_path": next(sf["src_path"] for sf in sub_files if sf["web_path"] == entry_wp),
+                            "web_path": entry_wp,
+                        })
             break  # Use first found
 
         # Collect evals — search sibling and ancestor dirs
@@ -182,6 +222,7 @@ def discover_skills() -> list[dict]:
             "sections": sections,
             "references": refs,
             "examples": examples,
+            "example_files": example_files_to_copy,
             "evals": evals,
         })
 
@@ -191,10 +232,10 @@ def discover_skills() -> list[dict]:
 def copy_examples(skills: list[dict]) -> None:
     """Copy example files to dist/examples/."""
     for skill in skills:
-        for ex in skill["examples"]:
-            dest = DIST_DIR / ex["web_path"]
+        for ef in skill["example_files"]:
+            dest = DIST_DIR / ef["web_path"]
             dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(ex["src_path"], dest)
+            shutil.copy2(ef["src_path"], dest)
 
 
 def generate_html(skills: list[dict]) -> str:

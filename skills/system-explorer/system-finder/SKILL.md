@@ -57,7 +57,13 @@ Example clarification:
 
 ### Phase 2: Research & Discover
 
-Start with built-in knowledge as a foundation, then validate and expand using web research.
+Start with built-in knowledge as a foundation, then validate and expand using web research. Discovery uses three search rounds to minimize blind spots.
+
+**Read `references/search-strategies.md`** for query templates tailored to each query type, including adjacent category and blind spot strategies.
+
+#### Round 1: Direct Category Search
+
+Search within the user's stated category to find the obvious players.
 
 **Use WebSearch to find:**
 - Emerging alternatives the model may not know about
@@ -65,13 +71,32 @@ Start with built-in knowledge as a foundation, then validate and expand using we
 - Current GitHub stars and community activity signals
 - Recent benchmark comparisons or migration stories
 
-**Read `references/search-strategies.md`** for query templates tailored to each query type.
+#### Round 2: Adjacent Category Expansion
 
-**Target: 3-7 matching systems.** Fewer than 3 gives nothing to compare. More than 7 overwhelms. Aim for a mix of established leaders and promising newcomers.
+The user's stated category is often a *subset* of a broader space. Platforms from parent or sibling categories frequently expand into the target area and get missed by direct searches.
+
+**Steps:**
+1. **Identify the category hierarchy.** Map the user's query to at least one broader parent category and one sibling category. Example for "LLM tracing": parent = "ML observability" / "MLOps platforms", sibling = "APM tools" / "general observability".
+2. **Search the broader categories.** Run WebSearch queries that combine the parent/sibling category with the target capability (e.g., `"MLOps platform" LLM tracing`, `"ML platform" LLM observability`).
+3. **Search for established platforms adding the capability.** Well-known platforms often add features without being reclassified. Search for `"[known platform] [target capability]"` for 2-3 likely candidates from adjacent spaces (e.g., `"MLflow tracing"`, `"Datadog LLM observability"`).
+
+#### Round 3: Blind Spot Detection
+
+After Rounds 1-2, actively check for gaps before finalizing.
+
+**Steps:**
+1. **Search for "alternatives to" your current top result.** This surfaces competitors that comparison articles may cluster differently (e.g., `"Langfuse alternatives"` will surface platforms that Langfuse-focused articles compare against).
+2. **Search community discussions.** Check Reddit, HackerNews, or forums for real-world recommendations: `"[category] recommendations site:reddit.com OR site:news.ycombinator.com"`. Practitioners mention tools that listicles miss.
+3. **Cross-check your list.** Ask: "Is there a well-known platform in a related space that likely has this capability but isn't on my list?" If yes, do a targeted search to confirm or exclude it.
+
+**Target: 3-7 matching systems.** Fewer than 3 gives nothing to compare. More than 7 overwhelms. Aim for a mix of:
+- Category-native leaders (born in this space)
+- Broader platforms that expanded into this space
+- Promising newcomers or open-source alternatives
 
 **For each system, gather:**
 - Official name and one-line description
-- Category or sub-category
+- Category or sub-category (note if it originated from an adjacent category)
 - Primary language and ecosystem
 - 2-3 key strengths
 - 2-3 key trade-offs or limitations
@@ -103,7 +128,8 @@ Before presenting results to the user, review your own output and fix issues. It
 3. **Balance** — Are you favoring a system unfairly? Ensure trade-offs are honest for every entry, including popular ones.
 4. **Currency** — Is any information stale? Check that maturity levels and adoption signals reflect current state, not 3-year-old data.
 5. **Differentiation** — Can the user actually tell the systems apart from the table? If two entries sound identical, sharpen the differences.
-6. **Editorial summary** — Does the summary after the table help the user decide, not just restate the table?
+6. **Adjacent coverage** — Does the list include at least one platform from a broader/adjacent category? If all results are "category-native," you likely missed established platforms that expanded into this space. Go back to Phase 2 Round 2.
+7. **Editorial summary** — Does the summary after the table help the user decide, not just restate the table?
 
 **Fix loop:** If any check fails, fix the issue and re-run the checklist. Only present to the user once all checks pass.
 

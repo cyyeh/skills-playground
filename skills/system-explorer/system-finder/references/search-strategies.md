@@ -113,6 +113,71 @@ Research strategies and example WebSearch queries for each type of user query. U
 | Scale | CockroachDB, ScyllaDB, YugabyteDB, TiDB |
 | Cost | Open-source self-hosted options first, then managed tiers |
 
+## 6. Adjacent Category Expansion
+
+**Problem:** Searching only within the user's stated category misses established platforms from broader or sibling categories that have expanded into this space. Example: searching "LLM tracing platforms" misses MLflow (an MLOps platform that added LLM tracing) and Datadog (an APM platform that added LLM monitoring).
+
+**How to handle:**
+1. Identify the category hierarchy for the user's query
+2. Search broader parent and sibling categories with the target capability
+3. Search for known platforms from adjacent spaces that likely added the capability
+
+**Step 1: Map the category hierarchy**
+
+For any target category, identify:
+- **Parent category**: The broader space it belongs to (e.g., "LLM tracing" → "ML observability" → "developer platforms")
+- **Sibling categories**: Related spaces at the same level (e.g., "LLM tracing" siblings = "ML experiment tracking", "APM/observability", "AI development platforms")
+
+Common hierarchy examples:
+
+| Target Category | Parent | Siblings |
+|----------------|--------|----------|
+| LLM tracing | ML observability, MLOps | APM tools, AI dev platforms, ML experiment tracking |
+| Stream processing | Data infrastructure | ETL tools, message queues, data pipelines |
+| Container orchestration | Infrastructure management | PaaS, serverless platforms, VM orchestration |
+| CI/CD | Developer tools | Build systems, deployment platforms, GitOps tools |
+| Vector database | Database | Search engines, ML feature stores, embedding services |
+
+**Step 2: Search broader categories**
+
+Example searches for "LLM tracing":
+- `"MLOps platform" LLM tracing observability 2025 2026`
+- `"ML platform" LLM observability features`
+- `"APM" OR "application monitoring" LLM tracing support`
+- `"developer platform" GenAI observability`
+
+**Step 3: Search for known platforms crossing over**
+
+For each adjacent category, identify 2-3 well-known platforms and check if they've added the target capability:
+- `"MLflow" LLM tracing features`
+- `"Datadog" LLM monitoring observability`
+- `"Weights and Biases" LLM tracing`
+- `"New Relic" AI observability`
+
+**Why this matters:** Comparison listicles are written by companies *within* a category and benchmark against direct competitors. They systematically exclude platforms from adjacent categories, even when those platforms have competitive features. This round corrects that source bias.
+
+## 7. Blind Spot Detection
+
+**Problem:** Even after direct and adjacent searches, gaps remain. This round actively hunts for them.
+
+**Strategy 1: Reverse search from top results**
+- `"alternatives to [top result]" [year]` -- surfaces competitors clustered differently
+- `"[top result] vs" [year]` -- comparison articles name the challenger
+
+**Strategy 2: Community-sourced recommendations**
+- `"[category] recommendations site:reddit.com" [year]`
+- `"[category] site:news.ycombinator.com" [year]`
+- `"what do you use for [capability]" site:reddit.com`
+
+Practitioners on Reddit/HN mention tools they actually use, which often differs from what listicle articles feature. These sources surface tools with strong adoption but low marketing presence.
+
+**Strategy 3: Self-audit question**
+After assembling your list, ask: "Is there a well-known, widely-adopted platform in a related space that *probably* has this capability but isn't on my list?" If the answer is yes, search to confirm or exclude. Common examples:
+- For any monitoring category: check Datadog, Grafana, New Relic
+- For any ML category: check MLflow, W&B, SageMaker
+- For any data category: check Databricks, Snowflake, dbt
+- For any developer tool category: check JetBrains, VS Code extensions, GitHub-native tools
+
 ## General Search Tips
 
 - **Add year filters** (`2025 2026`) to avoid outdated comparisons
@@ -120,3 +185,4 @@ Research strategies and example WebSearch queries for each type of user query. U
 - **Look for migration stories** -- "migrated from X to Y" reveals practical trade-offs that benchmarks miss
 - **Verify GitHub activity** -- a project with many stars but no recent commits may be abandoned
 - **Cross-reference multiple sources** -- no single benchmark or blog post tells the full story
+- **Watch for source bias** -- comparison articles from vendors highlight their own competitors and omit platforms from adjacent categories. Always cross-reference with at least one community source (Reddit, HN) and one adjacent-category search
