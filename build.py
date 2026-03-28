@@ -229,6 +229,45 @@ def discover_skills() -> list[dict]:
     return skills
 
 
+def build_sidebar_structure(skills: list[dict]) -> list[dict]:
+    """Organize skills into groups by top-level directory under skills/.
+
+    Every top-level directory becomes a group with its skills and
+    pooled examples.
+    """
+    skill_groups: dict[str, list[dict]] = {}
+    for skill_md in sorted(SKILLS_DIR.rglob("SKILL.md")):
+        top_dir = skill_md.relative_to(SKILLS_DIR).parts[0]
+        name = skill_md.parent.name
+        skill_obj = next((s for s in skills if s["id"] == name), None)
+        if skill_obj:
+            skill_groups.setdefault(top_dir, []).append(skill_obj)
+
+    structure = []
+    seen: set[str] = set()
+    for skill_md in sorted(SKILLS_DIR.rglob("SKILL.md")):
+        top_dir = skill_md.relative_to(SKILLS_DIR).parts[0]
+        if top_dir in seen:
+            continue
+        seen.add(top_dir)
+        group_skills = skill_groups.get(top_dir, [])
+        # Pool all unique examples across skills in this group
+        all_examples = []
+        seen_paths: set[str] = set()
+        for s in group_skills:
+            for ex in s["examples"]:
+                if ex["web_path"] not in seen_paths:
+                    seen_paths.add(ex["web_path"])
+                    all_examples.append(ex)
+        structure.append({
+            "name": top_dir,
+            "skills": group_skills,
+            "examples": all_examples,
+        })
+
+    return structure
+
+
 def copy_examples(skills: list[dict]) -> None:
     """Copy example files to dist/examples/."""
     for skill in skills:
@@ -238,13 +277,27 @@ def copy_examples(skills: list[dict]) -> None:
             shutil.copy2(ef["src_path"], dest)
 
 
-def generate_html(skills: list[dict]) -> str:
+def generate_html(skills: list[dict], structure: list[dict]) -> str:
     """Generate the full SPA HTML."""
-    # Build sidebar items
+    first_skill_id = skills[0]["id"] if skills else None
+
+    # Build sidebar items — each top-level dir is a group with skills + examples
     sidebar_items = ""
-    for i, skill in enumerate(skills):
-        active = "active" if i == 0 else ""
-        sidebar_items += f'''<button class="sidebar-item {active}" data-skill="{skill['id']}" onclick="selectSkill('{skill['id']}', this)">{skill['name']}</button>\n'''
+    for i, entry in enumerate(structure):
+        group_name = entry["name"]
+        open_class = "open" if i == 0 else ""
+        sidebar_items += f'''<div class="sidebar-group {open_class}">
+            <button class="sidebar-group-toggle" onclick="toggleGroup(this)"><span class="group-arrow">&#x25B6;</span>{group_name}</button>
+            <div class="sidebar-group-content">
+                <div class="sidebar-section-label">skills</div>\n'''
+        for skill in entry["skills"]:
+            active = "active" if skill["id"] == first_skill_id else ""
+            sidebar_items += f'''                <button class="sidebar-item {active}" data-skill="{skill['id']}" onclick="selectSkill('{skill['id']}', this)">{skill['name']}</button>\n'''
+        if entry["examples"]:
+            sidebar_items += '''                <div class="sidebar-section-label">examples</div>\n'''
+            for ex in entry["examples"]:
+                sidebar_items += f'''                <a href="{ex["web_path"]}" target="_blank" rel="noopener" class="sidebar-example-link">{ex["name"]}</a>\n'''
+        sidebar_items += '''            </div></div>\n'''
 
     # Build content sections
     content_sections = ""
@@ -262,19 +315,6 @@ def generate_html(skills: list[dict]) -> str:
                     <div class="reference-content">{ref['html']}</div>
                 </details>'''
             refs_html += "</div>"
-
-        # Examples
-        examples_html = ""
-        if skill["examples"]:
-            examples_html += '<div class="examples-section"><h2>Examples</h2><div class="examples-grid">'
-            for ex in skill["examples"]:
-                examples_html += f'''
-                <a href="{ex['web_path']}" target="_blank" rel="noopener" class="example-card">
-                    <span class="example-icon">&#x1f4c4;</span>
-                    <span class="example-name">{ex['name']}</span>
-                    <span class="example-open">Open &rarr;</span>
-                </a>'''
-            examples_html += "</div></div>"
 
         # Evals
         evals_html = ""
@@ -320,7 +360,6 @@ def generate_html(skills: list[dict]) -> str:
             {toc_html}
             <div class="skill-sections">{sections_html}</div>
             {refs_html}
-            {examples_html}
             {evals_html}
         </div>'''
 
@@ -421,6 +460,67 @@ def generate_html(skills: list[dict]) -> str:
             background: var(--bg-active);
             color: var(--accent);
             font-weight: 500;
+        }}
+
+        /* Sidebar groups */
+        .sidebar-group {{
+            margin-bottom: 4px;
+        }}
+        .sidebar-group-toggle {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            text-align: left;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }}
+        .sidebar-group-toggle:hover {{
+            background: var(--bg-hover);
+            color: var(--text);
+        }}
+        .group-arrow {{
+            font-size: 8px;
+            transition: transform 0.2s;
+        }}
+        .sidebar-group.open .group-arrow {{
+            transform: rotate(90deg);
+        }}
+        .sidebar-group-content {{
+            display: none;
+            padding-left: 12px;
+        }}
+        .sidebar-group.open .sidebar-group-content {{
+            display: block;
+        }}
+        .sidebar-section-label {{
+            padding: 10px 16px 4px;
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }}
+        .sidebar-example-link {{
+            display: block;
+            padding: 6px 16px;
+            color: var(--text-muted);
+            font-size: 13px;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }}
+        .sidebar-example-link:hover {{
+            color: var(--accent);
+            background: var(--bg-hover);
         }}
 
         /* Mobile hamburger */
@@ -700,12 +800,12 @@ def generate_html(skills: list[dict]) -> str:
         }}
 
         /* References */
-        .references-section, .examples-section, .evals-section {{
+        .references-section, .evals-section {{
             margin-top: 48px;
             padding-top: 32px;
             border-top: 1px solid var(--border);
         }}
-        .references-section h2, .examples-section h2, .evals-section h2 {{
+        .references-section h2, .evals-section h2 {{
             color: var(--heading);
             font-size: 20px;
             font-weight: 600;
@@ -766,38 +866,6 @@ def generate_html(skills: list[dict]) -> str:
             padding: 10px 16px; margin: 0 0 12px; border-radius: 0 6px 6px 0;
         }}
         .reference-content hr {{ border: none; border-top: 1px solid var(--border); margin: 24px 0; }}
-
-        /* Examples */
-        .examples-grid {{
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 12px;
-        }}
-        .example-card {{
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            background: var(--bg-code);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            text-decoration: none;
-            transition: all 0.15s ease;
-        }}
-        .example-card:hover {{
-            border-color: var(--accent);
-            background: var(--bg-active);
-        }}
-        .example-icon {{ font-size: 24px; }}
-        .example-name {{ flex: 1; font-size: 14px; font-weight: 500; }}
-        .example-open {{
-            font-size: 13px;
-            color: var(--accent);
-            opacity: 0;
-            transition: opacity 0.15s;
-        }}
-        .example-card:hover .example-open {{ opacity: 1; }}
 
         /* Evals */
         .evals-list {{ display: flex; flex-direction: column; gap: 12px; }}
@@ -906,6 +974,10 @@ def generate_html(skills: list[dict]) -> str:
             }}
         }}
 
+        function toggleGroup(el) {{
+            el.closest('.sidebar-group').classList.toggle('open');
+        }}
+
         function toggleSidebar() {{
             document.querySelector('.sidebar').classList.toggle('open');
             document.querySelector('.sidebar-overlay').classList.toggle('open');
@@ -940,7 +1012,8 @@ def main():
     copy_examples(skills)
 
     # Generate HTML
-    html = generate_html(skills)
+    structure = build_sidebar_structure(skills)
+    html = generate_html(skills, structure)
     index_path = DIST_DIR / "index.html"
     index_path.write_text(html, encoding="utf-8")
 
