@@ -51,6 +51,10 @@ Read `analysis.md` and extract:
 - **Sections** — each `## Heading` becomes a candidate page. Parse the level tag from the `<!-- level: ... -->` comment.
 - **Sub-sections** — each `### Heading` within a section becomes a content block within a page
 - **Content types** — identify code blocks, lists, Q&A pairs, comparison points, step sequences that should become interactive elements
+- **References** — parse `<!-- references: ... -->` blocks from each section. Extract title, URL, and type for each reference entry.
+- **Source annotations** — scan code blocks for `// source:`, `// github:`, `// tag:` metadata lines. Extract file paths, line ranges, and repo/tag overrides.
+- **GitHub/Tag metadata** — read `GitHub` and `Tag` fields from the Metadata section. These are default values for source-annotated code blocks.
+- **Inline links** — preserve markdown links in content. When rendering to HTML, add `target="_blank"` and `rel="noopener noreferrer"` to external URLs.
 
 **Section-to-page mapping:**
 
@@ -86,6 +90,16 @@ Build the shared components that every page uses. Read `references/design-system
 - Cards linking to each content page with page title and brief description
 - Quick-start section pulled from the Overview
 
+**Page context metadata:** Inject a `<!-- page-context: ... -->` HTML comment into each content page's `<head>` section. This metadata is consumed by the Copy as Markdown button. Populate from the Metadata section:
+```html
+<!-- page-context:
+  system: "[System Name]"
+  description: "[One-line description from Overview]"
+  page: "[Page Title]"
+  level: "[Level Label]"
+-->
+```
+
 ### Phase 3: Generate Content Pages
 
 Build each content page one at a time. Do NOT try to generate all pages in one pass — quality degrades.
@@ -115,11 +129,17 @@ Read `references/interactive-elements.md` for full implementation patterns. Appl
 | Q&A pair | Expandable Accordion |
 | Important insight or warning | Callout Box (tip/warning/insight) |
 | Technical term (first use) | Glossary Tooltip (hover/tap for definition) |
+| Source-annotated code block  | Source-Annotated Code Block (file path header, GitHub link) |
+| Section references block     | Reference Footer (per-page, above prev/next nav) |
+| Multiple source code blocks  | Source Map (collapsible summary at page top) |
+| External URL in content      | External Link (target="_blank", ↗ icon) |
 
 **Mandatory per page:**
 - At least one interactive element (diagram, quiz, code block, decision tree — anything non-static)
 - Glossary tooltips on all technical terms (first use per page)
 - At least one callout box (insight, tip, or warning)
+- Copy as Markdown button in the page header (content pages only, not index.html)
+- External links open in new tab with ↗ indicator
 
 ### Phase 4: Self-Review & Fix
 
@@ -136,6 +156,11 @@ After generating all pages, review the complete site and fix issues. Iterate unt
 8. **Self-contained** — Does each page have all CSS/JS inline? No external dependencies except Google Fonts?
 9. **Content walls** — Are there any text blocks longer than 3-4 sentences without a visual break? Convert to cards, diagrams, or callouts.
 10. **Accessibility** — Proper heading hierarchy (h1 → h2 → h3)? ARIA labels on interactive elements? Keyboard navigable?
+11. **Copy as Markdown** — Does every content page have the copy-markdown button in the header? Click it and verify the output includes the context header and readable markdown.
+12. **References footer** — Do pages with `<!-- references: ... -->` blocks in their source section have a references footer? Are type icons correct? Do links open in new tabs?
+13. **Source annotations** — Are source-annotated code blocks showing file path headers? Do GitHub links resolve correctly (using tag when available, falling back to main)? Are metadata comment lines stripped from displayed code?
+14. **Source map** — Do pages with 2+ source-annotated blocks have a collapsible source map at the top? Does it list all referenced files?
+15. **External links** — Do all external links have `target="_blank"`, `rel="noopener noreferrer"`, and the ↗ icon via CSS?
 
 **Fix loop:** If any check fails, fix the issue in the relevant HTML file and re-run the checklist. Only proceed once all checks pass.
 
