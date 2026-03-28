@@ -146,6 +146,57 @@ generate_marketplace() {
     }' > "$MARKETPLACE_JSON"
 }
 
+# --- Bump ---
+
+cmd_bump() {
+  local group="$1"
+  local level="$2"
+  local vfile
+  vfile="$(get_version_file "$group")"
+  local current
+  current="$(get_version "$group")"
+
+  # Parse semver
+  local major minor patch
+  IFS='.' read -r major minor patch <<< "$current"
+
+  case "$level" in
+    major)
+      major=$((major + 1))
+      minor=0
+      patch=0
+      ;;
+    minor)
+      minor=$((minor + 1))
+      patch=0
+      ;;
+    patch)
+      patch=$((patch + 1))
+      ;;
+    *)
+      echo "Error: level must be major, minor, or patch" >&2
+      exit 1
+      ;;
+  esac
+
+  local new_version="$major.$minor.$patch"
+
+  # Update version.json
+  local tmp
+  tmp=$(mktemp)
+  jq --arg v "$new_version" '.version = $v' "$vfile" > "$tmp" && mv "$tmp" "$vfile"
+
+  echo "Bumped $group: $current -> $new_version"
+
+  # Regenerate marketplace.json
+  generate_marketplace
+  echo "marketplace.json updated"
+
+  # Commit
+  git add "$vfile" "$MARKETPLACE_JSON"
+  git commit -m "chore($group): bump version to $new_version"
+}
+
 # --- Main ---
 
 if [ $# -lt 2 ]; then
@@ -160,8 +211,15 @@ case "$COMMAND" in
   build)
     cmd_build "$GROUP"
     ;;
-  bump|release)
-    echo "Error: '$COMMAND' not yet implemented" >&2
+  bump)
+    if [ $# -lt 1 ]; then
+      echo "Error: bump requires a level (major, minor, patch)" >&2
+      exit 1
+    fi
+    cmd_bump "$GROUP" "$1"
+    ;;
+  release)
+    echo "Error: 'release' not yet implemented" >&2
     exit 1
     ;;
   *)
