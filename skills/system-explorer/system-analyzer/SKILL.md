@@ -64,6 +64,8 @@ Go beyond training data. Be aggressive about gathering real, current information
 - Recent changelog and release notes (what's new, what changed)
 - Benchmarks and performance characteristics
 - Comparison articles (X vs Y) for the trade-offs section
+- Source code file paths and structure (for source annotation in code blocks)
+- Authoritative reference URLs for each section (official docs, papers, blog posts)
 
 **WebFetch for:**
 - Official architecture pages and design documents
@@ -102,6 +104,12 @@ Write `analysis.md` following the template in `references/analysis-template.md`.
 - `<!-- level: beginner-intermediate -->`
 - `<!-- level: all -->`
 
+**References:** Each section should include a `<!-- references: ... -->` block after the level tag, listing 2-5 authoritative sources relevant to that section. See `references/analysis-template.md` for format and reference types.
+
+**Inline links:** Include standard markdown links within the content body on first mention of concepts with authoritative external sources. Link claims that benefit from a primary source (benchmarks, architectural decisions, papers).
+
+**Source annotations:** When including code blocks that represent actual source code from the system's codebase, annotate them with `// source:`, `// github:`, and `// tag:` metadata lines. See `references/analysis-template.md` for format. The Metadata section's GitHub and Tag fields provide default values.
+
 ### Phase 4: Self-Review & Fix
 
 Before presenting to the user, review the analysis and fix issues. Iterate until the review passes.
@@ -115,6 +123,9 @@ Before presenting to the user, review the analysis and fix issues. Iterate until
 6. **Q&A quality** — Are the Common Q&A questions ones a senior engineer would actually ask? If any are trivial ("What is X?"), replace with deeper questions.
 7. **Factual accuracy** — Cross-check key claims against your web research. Are version numbers, URLs, and feature claims still current?
 8. **Section depth** — Is each section substantive enough to justify its inclusion? If a section has only 1-2 sentences, either expand it or remove it.
+9. **References** — Does each section with substantial content have a `<!-- references: ... -->` block with 2-5 relevant sources? Are the URLs valid and the types correct?
+10. **Source annotations** — Do code blocks showing actual source code have `// source:` annotations with valid file paths? Do the `// github:` and `// tag:` values match the Metadata section or override correctly?
+11. **Inline links** — Are key concepts and claims linked to authoritative sources on first mention? Are there 2-4 inline links per section (not over-linked)?
 
 **Fix loop:** If any check fails, fix the issue and re-run the checklist. Only proceed once all checks pass.
 
@@ -161,7 +172,8 @@ The analysis.md follows the template in `references/analysis-template.md`. The s
 - **Name:** [System Name]
 - **Category:** [e.g., Message Queue, Database, Container Orchestrator]
 - **Official URL:** [link]
-- **GitHub:** [link if applicable]
+- **GitHub:** [org/repo, e.g., duckdb/duckdb]
+- **Tag:** [latest stable tag, e.g., v1.5.1]
 - **License:** [license type]
 - **Latest Version:** [version if found]
 
