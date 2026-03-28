@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NemoClaw — Interactive Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #FAF7F2;
+      --color-bg-warm: #F5F0E8;
+      --color-bg-code: #1E1E2E;
+      --color-text: #2C2A28;
+      --color-text-secondary: #6B6560;
+      --color-text-muted: #9E9790;
+      --color-border: #E5DFD6;
+      --color-border-light: #EEEBE5;
+      --color-surface: #FFFFFF;
+      --color-surface-warm: #FDF9F3;
+      --color-accent: #2D8B55;
+      --color-accent-hover: #257548;
+      --color-accent-light: #E8F5EE;
+      --color-accent-muted: #5AAF7A;
+      --color-success: #2D8B55;
+      --color-success-light: #E8F5EE;
+      --color-error: #C93B3B;
+      --color-error-light: #FDE8E8;
+      --color-info: #2A7B9B;
+      --color-info-light: #E4F2F7;
+      --color-warning: #D4A843;
+      --color-warning-light: #FDF6E4;
+      --color-level-beginner: #2D8B55;
+      --color-level-intermediate: #D4A843;
+      --color-level-advanced: #C93B3B;
+      --font-display: 'Bricolage Grotesque', Georgia, serif;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      --text-xs: 0.75rem;
+      --text-sm: 0.875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-xl: 1.25rem;
+      --text-2xl: 1.5rem;
+      --text-3xl: 1.875rem;
+      --text-4xl: 2.25rem;
+      --text-5xl: 3rem;
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05);
+      --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
+      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
+      --nav-height: 60px;
+      --content-width: 800px;
+      --content-width-wide: 1000px;
+      --ease-out: cubic-bezier(0.16,1,0.3,1);
+      --duration-fast: 150ms;
+      --duration-normal: 300ms;
+      --duration-slow: 500ms;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--color-bg);
+      background-image: radial-gradient(ellipse at 20% 50%, rgba(45,139,85,0.03) 0%, transparent 50%);
+      font-family: var(--font-body);
+      color: var(--color-text);
+      line-height: 1.6;
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Level visibility */
+    body.hide-beginner [data-level="beginner"] { display: none !important; }
+    body.hide-intermediate [data-level="intermediate"] { display: none !important; }
+    body.hide-advanced [data-level="advanced"] { display: none !important; }
+    body.hide-beginner.hide-intermediate [data-level="beginner intermediate"] { display: none !important; }
+    body.hide-beginner.hide-advanced [data-level="beginner advanced"] { display: none !important; }
+    body.hide-intermediate.hide-advanced [data-level="intermediate advanced"] { display: none !important; }
+
+    /* Navigation */
+    .site-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-3) var(--space-6);
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-wrap: wrap;
+    }
+    .nav-brand { text-decoration: none; display: flex; flex-direction: column; }
+    .nav-brand-name { font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); color: var(--color-text); line-height: 1.2; }
+    .nav-brand-label { font-family: var(--font-body); font-size: var(--text-xs); color: var(--color-text-muted); }
+    .nav-links { display: flex; align-items: center; gap: var(--space-4); }
+    .nav-page-list { list-style: none; display: flex; gap: var(--space-1); padding: 0; margin: 0; }
+    .nav-page-list li a {
+      display: flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm); text-decoration: none; font-family: var(--font-body);
+      font-size: var(--text-sm); color: var(--color-text-secondary); transition: background 0.15s ease, color 0.15s ease;
+    }
+    .nav-page-list li a:hover { background: var(--color-bg-warm); color: var(--color-text); }
+    .nav-page-list li.active a { background: var(--color-accent-light); color: var(--color-accent); font-weight: 600; }
+    .nav-page-level {
+      font-size: 10px; font-weight: 700; width: 16px; height: 16px;
+      display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-full); line-height: 1;
+    }
+    .nav-page-level.beginner { background: var(--color-success-light); color: var(--color-success); }
+    .nav-page-level.intermediate { background: var(--color-info-light); color: var(--color-info); }
+    .nav-page-level.advanced { background: var(--color-warning-light); color: var(--color-warning); }
+    .level-selector {
+      display: flex; gap: var(--space-1); margin-left: var(--space-4);
+      padding-left: var(--space-4); border-left: 1px solid var(--color-border-light);
+    }
+    .level-toggle-btn {
+      font-family: var(--font-body); font-size: var(--text-xs); font-weight: 600;
+      padding: var(--space-1) var(--space-3); border: 1px solid var(--color-border);
+      border-radius: var(--radius-full); background: transparent; color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease;
+    }
+    .level-toggle-btn:hover { border-color: var(--color-accent-muted); color: var(--color-accent-muted); }
+    .level-toggle-btn.level-active { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+    .level-toggle-btn.level-active:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); color: #fff; }
+    .nav-hamburger {
+      display: none; flex-direction: column; gap: 4px; background: none; border: none; cursor: pointer; padding: var(--space-2);
+    }
+    .hamburger-bar { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 2px; transition: transform 0.2s ease, opacity 0.2s ease; }
+
+    /* Hero */
+    .hero { text-align: center; padding: var(--space-16) var(--space-6) var(--space-12); max-width: 900px; margin: 0 auto; }
+    .hero h1 { font-family: var(--font-display); font-size: var(--text-4xl); font-weight: 800; color: var(--color-text); margin-bottom: var(--space-4); line-height: 1.1; }
+    .hero .category-badge {
+      display: inline-block; background: var(--color-accent-light); color: var(--color-accent);
+      font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600;
+      padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); margin-bottom: var(--space-4);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .hero .description { font-family: var(--font-body); font-size: var(--text-lg); color: var(--color-text-secondary); max-width: 650px; margin: 0 auto var(--space-8); line-height: 1.6; }
+    .key-stats { display: flex; justify-content: center; gap: var(--space-6); flex-wrap: wrap; margin-bottom: var(--space-8); }
+    .key-stats .stat { text-align: center; }
+    .key-stats .stat-label { display: block; font-family: var(--font-body); font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-1); }
+    .key-stats .stat-value { font-family: var(--font-display); font-size: var(--text-base); font-weight: 600; color: var(--color-text); }
+
+    /* Page cards */
+    .page-cards {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-6); max-width: 1100px; margin: var(--space-12) auto; padding: 0 var(--space-6);
+    }
+    .page-card {
+      background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+      padding: var(--space-6); text-decoration: none; color: inherit;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex; flex-direction: column; gap: var(--space-3);
+    }
+    .page-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .page-card .card-icon { font-size: var(--text-2xl); line-height: 1; }
+    .page-card .card-title { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; color: var(--color-text); }
+    .page-card .card-level {
+      display: inline-block; font-family: var(--font-body); font-size: var(--text-xs); font-weight: 600;
+      padding: 2px var(--space-2); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; width: fit-content;
+    }
+    .card-level.beginner { background: var(--color-success-light); color: var(--color-success); }
+    .card-level.intermediate { background: var(--color-info-light); color: var(--color-info); }
+    .card-level.advanced { background: var(--color-warning-light); color: var(--color-warning); }
+    .card-level.all { background: var(--color-accent-light); color: var(--color-accent); }
+    .page-card .card-desc { font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.5; }
+
+    /* Quick start */
+    .quick-start { max-width: 800px; margin: var(--space-12) auto; padding: var(--space-8) var(--space-6); background: var(--color-bg-warm); border-radius: var(--radius-lg); }
+    .quick-start h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--color-text); margin-bottom: var(--space-4); }
+    .quick-start p { font-family: var(--font-body); font-size: var(--text-base); color: var(--color-text-secondary); line-height: 1.6; margin-bottom: var(--space-4); }
+    .quick-start pre {
+      background: var(--color-bg-code); color: #CDD6F4; font-family: var(--font-mono);
+      font-size: var(--text-sm); padding: var(--space-4); border-radius: var(--radius-md); overflow-x: auto; margin: var(--space-4) 0;
+    }
+
+    /* Footer */
+    .site-footer { text-align: center; padding: var(--space-8) var(--space-6); font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text-muted); border-top: 1px solid var(--color-border-light); margin-top: var(--space-12); }
+
+    /* Animations */
+    .animate-in { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .animate-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-hamburger { display: flex; }
+      .nav-links { display: none; flex-direction: column; width: 100%; padding-top: var(--space-3); }
+      .nav-links.open { display: flex; }
+      .nav-page-list { flex-direction: column; width: 100%; }
+      .nav-page-list li a { padding: var(--space-2) var(--space-3); }
+      .level-selector { margin-left: 0; padding-left: 0; border-left: none; padding-top: var(--space-3); border-top: 1px solid var(--color-border-light); justify-content: center; width: 100%; }
+    }
+    @media (max-width: 640px) {
+      .hero h1 { font-size: var(--text-2xl); }
+      .page-cards { grid-template-columns: 1fr; }
+      .key-stats { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav" role="navigation" aria-label="Course navigation">
+    <a href="index.html" class="nav-brand">
+      <span class="nav-brand-name">NemoClaw</span>
+      <span class="nav-brand-label">Interactive Course</span>
+    </a>
+    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+    </button>
+    <div class="nav-links" id="nav-links">
+      <ul class="nav-page-list">
+        <li><a href="concepts.html"><span class="nav-page-title">Concepts</span><span class="nav-page-level beginner">B</span></a></li>
+        <li><a href="architecture.html"><span class="nav-page-title">Architecture</span><span class="nav-page-level intermediate">I</span></a></li>
+        <li><a href="how-it-works.html"><span class="nav-page-title">How It Works</span><span class="nav-page-level intermediate">I</span></a></li>
+        <li><a href="implementation.html"><span class="nav-page-title">Implementation</span><span class="nav-page-level advanced">A</span></a></li>
+        <li><a href="use-cases.html"><span class="nav-page-title">Use Cases</span><span class="nav-page-level beginner">B</span></a></li>
+        <li><a href="ecosystem.html"><span class="nav-page-title">Ecosystem</span><span class="nav-page-level intermediate">I</span></a></li>
+        <li><a href="faq.html"><span class="nav-page-title">FAQ</span><span class="nav-page-level beginner">B</span></a></li>
+        <li><a href="tradeoffs.html"><span class="nav-page-title">Trade-offs</span><span class="nav-page-level intermediate">I</span></a></li>
+      </ul>
+      <div class="level-selector" role="group" aria-label="Content level filter">
+        <button class="level-toggle-btn level-active" data-level="beginner" aria-pressed="true">Beginner</button>
+        <button class="level-toggle-btn level-active" data-level="intermediate" aria-pressed="true">Intermediate</button>
+        <button class="level-toggle-btn level-active" data-level="advanced" aria-pressed="true">Advanced</button>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero animate-in">
+    <span class="category-badge">AI Agent Security &amp; Infrastructure</span>
+    <h1>NemoClaw</h1>
+    <p class="description">NVIDIA's open-source security wrapper for autonomous AI agents &mdash; kernel-level isolation, deny-by-default networking, and privacy-preserving inference routing.</p>
+    <div class="key-stats">
+      <div class="stat">
+        <span class="stat-label">License</span>
+        <span class="stat-value">Apache 2.0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Languages</span>
+        <span class="stat-value">TypeScript + Python</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Status</span>
+        <span class="stat-value">Alpha Preview</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Released</span>
+        <span class="stat-value">March 2026</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-cards">
+    <a href="concepts.html" class="page-card animate-in">
+      <span class="card-icon">&#x1F4A1;</span>
+      <span class="card-title">Core Concepts</span>
+      <span class="card-level beginner">Beginner</span>
+      <span class="card-desc">Claws, OpenShell, Policies, Gateway, Privacy Router &mdash; the vocabulary you need, each with a real-world analogy.</span>
+    </a>
+    <a href="architecture.html" class="page-card animate-in">
+      <span class="card-icon">&#x1F3D7;&#xFE0F;</span>
+      <span class="card-title">Architecture</span>
+      <span class="card-level intermediate">Intermediate</span>
+      <span class="card-desc">Plugin-blueprint design, key components, data flow, and the design decisions behind out-of-process enforcement.</span>
+    </a>
+    <a href="how-it-works.html" class="page-card animate-in">
+      <span class="card-icon">&#x2699;&#xFE0F;</span>
+      <span class="card-title">How It Works</span>
+      <span class="card-level intermediate">Intermediate</span>
+      <span class="card-desc">Five-layer protection model, filesystem access, network policy enforcement, inference routing, and performance.</span>
+    </a>
+    <a href="implementation.html" class="page-card animate-in">
+      <span class="card-icon">&#x1F4BB;</span>
+      <span class="card-title">Implementation</span>
+      <span class="card-level advanced">Advanced</span>
+      <span class="card-desc">Getting started, CLI reference, configuration, code patterns, and deployment considerations.</span>
+    </a>
+    <a href="use-cases.html" class="page-card animate-in">
+      <span class="card-icon">&#x1F3AF;</span>
+      <span class="card-title">Use Cases</span>
+      <span class="card-level beginner">Beginner</span>
+      <span class="card-desc">When to use NemoClaw, when NOT to, and real-world deployment examples.</span>
+    </a>
+    <a href="ecosystem.html" class="page-card animate-in">
+      <span class="card-icon">&#x1F30D;</span>
+      <span class="card-title">Ecosystem</span>
+      <span class="card-level intermediate">Intermediate</span>
+      <span class="card-desc">Official tools, community resources, and common integration patterns with OpenClaw, Nemotron, and cloud APIs.</span>
+    </a>
+    <a href="faq.html" class="page-card animate-in">
+      <span class="card-icon">&#x2753;</span>
+      <span class="card-title">FAQ</span>
+      <span class="card-level all">All Levels</span>
+      <span class="card-desc">Real questions a senior engineer would ask &mdash; prompt injection, data exfiltration, scaling limits, CVE history.</span>
+    </a>
+    <a href="tradeoffs.html" class="page-card animate-in">
+      <span class="card-icon">&#x2696;&#xFE0F;</span>
+      <span class="card-title">Trade-offs</span>
+      <span class="card-level intermediate">Intermediate</span>
+      <span class="card-desc">Honest strengths, real limitations, and how NemoClaw compares to Docker, E2B, and Firecracker.</span>
+    </a>
+  </section>
+
+  <section class="quick-start animate-in" data-level="beginner">
+    <h2>Quick Start</h2>
+    <p>NemoClaw wraps OpenClaw with enterprise-grade security. Install and onboard in two commands:</p>
+    <pre><code># Install NemoClaw
+curl -fsSL https://www.nvidia.com/nemoclaw.sh | bash
+
+# Run the interactive onboarding wizard
+nemoclaw onboard
+
+# Connect to your sandbox
+nemoclaw my-sandbox connect
+
+# Start your secured agent
+openclaw</code></pre>
+    <p>Requires Linux (Ubuntu 22.04+), Docker 20.x+, Node.js 22.16+, and at least 8 GB RAM.</p>
+  </section>
+
+  <footer class="site-footer">
+    <p>Generated by System Explorer &mdash; an interactive course built from system analysis</p>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      var STORAGE_KEY_LEVELS = 'system-explorer-levels';
+      var STORAGE_KEY_VISITED = 'system-explorer-visited';
+      function getSavedLevels() {
+        try { var raw = localStorage.getItem(STORAGE_KEY_LEVELS); if (raw) return JSON.parse(raw); } catch (e) {}
+        return { beginner: true, intermediate: true, advanced: true };
+      }
+      function applyLevels(levels) {
+        document.body.classList.toggle('hide-beginner', !levels.beginner);
+        document.body.classList.toggle('hide-intermediate', !levels.intermediate);
+        document.body.classList.toggle('hide-advanced', !levels.advanced);
+      }
+      function saveLevels(levels) { try { localStorage.setItem(STORAGE_KEY_LEVELS, JSON.stringify(levels)); } catch (e) {} }
+      function syncButtons(levels) {
+        var buttons = document.querySelectorAll('.level-toggle-btn');
+        for (var i = 0; i < buttons.length; i++) {
+          var btn = buttons[i], lvl = btn.getAttribute('data-level');
+          if (levels[lvl]) { btn.classList.add('level-active'); btn.setAttribute('aria-pressed', 'true'); }
+          else { btn.classList.remove('level-active'); btn.setAttribute('aria-pressed', 'false'); }
+        }
+      }
+      var currentLevels = getSavedLevels();
+      applyLevels(currentLevels);
+      document.addEventListener('DOMContentLoaded', function () {
+        syncButtons(currentLevels);
+        document.querySelectorAll('.level-toggle-btn').forEach(function(btn) {
+          btn.addEventListener('click', function () {
+            var lvl = this.getAttribute('data-level');
+            currentLevels[lvl] = !currentLevels[lvl];
+            if (!currentLevels.beginner && !currentLevels.intermediate && !currentLevels.advanced) { currentLevels[lvl] = true; return; }
+            applyLevels(currentLevels); syncButtons(currentLevels); saveLevels(currentLevels);
+          });
+        });
+        trackVisit();
+      });
+      function trackVisit() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY_VISITED);
+          var visited = raw ? JSON.parse(raw) : [];
+          var page = location.pathname.split('/').pop() || 'index.html';
+          if (visited.indexOf(page) === -1) { visited.push(page); localStorage.setItem(STORAGE_KEY_VISITED, JSON.stringify(visited)); }
+        } catch (e) {}
+      }
+    })();
+    (function () {
+      'use strict';
+      document.addEventListener('DOMContentLoaded', function () {
+        var els = document.querySelectorAll('.animate-in');
+        if (!('IntersectionObserver' in window)) { for (var i = 0; i < els.length; i++) els[i].classList.add('visible'); return; }
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
+        }, { threshold: 0.1 });
+        for (var j = 0; j < els.length; j++) observer.observe(els[j]);
+      });
+    })();
+    (function () {
+      'use strict';
+      document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.querySelector('.nav-hamburger');
+        var links = document.getElementById('nav-links');
+        if (!btn || !links) return;
+        btn.addEventListener('click', function () {
+          var isOpen = links.classList.toggle('open');
+          btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+        links.addEventListener('click', function (e) { if (e.target.closest('a')) { links.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); } });
+      });
+    })();
+  </script>
+</body>
+</html>
