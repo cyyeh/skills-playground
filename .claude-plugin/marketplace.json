@@ -20,7 +20,7 @@
     {
       "name": "system-explorer",
       "description": "Explore and learn about software systems",
-      "version": "0.1.2",
+      "version": "0.2.0",
       "source": "./skills/system-explorer/",
       "strict": false,
       "skills": [
