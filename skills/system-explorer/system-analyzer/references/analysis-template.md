@@ -1,6 +1,8 @@
 # Analysis Template Reference
 
-Definitive template for `analysis.md` output. Sections are optional based on complexity, but order, level tags, and sub-section structure must be preserved.
+> **Note:** Per-section templates are now available in `references/section-templates/`. When generating multi-file analysis output, use those individual templates instead of this monolithic reference. This file is preserved as a complete structural reference showing the full analysis format.
+
+Definitive template for analysis output. Sections are optional based on complexity, but order, level tags, and sub-section structure must be preserved.
 
 ```markdown
 # System Analysis: [System Name]

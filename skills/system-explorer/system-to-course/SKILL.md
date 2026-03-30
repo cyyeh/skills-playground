@@ -37,14 +37,34 @@ Create the directory if it does not exist.
 
 ## Input
 
-1. **From a prior system-analyzer run:** Check for `[output-dir]/analysis.md`. If found, confirm with the user.
-2. **Direct file path:** Accept a path to any markdown file structured with level tags (`<!-- level: ... -->`).
+The skill supports two input formats. Always detect automatically:
 
-Verify the input file has valid level tags before proceeding. If level tags are missing, warn the user and add sensible defaults based on heading depth.
+1. **Multi-file format (v2):** Check for `[output-dir]/analysis.json` first. If found, this is the new multi-file format — read the manifest to discover section files. Confirm with the user.
+2. **Legacy single-file format:** If no `analysis.json` exists, check for `[output-dir]/analysis.md`. If found, use the legacy single-file parsing. Confirm with the user.
+3. **Direct file path:** Accept a path to any markdown file structured with level tags (`<!-- level: ... -->`).
+
+Verify the input has valid level tags before proceeding. If level tags are missing, warn the user and add sensible defaults based on heading depth.
 
 ## The Process (5 Phases)
 
 ### Phase 1: Parse Analysis
+
+**Detect format:** Check for `[output-dir]/analysis.json`. If it exists, use the multi-file parsing path. Otherwise, fall back to legacy single-file parsing.
+
+#### Multi-file format (analysis.json exists)
+
+1. Read `analysis.json` to get the manifest: system name, GitHub org/repo, tag, and the ordered list of section files.
+2. Read `00-metadata.md` to extract system name, category, URLs, license, GitHub, Tag.
+3. For each section file listed in the manifest, read it and extract:
+   - **Level tag** from the `<!-- level: ... -->` comment
+   - **References** from the `<!-- references: ... -->` block
+   - **Sub-sections** — each `### Heading` within the file becomes a content block within a page
+   - **Content types** — identify code blocks, lists, Q&A pairs, comparison points, step sequences
+   - **Source annotations** — scan code blocks for `// source:`, `// github:`, `// tag:` metadata lines
+   - **Inline links** — preserve markdown links in content
+4. Map each section file to its HTML page using the same section-to-page mapping below.
+
+#### Legacy single-file format (analysis.md only)
 
 Read `analysis.md` and extract:
 - **Metadata** — system name, category, URLs, license from the `## Metadata` section
@@ -54,7 +74,11 @@ Read `analysis.md` and extract:
 - **References** — parse `<!-- references: ... -->` blocks from each section. Extract title, URL, and type for each reference entry.
 - **Source annotations** — scan code blocks for `// source:`, `// github:`, `// tag:` metadata lines. Extract file paths, line ranges, and repo/tag overrides.
 - **GitHub/Tag metadata** — read `GitHub` and `Tag` fields from the Metadata section. These are default values for source-annotated code blocks.
-- **Inline links** — preserve markdown links in content. When rendering to HTML, add `target="_blank"` and `rel="noopener noreferrer"` to external URLs.
+- **Inline links** — preserve markdown links in content.
+
+#### Common: rendering rules
+
+When rendering to HTML, add `target="_blank"` and `rel="noopener noreferrer"` to external URLs.
 
 **Section-to-page mapping:**
 
@@ -167,7 +191,7 @@ After generating all pages, review the complete site and fix issues. Iterate unt
 ### Phase 5: Deliver
 
 1. Write all generated HTML files to `[output-dir]`
-2. Keep `analysis.md` in the output directory for reference
+2. Keep analysis source files in the output directory for reference (either `analysis.json` + section files, or legacy `analysis.md`)
 3. Open `index.html` in the browser for the user to review
 4. Walk the user through what was built: page count, interactive elements
 
