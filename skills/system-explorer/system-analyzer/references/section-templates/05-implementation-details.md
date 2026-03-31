@@ -91,6 +91,9 @@ Self-contained template for the Implementation Details section. Level: **advance
      > Full implementation: [file.ext:340-540](https://github.com/org/repo/blob/tag/path/to/file.ext#L340-L540)
 
      Guidelines:
+     - COVERAGE REQUIREMENT: every core concept from 02-core-concepts.md must have
+       at least one annotated source block here. Use the concept-to-source mapping
+       table from Phase 2 as your checklist. Missing a concept = incomplete walkthrough.
      - Aim for 5-12 annotated source blocks covering the most important concepts
      - Keep each individual block at 20-60 lines for readability (one screenful)
      - Use multi-block sequences (2-4 blocks) for concepts that span more code
@@ -100,6 +103,8 @@ Self-contained template for the Implementation Details section. Level: **advance
      - Include brief commentary before each block explaining what to look for
      - Cross-reference concept names from 02-core-concepts.md and component names
        from 03-architecture.md
+     - For multi-repo systems, use // github: to specify the repo for each block.
+       Include source from all relevant repos, not just the primary one.
      - If source code is unavailable (closed-source system), note this and provide
        behavioral analysis instead
      - If the system is open-source but you only have a directory listing, this section

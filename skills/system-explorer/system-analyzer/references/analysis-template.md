@@ -13,6 +13,7 @@ Definitive template for analysis output. Sections are optional based on complexi
 - **Official URL:** [link]
 - **GitHub:** [org/repo, e.g., duckdb/duckdb]
 - **Tag:** [latest stable tag, e.g., v1.5.1 — used for source code links]
+- **Additional Repos:** [optional — for multi-repo systems, e.g., NVIDIA/OpenShell (sandbox runtime)]
 - **License:** [license type]
 - **Latest Version:** [version if found]
 - **Analysis Date:** [YYYY-MM-DD]

@@ -1,88 +1,101 @@
 ## Ecosystem & Integrations
 <!-- level: intermediate -->
 <!-- references:
-- [MLflow Integrations](https://mlflow.org/docs/latest/ml/) | docs
-- [MLflow Plugins](https://mlflow.org/docs/latest/ml/plugins) | docs
-- [MLflow GenAI Integrations](https://mlflow.org/genai) | docs
+- [MLflow Models and Flavors](https://mlflow.org/docs/latest/ml/model/) | official-docs
+- [MLflow PyTorch Integration](https://mlflow.org/docs/latest/ml/deep-learning/pytorch/) | official-docs
+- [MLflow Official Website](https://mlflow.org) | official-docs
 -->
 
-### Framework Integrations
+### Official Framework Integrations (Flavors)
 
-MLflow provides native, first-class integrations with major ML and AI frameworks via dedicated modules:
+**scikit-learn** -- `mlflow.sklearn`. Autologging captures all estimator parameters via `get_params()`, training metrics via `score()`, and serializes models with cloudpickle. Supports pipelines, grid search, and custom transformers.
 
-| Framework | MLflow Module | What's Logged |
-|-----------|--------------|---------------|
-| scikit-learn | `mlflow.sklearn` | Params, metrics, model, feature importance |
-| PyTorch | `mlflow.pytorch` | Params, loss curves, model state dict |
-| TensorFlow / Keras | `mlflow.tensorflow` | Params, epoch metrics, SavedModel |
-| XGBoost | `mlflow.xgboost` | Params, eval metrics, booster model |
-| LightGBM | `mlflow.lightgbm` | Params, metrics, booster model |
-| CatBoost | `mlflow.catboost` | Params, metrics, CatBoost model |
-| Spark MLlib | `mlflow.spark` | Params, metrics, PipelineModel |
-| Statsmodels | `mlflow.statsmodels` | Params, summary stats, model |
-| Prophet | `mlflow.prophet` | Params, forecast plots, model |
-| spaCy | `mlflow.spacy` | Pipeline config, model |
-| ONNX | `mlflow.onnx` | ONNX format model |
-| Transformers | `mlflow.transformers` | HuggingFace pipeline, config |
+**PyTorch** -- `mlflow.pytorch`. Logs model architecture, optimizer configuration, training/validation metrics per epoch. Supports both eager and scripted (TorchScript) models. Autologging patches the training loop to capture loss curves automatically.
 
-### GenAI and LLM Integrations
+**TensorFlow / Keras** -- `mlflow.tensorflow` and `mlflow.keras`. Logs model summary, optimizer config, callback metrics, and saves models in SavedModel format. Integrates with TensorBoard for visualization alongside MLflow tracking.
 
-Since MLflow 3.0, the platform has extensive GenAI support:
+**XGBoost** -- `mlflow.xgboost`. Captures boosting parameters, feature importance, evaluation metrics, and early stopping info. Autologging records eval metrics at each boosting round, creating detailed learning curves.
 
-- **OpenAI** (`mlflow.openai`): Autologging for Chat, Completions, and Embeddings API calls.
-- **LangChain** (`mlflow.langchain`): Tracing for chains, agents, tools, and retrievers.
-- **LlamaIndex** (`mlflow.llama_index`): Tracing for query engines, indices, and retrievers.
-- **Anthropic**: Tracing for Claude API calls.
-- **Amazon Bedrock**: Tracing for Bedrock model invocations.
-- **Google Gemini**: Tracing for Gemini API calls.
-- **DSPy**: Tracing for DSPy modules and optimizers.
-- **AutoGen / CrewAI**: Tracing for multi-agent frameworks.
-- **OpenTelemetry GenAI**: Native support for OTel GenAI Semantic Conventions (since 3.10).
+**LightGBM** -- `mlflow.lightgbm`. Similar to XGBoost integration with parameter logging, feature importance, and per-round metric tracking. Supports both the scikit-learn API and native LightGBM API.
 
-### Cloud Platform Integrations
+**Spark MLlib** -- `mlflow.spark`. Logs Spark ML pipeline stages, parameters, and metrics. Models are saved in the Spark ML format with a pyfunc wrapper for framework-agnostic serving.
 
-**Databricks:** MLflow is the native ML platform on Databricks, with managed tracking, model registry, model serving, and the AI Gateway fully integrated. Databricks Unity Catalog extends the model registry with fine-grained access control.
+**LangChain** -- `mlflow.langchain`. Traces chain executions, logs prompts and completions, and captures agent tool calls. Autologging patches `invoke()` and `__call__()` to automatically trace LLM interactions.
 
-**AWS SageMaker:** MLflow can deploy models directly to SageMaker endpoints using `mlflow.sagemaker.deploy()`. AWS also offers managed MLflow on SageMaker AI.
+**OpenAI** -- `mlflow.openai`. Logs API call parameters, token usage, cost tracking, and response content. Integrates with MLflow's tracing system for multi-step LLM workflows.
 
-**Azure ML:** Azure Machine Learning integrates MLflow tracking and model registry natively. Models logged with MLflow can be deployed to Azure managed online endpoints.
+**Transformers (Hugging Face)** -- `mlflow.transformers`. Logs model configuration, training arguments, and evaluation metrics. Supports text generation, classification, and other pipeline tasks with automatic signature inference.
 
-**Google Cloud:** MLflow can be deployed on GKE or Cloud Run. Vertex AI supports MLflow tracking for experiment management.
+### Core Tools
+
+**MLflow Tracking UI** -- A React-based web interface for visualizing experiments and runs. Features include metric comparison charts, parallel coordinates plots for hyperparameter analysis, artifact browsing, and run filtering. Accessible via `mlflow ui` or automatically served by the tracking server.
+
+**MLflow CLI** -- Command-line tools for server management, model serving, and project execution:
+```bash
+mlflow server          # Start tracking server
+mlflow models serve    # Serve a model as REST API
+mlflow models build-docker  # Build Docker image for a model
+mlflow run             # Execute an MLflow Project
+```
+
+**MLflow AI Gateway** -- A centralized proxy for managing access to multiple LLM providers (OpenAI, Anthropic, Cohere). Provides rate limiting, cost tracking, API key management, and provider switching without changing application code.
+
+**MLflow Evaluate** -- A framework for evaluating model quality with built-in metrics for classification, regression, and LLM tasks. Supports custom metrics, data slicing, and comparison against baseline models.
 
 ### Deployment Integrations
 
-- **Docker:** Build container images with `mlflow models build-docker`.
-- **Kubernetes:** Deploy via Seldon Core, KServe, or custom Kubernetes manifests.
-- **Ray Serve:** Community plugin for Ray-based model serving.
-- **Databricks Model Serving:** Managed, auto-scaling model endpoints.
-- **SageMaker:** Direct deployment to SageMaker endpoints.
-- **Azure ML Endpoints:** Deploy to managed online/batch endpoints.
+**Docker** -- MLflow builds self-contained Docker images from any model, including dependencies, a serving runtime (Gunicorn/Flask or MLServer), and health check endpoints. Images are Kubernetes-ready.
 
-### Data and Feature Store Integrations
+**Kubernetes** -- Deploy MLflow models as Kubernetes services using the Docker images. Community Helm charts provide tracking server deployment with configurable backends.
 
-- **Delta Lake:** Native integration for reading/writing Delta tables.
-- **Feast:** Feature store integration for feature retrieval during training and serving.
-- **Unity Catalog:** Databricks governance layer for models, data, and features.
+**AWS SageMaker** -- `mlflow.sagemaker.deploy()` deploys models directly to SageMaker endpoints with auto-scaling. MLflow handles the container building and endpoint configuration.
 
-### CI/CD and Orchestration
+**Azure ML** -- Integration with Azure Machine Learning for managed model deployment, monitoring, and auto-scaling.
 
-- **GitHub Actions:** MLflow runs can be triggered from CI pipelines.
-- **Apache Airflow:** Airflow operators for triggering MLflow runs and model registration.
-- **Prefect / Dagster:** Orchestrators can call MLflow APIs for experiment management.
-- **Jenkins:** Standard REST API integration for enterprise CI/CD.
+**Databricks** -- Native integration where Databricks hosts the tracking server, artifact store, and model registry. Unity Catalog provides governance features (access control, lineage, audit logging) on top of the open-source model registry.
 
-### Community and Governance
+### Common Integration Patterns
 
-- **Linux Foundation project** since 2024, ensuring vendor-neutral governance.
-- **900+ contributors** on GitHub.
-- **25+ million monthly PyPI downloads.**
-- Active community on GitHub Discussions, Slack, and Stack Overflow.
-- Regular releases (roughly monthly) with clear changelogs.
-- Plugin ecosystem with third-party extensions for custom stores, deployers, and evaluators.
+**MLflow + Airflow/Prefect/Dagster (Orchestration):**
+Use your orchestrator to schedule and manage ML pipeline steps. Each step logs to MLflow for tracking. The orchestrator handles "when and in what order to run things"; MLflow handles "what happened and what was produced."
 
-### Package Managers
+```python
+# Airflow DAG task example
+def train_model(**context):
+    import mlflow
+    mlflow.set_tracking_uri("http://mlflow-server:5000")
+    with mlflow.start_run():
+        # Training code that logs to MLflow
+        mlflow.log_params(params)
+        model.fit(X_train, y_train)
+        mlflow.sklearn.log_model(model, "model")
+```
 
-- **pip:** `pip install mlflow`
-- **conda:** `conda install -c conda-forge mlflow`
-- **UV:** Supported since MLflow 3.10 with automatic lockfile dependency detection.
-- **Docker:** Official images on Docker Hub and GitHub Container Registry.
+**MLflow + DVC (Data Versioning):**
+Use DVC to version datasets and MLflow to track experiments. Log the DVC data hash as an MLflow parameter to link runs to specific dataset versions. This provides full provenance: code (Git) + data (DVC) + experiment (MLflow).
+
+**MLflow + Feature Stores (Feast, Tecton):**
+Feature stores provide training and serving features. Log the feature set version and feature names as MLflow parameters. The model registry tracks which model version was trained on which feature set version.
+
+**MLflow + Prometheus/Grafana (Monitoring):**
+MLflow tracks training-time metrics. For production monitoring, export model predictions to Prometheus and build Grafana dashboards. Use MLflow's model metadata (expected input schema, training metrics) as baselines for drift detection.
+
+**MLflow + Ray/Optuna (Hyperparameter Tuning):**
+Use Ray Tune or Optuna for distributed hyperparameter search. Each trial logs to MLflow as a nested run. The parent run captures the search space and best configuration.
+
+```python
+import optuna
+import mlflow
+
+def objective(trial):
+    lr = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
+    with mlflow.start_run(nested=True):
+        mlflow.log_param("lr", lr)
+        # Train and evaluate
+        mlflow.log_metric("accuracy", accuracy)
+    return accuracy
+
+with mlflow.start_run(run_name="optuna-search"):
+    study = optuna.create_study(direction="maximize")
+    study.optimize(objective, n_trials=100)
+```

@@ -1,73 +1,97 @@
 ## Ecosystem & Integrations
 <!-- level: intermediate -->
 <!-- references:
-- [Qdrant API & SDKs](https://qdrant.tech/documentation/interfaces/) | official-docs
-- [Qdrant LangChain Integration](https://qdrant.tech/documentation/frameworks/langchain/) | official-docs
-- [Qdrant LlamaIndex Integration](https://qdrant.tech/documentation/frameworks/llama-index/) | official-docs
+- [Qdrant Integrations Documentation](https://qdrant.tech/documentation/frameworks/) | official-docs
+- [Qdrant Client Libraries](https://qdrant.tech/documentation/interfaces/) | official-docs
 - [Qdrant Cloud](https://cloud.qdrant.io/) | official-docs
+- [LangChain Qdrant Integration](https://qdrant.tech/documentation/frameworks/langchain/) | official-docs
 -->
 
 ### Official Client Libraries
 
-Qdrant provides official client libraries across six languages, all maintained by the Qdrant team:
+**Python (`qdrant-client`):** The most feature-complete client. Supports sync and async operations, local mode (in-memory, no server needed), automatic batching, and full type hints. Local mode uses the same Rust engine compiled to a Python extension, providing identical behavior for development and testing without running a server.
 
-| Language | Package | Installation |
-|----------|---------|-------------|
-| Python | qdrant-client | `pip install qdrant-client[fastembed]` |
-| JavaScript/TypeScript | @qdrant/js-client-rest | `npm install @qdrant/js-client-rest` |
-| Rust | qdrant-client | `cargo add qdrant-client` |
-| Go | go-client | `go get github.com/qdrant/go-client` |
-| .NET | Qdrant.Client | `dotnet add package Qdrant.Client` |
-| Java | java-client | Available on Maven Central |
+```python
+from qdrant_client import QdrantClient
 
-The Python client is the most feature-rich, supporting a local mode that runs an embedded Qdrant instance without a separate server — useful for development, testing, and small-scale applications. For languages without an official client, developers can generate clients from Qdrant's OpenAPI specification or protobuf definitions.
+# Local mode — no server needed
+client = QdrantClient(":memory:")  # in-memory
+client = QdrantClient(path="./local_db")  # persistent local
+
+# Remote server
+client = QdrantClient(url="http://localhost:6333")
+client = QdrantClient(url="https://cloud.qdrant.io", api_key="...")
+```
+
+**JavaScript/TypeScript (`@qdrant/js-client-rest`):** REST-based client for Node.js and browser environments. Supports all CRUD and search operations with TypeScript type definitions.
+
+**Rust (`qdrant-client`):** Native Rust client using gRPC for maximum performance. Ideal for Rust applications that need minimal latency.
+
+**Go (`go-client`):** gRPC-based client for Go applications.
+
+**.NET (`Qdrant.Client`):** Official C# client for .NET applications, supporting both REST and gRPC.
+
+**Java (`java-client`):** gRPC-based client for Java/Kotlin applications.
+
+**Raw API Access:** Any language with HTTP or gRPC support can use Qdrant directly. The REST API is available on port 6333 and the gRPC API on port 6334.
 
 ### Framework Integrations
 
-**LangChain:** Qdrant is available as a partner package (`langchain-qdrant`) that provides a QdrantVectorStore class compatible with the LangChain vector store interface. It supports dense, sparse, and hybrid retrieval modes. The integration handles document ingestion, similarity search, and MMR (Maximal Marginal Relevance) search natively.
+**LangChain:** Qdrant is a first-class vector store in the LangChain ecosystem, available as the `langchain-qdrant` partner package. It supports dense, sparse, and hybrid retrieval out of the box. Qdrant acts as the retrieval backend for LangChain's RAG chains, agent memory, and document loaders.
 
-**LlamaIndex:** Qdrant integrates as a vector store backend for LlamaIndex (formerly GPT Index). The `QdrantVectorStore` class plugs into LlamaIndex's indexing and retrieval pipeline, enabling RAG applications with Qdrant as the knowledge store.
+```python
+from langchain_qdrant import QdrantVectorStore
+from langchain_openai import OpenAIEmbeddings
 
-**OpenAI:** Qdrant can serve as a memory backend for ChatGPT via the OpenAI retrieval plugin. It also works seamlessly with OpenAI's embedding models (text-embedding-ada-002, text-embedding-3-small, text-embedding-3-large) and is featured in the OpenAI Cookbook.
+vectorstore = QdrantVectorStore.from_documents(
+    documents,
+    embedding=OpenAIEmbeddings(),
+    url="http://localhost:6333",
+    collection_name="langchain_docs",
+)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+```
 
-**Haystack:** Deepset's Haystack framework includes a Qdrant document store integration for building NLP pipelines with retrieval components.
+**LlamaIndex:** Qdrant integrates as a vector store backend for LlamaIndex, handling the chunking-embedding-storage pipeline. LlamaIndex manages document ingestion and query orchestration while Qdrant provides the similarity search layer.
 
-**AutoGen / CrewAI / Semantic Kernel:** Qdrant integrations exist for Microsoft's agentic frameworks, enabling agent memory and tool-use patterns backed by vector search.
+**Haystack:** Deepset's Haystack framework includes a `QdrantDocumentStore` for building search and question-answering pipelines. Supports hybrid retrieval with both dense and sparse representations.
 
-### Embedding Model Support
+**Semantic Kernel (Microsoft):** Qdrant serves as a memory backend for Microsoft's Semantic Kernel, enabling AI applications built with .NET or Python to persist and retrieve contextual information.
 
-Qdrant works with any embedding model that produces fixed-dimensional vectors. Popular choices include:
+**AutoGen / CrewAI / Other Agent Frameworks:** Qdrant is commonly used as the long-term memory store for multi-agent systems, providing agents with the ability to recall relevant past interactions and knowledge.
 
-- **OpenAI:** text-embedding-3-small (1536d), text-embedding-3-large (3072d)
-- **Cohere:** embed-english-v3.0, embed-multilingual-v3.0
-- **Sentence-Transformers:** all-MiniLM-L6-v2 (384d), all-mpnet-base-v2 (768d)
-- **Hugging Face models:** Any model available on the Hub that produces embeddings
-- **FastEmbed:** Qdrant's own lightweight embedding library (included in the Python client via the `[fastembed]` extra) for on-device embedding generation without external API calls
+### Embedding Model Compatibility
 
-### Qdrant Cloud
+Qdrant is embedding-model agnostic -- it works with any model that produces numerical vectors:
 
-Qdrant Cloud is the managed service offering, providing:
+- **OpenAI:** `text-embedding-3-small` (1536d), `text-embedding-3-large` (3072d, supports Matryoshka dimensions)
+- **Cohere:** `embed-v3` (1024d), works well with binary quantization
+- **Sentence-Transformers:** `all-MiniLM-L6-v2` (384d), `all-mpnet-base-v2` (768d)
+- **Fastembed (Qdrant's own):** Lightweight embedding library that runs models locally without external API calls. Integrated directly into `qdrant-client` for zero-configuration embedding.
+- **CLIP / SigLIP:** Multimodal embeddings for image-text search
+- **BGE / GTE / E5:** Open-source embedding models from various providers
+- **Qwen3 Embeddings:** Latest Chinese/multilingual embedding models
 
-- **Managed clusters:** Deploy Qdrant clusters on AWS, GCP, or Azure without managing infrastructure.
-- **Auto-scaling:** Clusters scale based on workload demands.
-- **Terraform support:** Infrastructure-as-code deployment via the Qdrant Cloud API.
-- **SSO and RBAC:** Enterprise authentication and role-based access control (introduced 2025).
-- **Granular API keys:** Database-level API keys with configurable permissions.
-- **Free tier:** A limited free cluster for development and experimentation.
-
-### Web UI
-
-Qdrant ships with a built-in Web UI (accessible at the REST API port) that provides a visual interface for:
-- Browsing collections and their configurations
-- Inspecting individual points with their vectors and payloads
-- Running test searches and exploring results
-- Viewing cluster status and shard distribution
-- Managing snapshots
+**Qdrant Cloud Inference:** A managed service that unifies embedding generation and vector search into a single API call. You send raw text, and Qdrant Cloud handles embedding and search in one round trip, reducing latency and simplifying the client-side code.
 
 ### Deployment Options
 
-- **Docker:** The most common deployment method. `docker run -p 6333:6333 qdrant/qdrant`
-- **Binary:** Standalone binary available from GitHub releases for Linux, macOS, and Windows.
-- **Kubernetes:** Helm chart available for Kubernetes deployments with distributed mode.
-- **Qdrant Cloud:** Fully managed service.
-- **Embedded (Python):** The Python client's local mode runs an embedded Qdrant instance in-process, backed by the same Rust engine via PyO3 bindings.
+**Open Source (Self-Hosted):** Run the Qdrant Docker image or compile from source. Full feature set, unlimited scale, no license fees. You manage infrastructure, backups, and upgrades.
+
+**Qdrant Cloud (Managed):** Fully managed clusters on AWS, GCP, or Azure. Includes automatic scaling, backups, monitoring, and a free tier (1GB storage). Production deployments get SLA guarantees, SSO, and role-based access control.
+
+**Hybrid Cloud:** Run Qdrant in your own infrastructure (on-premises or private cloud) with management plane in Qdrant Cloud. Combines data sovereignty with managed operations.
+
+**Qdrant Edge:** An in-process version of Qdrant (sharing the same storage format as the server) for edge/mobile deployments. Enables low-latency, offline-capable vector search directly on devices.
+
+### Common Integration Patterns
+
+**Qdrant + LangChain/LlamaIndex for RAG:** The most common pattern. Documents are chunked, embedded, and stored in Qdrant. At query time, LangChain/LlamaIndex embeds the user question, retrieves relevant chunks from Qdrant, and passes them to the LLM as context. Qdrant's payload filtering enables scoping retrieval by document source, date, or access level.
+
+**Qdrant + Fastembed for Self-Contained Search:** Use Fastembed (Qdrant's lightweight embedding library) to generate embeddings locally without external API calls. This pattern is ideal for privacy-sensitive applications or offline deployments where you can't call OpenAI/Cohere APIs.
+
+**Qdrant + Kafka/RabbitMQ for Streaming Ingestion:** For high-throughput ingestion, use a message queue to buffer incoming data. A consumer service reads from the queue, embeds the data, and batch-upserts into Qdrant. This decouples ingestion rate from Qdrant's indexing speed and provides backpressure handling.
+
+**Qdrant + PostgreSQL for Hybrid Storage:** Store structured data (user profiles, transactions, relationships) in PostgreSQL and vector embeddings in Qdrant. Application logic queries both systems: PostgreSQL for relational queries, Qdrant for similarity search. Join results in the application layer.
+
+**Qdrant + Prometheus/Grafana for Monitoring:** Qdrant exposes Prometheus metrics at the `/metrics` endpoint. Set up Grafana dashboards to monitor search latency, ingestion throughput, segment counts, memory usage, and optimizer activity. Alert on degraded performance (rising latency, growing segment count).

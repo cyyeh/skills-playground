@@ -1,55 +1,50 @@
 ## Use Cases & Case Studies
 <!-- level: beginner-intermediate -->
 <!-- references:
-- [MLflow Use Cases](https://mlflow.org/docs/latest/) | docs
-- [Databricks Managed MLflow](https://www.databricks.com/product/managed-mlflow) | vendor
-- [MLflow on AWS SageMaker](https://docs.aws.amazon.com/sagemaker/latest/dg/mlflow.html) | cloud
+- [From Tracking to Deployment: Managing ML Experiments with MLflow](https://www.opensourceforu.com/2026/03/from-tracking-to-deployment-managing-ml-experiments-with-mlflow/) | blog
+- [MLflow on Databricks](https://docs.databricks.com/aws/en/mlflow/) | official-docs
+- [A Practical Guide to MLflow: From Chaos to Production-Ready ML Workflows](https://medium.com/@omari.james.data/a-practical-guide-to-mlflow-from-chaos-to-production-ready-ml-workflows-3fa37bd95ef9) | blog
 -->
 
-### Use Case 1: Experiment Tracking for a Data Science Team
+### When to Use It
 
-**Scenario:** A financial services company has a team of 12 data scientists building fraud detection models. They are using Jupyter notebooks and passing results around via Slack and spreadsheets. Nobody can reproduce last week's best result.
+**Experiment tracking and comparison.** You are running dozens or hundreds of training experiments with different hyperparameters, features, or model architectures, and you need to systematically compare results. MLflow's tracking UI lets you visualize learning curves, compare metrics across runs, and filter runs by parameter values. This is MLflow's core sweet spot -- any data scientist who has ever lost track of "which notebook produced the best model" needs this.
 
-**How MLflow helps:**
-1. The team deploys a shared MLflow tracking server backed by PostgreSQL and S3.
-2. Each data scientist adds `mlflow.autolog()` to their notebooks. Every training run automatically logs hyperparameters, metrics, and model artifacts.
-3. The MLflow UI lets the team compare runs side by side -- sorting by F1 score, filtering by model type, and visualizing metric trends across epochs.
-4. When a data scientist finds a promising approach, they share the run ID, and any teammate can load the exact model and reproduce the result.
+**Team-based ML development.** Multiple data scientists work on the same model, each trying different approaches. MLflow provides a shared tracking server where everyone logs their runs, making it easy to see what others have tried, avoid duplicate work, and build on successful approaches. The experiment and run organization prevents the "my-model-final-v3-REAL-final.pkl" chaos.
 
-**Impact:** Experiment reproducibility goes from "almost never" to "always." Model comparison time drops from hours of spreadsheet wrangling to seconds of UI filtering.
+**Model versioning and promotion.** You need a governed workflow for moving models from development to staging to production. The model registry provides version tracking, alias management, and audit trails. When something goes wrong in production, you can immediately identify which model version is deployed, who promoted it, and from which training run it came.
 
-### Use Case 2: Model Registry and CI/CD for Production Deployment
+**Reproducible ML pipelines.** You need to guarantee that a training run can be exactly reproduced -- same code, same data, same environment, same results. MLflow captures parameters, code version (via Git tags), environment specifications (conda.yaml), and dataset references, providing the complete provenance chain.
 
-**Scenario:** An e-commerce platform serves personalized product recommendations to 50 million users. New models need to be tested, approved, and deployed without disrupting the serving pipeline.
+**Multi-framework model deployment.** Your team uses different ML frameworks (scikit-learn for tabular data, PyTorch for deep learning, XGBoost for gradient boosting) but you want a single deployment pipeline. MLflow's pyfunc flavor unifies all frameworks behind a common `predict()` interface, so one deployment system handles everything.
 
-**How MLflow helps:**
-1. After training, the best model is registered in the MLflow Model Registry as a new version of "recommendation-engine."
-2. A CI pipeline runs automated evaluation: accuracy tests, latency benchmarks, and bias checks. If the model passes, it is aliased as "challenger."
-3. The challenger model is deployed alongside the current "champion" in an A/B test using MLflow's deployment tools and Kubernetes.
-4. After a week of live testing, if the challenger outperforms, the alias is flipped: the challenger becomes the champion, and the old champion is archived.
+**LLM and AI agent observability.** You are building LLM applications or AI agents and need to trace request lifecycles, evaluate prompt quality, and monitor production behavior. MLflow's tracing and evaluation capabilities (added in recent versions) extend experiment tracking to generative AI workflows.
 
-**Impact:** The team deploys new models weekly with zero-downtime rollouts. Model lineage is fully traceable -- from training data to production serving.
+### When NOT to Use It
 
-### Use Case 3: LLM Application Development and Evaluation
+**Real-time feature serving.** MLflow is not a feature store. It tracks experiments and manages models, but it doesn't serve features to production models at inference time. For that, use Feast, Tecton, or a similar feature platform alongside MLflow.
 
-**Scenario:** A SaaS company is building a customer support chatbot using GPT-4 and a RAG (Retrieval-Augmented Generation) pipeline. They need to evaluate prompt changes, retrieval quality, and response safety before releasing updates.
+**Distributed model training.** MLflow doesn't parallelize or distribute training across multiple machines. It tracks the results of training, regardless of how training is distributed. Use Horovod, Ray Train, or DeepSpeed for distributed training and log the results to MLflow.
 
-**How MLflow helps:**
-1. The team enables `mlflow.openai.autolog()` and `mlflow.langchain.autolog()` to capture traces of every LLM call, retrieval step, and tool invocation.
-2. When a prompt engineer modifies the system prompt, they run `mlflow.evaluate()` against a golden dataset with scorers for correctness, relevance, and safety.
-3. The MLflow UI shows a side-by-side comparison of the old and new prompt versions, with per-example traces and aggregate scores.
-4. The AI Gateway manages API keys centrally and enforces a daily budget limit to prevent cost overruns during development.
+**Data pipeline orchestration.** MLflow is not a workflow orchestrator. It doesn't schedule training jobs, manage dependencies between pipeline steps, or handle retries. Use Airflow, Prefect, Dagster, or Kubeflow Pipelines for orchestration, and have each pipeline step log to MLflow.
 
-**Impact:** Prompt iteration speed doubles because engineers can see exactly how each change affects response quality. The safety scorer catches problematic responses before they reach production.
+**Small, one-off analyses.** If you're running a single Jupyter notebook for a quick analysis that won't be repeated, the overhead of setting up MLflow tracking may not be worth it. MLflow shines when you have multiple runs to compare or models to manage over time.
 
-### Use Case 4: Multi-Framework ML Pipeline with Spark
+**Extreme-scale metric logging.** If your training loop logs thousands of metrics per second (e.g., per-batch losses in large-scale distributed training), the MLflow tracking server can become a bottleneck. Consider aggregating metrics before logging (e.g., log per-epoch averages instead of per-batch values) or using a specialized metrics backend.
 
-**Scenario:** A telecommunications company processes call records using Apache Spark for feature engineering, trains models with XGBoost for churn prediction, and deploys them as REST APIs for the CRM system.
+### Real-World Examples
 
-**How MLflow helps:**
-1. The Spark ETL job logs feature statistics and data lineage as MLflow run artifacts.
-2. XGBoost training uses `mlflow.xgboost.autolog()` to capture all hyperparameters, tree metrics, and the trained model in the `xgboost` flavor.
-3. The model is registered and then served using `mlflow models serve`, which loads the XGBoost model via the universal `pyfunc` flavor and exposes a JSON-in/JSON-out REST endpoint.
-4. The CRM system calls the `/invocations` endpoint in real time to score customers and trigger retention campaigns.
+**Databricks -- Managed MLflow at Scale**
+Databricks, the company behind MLflow, operates a managed MLflow service used by thousands of enterprises. Their platform processes billions of logged metrics and manages millions of model versions across industries including finance, healthcare, and retail. The managed service adds enterprise features (access control, audit logging, Unity Catalog integration) on top of the open-source core.
 
-**Impact:** The team uses best-in-class tools at each stage (Spark for data, XGBoost for modeling) without writing any glue code for deployment. The `pyfunc` flavor bridges the framework gap.
+**Manufacturing -- Predictive Maintenance**
+A manufacturing company uses MLflow's Model Registry to manage anomaly detection models deployed on production equipment. Different model versions are staged and tested on historical failure data before deployment. The registry's aliasing system lets them instantly roll back to a previous model version if a new deployment shows degraded performance on the factory floor.
+
+**Autonomous Vehicles -- Reproducible Perception Models**
+A self-driving car company leverages MLflow to ensure reproducibility of perception and control algorithms. Each model training run is logged with the exact dataset version, code commit, hyperparameters, and environment. When a model exhibits unexpected behavior in road testing, engineers can trace back to the exact training conditions and reproduce the issue.
+
+**Netflix-style Recommendation Systems**
+Organizations building recommendation engines use MLflow to manage continuous experimentation. Multiple model variants (collaborative filtering, content-based, hybrid) are tracked as experiments, with the model registry managing A/B test assignments. The champion/challenger alias pattern enables gradual traffic shifting between model versions.
+
+**Financial Services -- Fraud Detection**
+Banks use MLflow to maintain audit trails for fraud detection models, which are subject to regulatory compliance requirements. Every model version is linked to its training data, parameters, and performance metrics. The model registry's tagging system captures compliance metadata (reviewer, approval date, risk assessment), creating a governance trail that satisfies regulatory auditors.

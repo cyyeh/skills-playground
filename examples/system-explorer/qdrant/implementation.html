@@ -8,291 +8,268 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --color-bg: #FAF7F2; --color-bg-warm: #F5F0E8; --color-bg-code: #1E1E2E;
-      --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
-      --color-border: #E5DFD6; --color-border-light: #EEEBE5;
-      --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
-      --color-accent: #D4A843; --color-accent-hover: #BF9738;
-      --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
-      --color-success: #2D8B55; --color-success-light: #E8F5EE;
-      --color-error: #C93B3B; --color-error-light: #FDE8E8;
-      --color-info: #2A7B9B; --color-info-light: #E4F2F7;
-      --color-warning: #D4A843; --color-warning-light: #FDF6E4;
-      --font-display: 'Bricolage Grotesque', Georgia, serif;
-      --font-body: 'DM Sans', -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
-      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
-      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
-      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
-      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
-      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
-      --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
-      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
-      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
-      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
-      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--color-bg); background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%); font-family: var(--font-body); color: var(--color-text); line-height: var(--leading-normal); margin: 0; -webkit-font-smoothing: antialiased; }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2A7B9B;--color-accent-hover:#236A86;--color-accent-light:#E4F2F7;--color-accent-muted:#5A9DB5;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(42,123,155,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:var(--content-width);margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-4)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-2) 0 0;line-height:var(--leading-tight);width:100%}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.advanced{background:var(--color-warning-light);color:var(--color-warning)}.copy-md-btn{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-accent);background:var(--color-accent-light);border:1px solid transparent;border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-md-btn:hover{border-color:var(--color-accent);background:var(--color-surface)}
+    .content-area{max-width:var(--content-width);margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4)}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
 
-    .site-nav { position: sticky; top: 0; z-index: 1000; height: var(--nav-height); background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border-light); }
-    .nav-progress-bar { position: absolute; top: 0; left: 0; height: 3px; width: 0%; background: var(--color-accent); transition: width 100ms linear; z-index: 1; }
-    .nav-inner { max-width: var(--content-width-wide); margin: 0 auto; height: 100%; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6); }
-    .nav-brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
-    .nav-brand:hover { color: var(--color-accent); }
-    .nav-pages { display: flex; align-items: center; gap: var(--space-1); flex: 1; overflow-x: auto; scrollbar-width: none; }
-    .nav-pages::-webkit-scrollbar { display: none; }
-    .nav-page-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--color-text-secondary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); white-space: nowrap; transition: color var(--duration-fast), background var(--duration-fast); }
-    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); }
-    .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
-    .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; padding: var(--space-2); background: none; border: none; cursor: pointer; flex-shrink: 0; }
-    .nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 1px; transition: transform var(--duration-fast), opacity var(--duration-fast); }
-    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
-    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    /* Code blocks */
+    .code-block{background:#1E1E2E;border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md)}
+    .code-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244;flex-wrap:wrap;gap:var(--space-2)}
+    .code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:0.05em}
+    .code-source-path{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;flex:1;text-align:center}
+    .code-source-link{font-family:var(--font-mono);font-size:var(--text-xs);color:#89B4FA;text-decoration:none}.code-source-link:hover{text-decoration:underline}
+    .code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1}
+    .code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4;-webkit-overflow-scrolling:touch}
+    .kw{color:#CBA6F7}.str{color:#F9E2AF}.cmt{color:#6C7086;font-style:italic}.fn{color:#A6E3A1}.num{color:#FAB387}.var{color:#89B4FA}.tp{color:#F38BA8}
 
-    .page-header { max-width: var(--content-width); margin: var(--space-12) auto var(--space-8); padding: 0 var(--space-6); }
-    .page-header h1 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800; margin: 0 0 var(--space-3); line-height: var(--leading-tight); }
-    .page-level-badge { display: inline-block; font-size: var(--text-sm); font-weight: 600; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
-    .page-level-badge.advanced { background: var(--color-error-light); color: var(--color-error); }
+    /* Source map */
+    .source-map{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);margin:0 0 var(--space-8);overflow:hidden}
+    .source-map-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:var(--text-sm);transition:background var(--duration-fast)}.source-map-header:hover{background:var(--color-bg-warm)}
+    .source-map-toggle{transition:transform var(--duration-fast)}.source-map.open .source-map-toggle{transform:rotate(180deg)}
+    .source-map-body{max-height:0;overflow:hidden;transition:max-height var(--duration-slow)}.source-map.open .source-map-body{max-height:500px}
+    .source-map-list{list-style:none;padding:var(--space-2) var(--space-4) var(--space-4);margin:0}.source-map-list li{padding:var(--space-1) 0}.source-map-list a{color:var(--color-accent);text-decoration:none;font-family:var(--font-mono);font-size:var(--text-xs)}.source-map-list a:hover{text-decoration:underline}
+    .source-map-repo{padding:var(--space-2) var(--space-4) var(--space-4);font-size:var(--text-xs);color:var(--color-text-muted)}.source-map-repo a{color:var(--color-accent);text-decoration:none}
 
-    .content-area { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6); }
-    .content-section { margin-bottom: var(--space-10); }
-    .content-section h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; margin: 0 0 var(--space-4); }
-    .content-section h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; margin: var(--space-6) 0 var(--space-3); }
-    .content-section p { font-size: var(--text-base); line-height: 1.7; margin: 0 0 var(--space-4); }
-    .content-section ul, .content-section ol { margin: 0 0 var(--space-4); padding-left: var(--space-6); }
-    .content-section li { margin-bottom: var(--space-2); line-height: 1.6; color: var(--color-text-secondary); }
-    .content-section li strong { color: var(--color-text); }
-
-    code { font-family: var(--font-mono); font-size: 0.88em; background: var(--color-bg-code); color: #CDD6F4; padding: 0.15em 0.4em; border-radius: 4px; }
-    .code-block { background: var(--color-bg-code); color: #CDD6F4; padding: var(--space-5); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: var(--text-sm); line-height: 1.6; overflow-x: auto; margin: var(--space-4) 0; white-space: pre; }
-    .code-block .comment { color: #6C7086; }
-    .code-block .keyword { color: #CBA6F7; }
-    .code-block .string { color: #A6E3A1; }
-    .code-block .type { color: #89DCEB; }
-    .code-block .number { color: #FAB387; }
-
-    .callout { display: flex; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-md); margin: var(--space-4) 0 var(--space-5); border-left: 4px solid; }
-    .callout-insight { background: var(--color-accent-light); border-color: var(--color-accent); }
-    .callout-tip { background: var(--color-info-light); border-color: var(--color-info); }
-    .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
-    .callout-content { font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--color-text-secondary); }
-    .callout-content strong { color: var(--color-text); }
-
-    .comparison-table { width: 100%; border-collapse: collapse; margin: var(--space-4) 0 var(--space-6); font-size: var(--text-sm); }
-    .comparison-table th { font-family: var(--font-display); font-weight: 600; text-align: left; padding: var(--space-3) var(--space-4); background: var(--color-bg-warm); border-bottom: 2px solid var(--color-border); }
-    .comparison-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-light); color: var(--color-text-secondary); }
-    .comparison-table tr:hover td { background: var(--color-surface-warm); }
-    .comparison-table td:first-child { font-weight: 600; color: var(--color-text); }
-
-    .references-footer { max-width: var(--content-width); margin: var(--space-10) auto var(--space-4); padding: var(--space-6); background: var(--color-bg-warm); border-left: 3px solid var(--color-accent); border-radius: var(--radius-md); }
-    .references-footer h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin: 0 0 var(--space-4); }
-    .references-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-    .reference-item { display: flex; align-items: baseline; gap: var(--space-3); }
-    .reference-title { font-size: var(--text-sm); font-weight: 600; }
-    .reference-title a { color: var(--color-accent); text-decoration: none; }
-    .reference-title a:hover { text-decoration: underline; }
-    .reference-type-tag { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-border-light); padding: 1px 6px; border-radius: var(--radius-full); margin-left: var(--space-2); }
-
-    .page-nav-footer { display: flex; justify-content: space-between; align-items: center; max-width: var(--content-width); margin: var(--space-12) auto var(--space-6); padding: var(--space-6); border-top: 1px solid var(--color-border-light); }
-    .page-nav-footer a { font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; }
-    .page-nav-footer a:hover { color: var(--color-accent-hover); }
-    .page-nav-footer .prev::before { content: "\2190\00a0"; }
-    .page-nav-footer .next::after { content: "\00a0\2192"; }
-    .site-footer { text-align: center; padding: var(--space-8) var(--space-6); font-size: var(--text-sm); color: var(--color-text-muted); border-top: 1px solid var(--color-border-light); margin-top: var(--space-4); }
-
-    @media (max-width: 768px) { :root { --text-3xl: 1.5rem; --nav-height: 56px; } .comparison-table { font-size: var(--text-xs); } }
-    @media (max-width: 480px) {
-      .nav-hamburger { display: flex; }
-      .nav-pages { display: none; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border); box-shadow: var(--shadow-md); padding: var(--space-4); }
-      .nav-pages.mobile-open { display: flex; flex-direction: column; gap: var(--space-1); }
-      .page-nav-footer { flex-direction: column; gap: var(--space-4); }
-    }
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:var(--content-width);margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .references-footer{max-width:var(--content-width);margin:var(--space-8) auto;padding:var(--space-6);background:var(--color-surface-warm);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:center;gap:var(--space-3)}.reference-item a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm)}.reference-item a:hover{text-decoration:underline}.reference-domain{font-size:var(--text-xs);color:var(--color-text-muted)}
+    @media(max-width:768px){.nav-pages{display:none}.nav-pages.open{display:flex;flex-direction:column;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-4) var(--space-6);box-shadow:var(--shadow-md);z-index:999}.nav-hamburger{display:flex}.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.code-header{flex-wrap:wrap}}
   </style>
 </head>
 <body>
-
-  <nav class="site-nav">
-    <div class="nav-progress-bar"></div>
-    <div class="nav-inner">
-      <a href="index.html" class="nav-brand">Qdrant</a>
-      <div class="nav-pages" id="navPages">
-        <a href="concepts.html" class="nav-page-link">Concepts</a>
-        <a href="architecture.html" class="nav-page-link">Architecture</a>
-        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
-        <a href="implementation.html" class="nav-page-link active">Implementation</a>
-        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
-        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
-        <a href="faq.html" class="nav-page-link">FAQ</a>
-        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
-      </div>
-      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  <nav class="site-nav"><div class="nav-inner">
+    <a href="index.html" class="nav-brand">Qdrant</a>
+    <div class="nav-pages" id="navPages">
+      <a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link active">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
     </div>
-  </nav>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  </div></nav>
 
   <header class="page-header">
-    <span class="page-level-badge advanced">Advanced</span>
-    <h1>Implementation Details</h1>
+    <div><span class="page-level-badge advanced">Advanced</span><h1>Implementation Details</h1></div>
+    <button class="copy-md-btn" onclick="copyPageAsMarkdown()">&#x1F4CB; Copy as Markdown</button>
   </header>
 
   <main class="content-area">
+    <div class="source-map" id="source-map">
+      <div class="source-map-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>&#x1F5C2; Source Map</h3>
+        <span class="source-map-toggle">&#x25BC;</span>
+      </div>
+      <div class="source-map-body">
+        <ul class="source-map-list">
+          <li><a href="#source-hnsw">lib/segment/src/index/hnsw_index/hnsw.rs</a> -- HNSWIndex struct</li>
+          <li><a href="#source-graph">lib/segment/src/index/hnsw_index/graph_layers.rs</a> -- GraphLayers + search</li>
+          <li><a href="#source-scorer">lib/segment/src/vector_storage/query_scorer/mod.rs</a> -- QueryScorer trait</li>
+          <li><a href="#source-types">lib/segment/src/types.rs</a> -- Distance enum</li>
+          <li><a href="#source-segment">lib/segment/src/segment/mod.rs</a> -- Segment struct</li>
+          <li><a href="#source-entry">lib/segment/src/entry/entry_point.rs</a> -- SegmentEntry trait</li>
+          <li><a href="#source-shard">lib/collection/src/shards/local_shard/mod.rs</a> -- LocalShard struct</li>
+          <li><a href="#source-payload">lib/segment/src/payload_storage/payload_storage_enum.rs</a> -- PayloadStorageEnum</li>
+          <li><a href="#source-links">lib/segment/src/index/hnsw_index/graph_links.rs</a> -- GraphLinks storage</li>
+        </ul>
+        <div class="source-map-repo">Repository: <a href="https://github.com/qdrant/qdrant" target="_blank" rel="noopener noreferrer">qdrant/qdrant</a> @ v1.17.1</div>
+      </div>
+    </div>
 
     <section class="content-section">
-      <h2>Rust Core</h2>
-      <p>Qdrant is implemented entirely in Rust, leveraging zero-cost abstractions, memory safety, and predictable performance. The codebase is organized into key crates:</p>
-      <ul>
-        <li><strong>lib/segment:</strong> Core storage and indexing &mdash; vector storage, HNSW builder, payload storage, and field indexes.</li>
-        <li><strong>lib/collection:</strong> Collection management, shard orchestration, optimizer pipeline, WAL integration.</li>
-        <li><strong>lib/storage:</strong> Top-level TableOfContent, consensus integration, dispatcher logic.</li>
-        <li><strong>src/:</strong> Main binary, API server setup (actix-web + tonic), configuration parsing.</li>
-      </ul>
+      <h2>Getting Started</h2>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">bash</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
+        <pre class="code-pre"><code><span class="cmt"># Start Qdrant server</span>
+docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant
 
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content"><strong>Why Rust matters:</strong> No garbage collector means no GC pauses in the middle of a search. Rust's ownership model eliminates data races in the concurrent optimizer pipeline. The async runtime (tokio) handles thousands of concurrent connections with minimal overhead. SIMD intrinsics are used for vectorized distance computations.</div>
+<span class="cmt"># Install Python client</span>
+pip install qdrant-client</code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
+        <pre class="code-pre"><code><span class="kw">from</span> <span class="var">qdrant_client</span> <span class="kw">import</span> <span class="var">QdrantClient</span>
+<span class="kw">from</span> <span class="var">qdrant_client.models</span> <span class="kw">import</span> <span class="var">Distance</span>, <span class="var">VectorParams</span>, <span class="var">PointStruct</span>
+
+<span class="var">client</span> = <span class="fn">QdrantClient</span>(url=<span class="str">"http://localhost:6333"</span>)
+
+<span class="cmt"># Create a collection with HNSW tuning</span>
+<span class="var">client</span>.<span class="fn">create_collection</span>(
+    collection_name=<span class="str">"my_collection"</span>,
+    vectors_config=<span class="fn">VectorParams</span>(size=<span class="num">384</span>, distance=<span class="var">Distance</span>.COSINE),
+)
+
+<span class="cmt"># Upsert points with vectors and payloads</span>
+<span class="var">client</span>.<span class="fn">upsert</span>(collection_name=<span class="str">"my_collection"</span>, points=[
+    <span class="fn">PointStruct</span>(id=<span class="num">1</span>, vector=[<span class="num">0.05</span>, <span class="num">0.61</span>, <span class="num">0.76</span>, ...],
+               payload={<span class="str">"city"</span>: <span class="str">"Berlin"</span>, <span class="str">"price"</span>: <span class="num">299</span>}),
+])
+
+<span class="cmt"># Search with filtering</span>
+<span class="var">results</span> = <span class="var">client</span>.<span class="fn">query_points</span>(
+    collection_name=<span class="str">"my_collection"</span>,
+    query=[<span class="num">0.2</span>, <span class="num">0.1</span>, <span class="num">0.9</span>, ...],
+    query_filter={<span class="str">"must"</span>: [{<span class="str">"key"</span>: <span class="str">"city"</span>, <span class="str">"match"</span>: {<span class="str">"value"</span>: <span class="str">"Berlin"</span>}}]},
+    limit=<span class="num">10</span>,
+)</code></pre>
       </div>
     </section>
 
     <section class="content-section">
-      <h2>Memory-Mapped Storage</h2>
-      <p>Qdrant's memmap storage uses the <code>mmap</code> system call to create a virtual address space backed by disk files. Rather than loading vectors into RAM directly, the OS page cache decides what stays in memory.</p>
+      <h2>Source Code Walkthrough</h2>
 
-      <div class="code-block"><span class="comment">// Creating a collection with memmap storage</span>
-<span class="keyword">PUT</span> /collections/my_collection
-{
-  <span class="string">"vectors"</span>: {
-    <span class="string">"size"</span>: <span class="number">1536</span>,
-    <span class="string">"distance"</span>: <span class="string">"Cosine"</span>,
-    <span class="string">"on_disk"</span>: <span class="keyword">true</span>
-  },
-  <span class="string">"hnsw_config"</span>: {
-    <span class="string">"on_disk"</span>: <span class="keyword">true</span>
-  }
-}</div>
-
-      <p>When a vector is accessed, the OS checks the page cache. Cache hit = RAM speed. Cache miss = disk read + cache. Frequently accessed vectors stay cached; rare ones are evicted. This provides graceful degradation: abundant RAM approaches in-memory performance; limited RAM falls back to disk without crashing.</p>
-    </section>
-
-    <section class="content-section">
-      <h2>HNSW Graph Construction</h2>
-      <p>The HNSW index is a multi-layer proximity graph. Construction parameters control the quality/cost trade-off:</p>
-
-      <table class="comparison-table">
-        <thead><tr><th>Parameter</th><th>Default</th><th>Purpose</th><th>Impact</th></tr></thead>
-        <tbody>
-          <tr><td><code>m</code></td><td>16</td><td>Max edges per node</td><td>Higher = better recall, more memory</td></tr>
-          <tr><td><code>ef_construct</code></td><td>100</td><td>Build-time candidate list</td><td>Higher = better graph, slower build</td></tr>
-          <tr><td><code>max_indexing_threads</code></td><td>auto</td><td>Parallel build threads</td><td>More threads = faster build</td></tr>
-        </tbody>
-      </table>
-
-      <h3>Construction Algorithm</h3>
-      <ol>
-        <li>Each new vector enters at the top layer and greedily navigates to the nearest neighbor.</li>
-        <li>At its assigned insertion layer (random), it connects to its <code>ef_construct</code> nearest neighbors.</li>
-        <li>The algorithm descends to layer 0, connecting at each layer.</li>
-        <li>Edges are pruned to maintain max <code>m</code> per node, using heuristic selection that prefers directionally diverse connections.</li>
-      </ol>
-
-      <h3>Optimizations</h3>
-      <p><strong>Delta Encoding:</strong> HNSW graph links are compressed using delta encoding &mdash; storing differences between sorted neighbor IDs rather than absolute IDs. Minimal CPU overhead for decompression, significant memory savings.</p>
-      <p><strong>Incremental Building:</strong> The <code>incremental_hnsw_building</code> feature flag allows updating the HNSW graph without full rebuilds for small batches of new points.</p>
-      <p><strong>GPU Acceleration:</strong> Since v1.13, GPU-accelerated HNSW indexing is available for faster graph construction on supported hardware.</p>
-    </section>
-
-    <section class="content-section">
-      <h2>Quantization Internals</h2>
-
-      <table class="comparison-table">
-        <thead><tr><th>Method</th><th>Compression</th><th>Speed</th><th>Accuracy</th><th>Best For</th></tr></thead>
-        <tbody>
-          <tr><td>Scalar (int8)</td><td>4x</td><td>~2x faster</td><td>~0.99 recall</td><td>Universal default</td></tr>
-          <tr><td>Binary (1-bit)</td><td>32x</td><td>~40x faster</td><td>~0.95 recall*</td><td>High-dim (&gt;1024d)</td></tr>
-          <tr><td>Binary (2-bit)</td><td>16x</td><td>~20x faster</td><td>~0.95 recall</td><td>768-1024d vectors</td></tr>
-          <tr><td>Binary (1.5-bit)</td><td>24x</td><td>~30x faster</td><td>~0.95 recall</td><td>1024-1536d vectors</td></tr>
-          <tr><td>Product</td><td>up to 64x</td><td>~0.5x (slower)</td><td>~0.7 recall</td><td>Extreme memory savings</td></tr>
-        </tbody>
-      </table>
-      <p style="font-size:var(--text-xs);color:var(--color-text-muted);">* With compatible models (e.g., OpenAI text-embedding-ada-002) and 4x oversampling</p>
-
-      <h3>Scalar Quantization</h3>
-      <p>Each float32 dimension is linearly mapped to int8. Qdrant computes quantile bounds (e.g., 0.99 quantile) to exclude outliers, then maps the float range to [-128, 127]. Distance calculations use SIMD-optimized integer arithmetic.</p>
-
-      <h3>Binary Quantization</h3>
-      <p>Each float32 dimension becomes a single bit: 1 if positive, 0 otherwise. Distance uses XOR + popcount &mdash; hardware-accelerated CPU instructions operating on 64 bits simultaneously. The 2-bit and 1.5-bit variants (v1.15+) explicitly handle near-zero values for better accuracy with lower-dimensional embeddings.</p>
-
-      <div class="code-block"><span class="comment"># Enabling scalar quantization on a collection</span>
-<span class="keyword">PUT</span> /collections/my_collection
-{
-  <span class="string">"vectors"</span>: { <span class="string">"size"</span>: <span class="number">1536</span>, <span class="string">"distance"</span>: <span class="string">"Cosine"</span> },
-  <span class="string">"quantization_config"</span>: {
-    <span class="string">"scalar"</span>: {
-      <span class="string">"type"</span>: <span class="string">"int8"</span>,
-      <span class="string">"quantile"</span>: <span class="number">0.99</span>,
-      <span class="string">"always_ram"</span>: <span class="keyword">true</span>
-    }
-  }
-}</div>
-    </section>
-
-    <section class="content-section">
-      <h2>API Design</h2>
-      <p>The API is organized into four services, each implemented in both REST and gRPC:</p>
-      <ul>
-        <li><strong>Collections Service:</strong> Lifecycle operations (create, update, delete, list). Defined in <code>collections.proto</code>.</li>
-        <li><strong>Points Service:</strong> Vector/payload CRUD and search operations (upsert, delete, get, scroll, search, recommend). Defined in <code>points.proto</code>. Most frequently used.</li>
-        <li><strong>Snapshots Service:</strong> Backup creation, listing, download, and recovery.</li>
-        <li><strong>Cluster Service:</strong> Cluster status, peer management, shard operations.</li>
-      </ul>
-
-      <div class="callout callout-tip">
-        <div class="callout-icon">&#x2139;&#xFE0F;</div>
-        <div class="callout-content"><strong>Consistency guarantee:</strong> Both REST and gRPC are auto-generated from the same protobuf definitions, ensuring identical functionality. The REST API also exposes an OpenAPI spec for client generation in unsupported languages.</div>
+      <h3>HNSWIndex -- The Core Index Structure</h3>
+      <p>The primary vector index wrapping a multi-layer graph with vector storage, quantization, and payload filtering.</p>
+      <div class="code-block code-block-sourced" id="source-hnsw">
+        <div class="code-header">
+          <span class="code-lang">Rust</span>
+          <span class="code-source-path">lib/segment/src/index/hnsw_index/hnsw.rs</span>
+          <a class="code-source-link" href="https://github.com/qdrant/qdrant/blob/v1.17.1/lib/segment/src/index/hnsw_index/hnsw.rs" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="kw">pub struct</span> <span class="tp">HNSWIndex</span> {
+    <span class="var">id_tracker</span>: <span class="tp">Arc</span>&lt;<span class="tp">AtomicRefCell</span>&lt;<span class="tp">IdTrackerEnum</span>&gt;&gt;,
+    <span class="var">vector_storage</span>: <span class="tp">Arc</span>&lt;<span class="tp">AtomicRefCell</span>&lt;<span class="tp">VectorStorageEnum</span>&gt;&gt;,
+    <span class="var">quantized_vectors</span>: <span class="tp">Arc</span>&lt;<span class="tp">AtomicRefCell</span>&lt;<span class="tp">Option</span>&lt;<span class="tp">QuantizedVectors</span>&gt;&gt;&gt;,
+    <span class="var">payload_index</span>: <span class="tp">Arc</span>&lt;<span class="tp">AtomicRefCell</span>&lt;<span class="tp">StructPayloadIndex</span>&gt;&gt;,
+    <span class="var">config</span>: <span class="tp">HnswGraphConfig</span>,
+    <span class="var">path</span>: <span class="tp">PathBuf</span>,
+    <span class="var">graph</span>: <span class="tp">GraphLayers</span>,
+    <span class="var">searches_telemetry</span>: <span class="tp">HNSWSearchesTelemetry</span>,
+    <span class="var">is_on_disk</span>: <span class="kw">bool</span>,
+}</code></pre>
       </div>
-    </section>
+      <p>Note the <code>Arc&lt;AtomicRefCell&lt;...&gt;&gt;</code> pattern: shared ownership with interior mutability for concurrent reads with serialized writes. The optional <code>quantized_vectors</code> is populated only when quantization is configured.</p>
 
-    <section class="content-section">
-      <h2>Storage Format Evolution</h2>
-      <p><strong>RocksDB era:</strong> Early versions used RocksDB for payload storage and structured metadata. Reliable but general-purpose.</p>
-      <p><strong>GridStore (v1.13+):</strong> A custom block-based key-value storage engine optimized for Qdrant's specific access patterns &mdash; the mix of random reads (payload lookups) and sequential writes (batch upserts). The <code>payload_index_skip_rocksdb</code> feature flag controls migration.</p>
-      <p><strong>Vector files:</strong> Vector data is stored separately in flat binary files (sequential float32 arrays) or memory-mapped files, independent from the key-value store. This separation enables independent optimization of vector access patterns.</p>
-    </section>
+      <h3>GraphLayers -- The Multi-Layer HNSW Graph</h3>
+      <div class="code-block code-block-sourced" id="source-graph">
+        <div class="code-header">
+          <span class="code-lang">Rust</span>
+          <span class="code-source-path">lib/segment/src/index/hnsw_index/graph_layers.rs</span>
+          <a class="code-source-link" href="https://github.com/qdrant/qdrant/blob/v1.17.1/lib/segment/src/index/hnsw_index/graph_layers.rs" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="kw">pub struct</span> <span class="tp">GraphLayers</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="var">hnsw_m</span>: <span class="tp">HnswM</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="var">links</span>: <span class="tp">GraphLinks</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="var">entry_points</span>: <span class="tp">EntryPoints</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="var">visited_pool</span>: <span class="tp">VisitedPool</span>,
+}
 
+<span class="cmt">// The core search method signature</span>
+<span class="kw">fn</span> <span class="fn">search_on_level</span>(
+    &amp;<span class="kw">self</span>,
+    <span class="var">level_entry</span>: <span class="tp">ScoredPointOffset</span>,
+    <span class="var">level</span>: <span class="kw">usize</span>,
+    <span class="var">ef</span>: <span class="kw">usize</span>,
+    <span class="var">points_scorer</span>: &amp;<span class="kw">mut</span> <span class="tp">FilteredScorer</span>,
+    <span class="var">is_stopped</span>: &amp;<span class="tp">AtomicBool</span>,
+) -&gt; <span class="tp">CancellableResult</span>&lt;<span class="tp">FixedLengthPriorityQueue</span>&lt;<span class="tp">ScoredPointOffset</span>&gt;&gt;</code></pre>
+      </div>
+      <p><code>FilteredScorer</code> wraps a distance scorer with a filter check, allowing beam search to skip non-matching points during traversal. <code>VisitedPool</code> maintains thread-local bitsets to prevent re-scoring.</p>
+
+      <h3>QueryScorer -- Distance Computation</h3>
+      <div class="code-block code-block-sourced" id="source-scorer">
+        <div class="code-header">
+          <span class="code-lang">Rust</span>
+          <span class="code-source-path">lib/segment/src/vector_storage/query_scorer/mod.rs</span>
+          <a class="code-source-link" href="https://github.com/qdrant/qdrant/blob/v1.17.1/lib/segment/src/vector_storage/query_scorer/mod.rs" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="kw">pub trait</span> <span class="tp">QueryScorer</span> {
+    <span class="kw">type</span> <span class="tp">TVector</span>: ?<span class="tp">Sized</span>;
+    <span class="kw">fn</span> <span class="fn">score_stored</span>(&amp;<span class="kw">self</span>, <span class="var">idx</span>: <span class="tp">PointOffsetType</span>) -&gt; <span class="tp">ScoreType</span>;
+    <span class="kw">fn</span> <span class="fn">score_stored_batch</span>(
+        &amp;<span class="kw">self</span>, <span class="var">ids</span>: &amp;[<span class="tp">PointOffsetType</span>], <span class="var">scores</span>: &amp;<span class="kw">mut</span> [<span class="tp">ScoreType</span>]
+    );
+    <span class="kw">fn</span> <span class="fn">score</span>(&amp;<span class="kw">self</span>, <span class="var">v2</span>: &amp;<span class="kw">Self</span>::<span class="tp">TVector</span>) -&gt; <span class="tp">ScoreType</span>;
+    <span class="kw">fn</span> <span class="fn">score_internal</span>(
+        &amp;<span class="kw">self</span>, <span class="var">a</span>: <span class="tp">PointOffsetType</span>, <span class="var">b</span>: <span class="tp">PointOffsetType</span>
+    ) -&gt; <span class="tp">ScoreType</span>;
+}</code></pre>
+      </div>
+      <p><code>score_stored_batch</code> enables CPU prefetch optimization when scoring multiple stored vectors. The generic <code>TMetric</code> parameter plugs in different distance functions without changing the search algorithm.</p>
+
+      <h3>Distance Enum</h3>
+      <div class="code-block code-block-sourced" id="source-types">
+        <div class="code-header">
+          <span class="code-lang">Rust</span>
+          <span class="code-source-path">lib/segment/src/types.rs</span>
+          <a class="code-source-link" href="https://github.com/qdrant/qdrant/blob/v1.17.1/lib/segment/src/types.rs" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="kw">pub enum</span> <span class="tp">Distance</span> {
+    Cosine,
+    Euclid,
+    Dot,
+    Manhattan,
+}</code></pre>
+      </div>
+      <p>Cosine and Dot prefer larger scores; Euclidean and Manhattan prefer smaller. Qdrant pre-normalizes Cosine vectors at insertion, making Cosine equivalent to Dot on unit vectors.</p>
+
+      <h3>Segment -- The Storage Unit</h3>
+      <div class="code-block code-block-sourced" id="source-segment">
+        <div class="code-header">
+          <span class="code-lang">Rust</span>
+          <span class="code-source-path">lib/segment/src/segment/mod.rs</span>
+          <a class="code-source-link" href="https://github.com/qdrant/qdrant/blob/v1.17.1/lib/segment/src/segment/mod.rs" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="kw">pub struct</span> <span class="tp">Segment</span> {
+    <span class="kw">pub</span> <span class="var">uuid</span>: <span class="tp">Uuid</span>,
+    <span class="kw">pub</span> <span class="var">version</span>: <span class="tp">Option</span>&lt;<span class="tp">SeqNumberType</span>&gt;,
+    <span class="kw">pub</span> <span class="var">segment_path</span>: <span class="tp">PathBuf</span>,
+    <span class="kw">pub</span> <span class="var">id_tracker</span>: <span class="tp">Arc</span>&lt;<span class="tp">AtomicRefCell</span>&lt;<span class="tp">IdTrackerEnum</span>&gt;&gt;,
+    <span class="kw">pub</span> <span class="var">vector_data</span>: <span class="tp">HashMap</span>&lt;<span class="tp">VectorNameBuf</span>, <span class="tp">VectorData</span>&gt;,
+    <span class="kw">pub</span> <span class="var">payload_index</span>: <span class="tp">Arc</span>&lt;<span class="tp">AtomicRefCell</span>&lt;<span class="tp">StructPayloadIndex</span>&gt;&gt;,
+    <span class="kw">pub</span> <span class="var">payload_storage</span>: <span class="tp">Arc</span>&lt;<span class="tp">AtomicRefCell</span>&lt;<span class="tp">PayloadStorageEnum</span>&gt;&gt;,
+    <span class="kw">pub</span> <span class="var">appendable_flag</span>: <span class="kw">bool</span>,
+    <span class="kw">pub</span> <span class="var">segment_type</span>: <span class="tp">SegmentType</span>,
+    <span class="kw">pub</span> <span class="var">segment_config</span>: <span class="tp">SegmentConfig</span>,
+}</code></pre>
+      </div>
+      <p>The <code>vector_data</code> HashMap maps vector names to <code>VectorData</code> structs (index + storage + quantized reps). This is how named vectors work: independent indexes per vector name. <code>appendable_flag</code> distinguishes write-optimized from read-optimized segments.</p>
+
+      <h3>LocalShard -- Shard Coordination</h3>
+      <div class="code-block code-block-sourced" id="source-shard">
+        <div class="code-header">
+          <span class="code-lang">Rust</span>
+          <span class="code-source-path">lib/collection/src/shards/local_shard/mod.rs</span>
+          <a class="code-source-link" href="https://github.com/qdrant/qdrant/blob/v1.17.1/lib/collection/src/shards/local_shard/mod.rs" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="kw">pub struct</span> <span class="tp">LocalShard</span> {
+    <span class="var">collection_name</span>: <span class="tp">CollectionId</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="var">segments</span>: <span class="tp">LockedSegmentHolder</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="var">wal</span>: <span class="tp">RecoverableWal</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="var">update_handler</span>: <span class="tp">Arc</span>&lt;<span class="tp">Mutex</span>&lt;<span class="tp">UpdateHandler</span>&gt;&gt;,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="var">path</span>: <span class="tp">PathBuf</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="var">optimizers</span>: <span class="tp">ArcSwap</span>&lt;<span class="tp">Vec</span>&lt;<span class="tp">Arc</span>&lt;<span class="tp">Optimizer</span>&gt;&gt;&gt;,
+}</code></pre>
+      </div>
+      <p><code>ArcSwap</code> for optimizers allows hot-swapping configurations without restart. The WAL (<code>RecoverableWal</code>) replays uncommitted entries on crash recovery.</p>
+    </section>
   </main>
 
   <section class="references-footer">
-    <h3>References &amp; Resources</h3>
+    <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item"><span class="reference-title"><a href="https://github.com/qdrant/qdrant" target="_blank">Qdrant GitHub Repository</a></span><span class="reference-type-tag">github</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/articles/scalar-quantization/" target="_blank">Scalar Quantization Article</a></span><span class="reference-type-tag">official-docs</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/articles/binary-quantization/" target="_blank">Binary Quantization Article</a></span><span class="reference-type-tag">official-docs</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/blog/qdrant-1.13.x/" target="_blank">Qdrant 1.13 - GPU Indexing &amp; New Storage Engine</a></span><span class="reference-type-tag">blog</span></li>
+      <li class="reference-item">&#x1F4C4; <a href="https://qdrant.tech/documentation/quickstart/" target="_blank" rel="noopener noreferrer">Qdrant Quick Start Guide</a> <span class="reference-domain">qdrant.tech</span></li>
+      <li class="reference-item">&#x1F4BB; <a href="https://github.com/qdrant/qdrant" target="_blank" rel="noopener noreferrer">Qdrant Source Code</a> <span class="reference-domain">github.com</span></li>
+      <li class="reference-item">&#x1F4BB; <a href="https://github.com/qdrant/qdrant-client" target="_blank" rel="noopener noreferrer">Qdrant Python Client</a> <span class="reference-domain">github.com</span></li>
+      <li class="reference-item">&#x1F4C4; <a href="https://api.qdrant.tech/" target="_blank" rel="noopener noreferrer">Qdrant REST API Reference</a> <span class="reference-domain">api.qdrant.tech</span></li>
     </ul>
   </section>
 
-  <div class="page-nav-footer">
+  <nav class="page-nav-footer">
     <a href="how-it-works.html" class="prev">How It Works</a>
     <a href="use-cases.html" class="next">Use Cases</a>
-  </div>
-
+  </nav>
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
   <script>
-    document.getElementById('navHamburger').addEventListener('click', function() {
-      this.classList.toggle('open');
-      document.getElementById('navPages').classList.toggle('mobile-open');
-    });
-    window.addEventListener('scroll', function() {
-      var bar = document.querySelector('.nav-progress-bar');
-      var h = document.documentElement.scrollHeight - window.innerHeight;
-      bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%';
-    });
+    document.getElementById('navHamburger').addEventListener('click',function(){this.classList.toggle('open');document.getElementById('navPages').classList.toggle('open')});
+    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},2000)})}
+    function copyPageAsMarkdown(){var c=document.querySelector('.content-area');var t='# Implementation Details\n\n';c.querySelectorAll('h2,h3,p').forEach(function(e){if(e.tagName==='H2')t+='\n## '+e.textContent+'\n\n';else if(e.tagName==='H3')t+='### '+e.textContent+'\n\n';else t+=e.textContent+'\n\n'});navigator.clipboard.writeText(t).then(function(){var b=document.querySelector('.copy-md-btn');b.textContent='Copied!';setTimeout(function(){b.innerHTML='&#x1F4CB; Copy as Markdown'},2000)})}
   </script>
 </body>
 </html>

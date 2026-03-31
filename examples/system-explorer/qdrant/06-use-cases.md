@@ -2,62 +2,50 @@
 <!-- level: beginner-intermediate -->
 <!-- references:
 - [Qdrant RAG Use Case](https://qdrant.tech/rag/) | official-docs
-- [Qdrant Use Cases](https://qdrant.tech/use-cases/) | official-docs
-- [Qdrant Advanced Search](https://qdrant.tech/advanced-search/) | official-docs
-- [5-Minute RAG with DeepSeek](https://qdrant.tech/documentation/tutorials-build-essentials/rag-deepseek/) | official-docs
+- [Qdrant AI Agents](https://qdrant.tech/ai-agents/) | official-docs
+- [Qdrant Raises $50M Series B](https://www.businesswire.com/news/home/20260312313902/en/) | news
+- [Qdrant Vector Database in GenAI Projects](https://www.karimarttila.fi/genai/2026/03/04/qdrant-vector-database-in-genai-projects.html) | blog
 -->
 
-### Retrieval-Augmented Generation (RAG)
+### When to Use It
 
-RAG is the most prominent use case for Qdrant and the primary driver of the vector database market. In a RAG pipeline, an LLM's responses are enhanced with relevant context retrieved from a vector database, reducing hallucinations and grounding answers in actual data.
+**Retrieval-Augmented Generation (RAG).** You have a corpus of documents (knowledge base, documentation, internal wikis) and want an LLM to answer questions grounded in that corpus. Qdrant stores document chunk embeddings, and when a user asks a question, the query is embedded, the most relevant chunks are retrieved via similarity search, and those chunks are passed to the LLM as context. Qdrant's payload filtering enables scoping retrieval to specific document categories, date ranges, or access levels -- critical for production RAG systems with multi-tenancy.
 
-**How Qdrant fits in:**
-1. Documents are split into chunks and converted to vectors using an embedding model (e.g., OpenAI text-embedding-3-small).
-2. Vectors are stored in Qdrant with payloads containing the original text, source URL, document title, and other metadata.
-3. When a user asks a question, the question is embedded and used to search Qdrant for the most relevant chunks.
-4. Payload filters narrow results by source, date, permission level, or topic.
-5. Retrieved chunks are injected into the LLM prompt as context.
+**Semantic Search.** You need search that understands meaning rather than just keywords. Traditional search engines match exact terms; Qdrant matches concepts. A search for "affordable family vacation" returns results about "budget-friendly trips with kids" even though no words overlap. Qdrant's hybrid search (combining dense semantic vectors with sparse keyword vectors via Reciprocal Rank Fusion) delivers the best of both worlds.
 
-**Why Qdrant excels here:** The combination of high-performance vector search with rich payload filtering is critical for production RAG. You can filter by document source, date range, user permissions, or any custom metadata — all within the vector search operation, without sacrificing latency. Qdrant's quantization options also make it practical to store millions of document chunks without excessive memory costs.
+**Recommendation Systems.** You have user behavior data (views, purchases, likes) and want to recommend similar items. Embed items and users into the same vector space, then use Qdrant to find items most similar to a user's preference vector or to items they've already interacted with. Qdrant's recommendation API supports positive and negative examples, allowing nuanced "more like this, less like that" recommendations.
 
-**Real-world pattern:** A legal tech company stores millions of case law documents as vector chunks in Qdrant. When a lawyer asks a question, the system retrieves the 20 most relevant passages filtered by jurisdiction and date range, then feeds them to an LLM to generate a researched answer with citations.
+**AI Agent Memory.** AI agents need long-term memory that persists across conversations. Qdrant stores embeddings of past interactions, tool outputs, and learned facts. When the agent needs to recall relevant context, it queries Qdrant with the current conversation embedding. Qdrant's payload filtering enables time-based retrieval ("what did the user say last week?") and topic-based retrieval ("what do we know about their project preferences?").
 
-### Semantic Search
+**Image and Multimodal Search.** With CLIP or similar multimodal embedding models, you can embed both images and text into the same vector space. Qdrant then enables cross-modal search: find images matching a text description, or find text descriptions matching an image. Named vectors allow storing both modalities in a single point, searched independently.
 
-Traditional keyword search fails when users express the same intent with different words. Semantic search uses vector representations to find results based on meaning rather than exact word matches.
+**Anomaly Detection.** Embed normal behavior patterns as vectors. New observations that are far from all stored vectors (low maximum similarity score) are anomalies. Qdrant's fast nearest-neighbor search makes this real-time: check each new event against the database of normal patterns and flag outliers instantly.
 
-**How Qdrant fits in:**
-1. Products, articles, or documents are embedded and stored with full metadata payloads.
-2. User queries are embedded using the same model.
-3. Qdrant returns the most semantically similar items, optionally filtered by category, availability, language, or other attributes.
+### When NOT to Use It
 
-**Why Qdrant excels here:** Qdrant's payload filtering is especially valuable for e-commerce and content search where results must satisfy both semantic relevance and business constraints (in-stock items, user's language, price range). The sub-3ms latency for 1M vectors makes it suitable for user-facing search with real-time requirements.
+**Traditional relational queries.** If your primary need is SQL joins, aggregations, transactions, and ACID compliance on structured data, use PostgreSQL. Qdrant is not a general-purpose database -- it's optimized for similarity search, not complex relational queries. You can filter by payload fields, but you can't JOIN collections or run GROUP BY aggregations.
 
-**Real-world pattern:** An e-commerce platform embeds product descriptions and user reviews into vectors. When a user searches "comfortable running shoes for flat feet," Qdrant returns semantically relevant products filtered by availability, user's region, and price range — even if none of the product titles contain the exact phrase "flat feet."
+**Small datasets (< 10K vectors).** For very small collections, the overhead of running a Qdrant server isn't justified. Use a simple brute-force search in NumPy/FAISS, or use the `qdrant-client` in local mode (in-memory, no server). The HNSW index overhead only pays off when exact search becomes too slow.
 
-### Recommendation Systems
+**Exact keyword matching only.** If your search needs are purely lexical (exact string matching, regex, traditional full-text search), use Elasticsearch or PostgreSQL full-text search. Qdrant's full-text index is basic compared to dedicated search engines. However, if you need both semantic and keyword search, Qdrant's hybrid search (dense + sparse vectors) is a strong option.
 
-Recommendation engines suggest items based on user preferences, behavioral patterns, or item similarity. Vector databases provide a natural foundation for collaborative and content-based filtering.
+**Write-heavy transactional workloads.** Qdrant's segment-based architecture is optimized for read-heavy workloads with background optimization of writes. If your application requires high-frequency, low-latency writes with immediate consistency (e.g., financial transactions), use a traditional database. Qdrant's writes go through WAL and background optimization, introducing a delay before new points are fully indexed.
 
-**How Qdrant fits in:**
-1. User profiles and item profiles are represented as vectors (derived from behavior, ratings, or content features).
-2. To recommend items for a user, the system searches for vectors most similar to the user's profile vector.
-3. Qdrant's "recommend" API can use positive examples (items the user liked) and negative examples (items to avoid) to construct a recommendation query.
+**Structured analytics.** If you need to compute analytics over your data (average prices, count by category, time-series aggregations), Qdrant is the wrong tool. It returns individual points ranked by similarity, not aggregated statistics. Pair it with an analytical database for those needs.
 
-**Why Qdrant excels here:** The recommend API supports multiple positive and negative vectors, enabling nuanced preference modeling. Named vectors allow storing multiple embeddings per point (e.g., visual embedding + text embedding for a product), enabling multi-modal recommendations. Maximal Marginal Relevance (MMR) balances relevance with diversity in recommendation results.
+### Real-World Examples
 
-**Real-world pattern:** A streaming platform represents each movie as a vector based on plot, genre, cast, and visual style. When a user finishes a movie, the system recommends similar movies using the "recommend" API with the watched movie as a positive example and previously skipped movies as negative examples, filtered by the user's content rating preferences.
+**Tripadvisor -- Travel Recommendation at Scale**
+Tripadvisor uses Qdrant to power semantic search and recommendation across millions of hotels, restaurants, and attractions. User queries and listing descriptions are embedded into a shared vector space, enabling searches that understand travel intent ("cozy beachfront hotel with snorkeling") rather than just keyword matching. Qdrant's payload filtering handles the complex structured constraints (location, price range, rating, amenities) that travel search demands.
 
-### Anomaly Detection
+**HubSpot -- CRM Intelligence**
+HubSpot integrates Qdrant into their CRM platform to provide AI-powered features: finding similar companies, matching contacts to ideal customer profiles, and surfacing relevant content recommendations. Qdrant's multi-tenancy capabilities (payload-based isolation per HubSpot customer) enable secure, scalable vector search across their massive customer base.
 
-Anomaly detection identifies data points that deviate significantly from normal patterns. In vector space, anomalies are points that are far from any cluster of normal behavior.
+**Bazaarvoice -- Product Review Intelligence**
+Bazaarvoice processes billions of product reviews across thousands of brands. They use Qdrant to embed and search reviews semantically, enabling features like "find similar complaints across brands" and "match product descriptions to relevant reviews." Qdrant's horizontal scaling handles their data volume, while payload filtering enables brand-level and category-level isolation.
 
-**How Qdrant fits in:**
-1. Normal behavior patterns (network traffic, transactions, sensor readings) are embedded as vectors and stored in Qdrant.
-2. New incoming data points are embedded and searched against the database.
-3. If the nearest neighbor distance exceeds a threshold, the data point is flagged as anomalous.
-4. Payload filtering allows contextual anomaly detection (e.g., "anomalous for this specific server" or "anomalous for this time of day").
+**Bosch -- Industrial IoT and Manufacturing**
+Bosch uses Qdrant for anomaly detection in manufacturing processes and semantic search across technical documentation. Sensor readings from factory equipment are embedded and compared against historical patterns to detect anomalies in real-time. Separately, engineers search through millions of technical documents using natural language queries.
 
-**Why Qdrant excels here:** Qdrant's speed allows real-time anomaly detection on streaming data. The combination of vector distance thresholds with payload-based contextual filtering enables sophisticated detection rules that go beyond simple distance metrics.
-
-**Real-world pattern:** A cybersecurity company embeds network traffic patterns into vectors. Each incoming connection is compared against the database of known normal patterns, filtered by the specific network segment and time window. Connections with high distance scores trigger automated investigation workflows.
+**OpenTable -- Restaurant Search and Matching**
+OpenTable uses Qdrant to improve restaurant recommendations by embedding diner preferences and restaurant characteristics into a shared vector space. The system considers factors beyond simple cuisine matching: ambiance, price sensitivity, past dining patterns, and occasion type. Qdrant's filtered search ensures recommendations respect constraints like location, availability, and dietary requirements.

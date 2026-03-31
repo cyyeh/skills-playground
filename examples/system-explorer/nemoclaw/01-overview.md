@@ -1,30 +1,23 @@
 ## Overview
 <!-- level: beginner -->
 <!-- references:
-- [NVIDIA NemoClaw GitHub](https://github.com/NVIDIA/NemoClaw) | github
-- [NVIDIA Announces NemoClaw](https://nvidianews.nvidia.com/news/nvidia-announces-nemoclaw) | announcement
-- [NemoClaw Developer Guide](https://docs.nvidia.com/nemoclaw/latest/index.html) | official-docs
-- [NVIDIA NemoClaw Product Page](https://www.nvidia.com/en-us/ai/nemoclaw/) | official-docs
+- [NemoClaw Official Documentation](https://docs.nvidia.com/nemoclaw/latest/index.html) | official-docs
+- [NVIDIA NemoClaw GitHub Repository](https://github.com/NVIDIA/NemoClaw) | github
+- [NemoClaw: NVIDIA's Open Source Stack for Running AI Agents You Can Actually Trust](https://dev.to/arshtechpro/nemoclaw-nvidias-open-source-stack-for-running-ai-agents-you-can-actually-trust-50gl) | blog
 -->
 
-NemoClaw is NVIDIA's open-source reference stack for running secure, always-on AI agents. Announced at GTC 2026 on March 16, 2026, it wraps the OpenClaw AI assistant framework with NVIDIA's OpenShell runtime to provide enterprise-grade security, privacy routing, and managed inference for autonomous AI agents. Think of it as a hardened container and control plane that lets organizations deploy powerful AI agents while maintaining strict governance over what those agents can access, communicate with, and execute.
+NemoClaw is an open-source reference stack from NVIDIA that wraps the OpenClaw autonomous AI assistant with enterprise-grade security, privacy controls, and managed inference routing. Think of it as the safety harness for an autonomous AI agent: OpenClaw provides the intelligence and autonomy, while NemoClaw provides the guardrails that keep that autonomy within acceptable boundaries.
 
-NemoClaw was born from a clear enterprise need: as AI agents became more capable — browsing the web, writing code, calling APIs, managing files — the security implications of giving an LLM autonomous access to corporate infrastructure became a critical concern. NemoClaw addresses this by enforcing security policies outside the agent's process, meaning even a fully compromised agent cannot bypass its own constraints.
+Announced at GTC 2026 on March 16, 2026, NemoClaw was created to address a fundamental tension in the AI agent space: how do you give an AI agent enough freedom to be genuinely useful while ensuring it cannot access data it shouldn't, make network calls you haven't approved, or escalate its own privileges? NemoClaw solves this by enforcing security policies at the infrastructure level -- outside the agent's reach -- rather than relying on prompts or in-agent guardrails that a sufficiently capable agent could circumvent.
 
 ### What It Is
 
-NemoClaw is a security and orchestration layer that sits between an AI agent (OpenClaw) and the outside world. It is not a model, not a framework for building agents from scratch, and not a prompt engineering toolkit. Instead, it is a runtime environment that:
-
-- **Sandboxes** the agent in an isolated container with kernel-level filesystem, network, and process restrictions
-- **Routes inference** through a managed gateway, so the agent never holds API credentials directly
-- **Enforces network policies** via declarative YAML rules with deny-by-default outbound connectivity
-- **Provides privacy routing** to send sensitive queries to local Nemotron models while routing non-sensitive queries to cloud providers
-- **Logs every action** for audit compliance in regulated industries
+NemoClaw is a security and deployment stack that installs NVIDIA's OpenShell runtime (part of the NVIDIA Agent Toolkit), creates a hardened sandbox environment, and routes every inference call through declarative policies. You run a single CLI command, and NemoClaw provisions a sandboxed OpenClaw agent with filesystem restrictions, network egress controls, process isolation, and a privacy router that determines whether inference requests go to local models or cloud endpoints based on your policies.
 
 ### Who It's For
 
-NemoClaw targets enterprise teams, DevOps engineers, and AI platform architects who need to deploy autonomous AI agents in production environments where security, compliance, and data sovereignty are non-negotiable. It is particularly relevant for organizations in healthcare (HIPAA), financial services (SOX, PCI-DSS), and government (data residency requirements) that want to leverage agentic AI without exposing sensitive infrastructure.
+NemoClaw is built for platform engineers, AI infrastructure teams, and security-conscious developers who want to deploy autonomous AI agents (specifically OpenClaw) in environments where data privacy, network security, and operational control matter. It's designed for teams that need agents running continuously -- on RTX PCs, DGX Spark systems, or cloud instances -- but cannot accept a "trust the agent" security model. If you're deploying an always-on AI assistant in an enterprise, research lab, or production environment and need to control what it can access and where its inference calls go, NemoClaw is the stack to use.
 
 ### The One-Sentence Pitch
 
-NemoClaw gives you the security perimeter, policy enforcement, and privacy routing needed to run autonomous AI agents in production — so your agent can be powerful without being dangerous.
+NemoClaw gives you a one-command way to deploy OpenClaw AI agents inside a sandboxed environment where security policies are enforced at the infrastructure level, not the prompt level, so the agent literally cannot override them.

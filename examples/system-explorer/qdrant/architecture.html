@@ -8,220 +8,143 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --color-bg: #FAF7F2; --color-bg-warm: #F5F0E8; --color-bg-code: #1E1E2E;
-      --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
-      --color-border: #E5DFD6; --color-border-light: #EEEBE5;
-      --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
-      --color-accent: #D4A843; --color-accent-hover: #BF9738;
-      --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
-      --color-success: #2D8B55; --color-success-light: #E8F5EE;
-      --color-error: #C93B3B; --color-error-light: #FDE8E8;
-      --color-info: #2A7B9B; --color-info-light: #E4F2F7;
-      --color-warning: #D4A843; --color-warning-light: #FDF6E4;
-      --color-level-beginner: #2D8B55; --color-level-intermediate: #D4A843; --color-level-advanced: #C93B3B;
-      --font-display: 'Bricolage Grotesque', Georgia, serif;
-      --font-body: 'DM Sans', -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
-      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
-      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
-      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
-      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
-      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
-      --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
-      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
-      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
-      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
-      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--color-bg); background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%); font-family: var(--font-body); color: var(--color-text); line-height: var(--leading-normal); margin: 0; -webkit-font-smoothing: antialiased; }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2A7B9B;--color-accent-hover:#236A86;--color-accent-light:#E4F2F7;--color-accent-muted:#5A9DB5;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(42,123,155,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}
+    .nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}
+    .nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}
+    .nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}
+    .nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}
+    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}
+    .nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:var(--content-width);margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-4)}
+    .page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-2) 0 0;line-height:var(--leading-tight);width:100%}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}
+    .page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}
+    .copy-md-btn{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-accent);background:var(--color-accent-light);border:1px solid transparent;border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-md-btn:hover{border-color:var(--color-accent);background:var(--color-surface)}
+    .content-area{max-width:var(--content-width);margin:0 auto;padding:0 var(--space-6)}
+    .content-section{margin-bottom:var(--space-10)}
+    .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4)}
+    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3)}
+    .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4)}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
 
-    .site-nav { position: sticky; top: 0; z-index: 1000; height: var(--nav-height); background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border-light); }
-    .nav-progress-bar { position: absolute; top: 0; left: 0; height: 3px; width: 0%; background: var(--color-accent); transition: width 100ms linear; z-index: 1; }
-    .nav-inner { max-width: var(--content-width-wide); margin: 0 auto; height: 100%; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6); }
-    .nav-brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
-    .nav-brand:hover { color: var(--color-accent); }
-    .nav-pages { display: flex; align-items: center; gap: var(--space-1); flex: 1; overflow-x: auto; scrollbar-width: none; }
-    .nav-pages::-webkit-scrollbar { display: none; }
-    .nav-page-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--color-text-secondary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); white-space: nowrap; transition: color var(--duration-fast), background var(--duration-fast); }
-    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); }
-    .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
-    .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; padding: var(--space-2); background: none; border: none; cursor: pointer; flex-shrink: 0; }
-    .nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 1px; transition: transform var(--duration-fast), opacity var(--duration-fast); }
-    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
-    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-
-    .page-header { max-width: var(--content-width); margin: var(--space-12) auto var(--space-8); padding: 0 var(--space-6); }
-    .page-header h1 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800; color: var(--color-text); margin: 0 0 var(--space-3); line-height: var(--leading-tight); }
-    .page-level-badge { display: inline-block; font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
-    .page-level-badge.intermediate { background: var(--color-warning-light); color: var(--color-warning); }
-
-    .content-area { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6); }
-    .content-section { margin-bottom: var(--space-10); }
-    .content-section h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-4); }
-    .content-section h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--color-text); margin: var(--space-6) 0 var(--space-3); }
-    .content-section p { font-size: var(--text-base); color: var(--color-text); line-height: 1.7; margin: 0 0 var(--space-4); }
-    .content-section ul { margin: 0 0 var(--space-4); padding-left: var(--space-6); }
-    .content-section li { margin-bottom: var(--space-2); line-height: 1.6; color: var(--color-text-secondary); }
-    .content-section li strong { color: var(--color-text); }
-
-    code { font-family: var(--font-mono); font-size: 0.88em; background: var(--color-bg-code); color: #CDD6F4; padding: 0.15em 0.4em; border-radius: 4px; }
-
-    .arch-diagram { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-8); box-shadow: var(--shadow-md); margin: var(--space-6) 0 var(--space-8); overflow-x: auto; }
-    .arch-diagram h3 { font-family: var(--font-display); font-weight: 700; text-align: center; font-size: var(--text-xl); margin: 0 0 var(--space-6); }
-    .arch-layers { display: flex; flex-direction: column; gap: var(--space-3); max-width: 560px; margin: 0 auto; }
-    .arch-layer { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-5); border-radius: var(--radius-md); border: 2px solid var(--color-border-light); transition: border-color var(--duration-fast), background var(--duration-fast); cursor: pointer; }
-    .arch-layer:hover { border-color: var(--color-accent); background: var(--color-accent-light); }
-    .arch-layer.active { border-color: var(--color-accent); background: var(--color-accent-light); }
-    .arch-layer-num { width: 32px; height: 32px; border-radius: 50%; background: var(--color-accent); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: var(--text-xs); flex-shrink: 0; }
-    .arch-layer-label { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); flex: 1; }
-    .arch-layer-tech { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); }
-    .arch-layer-detail { display: none; margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-border-light); font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.6; }
-    .arch-layer.active .arch-layer-detail { display: block; }
-    .arch-connector { text-align: center; color: var(--color-accent-muted); font-size: 1.2rem; }
-
-    .callout { display: flex; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-md); margin: var(--space-4) 0 var(--space-5); border-left: 4px solid; }
-    .callout-insight { background: var(--color-accent-light); border-color: var(--color-accent); }
-    .callout-warning { background: var(--color-error-light); border-color: var(--color-error); }
-    .callout-tip { background: var(--color-info-light); border-color: var(--color-info); }
-    .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
-    .callout-content { font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--color-text-secondary); }
-    .callout-content strong { color: var(--color-text); }
-
-    .collapsible-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); background: var(--color-surface); border-radius: var(--radius-md); cursor: pointer; border: 1px solid var(--color-border-light); margin-bottom: var(--space-2); transition: background var(--duration-fast); }
-    .collapsible-header:hover { background: var(--color-bg-warm); }
-    .collapsible-header h3 { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); margin: 0; }
-    .collapsible-arrow { transition: transform var(--duration-fast); font-size: var(--text-sm); }
-    .collapsible-header.open .collapsible-arrow { transform: rotate(180deg); }
-    .collapsible-body { display: none; padding: var(--space-4) var(--space-5); background: var(--color-surface-warm); border-radius: 0 0 var(--radius-md) var(--radius-md); border: 1px solid var(--color-border-light); border-top: 0; margin-bottom: var(--space-4); font-size: var(--text-sm); line-height: 1.7; color: var(--color-text-secondary); }
-    .collapsible-body.open { display: block; }
-    .collapsible-body strong { color: var(--color-text); }
-
-    .references-footer { max-width: var(--content-width); margin: var(--space-10) auto var(--space-4); padding: var(--space-6); background: var(--color-bg-warm); border-left: 3px solid var(--color-accent); border-radius: var(--radius-md); }
-    .references-footer h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin: 0 0 var(--space-4); }
-    .references-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-    .reference-item { display: flex; align-items: baseline; gap: var(--space-3); }
-    .reference-title { font-size: var(--text-sm); font-weight: 600; }
-    .reference-title a { color: var(--color-accent); text-decoration: none; }
-    .reference-title a:hover { text-decoration: underline; }
-    .reference-type-tag { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-border-light); padding: 1px 6px; border-radius: var(--radius-full); margin-left: var(--space-2); }
-
-    .page-nav-footer { display: flex; justify-content: space-between; align-items: center; max-width: var(--content-width); margin: var(--space-12) auto var(--space-6); padding: var(--space-6); border-top: 1px solid var(--color-border-light); }
-    .page-nav-footer a { font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; transition: color var(--duration-fast); }
-    .page-nav-footer a:hover { color: var(--color-accent-hover); }
-    .page-nav-footer .prev::before { content: "\2190\00a0"; }
-    .page-nav-footer .next::after { content: "\00a0\2192"; }
-    .site-footer { text-align: center; padding: var(--space-8) var(--space-6); font-size: var(--text-sm); color: var(--color-text-muted); border-top: 1px solid var(--color-border-light); margin-top: var(--space-4); }
-
-    @media (max-width: 768px) { :root { --text-3xl: 1.5rem; --nav-height: 56px; } .arch-diagram { padding: var(--space-5); } }
-    @media (max-width: 480px) {
-      .nav-hamburger { display: flex; }
-      .nav-pages { display: none; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border); box-shadow: var(--shadow-md); padding: var(--space-4); }
-      .nav-pages.mobile-open { display: flex; flex-direction: column; gap: var(--space-1); }
-      .page-nav-footer { flex-direction: column; gap: var(--space-4); }
-    }
+    /* Architecture Diagram */
+    .arch-diagram{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0;overflow-x:auto}
+    .arch-title{font-family:var(--font-display);font-weight:700;margin-bottom:var(--space-5);text-align:center}
+    .arch-canvas{display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
+    .arch-row{display:flex;align-items:center;justify-content:center;gap:var(--space-3);flex-wrap:wrap}
+    .arch-component{border:2px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);min-width:130px;max-width:180px;text-align:center;cursor:pointer;transition:border-color var(--duration-fast),box-shadow var(--duration-fast),transform var(--duration-fast);position:relative}
+    .arch-component:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .arch-component.expanded{border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-light)}
+    .arch-component[data-type="network"]{border-left:4px solid #D4A843}.arch-component[data-type="compute"]{border-left:4px solid #2A7B9B}.arch-component[data-type="storage"]{border-left:4px solid #2D8B55}.arch-component[data-type="queue"]{border-left:4px solid #7B6DAA}
+    .arch-component-icon{font-size:1.5rem;margin-bottom:var(--space-1)}
+    .arch-component-label{font-family:var(--font-display);font-weight:600;font-size:var(--text-sm)}
+    .arch-component-brief{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-1)}
+    .arch-component-details{max-height:0;overflow:hidden;opacity:0;font-size:var(--text-xs);color:var(--color-text-secondary);line-height:var(--leading-normal);transition:max-height var(--duration-normal),opacity var(--duration-normal),margin var(--duration-normal)}
+    .arch-component.expanded .arch-component-details{max-height:150px;opacity:1;margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--color-border-light)}
+    .arch-arrow-down,.arch-arrow-right{color:var(--color-text-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .glossary-term{border-bottom:1px dashed var(--color-accent-muted);cursor:help;position:relative}
+    .glossary-term .tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--color-bg-code);color:#CDD6F4;font-family:var(--font-body);font-size:var(--text-xs);padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:normal;width:280px;opacity:0;visibility:hidden;transition:opacity var(--duration-fast);z-index:100;box-shadow:var(--shadow-lg);pointer-events:none;line-height:1.5}
+    .glossary-term:hover .tooltip{opacity:1;visibility:visible}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:var(--content-width);margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
+    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s}.page-nav-footer a:hover{color:var(--color-accent-hover)}
+    .page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .references-footer{max-width:var(--content-width);margin:var(--space-8) auto;padding:var(--space-6);background:var(--color-surface-warm);border-radius:var(--radius-md)}
+    .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-4)}
+    .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
+    .reference-item{display:flex;align-items:center;gap:var(--space-3)}.reference-item a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm)}.reference-item a:hover{text-decoration:underline}.reference-domain{font-size:var(--text-xs);color:var(--color-text-muted)}
+    @media(max-width:768px){.nav-pages{display:none}.nav-pages.open{display:flex;flex-direction:column;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-4) var(--space-6);box-shadow:var(--shadow-md);z-index:999}.nav-hamburger{display:flex}.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.arch-row{flex-direction:column}.arch-arrow-right{transform:rotate(90deg)}}
   </style>
 </head>
 <body>
-
-  <nav class="site-nav">
-    <div class="nav-progress-bar"></div>
-    <div class="nav-inner">
-      <a href="index.html" class="nav-brand">Qdrant</a>
-      <div class="nav-pages" id="navPages">
-        <a href="concepts.html" class="nav-page-link">Concepts</a>
-        <a href="architecture.html" class="nav-page-link active">Architecture</a>
-        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
-        <a href="implementation.html" class="nav-page-link">Implementation</a>
-        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
-        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
-        <a href="faq.html" class="nav-page-link">FAQ</a>
-        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
-      </div>
-      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  <nav class="site-nav"><div class="nav-inner">
+    <a href="index.html" class="nav-brand">Qdrant</a>
+    <div class="nav-pages" id="navPages">
+      <a href="index.html" class="nav-page-link">Home</a>
+      <a href="concepts.html" class="nav-page-link">Concepts</a>
+      <a href="architecture.html" class="nav-page-link active">Architecture</a>
+      <a href="how-it-works.html" class="nav-page-link">How It Works</a>
+      <a href="implementation.html" class="nav-page-link">Implementation</a>
+      <a href="use-cases.html" class="nav-page-link">Use Cases</a>
+      <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+      <a href="faq.html" class="nav-page-link">FAQ</a>
+      <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
     </div>
-  </nav>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  </div></nav>
 
   <header class="page-header">
-    <span class="page-level-badge intermediate">Intermediate</span>
-    <h1>Architecture</h1>
+    <div><span class="page-level-badge intermediate">Intermediate</span><h1>Architecture</h1></div>
+    <button class="copy-md-btn" onclick="copyPageAsMarkdown()">&#x1F4CB; Copy as Markdown</button>
   </header>
 
   <main class="content-area">
-
     <section class="content-section">
-      <h2>Seven-Layer Architecture</h2>
-      <p>Qdrant is organized into seven distinct layers, from client-facing APIs down to disk persistence. Click any layer to see its details.</p>
-
+      <h2>High-Level Design</h2>
+      <p>Qdrant follows a client-server architecture where the server is a standalone Rust binary exposing REST and <span class="glossary-term">gRPC<span class="tooltip">A high-performance RPC framework using HTTP/2 and Protocol Buffers for binary serialization. Qdrant exposes gRPC on port 6334 for low-latency, high-throughput operations.</span></span> APIs. The system is layered: each layer has a clear responsibility, from API handling down to storage.</p>
       <div class="arch-diagram">
-        <h3>Qdrant Component Stack</h3>
-        <div class="arch-layers" id="archLayers">
-          <div class="arch-layer" data-layer="1">
-            <div class="arch-layer-num">1</div>
-            <div style="flex:1">
-              <div class="arch-layer-label">Client SDKs &amp; Frameworks</div>
-              <div class="arch-layer-tech">Python, JS, Rust, Go, Java, .NET</div>
-              <div class="arch-layer-detail">Official client libraries in six languages connect to Qdrant via REST or gRPC. Framework integrations (LangChain, LlamaIndex, Haystack) build on top of these clients to provide higher-level abstractions for RAG, semantic search, and agent memory.</div>
+        <h3 class="arch-title">Qdrant System Architecture</h3>
+        <div class="arch-canvas">
+          <div class="arch-row">
+            <div class="arch-component" data-type="network" data-details="Provides two network interfaces: RESTful HTTP (Actix-web, port 6333) and gRPC (Tonic, port 6334). Both share the same internal type system for behavioral parity.">
+              <div class="arch-component-icon">&#x1F310;</div>
+              <div class="arch-component-label">API Layer</div>
+              <div class="arch-component-brief">REST &amp; gRPC</div>
+              <div class="arch-component-details"></div>
             </div>
           </div>
-          <div class="arch-connector">&#x25BC;</div>
-          <div class="arch-layer" data-layer="2">
-            <div class="arch-layer-num">2</div>
-            <div style="flex:1">
-              <div class="arch-layer-label">API Layer</div>
-              <div class="arch-layer-tech">REST (actix-web :6333) / gRPC (tonic :6334)</div>
-              <div class="arch-layer-detail">REST serves JSON via actix-web on port 6333. gRPC serves binary Protocol Buffers via tonic on port 6334. Both expose identical functionality. An internal gRPC channel on port 6335 handles peer-to-peer communication in distributed mode.</div>
+          <div class="arch-arrow-down"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0 L12 24 M6 18 L12 28 L18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+          <div class="arch-row">
+            <div class="arch-component" data-type="compute" data-details="Manages collection lifecycle: creation, deletion, config updates, snapshots. Delegates data operations to the shard holder. Coordinates distributed operations like shard transfers.">
+              <div class="arch-component-icon">&#x1F4C1;</div>
+              <div class="arch-component-label">Collection Manager</div>
+              <div class="arch-component-brief">Collection lifecycle</div>
+              <div class="arch-component-details"></div>
+            </div>
+            <div class="arch-arrow-right"><svg width="40" height="24" viewBox="0 0 40 24"><path d="M0 12 L32 12 M26 6 L36 12 L26 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+            <div class="arch-component" data-type="queue" data-details="In distributed mode, Raft consensus coordinates cluster metadata: collections, shard placement, replica states. Data operations bypass Raft for performance -- they use direct P2P gRPC.">
+              <div class="arch-component-icon">&#x1F91D;</div>
+              <div class="arch-component-label">Raft Consensus</div>
+              <div class="arch-component-brief">Cluster coordination</div>
+              <div class="arch-component-details"></div>
             </div>
           </div>
-          <div class="arch-connector">&#x25BC;</div>
-          <div class="arch-layer" data-layer="3">
-            <div class="arch-layer-num">3</div>
-            <div style="flex:1">
-              <div class="arch-layer-label">Application Core</div>
-              <div class="arch-layer-tech">Dispatcher + ConsensusManager</div>
-              <div class="arch-layer-detail">The Dispatcher routes requests to the correct collection and shard. The ConsensusManager coordinates cluster-wide state via Raft. Metadata operations flow through consensus; data operations bypass it for performance.</div>
+          <div class="arch-arrow-down"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0 L12 24 M6 18 L12 28 L18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+          <div class="arch-row">
+            <div class="arch-component" data-type="compute" data-details="Routes requests to correct shards via consistent hashing (writes) or broadcast (searches). Manages ShardReplicaSets for fault tolerance. Collects and merges results from multiple shards.">
+              <div class="arch-component-icon">&#x1F500;</div>
+              <div class="arch-component-label">Shard Router</div>
+              <div class="arch-component-brief">Request routing</div>
+              <div class="arch-component-details"></div>
             </div>
           </div>
-          <div class="arch-connector">&#x25BC;</div>
-          <div class="arch-layer" data-layer="4">
-            <div class="arch-layer-num">4</div>
-            <div style="flex:1">
-              <div class="arch-layer-label">Collection Management</div>
-              <div class="arch-layer-tech">TableOfContent + Collection</div>
-              <div class="arch-layer-detail">TableOfContent is the top-level registry tracking all collections. Each Collection manages its sharding config, replication settings, and optimizer parameters. Collections are the primary organizational boundary.</div>
+          <div class="arch-arrow-down"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0 L12 24 M6 18 L12 28 L18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+          <div class="arch-row">
+            <div class="arch-component" data-type="storage" data-details="Owns WAL, segments, and optimizers. Writes pass through WAL for durability, then to appendable segment. Uses lock-free patterns for concurrent segment access.">
+              <div class="arch-component-icon">&#x1F4BE;</div>
+              <div class="arch-component-label">Local Shard</div>
+              <div class="arch-component-brief">WAL + segments</div>
+              <div class="arch-component-details"></div>
+            </div>
+            <div class="arch-arrow-right"><svg width="40" height="24" viewBox="0 0 40 24"><path d="M0 12 L32 12 M26 6 L36 12 L26 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+            <div class="arch-component" data-type="compute" data-details="Background process: IndexingOptimizer builds HNSW indexes, MergeOptimizer combines small segments, VacuumOptimizer reclaims space from deleted points. Never blocks search operations.">
+              <div class="arch-component-icon">&#x2699;&#xFE0F;</div>
+              <div class="arch-component-label">Optimizer</div>
+              <div class="arch-component-brief">Background indexing</div>
+              <div class="arch-component-details"></div>
             </div>
           </div>
-          <div class="arch-connector">&#x25BC;</div>
-          <div class="arch-layer" data-layer="5">
-            <div class="arch-layer-num">5</div>
-            <div style="flex:1">
-              <div class="arch-layer-label">Shard Layer</div>
-              <div class="arch-layer-tech">LocalShard / RemoteShard / ReplicaSet</div>
-              <div class="arch-layer-detail">Collections are split into shards. LocalShard owns data with segments and WAL. RemoteShard proxies to peers via internal gRPC. ReplicaSets maintain replicas with states: Active, Dead, Partial, Initializing, Listener.</div>
-            </div>
-          </div>
-          <div class="arch-connector">&#x25BC;</div>
-          <div class="arch-layer" data-layer="6">
-            <div class="arch-layer-num">6</div>
-            <div style="flex:1">
-              <div class="arch-layer-label">Storage Layer</div>
-              <div class="arch-layer-tech">Segments (vectors + payloads + indexes)</div>
-              <div class="arch-layer-detail">Segments are self-contained stores with vector storage, payload storage, HNSW index, payload field indexes, and ID mapper. They transition from Plain (appendable, no HNSW) to Indexed (immutable, with HNSW) via the optimizer.</div>
-            </div>
-          </div>
-          <div class="arch-connector">&#x25BC;</div>
-          <div class="arch-layer" data-layer="7">
-            <div class="arch-layer-num">7</div>
-            <div style="flex:1">
-              <div class="arch-layer-label">Persistence</div>
-              <div class="arch-layer-tech">WAL + GridStore/RocksDB + mmap files</div>
-              <div class="arch-layer-detail">WAL ensures durability with sequential versioned writes. GridStore (or RocksDB) handles key-value payload storage. Vector data uses flat binary files or memory-mapped files for efficient random access.</div>
+          <div class="arch-arrow-down"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0 L12 24 M6 18 L12 28 L18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+          <div class="arch-row">
+            <div class="arch-component" data-type="storage" data-details="Self-contained storage units with vector storage, payload storage, HNSW index, payload index, and ID tracker. Appendable segments accept writes; non-appendable segments are immutable and HNSW-indexed.">
+              <div class="arch-component-icon">&#x1F4E6;</div>
+              <div class="arch-component-label">Segments</div>
+              <div class="arch-component-brief">Vectors + payloads + indexes</div>
+              <div class="arch-component-details"></div>
             </div>
           </div>
         </div>
@@ -229,113 +152,38 @@
     </section>
 
     <section class="content-section">
-      <h2>Segment Lifecycle</h2>
-      <p>Segments are the fundamental unit of storage. Understanding their lifecycle is key to understanding Qdrant's write and optimization behavior.</p>
-
-      <div class="collapsible-header" onclick="toggleCollapsible(this)">
-        <h3>Plain (Appendable) Segments</h3>
-        <span class="collapsible-arrow">&#x25BC;</span>
-      </div>
-      <div class="collapsible-body">
-        <p>Every shard maintains at least one plain segment that accepts new writes. Plain segments use simple sequential vector storage without an HNSW index &mdash; incoming points are immediately searchable via brute-force but not yet indexed for fast ANN search. This design ensures writes are never blocked by index building.</p>
-      </div>
-
-      <div class="collapsible-header" onclick="toggleCollapsible(this)">
-        <h3>Indexed (Non-Appendable) Segments</h3>
-        <span class="collapsible-arrow">&#x25BC;</span>
-      </div>
-      <div class="collapsible-body">
-        <p>When a plain segment reaches the indexing threshold (default: 10,000 points), the optimizer converts it to an indexed segment. The optimizer builds the HNSW graph, creates payload field indexes, and optionally converts to memmap storage. The segment is sealed &mdash; it becomes immutable for inserts but still supports deletes and reads.</p>
-      </div>
-
-      <div class="collapsible-header" onclick="toggleCollapsible(this)">
-        <h3>Special (Temporary) Segments</h3>
-        <span class="collapsible-arrow">&#x25BC;</span>
-      </div>
-      <div class="collapsible-body">
-        <p>During optimization, proxy and copy-on-write segments handle concurrent reads and writes safely. A proxy segment intercepts reads to the old segment while a new indexed segment is being built. Once the new segment is ready, the proxy is replaced atomically.</p>
-      </div>
+      <h2>Design Decisions</h2>
+      <h3>Rust over C++ or Go</h3>
+      <p>Qdrant chose Rust for memory safety without garbage collection overhead. A vector database holds large data in memory and performs latency-sensitive operations. Rust's ownership model prevents memory leaks and data races at compile time, while zero-cost abstractions and SIMD intrinsics deliver C-level performance. No GC means no unpredictable pauses during search.</p>
+      <h3>Client-Server over Embedded</h3>
+      <p>Unlike embedded databases, Qdrant runs as a server. This enables multi-client access, horizontal scaling via sharding and replication, and operational features like rolling upgrades. The trade-off is network overhead, but for AI applications making API calls, this is negligible compared to embedding model latency.</p>
+      <h3>HNSW over IVF or LSH</h3>
+      <p>HNSW provides the best combination of recall and speed for general-purpose vector search. Its graph structure also lends itself to filter-aware extensions -- Qdrant can skip non-matching nodes during traversal, which is much harder with partition-based indexes like IVF.</p>
+      <h3>Segment-Based Storage</h3>
+      <p>The segment architecture separates write-optimized and read-optimized data paths. New writes go to small, unindexed appendable segments. The optimizer periodically seals these and builds HNSW indexes, creating immutable search-optimized segments. This avoids the tension between write and search performance.</p>
     </section>
-
-    <section class="content-section">
-      <h2>Optimizer Pipeline</h2>
-      <p>Three asynchronous workers coordinate to keep data fresh, indexed, and durable without blocking client requests.</p>
-
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content"><strong>Key insight:</strong> Writes are acknowledged after WAL persistence, not after indexing. This means upserts are fast (WAL append), while expensive HNSW construction happens asynchronously in the background.</div>
-      </div>
-
-      <ul>
-        <li><strong>Update Worker:</strong> Applies point operations (upsert, delete, set payload) to segments immediately after WAL write. Triggered on every write.</li>
-        <li><strong>Optimize Worker:</strong> Builds HNSW indexes when segments reach thresholds, merges small segments, vacuums deleted points. Converts plain segments to indexed segments.</li>
-        <li><strong>Flush Worker:</strong> Persists segment state to disk every 5 seconds (configurable via <code>flush_interval_sec</code>). Ensures non-WAL data like index structures are durably stored.</li>
-      </ul>
-    </section>
-
-    <section class="content-section">
-      <h2>Distributed Architecture</h2>
-
-      <div class="callout callout-tip">
-        <div class="callout-icon">&#x2139;&#xFE0F;</div>
-        <div class="callout-content"><strong>Tip:</strong> Use an odd number of nodes (3, 5, 7) for reliable Raft leader election. Set <code>replication_factor</code> to at least 2 for fault tolerance in production.</div>
-      </div>
-
-      <h3>Sharding</h3>
-      <p>Collections are split into shards distributed across peers. <strong>Automatic sharding</strong> (default) uses consistent hashing for even distribution. <strong>Custom sharding</strong> (v1.7.0+) allows explicit shard assignment per point, useful for multi-tenant architectures where each tenant gets its own shard.</p>
-
-      <h3>Replication</h3>
-      <p>Each shard can have multiple replicas across different peers, configured via <code>replication_factor</code>. Write operations are forwarded to all replicas with configurable write consistency &mdash; how many replicas must acknowledge before the client receives a response.</p>
-
-      <h3>Consensus</h3>
-      <p>Raft consensus ensures all peers agree on cluster topology and collection structure. A critical design choice: <strong>metadata operations</strong> (collection management, shard transfers) go through Raft for consistency, while <strong>data operations</strong> (upserts, searches) bypass Raft for performance, using clock tags for causal ordering instead.</p>
-
-      <div class="callout callout-warning">
-        <div class="callout-icon">&#x26A0;&#xFE0F;</div>
-        <div class="callout-content"><strong>Important:</strong> Because data operations bypass Raft, Qdrant prioritizes availability and performance over strict consistency for point-level operations. If you need strong consistency for reads, use the <code>read_consistency</code> parameter with a value of <code>all</code> or <code>majority</code>.</div>
-      </div>
-    </section>
-
   </main>
 
   <section class="references-footer">
-    <h3>References &amp; Resources</h3>
+    <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item"><span class="reference-title"><a href="https://deepwiki.com/qdrant/qdrant/2-system-architecture" target="_blank">Qdrant System Architecture (DeepWiki)</a></span><span class="reference-type-tag">wiki</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/documentation/manage-data/storage/" target="_blank">Qdrant Storage Documentation</a></span><span class="reference-type-tag">official-docs</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/documentation/operations/distributed_deployment/" target="_blank">Qdrant Distributed Deployment</a></span><span class="reference-type-tag">official-docs</span></li>
+      <li class="reference-item">&#x1F4C4; <a href="https://qdrant.tech/documentation/overview/" target="_blank" rel="noopener noreferrer">Qdrant Architecture Overview</a> <span class="reference-domain">qdrant.tech</span></li>
+      <li class="reference-item">&#x1F4BB; <a href="https://github.com/qdrant/qdrant" target="_blank" rel="noopener noreferrer">Qdrant Source Code</a> <span class="reference-domain">github.com</span></li>
+      <li class="reference-item">&#x1F4F0; <a href="https://qdrant.tech/articles/filtrable-hnsw/" target="_blank" rel="noopener noreferrer">Filtrable HNSW - Qdrant</a> <span class="reference-domain">qdrant.tech</span></li>
+      <li class="reference-item">&#x1F4F0; <a href="https://qdrant.tech/blog/qdrant-1.16.x/" target="_blank" rel="noopener noreferrer">Qdrant 1.16 - Tiered Multitenancy</a> <span class="reference-domain">qdrant.tech</span></li>
     </ul>
   </section>
 
-  <div class="page-nav-footer">
-    <a href="concepts.html" class="prev">Concepts</a>
+  <nav class="page-nav-footer">
+    <a href="concepts.html" class="prev">Core Concepts</a>
     <a href="how-it-works.html" class="next">How It Works</a>
-  </div>
-
+  </nav>
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
   <script>
-    document.getElementById('navHamburger').addEventListener('click', function() {
-      this.classList.toggle('open');
-      document.getElementById('navPages').classList.toggle('mobile-open');
-    });
-    window.addEventListener('scroll', function() {
-      var bar = document.querySelector('.nav-progress-bar');
-      var h = document.documentElement.scrollHeight - window.innerHeight;
-      bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%';
-    });
-    document.querySelectorAll('.arch-layer').forEach(function(layer) {
-      layer.addEventListener('click', function() {
-        var wasActive = this.classList.contains('active');
-        document.querySelectorAll('.arch-layer').forEach(function(l) { l.classList.remove('active'); });
-        if (!wasActive) this.classList.add('active');
-      });
-    });
-    function toggleCollapsible(header) {
-      header.classList.toggle('open');
-      var body = header.nextElementSibling;
-      body.classList.toggle('open');
-    }
+    document.getElementById('navHamburger').addEventListener('click',function(){this.classList.toggle('open');document.getElementById('navPages').classList.toggle('open')});
+    document.querySelectorAll('.arch-component').forEach(function(c){c.addEventListener('click',function(){var d=c.querySelector('.arch-component-details');var w=c.classList.contains('expanded');document.querySelectorAll('.arch-component.expanded').forEach(function(o){o.classList.remove('expanded');o.querySelector('.arch-component-details').textContent=''});if(!w){c.classList.add('expanded');d.textContent=c.dataset.details}})});
+    function copyPageAsMarkdown(){var c=document.querySelector('.content-area');var t='# Architecture\n\n';c.querySelectorAll('h2,h3,p').forEach(function(e){if(e.tagName==='H2')t+='\n## '+e.textContent+'\n\n';else if(e.tagName==='H3')t+='### '+e.textContent+'\n\n';else t+=e.textContent+'\n\n'});navigator.clipboard.writeText(t).then(function(){var b=document.querySelector('.copy-md-btn');b.textContent='Copied!';setTimeout(function(){b.innerHTML='&#x1F4CB; Copy as Markdown'},2000)})}
   </script>
 </body>
 </html>

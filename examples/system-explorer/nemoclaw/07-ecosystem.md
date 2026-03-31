@@ -1,119 +1,77 @@
 ## Ecosystem & Integrations
 <!-- level: intermediate -->
 <!-- references:
-- [NVIDIA NeMo Agent Toolkit](https://developer.nvidia.com/nemo-agent-toolkit) | official-docs
-- [NVIDIA NeMo](https://www.nvidia.com/en-us/ai-data-science/products/nemo/) | official-docs
-- [NVIDIA NIM](https://docs.nvidia.com/nim/large-language-models/latest/function-calling.html) | official-docs
-- [NVIDIA Nemotron](https://www.nvidia.com/en-us/ai-data-science/foundation-models/nemotron/) | official-docs
-- [OpenClaw MCP Integration](https://dev.to/ollieb89/how-openclaw-implements-mcp-for-multi-agent-orchestration-36hk) | article
+- [NVIDIA Agent Toolkit](https://developer.nvidia.com/agent-toolkit) | official-docs
+- [NemoClaw GitHub](https://github.com/NVIDIA/NemoClaw) | github
+- [OpenShell Technical Blog](https://developer.nvidia.com/blog/run-autonomous-self-evolving-agents-more-safely-with-nvidia-openshell/) | blog
+- [NeMo Guardrails GitHub](https://github.com/NVIDIA-NeMo/Guardrails) | github
 -->
 
-NemoClaw sits at the intersection of NVIDIA's AI infrastructure stack and the broader open-source agent ecosystem. Understanding its position in this ecosystem helps clarify what NemoClaw does and doesn't do, and how it connects to other tools you might use.
+### NVIDIA Ecosystem
 
-### NVIDIA's AI Stack
+**OpenClaw:** The autonomous AI assistant that NemoClaw secures. OpenClaw provides the agentic capabilities (code generation, task planning, tool use), and NemoClaw provides the security envelope. NemoClaw is purpose-built for OpenClaw's architecture and lifecycle.
 
-**NVIDIA NeMo Framework**
-NeMo is NVIDIA's end-to-end platform for building, customizing, and deploying generative AI models. It covers the full model lifecycle: data curation, pretraining, fine-tuning, alignment (RLHF/DPO), and evaluation. NemoClaw uses models produced by the NeMo framework (particularly the Nemotron family) but does not itself train or fine-tune models. The relationship: NeMo produces the models, NemoClaw provides the secure runtime to use them.
+**OpenShell:** The general-purpose agent security runtime underneath NemoClaw. OpenShell provides sandboxing, policy enforcement, and the privacy router as reusable primitives. While NemoClaw configures OpenShell specifically for OpenClaw, OpenShell also works with other agents like Claude Code, Cursor, and Codex. If you use a different agent, you'd use OpenShell directly.
 
-**NVIDIA Nemotron Models**
-The Nemotron family is NVIDIA's open-source LLM lineup optimized for enterprise tasks: instruction following, agentic reasoning, and tool use. Key models include:
-- **Nemotron 3 Nano 4B** — Lightweight model for edge and local deployment
-- **Nemotron 3 Super 120B (A12B)** — Mixture-of-experts model with 120B total parameters but only 12B active per token, providing strong reasoning at efficient compute cost
-- NemoClaw defaults to `nvidia/nemotron-3-super-120b-a12b` via NVIDIA Endpoints, but supports any model via Ollama or custom providers.
+**NVIDIA Agent Toolkit:** The broader software suite that includes OpenShell, inference management tools, and deployment utilities. NemoClaw is one application built on Agent Toolkit components.
 
-**NVIDIA NIM (Inference Microservices)**
-NIM provides containerized, optimized inference endpoints for NVIDIA models. NemoClaw can route inference requests to NIM-hosted models via the NVIDIA Endpoints provider. NIM handles the GPU optimization (TensorRT-LLM acceleration, batching, quantization); NemoClaw handles the security and policy layer around inference routing.
+**NVIDIA Nemotron:** The family of open-source language models from NVIDIA. NemoClaw's default inference configuration uses `nvidia/nemotron-3-super-120b-a12b`, a 120-billion-parameter model optimized for agent tasks. Nemotron models can run locally on NVIDIA GPUs for privacy-sensitive inference.
 
-**NVIDIA TensorRT-LLM**
-TensorRT-LLM is NVIDIA's high-performance inference engine that optimizes transformer models for NVIDIA GPUs. When NemoClaw routes inference to local Nemotron models, TensorRT-LLM provides the actual inference acceleration — handling kernel fusion, in-flight batching, and quantization. NemoClaw does not directly invoke TensorRT-LLM; it connects through NIM or Ollama, which use TensorRT-LLM under the hood.
+**NeMo Guardrails:** A separate but related NVIDIA project that provides programmable guardrails for LLM-based conversational systems. NeMo Guardrails operates at the prompt/response level (controlling what the LLM says), while NemoClaw operates at the infrastructure level (controlling what the agent can do). They address different threat models and can be used together.
 
-**NVIDIA NeMo Agent Toolkit (AgentIQ)**
-The NeMo Agent Toolkit (formerly AgentIQ) is a framework-agnostic library for connecting, evaluating, and accelerating teams of AI agents. It provides:
-- Unified monitoring and observability across agent frameworks
-- Agent Performance Primitives (APP) for parallel execution and speculative branching
-- MCP client support for connecting to external tool servers
-- Integration with LangChain, LlamaIndex, CrewAI, and custom frameworks
+**NVIDIA Endpoints (NIM):** Cloud-hosted inference endpoints for running NVIDIA models. NemoClaw integrates with NVIDIA Endpoints as a default inference provider, routing requests through the privacy router based on configured policies.
 
-NemoClaw and the Agent Toolkit are complementary: the Agent Toolkit optimizes agent performance and observability, while NemoClaw provides the secure runtime. NemoClaw installs the OpenShell runtime, which is part of the Agent Toolkit.
+### Inference Providers
 
-**NVIDIA NeMo Guardrails**
-NeMo Guardrails is a toolkit for adding programmable behavioral constraints to LLM applications. It enables:
-- Topical guardrails (keep the agent on-topic)
-- Safety guardrails (prevent harmful outputs)
-- Security guardrails (block prompt injection attempts)
-- Output format enforcement
+NemoClaw supports routing inference to multiple providers, each with different trade-offs:
 
-NemoClaw integrates with Guardrails to apply behavioral constraints at the application level, complementing its kernel-level security. Guardrails handles *what the agent says*; NemoClaw handles *what the agent can do*.
+| Provider | Type | Privacy | Capability | Cost | Status |
+|----------|------|---------|-----------|------|--------|
+| NVIDIA Endpoints | Cloud | Moderate | High (Nemotron) | Pay-per-use | Supported |
+| OpenAI | Cloud | Low | High (GPT-4+) | Pay-per-use | Supported |
+| Anthropic | Cloud | Low | High (Claude) | Pay-per-use | Supported |
+| Google Gemini | Cloud | Low | High (Gemini) | Pay-per-use | Supported |
+| Ollama (local) | Local | High | Variable | Hardware only | Experimental |
+| vLLM (local) | Local | High | Variable | Hardware only | Experimental |
 
-### OpenClaw Ecosystem
+### Messaging Integrations
 
-**OpenClaw (The Agent Framework)**
-OpenClaw is the foundation that NemoClaw secures. It is an open-source AI assistant framework supporting:
-- Multi-channel deployment (Telegram, Discord, Slack, WhatsApp, terminal)
-- Plugin architecture for extending agent capabilities
-- MCP (Model Context Protocol) integration for standardized tool access
-- Persistent operation as an always-on service
-- Multi-agent orchestration with supervisor-worker patterns
+NemoClaw's host-side messaging bridges connect the sandboxed agent to external communication platforms:
 
-**OpenClaw Plugin System**
-OpenClaw's plugin architecture provides two extension mechanisms:
-- **Agent Tools:** Functions the LLM can call, registered via `api.registerTool()` with typed schemas
-- **Lifecycle Plugins:** Background services that hook into the agent's lifecycle for authentication, logging, and workflow modification
+**Telegram:** Configure via `TELEGRAM_BOT_TOKEN` environment variable. The bridge runs as a host process, forwarding messages to/from the sandbox.
 
-NemoClaw itself runs as an OpenClaw plugin, injecting security controls into the agent's lifecycle without modifying OpenClaw's core codebase.
+**Discord:** Configure via `DISCORD_BOT_TOKEN` environment variable. Supports server channels and direct messages.
 
-**MCP (Model Context Protocol) Integration**
-OpenClaw natively supports MCP, Anthropic's open standard for connecting LLMs to external tools and data sources. MCP integration happens at three levels:
-1. **Server-level:** OpenClaw can host MCP servers, exposing its tools to other MCP-compatible clients
-2. **Client-level:** OpenClaw can connect to external MCP servers to access their tools
-3. **Gateway-level:** The Composio plugin provides managed OAuth and authentication for hundreds of SaaS integrations via MCP
+**Slack:** Configure via Slack app credentials. Integrates with workspace channels and direct messages.
 
-NemoClaw governs MCP connections through its network policy — MCP servers that require network access are subject to the same deny-by-default rules as any other outbound connection.
+All bridges run on the host, not inside the sandbox. This ensures messaging platform credentials are never exposed to the agent.
 
-### Third-Party Integrations
+### Container Runtimes
 
-**Messaging Platforms**
-NemoClaw agents communicate through bridges that relay messages via SSH, avoiding direct network sockets:
-- Telegram — via bot API bridge
-- Discord — via bot bridge
-- Slack — via app bridge
-- WhatsApp — via gateway bridge
+| Runtime | Platform | Support Level |
+|---------|----------|--------------|
+| Docker | Linux | Primary |
+| Colima | macOS (Apple Silicon) | Supported |
+| Docker Desktop | macOS, Windows WSL | Supported |
+| Podman | Linux | Supported |
+| Podman (macOS Intel) | macOS (Intel) | Not yet supported |
 
-**SaaS Connectors (via Composio)**
-The Composio plugin provides pre-built MCP connectors for enterprise services:
-- Salesforce, HubSpot (CRM)
-- Jira, Linear (Project management)
-- GitHub, GitLab (Code repositories)
-- Google Workspace, Microsoft 365 (Productivity)
-- Datadog, PagerDuty (DevOps)
+### Kubernetes Support
 
-**Container Runtimes**
-NemoClaw supports multiple container runtimes:
-- Docker on Linux (primary)
-- Colima or Docker Desktop on macOS
-- Docker Desktop with WSL on Windows
+The `k8s/` directory in the repository contains Kubernetes manifests for deploying NemoClaw in cluster environments. This enables running sandboxed agents as Kubernetes pods with the same security policies applied at the container level.
 
-### Hardware Platforms
+### Complementary Tools
 
-NemoClaw runs on a range of NVIDIA hardware:
-- **NVIDIA GeForce RTX** PCs and laptops (consumer-grade local inference)
-- **NVIDIA RTX PRO** workstations (professional workloads)
-- **NVIDIA DGX Station** and **DGX Spark** (enterprise-grade local deployment)
-- **Cloud GPU instances** (any provider with NVIDIA GPU access)
-- **CPU-only environments** (when using cloud inference routing)
+**NeMo Guardrails:** For prompt-level guardrails (topic steering, output filtering, dialog management) alongside NemoClaw's infrastructure-level security.
 
-The minimum hardware requirement is modest (4 vCPU, 8 GB RAM) because NemoClaw itself does not run models — it orchestrates access to models running elsewhere. GPU requirements arise only when running local Nemotron models.
+**NVIDIA NIM:** For hosting and serving NVIDIA models locally or in a private cloud, providing the local inference endpoint that NemoClaw's privacy router can target.
 
-### Ecosystem Comparison
+**Standard Monitoring Stack:** NemoClaw's sandbox produces logs accessible via `nemoclaw <name> logs`. These can be forwarded to standard monitoring tools (Grafana, Prometheus, ELK) for operational visibility.
 
-| Capability | NemoClaw | LangChain | OpenAI Assistants | Anthropic MCP |
-|---|---|---|---|---|
-| Agent runtime | Yes (OpenClaw) | Build-your-own | API-hosted | Client library |
-| Kernel-level sandboxing | Yes (OpenShell) | No | Managed by OpenAI | No |
-| Privacy routing | Yes (local/cloud) | Manual | Cloud-only | Cloud-only |
-| Tool calling | Yes (typed schemas) | Yes (tool classes) | Yes (JSON schema) | Yes (JSON schema) |
-| Network policy | Deny-by-default YAML | No | N/A (cloud) | No |
-| MCP support | Yes (via OpenClaw) | Via adapter | No | Native |
-| Always-on operation | Yes | With custom infra | No | No |
-| Audit logging | Kernel-level | Application-level | Via API logs | No |
-| Open source | Yes (Apache 2.0) | Yes (MIT) | No | Protocol is open |
+### Community and Support
+
+- **GitHub:** [NVIDIA/NemoClaw](https://github.com/NVIDIA/NemoClaw) -- 18,000+ stars, 2,100+ forks
+- **Discord:** NVIDIA developer community channel
+- **GitHub Discussions:** For questions and feature requests
+- **GitHub Issues:** For bug reports
+- **Security Reporting:** NVIDIA Vulnerability Disclosure Program, `psirt@nvidia.com`, or GitHub private security advisories

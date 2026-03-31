@@ -1,188 +1,95 @@
 ## How It Works
 <!-- level: intermediate -->
 <!-- references:
+- [How NemoClaw Works](https://docs.nvidia.com/nemoclaw/latest/about/how-it-works.html) | official-docs
 - [NemoClaw Architecture](https://docs.nvidia.com/nemoclaw/latest/reference/architecture.html) | official-docs
-- [NemoClaw GitHub README](https://github.com/NVIDIA/NemoClaw/blob/main/README.md) | github
-- [OpenClaw Agent Tools](https://docs.openclaw.ai/plugins/agent-tools) | official-docs
-- [NemoClaw Developer Guide](https://docs.nvidia.com/nemoclaw/latest/index.html) | official-docs
+- [OpenShell Technical Blog](https://developer.nvidia.com/blog/run-autonomous-self-evolving-agents-more-safely-with-nvidia-openshell/) | blog
 -->
 
-This section walks through NemoClaw's operation end-to-end: from installation and first launch, through a complete tool-calling request, to ongoing monitoring and policy management.
+### Onboarding Flow
 
-### Step 1: Installation and Onboarding
+When you run `nemoclaw onboard`, the system executes a sequential creation process that provisions a fully secured agent environment in a single command.
 
-NemoClaw installs via a single command:
+**Step 1 -- Plugin Initialization:** The TypeScript plugin validates your system environment (Node.js version, container runtime availability, disk space) and collects your inference provider credentials interactively. Credentials are stored on the host at `~/.nemoclaw/credentials.json` and never enter the sandbox.
 
-```bash
-curl -fsSL https://www.nvidia.com/nemoclaw.sh | bash
-```
+**Step 2 -- Blueprint Resolution:** The plugin checks the latest blueprint version against its version constraints, downloads the blueprint artifact, and verifies its cryptographic digest. This prevents supply-chain attacks where a tampered blueprint could weaken security policies.
 
-The install script:
-1. Checks system requirements (Ubuntu 22.04+, 4 vCPU, 8 GB RAM, 20 GB disk)
-2. Installs Node.js 22.16+ if not present
-3. Downloads the NemoClaw CLI plugin and OpenShell runtime
-4. Launches an interactive onboarding wizard
+**Step 3 -- Resource Planning:** The blueprint evaluates available compute resources (CPU cores, RAM, GPU availability) to determine optimal configuration. On GPU-equipped machines, it can configure local Nemotron inference. On CPU-only systems, it defaults to cloud inference providers.
 
-The wizard guides the operator through:
-- **Inference provider selection:** NVIDIA Endpoints (default), local Ollama, or custom provider
-- **API credential configuration:** Stored in `~/.nemoclaw/credentials.json` on the host (never in the sandbox)
-- **Network policy review:** Preview the default deny-all policy and optionally pre-approve domains
-- **Sandbox image download:** Pulls the OpenClaw container (~2.4 GB compressed)
+**Step 4 -- Sandbox Creation:** The blueprint calls OpenShell CLI commands to create an isolated container from the hardened Dockerfile. During creation, Landlock filesystem policies and seccomp process filters are applied and locked -- these cannot be changed after this point. The sandbox image includes the OpenClaw runtime, the NemoClaw plugin, and the matching model reference for inference routing.
 
-### Step 2: Sandbox Launch
+**Step 5 -- Policy Application:** Network egress policies (defined in `openclaw-sandbox.yaml`) and inference routing policies are applied. These are the hot-reloadable policies that operators can adjust at runtime.
 
-When the operator runs `nemoclaw launch`, the Blueprint lifecycle executes:
+**Step 6 -- Startup Verification:** The blueprint runs health checks to confirm the sandbox is operational, the inference provider is reachable, and all policy layers are active. The sandbox is now ready for connections.
 
-```
-Resolve → Verify → Plan → Apply → Status
-```
+### Inference Routing
 
-**Resolve:** The CLI locates the blueprint artifact from the OCI registry and checks version compatibility. Local caching avoids repeated downloads.
+Every time the OpenClaw agent needs to call a language model, the request never goes directly to the provider. Instead, it follows this path:
 
-**Verify:** The artifact's digest is validated to detect tampering. If the digest doesn't match, the launch aborts.
+1. The agent constructs an inference request (prompt + context) inside the sandbox
+2. The NemoClaw plugin's registered inference provider intercepts the call
+3. The request is forwarded to the OpenShell gateway (running outside the sandbox)
+4. The privacy router evaluates the request against configured policies
+5. Based on the policy, the request is routed to either:
+   - A local model (Nemotron via Ollama or vLLM) for privacy-sensitive tasks
+   - A cloud endpoint (NVIDIA Endpoints, OpenAI, Anthropic, Gemini) for tasks requiring frontier capabilities
+6. The provider credentials are injected at the gateway level -- the agent never sees API keys
+7. The response flows back through the gateway into the sandbox
 
-**Plan:** The blueprint runner compares the desired sandbox state (from `blueprint.yaml` and `openclaw-sandbox.yaml`) against the current host state and calculates the required changes.
+The privacy router's default model is `nvidia/nemotron-3-super-120b-a12b` via NVIDIA Cloud API. Local inference via Ollama and vLLM is available but experimental. The key architectural decision is that the routing logic lives outside the sandbox -- the agent cannot influence which provider handles its requests.
 
-**Apply:** OpenShell CLI commands execute to:
-- Create a network namespace with no default routes
-- Launch the container with Landlock filesystem restrictions
-- Apply seccomp syscall filters
-- Drop all unnecessary Linux capabilities
-- Configure the inference gateway endpoint
-- Start the Policy Engine as a separate process
+### Network Policy Enforcement
 
-**Status:** The runner reports the sandbox's health, including active policies, inference provider, and resource usage.
+NemoClaw uses a deny-by-default network model. All outbound connections from the sandbox are blocked unless explicitly allowed in the YAML policy file.
 
-### Step 3: Agent Interaction
+When the agent attempts to reach a blocked endpoint:
+1. OpenShell intercepts the connection attempt at the network namespace boundary
+2. The connection is blocked and logged
+3. The blocked request surfaces in the operator's terminal UI (accessible via `openshell term`)
+4. The operator can approve the endpoint for the current session
+5. Session-approved endpoints persist until the sandbox restarts but do not modify the baseline policy file
 
-Users communicate with the agent through:
+This approach gives operators real-time visibility into what the agent is trying to access. Over time, operators build up their allowlist by observing legitimate access patterns, creating a policy that matches actual usage without over-permitting.
 
-- **Terminal UI:** `openclaw tui` — a rich terminal interface
-- **CLI command:** `openclaw agent --agent main --local -m "message" --session-id test`
-- **Messaging bridges:** Telegram, Discord, Slack, or WhatsApp relay messages into the sandbox via SSH, avoiding direct network exposure
+### Filesystem Isolation
 
-### Step 4: Processing a Tool-Calling Request
+The sandbox filesystem is enforced by Landlock Linux Security Module (LSM):
 
-Here is a complete walkthrough of a user requesting the agent to "check the status of our API endpoint at api.example.com":
+- **Read-write access:** `/sandbox` (agent working directory) and `/tmp` (temporary files)
+- **Read-only access:** System paths (`/usr`, `/lib`, `/etc`, etc.)
+- **No access:** Everything else -- including the host filesystem, other containers, and NemoClaw's own credential stores
 
-**4a. Message Ingestion**
-The user's message arrives at the sandbox via the messaging bridge. The message is delivered as structured data over SSH — the agent has no direct network socket to the messaging service.
+This is locked at sandbox creation time and cannot be modified at runtime. Even if the agent finds a vulnerability in OpenClaw or the NemoClaw plugin, Landlock prevents filesystem escalation at the kernel level.
 
-**4b. Planning**
-OpenClaw's planner evaluates the request. It determines that:
-- The user wants an HTTP health check
-- This requires network access to `api.example.com`
-- An appropriate tool is the HTTP request tool
+### Process Isolation
 
-**4c. Tool Selection**
-The planner queries the Tool Registry for available tools. Tools are registered via the plugin API:
+The seccomp filter profile drops dangerous system calls and prevents privilege escalation:
 
-```typescript
-api.registerTool({
-  name: "http_request",
-  description: "Make an HTTP request to a specified URL",
-  parameters: Type.Object({
-    url: Type.String({ description: "The URL to request" }),
-    method: Type.String({ enum: ["GET", "POST", "PUT", "DELETE"] }),
-    headers: Type.Optional(Type.Record(Type.String(), Type.String())),
-  }),
-  async execute(_id, params) {
-    const response = await fetch(params.url, {
-      method: params.method,
-      headers: params.headers,
-    });
-    return {
-      content: [{ type: "text", text: JSON.stringify({
-        status: response.status,
-        body: await response.text(),
-      })}],
-    };
-  },
-});
-```
+- The agent cannot use `setuid`, `setgid`, or related calls to gain elevated privileges
+- Dangerous system calls (e.g., `ptrace`, `mount`, `reboot`) are blocked
+- Docker capabilities are dropped to the minimum required set
+- The container runs as a non-root user
 
-The agent selects `http_request` with `url: "https://api.example.com/health"` and `method: "GET"`.
+Like filesystem isolation, these restrictions are applied at sandbox creation and are immutable.
 
-**4d. Network Policy Evaluation**
-Before the HTTP request executes, the Rust Policy Engine intercepts the outbound connection:
+### State Management and Migration
 
-1. Extracts the destination: `api.example.com:443`
-2. Performs DNS resolution and IP validation (SSRF protection)
-3. Checks the YAML policy file:
+NemoClaw supports migrating agent state between machines -- for example, moving an agent from a development laptop to a production GPU server. The migration process:
 
-```yaml
-# openclaw-sandbox.yaml (excerpt)
-network:
-  egress:
-    default: deny
-    allow:
-      - host: "api.nvidia.com"
-        ports: [443]
-      - host: "api.example.com"
-        ports: [443]
-        methods: ["GET", "HEAD"]
-```
+1. Creates a snapshot of the sandbox state
+2. Strips all credentials from the snapshot (credentials are host-specific)
+3. Exports the snapshot as a portable artifact
+4. On the target machine, the snapshot is imported and re-provisioned with local credentials
 
-4. If the destination is allowlisted: the connection proceeds
-5. If the destination is NOT allowlisted: the connection is blocked and an alert appears in the operator's TUI
+Credential stripping during migration prevents accidental exposure of API keys or tokens when sharing agent states across environments.
 
-**4e. Operator Approval (if needed)**
-When the Policy Engine blocks an unknown destination, the operator sees a real-time prompt in the OpenShell terminal:
+### Messaging Bridges
 
-```
-[POLICY] Agent requests access to: api.unknown.com:443
-         Action: GET /status
-         Reason: User requested API health check
-         [A]pprove  [D]eny  [A]pprove+Remember
-```
+NemoClaw can expose the sandboxed agent through external messaging platforms (Telegram, Discord, Slack) via host-side bridge processes. The bridges:
 
-Choosing "Approve+Remember" adds the domain to the running policy (and optionally persists it to the YAML file).
+- Run on the host, not inside the sandbox
+- Forward messages between the external platform and the agent
+- Are subject to the same network policies as other connections
+- Can be configured via environment variables
 
-**4f. Tool Execution**
-With network access approved, the tool's `execute` function runs inside the sandbox. The HTTP request goes through the OpenShell gateway, which:
-- Validates the connection against the (now-updated) policy
-- Logs the request details (URL, method, timestamp, response code)
-- Proxies the connection to the destination
-
-**4g. Inference for Response Synthesis**
-The agent now needs to synthesize a response from the tool's output. This triggers an inference request:
-
-1. The Privacy Router examines the prompt content
-2. It classifies the data: API status responses typically contain non-sensitive operational data
-3. It routes to the configured cloud provider (or local Nemotron if classified as sensitive)
-4. The Inference Gateway injects the provider's API credentials and proxies the request
-5. The LLM generates a natural language summary of the API status
-
-**4h. Response Delivery**
-The synthesized response travels back through the messaging bridge to the user:
-
-```
-The API at api.example.com is healthy. The /health endpoint returned 
-HTTP 200 with response time of 142ms. All services report operational 
-status.
-```
-
-### Step 5: Ongoing Monitoring
-
-Operators can monitor the sandbox in real-time:
-
-- **`nemoclaw status`** — Shows sandbox health, active policies, resource usage
-- **`nemoclaw logs`** — Streams audit logs including every tool call, network request, and inference routing decision
-- **`openshell term`** — Opens the TUI for real-time policy management and approval workflows
-
-### Step 6: Policy Hot-Reload
-
-Network and filesystem policies can be updated without restarting the sandbox:
-
-1. Edit `openclaw-sandbox.yaml` to add new allowlisted domains or restrict existing ones
-2. The Policy Engine detects the change and applies it immediately
-3. No sandbox restart required — the agent continues operating with updated constraints
-
-This enables progressive trust: start with minimal permissions and expand them as the agent proves reliable.
-
-### Step 7: Workspace Persistence
-
-The sandbox provides persistent workspace storage:
-- Agent state, conversation history, and files are stored in `/sandbox`
-- Backup and restore operations are available via `nemoclaw backup` and `nemoclaw restore`
-- Workspace data survives sandbox restarts and blueprint updates
+The bridges run outside the sandbox so that messaging platform credentials stay on the host. The agent sees incoming messages but cannot directly access the messaging platform's API.

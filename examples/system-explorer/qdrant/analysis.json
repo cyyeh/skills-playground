@@ -3,7 +3,7 @@
   "system": "Qdrant",
   "github": "qdrant/qdrant",
   "tag": "v1.17.1",
-  "generated": "2026-03-31",
+  "generated": "2026-04-01",
   "sections": [
     { "file": "00-metadata.md", "title": "Metadata", "level": null, "order": 0 },
     { "file": "01-overview.md", "title": "Overview", "level": "beginner", "order": 1 },

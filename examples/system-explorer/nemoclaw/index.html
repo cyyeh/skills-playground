@@ -19,10 +19,10 @@
       --color-border-light: #EEEBE5;
       --color-surface: #FFFFFF;
       --color-surface-warm: #FDF9F3;
-      --color-accent: #D4A843;
-      --color-accent-hover: #BF9738;
-      --color-accent-light: #FDF6E4;
-      --color-accent-muted: #E0C06A;
+      --color-accent: #2D8B55;
+      --color-accent-hover: #257548;
+      --color-accent-light: #E8F5EE;
+      --color-accent-muted: #5AAF7A;
       --color-success: #2D8B55;
       --color-success-light: #E8F5EE;
       --color-error: #C93B3B;
@@ -46,9 +46,11 @@
       --text-3xl: 1.875rem;
       --text-4xl: 2.25rem;
       --text-5xl: 3rem;
+      --text-6xl: 3.75rem;
       --leading-tight: 1.15;
       --leading-snug: 1.3;
       --leading-normal: 1.6;
+      --leading-loose: 1.8;
       --space-1: 0.25rem;
       --space-2: 0.5rem;
       --space-3: 0.75rem;
@@ -81,7 +83,7 @@
     html { scroll-behavior: smooth; }
     body {
       background: var(--color-bg);
-      background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%);
+      background-image: radial-gradient(ellipse at 20% 50%, rgba(45,139,85,0.04) 0%, transparent 50%);
       font-family: var(--font-body);
       color: var(--color-text);
       line-height: var(--leading-normal);
@@ -102,16 +104,6 @@
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--color-border-light);
     }
-    .nav-progress-bar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 3px;
-      width: 0%;
-      background: var(--color-accent);
-      transition: width 100ms linear;
-      z-index: 1;
-    }
     .nav-inner {
       max-width: var(--content-width-wide);
       margin: 0 auto;
@@ -121,6 +113,12 @@
       gap: var(--space-4);
       padding: 0 var(--space-6);
     }
+    .nav-brand-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-shrink: 0;
+    }
     .nav-brand {
       font-family: var(--font-display);
       font-weight: 700;
@@ -128,9 +126,16 @@
       color: var(--color-text);
       text-decoration: none;
       white-space: nowrap;
-      flex-shrink: 0;
     }
     .nav-brand:hover { color: var(--color-accent); }
+    .nav-github-link {
+      display: inline-flex;
+      align-items: center;
+      color: var(--color-text-muted);
+      transition: color var(--duration-fast);
+    }
+    .nav-github-link:hover { color: var(--color-text); }
+    .nav-github-link svg { width: 18px; height: 18px; fill: currentColor; }
     .nav-pages {
       display: flex;
       align-items: center;
@@ -149,7 +154,7 @@
       padding: var(--space-2) var(--space-3);
       border-radius: var(--radius-sm);
       white-space: nowrap;
-      transition: color var(--duration-fast), background var(--duration-fast);
+      transition: color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
     }
     .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); }
     .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
@@ -172,7 +177,7 @@
       height: 2px;
       background: var(--color-text);
       border-radius: 1px;
-      transition: transform var(--duration-fast), opacity var(--duration-fast);
+      transition: transform var(--duration-fast) var(--ease-out), opacity var(--duration-fast) var(--ease-out);
     }
     .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
     .nav-hamburger.open span:nth-child(2) { opacity: 0; }
@@ -186,7 +191,7 @@
     }
     .hero h1 {
       font-family: var(--font-display);
-      font-size: var(--text-5xl);
+      font-size: var(--text-4xl);
       font-weight: 800;
       color: var(--color-text);
       margin: 0 0 var(--space-4);
@@ -282,9 +287,10 @@
       width: fit-content;
     }
     .card-level.beginner { background: var(--color-success-light); color: var(--color-success); }
-    .card-level.intermediate { background: var(--color-accent-light); color: var(--color-accent); }
-    .card-level.advanced { background: var(--color-error-light); color: var(--color-error); }
-    .card-level.all { background: var(--color-info-light); color: var(--color-info); }
+    .card-level.intermediate { background: var(--color-info-light); color: var(--color-info); }
+    .card-level.advanced { background: var(--color-warning-light); color: var(--color-warning); }
+    .card-level.all { background: var(--color-accent-light); color: var(--color-accent); }
+    .card-level.beginner-intermediate { background: var(--color-info-light); color: var(--color-info); }
     .page-card .card-desc {
       font-family: var(--font-body);
       font-size: var(--text-sm);
@@ -320,66 +326,92 @@
       margin: var(--space-4) 0;
       overflow: hidden;
     }
-    .quick-start .code-block pre {
-      padding: var(--space-6);
-      margin: 0;
-      overflow-x: auto;
-      font-family: var(--font-mono);
-      font-size: var(--text-sm);
-      line-height: 1.7;
-      color: #CDD6F4;
+    .quick-start .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-2) var(--space-4);
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    .quick-start .code-block .lang-label {
-      position: absolute;
-      top: var(--space-2);
-      right: var(--space-3);
+    .quick-start .code-lang {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: #CDD6F4;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .quick-start .code-copy-btn {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       color: #6C7086;
-      text-transform: uppercase;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-sm);
+      padding: var(--space-1) var(--space-2);
+      cursor: pointer;
+      transition: all var(--duration-fast);
     }
+    .quick-start .code-copy-btn:hover { color: #CDD6F4; border-color: rgba(255,255,255,0.25); }
+    .quick-start .code-copy-btn.copied { color: #A6E3A1; border-color: rgba(166,227,161,0.3); }
+    .quick-start pre {
+      margin: 0;
+      padding: var(--space-4);
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      line-height: 1.6;
+      color: #CDD6F4;
+    }
+    .code-comment { color: #6C7086; font-style: italic; }
+    .code-keyword { color: #CBA6F7; }
+    .code-string { color: #F9E2AF; }
+    .code-function { color: #A6E3A1; }
+    .code-variable { color: #89B4FA; }
 
     .site-footer {
       text-align: center;
-      padding: var(--space-12) var(--space-6);
-      color: var(--color-text-muted);
+      padding: var(--space-8) var(--space-6);
+      font-family: var(--font-body);
       font-size: var(--text-sm);
+      color: var(--color-text-muted);
       border-top: 1px solid var(--color-border-light);
-      margin-top: var(--space-16);
+      margin-top: var(--space-12);
     }
-    .site-footer a { color: var(--color-accent); text-decoration: none; }
-    .site-footer a:hover { text-decoration: underline; }
 
     @media (max-width: 768px) {
       .nav-pages { display: none; }
-      .nav-pages.open {
+      .nav-pages.mobile-open {
         display: flex;
         flex-direction: column;
         position: absolute;
         top: var(--nav-height);
         left: 0;
         right: 0;
-        background: rgba(250,247,242,0.97);
-        backdrop-filter: blur(12px);
-        padding: var(--space-4) var(--space-6);
-        border-bottom: 1px solid var(--color-border-light);
-        gap: var(--space-1);
+        background: var(--color-bg);
+        border-bottom: 1px solid var(--color-border);
+        padding: var(--space-4);
+        box-shadow: var(--shadow-md);
       }
       .nav-hamburger { display: flex; }
-      .hero h1 { font-size: var(--text-3xl); }
+      .hero h1 { font-size: var(--text-2xl); }
       .page-cards { grid-template-columns: 1fr; }
+      .key-stats { flex-direction: column; align-items: center; }
     }
   </style>
 </head>
 <body>
+
   <nav class="site-nav">
-    <div class="nav-progress-bar" id="progressBar"></div>
     <div class="nav-inner">
-      <a href="index.html" class="nav-brand">NemoClaw</a>
-      <button class="nav-hamburger" id="hamburger" aria-label="Toggle navigation">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="nav-brand-group">
+        <a href="index.html" class="nav-brand">NemoClaw</a>
+        <a href="https://github.com/NVIDIA/NemoClaw" target="_blank" rel="noopener noreferrer" class="nav-github-link" aria-label="GitHub repository">
+          <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
+      </div>
       <div class="nav-pages" id="navPages">
+        <a href="index.html" class="nav-page-link active">Home</a>
         <a href="concepts.html" class="nav-page-link">Concepts</a>
         <a href="architecture.html" class="nav-page-link">Architecture</a>
         <a href="how-it-works.html" class="nav-page-link">How It Works</a>
@@ -389,17 +421,24 @@
         <a href="faq.html" class="nav-page-link">FAQ</a>
         <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
       </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
 
-  <header class="hero">
-    <div class="category-badge">Secure AI Agent Runtime</div>
+  <section class="hero">
+    <span class="category-badge">AI Agent Security &amp; Orchestration</span>
     <h1>NemoClaw</h1>
-    <p class="description">NVIDIA's open-source reference stack for running secure, always-on AI agents. Kernel-level sandboxing, privacy routing, and managed inference for enterprise agentic AI.</p>
+    <p class="description">An open-source reference stack from NVIDIA for deploying OpenClaw AI agents with infrastructure-level security guardrails, privacy routing, and managed inference.</p>
     <div class="key-stats">
       <div class="stat">
         <span class="stat-label">License</span>
         <span class="stat-value">Apache 2.0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Languages</span>
+        <span class="stat-value">TypeScript / Python / Shell</span>
       </div>
       <div class="stat">
         <span class="stat-label">Status</span>
@@ -407,105 +446,105 @@
       </div>
       <div class="stat">
         <span class="stat-label">GitHub</span>
-        <span class="stat-value"><a href="https://github.com/NVIDIA/NemoClaw" target="_blank">NVIDIA/NemoClaw</a></span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">Announced</span>
-        <span class="stat-value">GTC 2026</span>
+        <span class="stat-value"><a href="https://github.com/NVIDIA/NemoClaw" target="_blank" rel="noopener noreferrer">NVIDIA/NemoClaw</a></span>
       </div>
     </div>
-  </header>
+  </section>
 
   <section class="page-cards">
     <a href="concepts.html" class="page-card">
-      <div class="card-icon">&#x1F9E9;</div>
+      <span class="card-icon">&#x1F9E9;</span>
+      <span class="card-title">Core Concepts</span>
       <span class="card-level beginner">Beginner</span>
-      <div class="card-title">Core Concepts</div>
-      <div class="card-desc">OpenClaw, OpenShell, sandboxing, privacy routing, network policies, blueprints, tool registry, and inference routing explained.</div>
+      <span class="card-desc">Sandbox, blueprint, privacy router, policy layers, and OpenShell -- the building blocks of NemoClaw.</span>
     </a>
     <a href="architecture.html" class="page-card">
-      <div class="card-icon">&#x1F3D7;</div>
+      <span class="card-icon">&#x1F3D7;</span>
+      <span class="card-title">Architecture</span>
       <span class="card-level intermediate">Intermediate</span>
-      <div class="card-title">Architecture</div>
-      <div class="card-desc">Four-layer defense-in-depth model: Plugin, Blueprint, OpenShell Runtime, and Inference layers with out-of-process policy enforcement.</div>
+      <span class="card-desc">Three operational levels, two core components, and why out-of-process policy enforcement is the right design.</span>
     </a>
     <a href="how-it-works.html" class="page-card">
-      <div class="card-icon">&#x2699;</div>
+      <span class="card-icon">&#x2699;&#xFE0F;</span>
+      <span class="card-title">How It Works</span>
       <span class="card-level intermediate">Intermediate</span>
-      <div class="card-title">How It Works</div>
-      <div class="card-desc">Step-by-step walkthrough from installation through a complete tool-calling request to ongoing monitoring and policy management.</div>
+      <span class="card-desc">Onboarding flow, inference routing, network enforcement, filesystem isolation, and state migration.</span>
     </a>
     <a href="implementation.html" class="page-card">
-      <div class="card-icon">&#x1F4BB;</div>
+      <span class="card-icon">&#x1F4BB;</span>
+      <span class="card-title">Implementation Details</span>
       <span class="card-level advanced">Advanced</span>
-      <div class="card-title">Implementation Details</div>
-      <div class="card-desc">Polyglot codebase, YAML policy format, TypeBox tool schemas, inference provider configuration, error handling, and audit logging.</div>
+      <span class="card-desc">Getting started, project structure, source code walkthrough, and key design decisions.</span>
     </a>
     <a href="use-cases.html" class="page-card">
-      <div class="card-icon">&#x1F4BC;</div>
-      <span class="card-level intermediate">Beginner-Intermediate</span>
-      <div class="card-title">Use Cases</div>
-      <div class="card-desc">Secure code assistants, enterprise automation, agentic RAG for healthcare, and always-on DevOps infrastructure agents.</div>
+      <span class="card-icon">&#x1F3AF;</span>
+      <span class="card-title">Use Cases</span>
+      <span class="card-level beginner-intermediate">Beginner-Intermediate</span>
+      <span class="card-desc">When to use NemoClaw, when not to, and real-world deployment scenarios.</span>
     </a>
     <a href="ecosystem.html" class="page-card">
-      <div class="card-icon">&#x1F30D;</div>
+      <span class="card-icon">&#x1F30D;</span>
+      <span class="card-title">Ecosystem</span>
       <span class="card-level intermediate">Intermediate</span>
-      <div class="card-title">Ecosystem</div>
-      <div class="card-desc">NVIDIA NeMo, Nemotron, NIM, TensorRT-LLM, Agent Toolkit, NeMo Guardrails, OpenClaw plugins, MCP, and third-party integrations.</div>
+      <span class="card-desc">NVIDIA tools, inference providers, messaging integrations, and complementary systems.</span>
     </a>
     <a href="faq.html" class="page-card">
-      <div class="card-icon">&#x2753;</div>
+      <span class="card-icon">&#x2753;</span>
+      <span class="card-title">Common Q&amp;A</span>
       <span class="card-level all">All Levels</span>
-      <div class="card-title">Common Q&A</div>
-      <div class="card-desc">10 frequently asked questions covering GPU requirements, production readiness, security model, multi-agent support, and monitoring.</div>
+      <span class="card-desc">Senior-engineer questions about security, Docker differences, privacy routing, and production readiness.</span>
     </a>
     <a href="tradeoffs.html" class="page-card">
-      <div class="card-icon">&#x2696;</div>
+      <span class="card-icon">&#x2696;&#xFE0F;</span>
+      <span class="card-title">Trade-offs</span>
       <span class="card-level intermediate">Intermediate</span>
-      <div class="card-title">Trade-offs & Limitations</div>
-      <div class="card-desc">Strengths, limitations, alternatives comparison, and an honest assessment of where NemoClaw stands today.</div>
+      <span class="card-desc">Strengths, limitations, alternatives comparison, and an honest assessment of where NemoClaw fits.</span>
     </a>
   </section>
 
-  <section class="quick-start">
+  <section class="quick-start" data-level="beginner">
     <h2>Quick Start</h2>
-    <p>NemoClaw installs with a single command. The interactive wizard handles inference provider setup, credential configuration, and sandbox image download.</p>
+    <p>Get a sandboxed OpenClaw agent running with security guardrails in three commands.</p>
     <div class="code-block">
-      <span class="lang-label">bash</span>
-      <pre><span style="color:#89B4FA">curl</span> -fsSL https://www.nvidia.com/nemoclaw.sh | <span style="color:#89B4FA">bash</span>
+      <div class="code-header">
+        <span class="code-lang">Bash</span>
+        <button class="code-copy-btn" onclick="copyQuickStart(this)">Copy</button>
+      </div>
+      <pre><code><span class="code-comment"># Install NemoClaw</span>
+<span class="code-variable">curl</span> -fsSL https://www.nvidia.com/nemoclaw.sh | <span class="code-function">bash</span>
 
-<span style="color:#6C7086"># Launch a sandbox</span>
-<span style="color:#89B4FA">nemoclaw</span> launch
+<span class="code-comment"># Run the onboarding wizard (provisions sandbox + policies)</span>
+<span class="code-function">nemoclaw</span> onboard
 
-<span style="color:#6C7086"># Connect to the agent TUI</span>
-<span style="color:#89B4FA">openclaw</span> tui
-
-<span style="color:#6C7086"># Check sandbox status</span>
-<span style="color:#89B4FA">nemoclaw</span> status</pre>
+<span class="code-comment"># Connect to your sandboxed agent</span>
+<span class="code-function">nemoclaw</span> my-assistant connect</code></pre>
     </div>
-    <p>Minimum requirements: Ubuntu 22.04+, 4 vCPU, 8 GB RAM, 20 GB disk, Docker. No GPU required for cloud inference routing.</p>
+    <p>Requires Linux (Ubuntu 22.04+) or macOS with Docker, Node.js 22.16+, and 8 GB+ RAM. See <a href="implementation.html">Implementation Details</a> for full prerequisites.</p>
   </section>
 
   <footer class="site-footer">
-    <p>NemoClaw Interactive Course &mdash; Generated 2026-03-31</p>
-    <p><a href="https://github.com/NVIDIA/NemoClaw" target="_blank">GitHub</a> &middot; <a href="https://docs.nvidia.com/nemoclaw/latest/index.html" target="_blank">Documentation</a> &middot; <a href="https://www.nvidia.com/en-us/ai/nemoclaw/" target="_blank">NVIDIA</a></p>
+    <p>Generated by System Explorer &mdash; an interactive course built from system analysis</p>
   </footer>
 
   <script>
-    // Scroll progress bar
-    window.addEventListener('scroll', function() {
-      var h = document.documentElement;
-      var scrollTop = h.scrollTop || document.body.scrollTop;
-      var scrollHeight = h.scrollHeight - h.clientHeight;
-      var progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
-      document.getElementById('progressBar').style.width = progress + '%';
+    var hamburger = document.getElementById('navHamburger');
+    var navPages = document.getElementById('navPages');
+    hamburger.addEventListener('click', function() {
+      hamburger.classList.toggle('open');
+      navPages.classList.toggle('mobile-open');
     });
 
-    // Hamburger toggle
-    document.getElementById('hamburger').addEventListener('click', function() {
-      this.classList.toggle('open');
-      document.getElementById('navPages').classList.toggle('open');
-    });
+    function copyQuickStart(btn) {
+      var pre = btn.closest('.code-block').querySelector('pre');
+      navigator.clipboard.writeText(pre.textContent).then(function() {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
   </script>
 </body>
 </html>

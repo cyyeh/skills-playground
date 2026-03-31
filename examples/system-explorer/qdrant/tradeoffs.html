@@ -3,334 +3,141 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trade-offs &amp; Limitations — Qdrant Course</title>
+  <title>Trade-offs — Qdrant Course</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --color-bg: #FAF7F2; --color-bg-warm: #F5F0E8; --color-bg-code: #1E1E2E;
-      --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
-      --color-border: #E5DFD6; --color-border-light: #EEEBE5;
-      --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
-      --color-accent: #D4A843; --color-accent-hover: #BF9738;
-      --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
-      --color-success: #2D8B55; --color-success-light: #E8F5EE;
-      --color-error: #C93B3B; --color-error-light: #FDE8E8;
-      --color-info: #2A7B9B; --color-info-light: #E4F2F7;
-      --color-warning: #D4A843; --color-warning-light: #FDF6E4;
-      --font-display: 'Bricolage Grotesque', Georgia, serif;
-      --font-body: 'DM Sans', -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
-      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
-      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
-      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
-      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
-      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
-      --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
-      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
-      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
-      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
-      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--color-bg); background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%); font-family: var(--font-body); color: var(--color-text); line-height: var(--leading-normal); margin: 0; -webkit-font-smoothing: antialiased; }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2A7B9B;--color-accent-hover:#236A86;--color-accent-light:#E4F2F7;--color-accent-muted:#5A9DB5;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(42,123,155,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:var(--content-width);margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-4)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-2) 0 0;line-height:var(--leading-tight);width:100%}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}.copy-md-btn{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-accent);background:var(--color-accent-light);border:1px solid transparent;border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-md-btn:hover{border-color:var(--color-accent);background:var(--color-surface)}
+    .content-area{max-width:var(--content-width);margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4)}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
 
-    .site-nav { position: sticky; top: 0; z-index: 1000; height: var(--nav-height); background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border-light); }
-    .nav-progress-bar { position: absolute; top: 0; left: 0; height: 3px; width: 0%; background: var(--color-accent); transition: width 100ms linear; z-index: 1; }
-    .nav-inner { max-width: var(--content-width-wide); margin: 0 auto; height: 100%; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6); }
-    .nav-brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
-    .nav-brand:hover { color: var(--color-accent); }
-    .nav-pages { display: flex; align-items: center; gap: var(--space-1); flex: 1; overflow-x: auto; scrollbar-width: none; }
-    .nav-pages::-webkit-scrollbar { display: none; }
-    .nav-page-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--color-text-secondary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); white-space: nowrap; transition: color var(--duration-fast), background var(--duration-fast); }
-    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); }
-    .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
-    .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; padding: var(--space-2); background: none; border: none; cursor: pointer; flex-shrink: 0; }
-    .nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 1px; transition: transform var(--duration-fast), opacity var(--duration-fast); }
-    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
-    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    /* Comparison Cards */
+    .comparison-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:var(--space-6);margin:var(--space-6) 0}
+    .comparison-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-6);box-shadow:var(--shadow-sm);border-top:4px solid var(--color-accent)}
+    .comparison-card-name{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin-bottom:var(--space-3)}
+    .comparison-card-desc{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.6;margin-bottom:var(--space-3)}
+    .comparison-card-verdict{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text);line-height:1.5;padding:var(--space-3);background:var(--color-bg-warm);border-radius:var(--radius-sm)}
+    .comparison-card-verdict strong{color:var(--color-accent)}
 
-    .page-header { max-width: var(--content-width); margin: var(--space-12) auto var(--space-8); padding: 0 var(--space-6); }
-    .page-header h1 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800; margin: 0 0 var(--space-3); line-height: var(--leading-tight); }
-    .page-level-badge { display: inline-block; font-size: var(--text-sm); font-weight: 600; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
-    .page-level-badge.intermediate { background: var(--color-warning-light); color: var(--color-warning); }
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;font-size:var(--text-sm);line-height:1.6}.callout.info{background:var(--color-info-light);border-left:4px solid var(--color-info)}.callout strong{display:block;margin-bottom:var(--space-1)}
+    .strength-list,.limitation-list{list-style:none;padding:0;margin:var(--space-4) 0;display:flex;flex-direction:column;gap:var(--space-3)}
+    .strength-list li,.limitation-list li{padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);line-height:1.6}
+    .strength-list li{background:var(--color-success-light);border-left:3px solid var(--color-success)}
+    .limitation-list li{background:var(--color-warning-light);border-left:3px solid var(--color-warning)}
+    .strength-list li strong,.limitation-list li strong{display:block;font-size:var(--text-base);margin-bottom:var(--space-1);color:var(--color-text)}
 
-    .content-area { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6); }
-    .content-section { margin-bottom: var(--space-10); }
-    .content-section h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; margin: 0 0 var(--space-4); }
-    .content-section h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; margin: var(--space-6) 0 var(--space-3); }
-    .content-section p { font-size: var(--text-base); line-height: 1.7; margin: 0 0 var(--space-4); }
-
-    code { font-family: var(--font-mono); font-size: 0.88em; background: var(--color-bg-code); color: #CDD6F4; padding: 0.15em 0.4em; border-radius: 4px; }
-
-    .strength-item, .limitation-item { display: flex; gap: var(--space-4); padding: var(--space-4) var(--space-5); background: var(--color-surface); border-radius: var(--radius-md); margin-bottom: var(--space-3); box-shadow: var(--shadow-sm); }
-    .strength-item { border-left: 4px solid var(--color-success); }
-    .limitation-item { border-left: 4px solid var(--color-error); }
-    .sl-icon { font-size: 1.2rem; flex-shrink: 0; padding-top: 2px; }
-    .sl-content h4 { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); margin: 0 0 var(--space-2); }
-    .sl-content p { font-size: var(--text-sm); line-height: 1.6; color: var(--color-text-secondary); margin: 0; }
-
-    .comparison-table-wrap { overflow-x: auto; margin: var(--space-4) 0 var(--space-6); }
-    .comparison-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); min-width: 700px; }
-    .comparison-table th { font-family: var(--font-display); font-weight: 600; text-align: left; padding: var(--space-3) var(--space-4); background: var(--color-bg-warm); border-bottom: 2px solid var(--color-border); white-space: nowrap; }
-    .comparison-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-light); color: var(--color-text-secondary); }
-    .comparison-table tr:hover td { background: var(--color-surface-warm); }
-    .comparison-table td:first-child { font-weight: 600; color: var(--color-text); white-space: nowrap; }
-    .comparison-table .highlight-col { background: var(--color-accent-light); }
-
-    .decision-card { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow-sm); margin-bottom: var(--space-4); }
-    .decision-card h3 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); margin: 0 0 var(--space-3); display: flex; align-items: center; gap: var(--space-2); }
-    .decision-card p { font-size: var(--text-sm); line-height: 1.6; color: var(--color-text-secondary); margin: 0; }
-    .decision-icon { font-size: 1.2rem; }
-
-    .callout { display: flex; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-md); margin: var(--space-4) 0 var(--space-5); border-left: 4px solid; }
-    .callout-insight { background: var(--color-accent-light); border-color: var(--color-accent); }
-    .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
-    .callout-content { font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--color-text-secondary); }
-    .callout-content strong { color: var(--color-text); }
-
-    .honest-take { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-8); box-shadow: var(--shadow-md); margin: var(--space-8) 0; border-top: 4px solid var(--color-accent); }
-    .honest-take h2 { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; margin: 0 0 var(--space-4); }
-    .honest-take p { font-size: var(--text-base); line-height: 1.7; color: var(--color-text-secondary); margin: 0 0 var(--space-4); }
-    .honest-take p:last-child { margin-bottom: 0; }
-
-    .references-footer { max-width: var(--content-width); margin: var(--space-10) auto var(--space-4); padding: var(--space-6); background: var(--color-bg-warm); border-left: 3px solid var(--color-accent); border-radius: var(--radius-md); }
-    .references-footer h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin: 0 0 var(--space-4); }
-    .references-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-    .reference-item { display: flex; align-items: baseline; gap: var(--space-3); }
-    .reference-title { font-size: var(--text-sm); font-weight: 600; }
-    .reference-title a { color: var(--color-accent); text-decoration: none; }
-    .reference-title a:hover { text-decoration: underline; }
-    .reference-type-tag { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-border-light); padding: 1px 6px; border-radius: var(--radius-full); margin-left: var(--space-2); }
-
-    .page-nav-footer { display: flex; justify-content: space-between; align-items: center; max-width: var(--content-width); margin: var(--space-12) auto var(--space-6); padding: var(--space-6); border-top: 1px solid var(--color-border-light); }
-    .page-nav-footer a { font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; }
-    .page-nav-footer a:hover { color: var(--color-accent-hover); }
-    .page-nav-footer .prev::before { content: "\2190\00a0"; }
-    .page-nav-footer .next::after { content: "\00a0\2192"; }
-    .site-footer { text-align: center; padding: var(--space-8) var(--space-6); font-size: var(--text-sm); color: var(--color-text-muted); border-top: 1px solid var(--color-border-light); margin-top: var(--space-4); }
-
-    @media (max-width: 768px) { :root { --text-3xl: 1.5rem; --nav-height: 56px; } }
-    @media (max-width: 480px) {
-      .nav-hamburger { display: flex; }
-      .nav-pages { display: none; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border); box-shadow: var(--shadow-md); padding: var(--space-4); }
-      .nav-pages.mobile-open { display: flex; flex-direction: column; gap: var(--space-1); }
-      .page-nav-footer { flex-direction: column; gap: var(--space-4); }
-    }
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:var(--content-width);margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .references-footer{max-width:var(--content-width);margin:var(--space-8) auto;padding:var(--space-6);background:var(--color-surface-warm);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:center;gap:var(--space-3)}.reference-item a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm)}.reference-item a:hover{text-decoration:underline}.reference-domain{font-size:var(--text-xs);color:var(--color-text-muted)}
+    @media(max-width:768px){.nav-pages{display:none}.nav-pages.open{display:flex;flex-direction:column;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-4) var(--space-6);box-shadow:var(--shadow-md);z-index:999}.nav-hamburger{display:flex}.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.comparison-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-
-  <nav class="site-nav">
-    <div class="nav-progress-bar"></div>
-    <div class="nav-inner">
-      <a href="index.html" class="nav-brand">Qdrant</a>
-      <div class="nav-pages" id="navPages">
-        <a href="concepts.html" class="nav-page-link">Concepts</a>
-        <a href="architecture.html" class="nav-page-link">Architecture</a>
-        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
-        <a href="implementation.html" class="nav-page-link">Implementation</a>
-        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
-        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
-        <a href="faq.html" class="nav-page-link">FAQ</a>
-        <a href="tradeoffs.html" class="nav-page-link active">Trade-offs</a>
-      </div>
-      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  <nav class="site-nav"><div class="nav-inner">
+    <a href="index.html" class="nav-brand">Qdrant</a>
+    <div class="nav-pages" id="navPages">
+      <a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link active">Trade-offs</a>
     </div>
-  </nav>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  </div></nav>
 
   <header class="page-header">
-    <span class="page-level-badge intermediate">Intermediate</span>
-    <h1>Trade-offs &amp; Limitations</h1>
+    <div><span class="page-level-badge intermediate">Intermediate</span><h1>Trade-offs &amp; Limitations</h1></div>
+    <button class="copy-md-btn" onclick="copyPageAsMarkdown()">&#x1F4CB; Copy as Markdown</button>
   </header>
 
   <main class="content-area">
-
     <section class="content-section">
       <h2>Strengths</h2>
-
-      <div class="strength-item">
-        <div class="sl-icon">&#x26A1;</div>
-        <div class="sl-content">
-          <h4>Rust Performance</h4>
-          <p>No garbage collector means no latency spikes. No JVM warm-up. Memory usage stays tightly controlled. Consistent sub-millisecond internal processing with reliable tail latencies under load.</p>
-        </div>
-      </div>
-
-      <div class="strength-item">
-        <div class="sl-icon">&#x1F50D;</div>
-        <div class="sl-content">
-          <h4>Rich Payload Filtering</h4>
-          <p>Filters are integrated into the HNSW traversal (not post-processing). Supports keyword, numeric range, geo, datetime, full-text, and nested field conditions with boolean logic. Best-in-class for "find similar WHERE..." queries.</p>
-        </div>
-      </div>
-
-      <div class="strength-item">
-        <div class="sl-icon">&#x1F4E6;</div>
-        <div class="sl-content">
-          <h4>Flexible Quantization</h4>
-          <p>Three methods (scalar, binary, product) with 1.5-bit and 2-bit variants. Rescoring pipeline with configurable oversampling maintains high recall even with aggressive compression. Fine-grained control over memory-accuracy-speed trade-offs.</p>
-        </div>
-      </div>
-
-      <div class="strength-item">
-        <div class="sl-icon">&#x1F680;</div>
-        <div class="sl-content">
-          <h4>Simple Deployment</h4>
-          <p>Single binary or Docker container. No external dependencies (no ZooKeeper, no etcd). Built-in Raft consensus for distributed mode. Python client's local mode for zero-server development.</p>
-        </div>
-      </div>
-
-      <div class="strength-item">
-        <div class="sl-icon">&#x1F4CA;</div>
-        <div class="sl-content">
-          <h4>Named Vectors &amp; Multi-Vector Support</h4>
-          <p>Store multiple vector types per point for multi-modal search, hybrid dense+sparse retrieval, and late-interaction models like ColBERT. A capability many competitors lack.</p>
-        </div>
-      </div>
+      <ul class="strength-list">
+        <li><strong>Filtered search performance</strong> Filterable HNSW with adaptive query planner integrates filtering into graph traversal. Consistently low latency even with highly selective filters matching 1% of data. Best-in-class for combined semantic + metadata search.</li>
+        <li><strong>Rust performance and safety</strong> Zero GC pauses, SIMD-optimized distance functions, io_uring for disk throughput. Memory safety eliminates segfaults and buffer overflows in a system holding billions of vectors. Benchmarks consistently top-tier.</li>
+        <li><strong>Quantization flexibility</strong> Three methods (scalar, product, binary) with asymmetric queries and configurable rescoring. CompressedWithVectors format co-locates quantized data with HNSW links, reducing cache misses per traversal hop.</li>
+        <li><strong>Multi-vector and hybrid search</strong> Named vectors, sparse vectors, multi-vectors (ColBERT), and hybrid search with RRF in a single system. Eliminates running separate services for semantic and keyword search.</li>
+        <li><strong>Developer experience</strong> Clean REST/gRPC APIs, six language clients, Python local mode, generous free cloud tier. Comprehensive documentation and active Discord community.</li>
+        <li><strong>Distributed scaling</strong> Horizontal sharding, replication, Raft consensus. Tiered multitenancy (v1.16+) with payload-based and shard-based isolation. Managed scaling via Qdrant Cloud.</li>
+      </ul>
     </section>
 
     <section class="content-section">
       <h2>Limitations</h2>
-
-      <div class="limitation-item">
-        <div class="sl-icon">&#x26A0;&#xFE0F;</div>
-        <div class="sl-content">
-          <h4>No Built-in Embedding Generation</h4>
-          <p>Unlike Weaviate (vectorizer modules), Qdrant requires external embedding generation. You must call an embedding API or run a model yourself. FastEmbed mitigates this for Python users.</p>
-        </div>
-      </div>
-
-      <div class="limitation-item">
-        <div class="sl-icon">&#x26A0;&#xFE0F;</div>
-        <div class="sl-content">
-          <h4>Approximate Search Only</h4>
-          <p>HNSW provides 95-99%+ recall but is not guaranteed exact. Applications requiring 100% exact nearest neighbors must use brute-force mode, which does not scale beyond small collections.</p>
-        </div>
-      </div>
-
-      <div class="limitation-item">
-        <div class="sl-icon">&#x26A0;&#xFE0F;</div>
-        <div class="sl-content">
-          <h4>Memory for Large HNSW Indexes</h4>
-          <p>The HNSW graph structure requires significant memory proportional to <code>num_points x m x 2 x 8 bytes</code>. Quantization reduces vector memory but not graph overhead. Memmap helps but with some latency cost.</p>
-        </div>
-      </div>
-
-      <div class="limitation-item">
-        <div class="sl-icon">&#x26A0;&#xFE0F;</div>
-        <div class="sl-content">
-          <h4>Limited Query Language</h4>
-          <p>Qdrant uses a JSON filter language rather than SQL. While powerful for its domain, it lacks SQL's expressiveness for complex joins, aggregations, or subqueries. Qdrant is a search engine, not a general-purpose database.</p>
-        </div>
-      </div>
+      <ul class="limitation-list">
+        <li><strong>No SQL or relational queries</strong> No JOINs, GROUP BY, or complex aggregations. Payload filtering supports AND/OR/NOT on individual fields, but the query language is limited. Pair with PostgreSQL for relational needs.</li>
+        <li><strong>Write latency visibility</strong> New points go to unindexed appendable segments. Until optimizer builds HNSW, they are searched via slower linear scan. Recent data may have different recall characteristics until optimization completes.</li>
+        <li><strong>HNSW memory requirements</strong> The graph must fit in memory for reasonable latency. At m=16, ~256 MB per million points just for graph links. 100M+ points need 25+ GB RAM for the graph alone, even with vectors on disk.</li>
+        <li><strong>Limited full-text search</strong> Basic tokenized text search, not comparable to Elasticsearch for phrase matching, fuzzy search, boosting, or highlighting. Use sparse vectors for keyword matching or pair with a dedicated search engine.</li>
+        <li><strong>Cold-start latency with mmap</strong> First queries after restart are slow as OS page cache warms up. Fundamental to mmap-based storage, not specific to Qdrant. Affects strict cold-start SLA workloads.</li>
+      </ul>
     </section>
 
     <section class="content-section">
       <h2>Alternatives Comparison</h2>
-      <div class="comparison-table-wrap">
-        <table class="comparison-table">
-          <thead>
-            <tr>
-              <th>Feature</th>
-              <th class="highlight-col">Qdrant</th>
-              <th>Pinecone</th>
-              <th>Weaviate</th>
-              <th>Milvus</th>
-              <th>pgvector</th>
-              <th>Chroma</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Language</td><td class="highlight-col">Rust</td><td>Proprietary</td><td>Go</td><td>Go/C++</td><td>C (Postgres)</td><td>Python</td></tr>
-            <tr><td>License</td><td class="highlight-col">Apache-2.0</td><td>Proprietary</td><td>BSD-3</td><td>Apache-2.0</td><td>PostgreSQL</td><td>Apache-2.0</td></tr>
-            <tr><td>Self-hosted</td><td class="highlight-col">Yes</td><td>No</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
-            <tr><td>Filtering</td><td class="highlight-col">Excellent</td><td>Good</td><td>Good</td><td>Good</td><td>SQL (excellent)</td><td>Basic</td></tr>
-            <tr><td>Quantization</td><td class="highlight-col">Scalar/Binary/PQ</td><td>Automatic</td><td>Binary/PQ</td><td>IVF/PQ/DiskANN</td><td>None</td><td>None</td></tr>
-            <tr><td>Distributed</td><td class="highlight-col">Built-in Raft</td><td>Managed</td><td>Built-in Raft</td><td>K8s-native</td><td>Postgres replicas</td><td>No</td></tr>
-            <tr><td>Multi-vector</td><td class="highlight-col">Yes</td><td>No</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
-            <tr><td>Scale ceiling</td><td class="highlight-col">Billions</td><td>Billions</td><td>~100M</td><td>Billions</td><td>~100M</td><td>Millions</td></tr>
-            <tr><td>Best for</td><td class="highlight-col">Filtered search</td><td>Zero-ops cloud</td><td>Knowledge graphs</td><td>GPU-scale</td><td>SQL-first</td><td>Prototyping</td></tr>
-          </tbody>
-        </table>
+      <div class="comparison-grid">
+        <div class="comparison-card">
+          <div class="comparison-card-name">Pinecone</div>
+          <div class="comparison-card-desc">Fully managed, no self-hosting option (except local dev). Zero operational overhead but zero infrastructure control. Moderate scale (&lt;50M vectors).</div>
+          <div class="comparison-card-verdict"><strong>Choose Qdrant when:</strong> you need self-hosting, advanced filtering, hybrid search, or want to avoid vendor lock-in. Choose Pinecone when: your team doesn't want to manage infrastructure.</div>
+        </div>
+        <div class="comparison-card">
+          <div class="comparison-card-name">Weaviate</div>
+          <div class="comparison-card-desc">Knowledge-graph orientation, GraphQL API, built-in vectorization. Schema-first design. Can struggle with memory at very large scale (&gt;50M vectors).</div>
+          <div class="comparison-card-verdict"><strong>Choose Qdrant when:</strong> you manage your own embeddings, need better filtering performance, or need sparse vectors. Choose Weaviate when: you want built-in embedding generation or prefer GraphQL.</div>
+        </div>
+        <div class="comparison-card">
+          <div class="comparison-card-name">Milvus</div>
+          <div class="comparison-card-desc">Microservice architecture (etcd + MinIO + Pulsar). Multiple index types including GPU-accelerated. Enterprise scale (billions of vectors). Steeper learning curve.</div>
+          <div class="comparison-card-verdict"><strong>Choose Qdrant when:</strong> you want simpler deployment (single binary vs. multi-service), better filtered search, or prefer Rust's safety. Choose Milvus when: you need GPU indexing or multi-algorithm flexibility.</div>
+        </div>
+        <div class="comparison-card">
+          <div class="comparison-card-name">pgvector</div>
+          <div class="comparison-card-desc">PostgreSQL extension. Single database for relational + vector data. Simple operations. Performance 5-20x slower than Qdrant. No horizontal scaling of vector index.</div>
+          <div class="comparison-card-verdict"><strong>Choose Qdrant when:</strong> you need production-grade performance, horizontal scaling, or advanced features. Choose pgvector when: small dataset, simple filters, operational simplicity matters most.</div>
+        </div>
+        <div class="comparison-card">
+          <div class="comparison-card-name">FAISS</div>
+          <div class="comparison-card-desc">Facebook's similarity search library (not a database). No server, persistence, filtering, or API. Maximum control over index configuration. Research-oriented.</div>
+          <div class="comparison-card-verdict"><strong>Choose Qdrant when:</strong> you need a database with persistence, filtering, API, and scaling. Choose FAISS when: you need a low-level library embedded in Python/C++ for maximum control.</div>
+        </div>
+        <div class="comparison-card">
+          <div class="comparison-card-name">Chroma</div>
+          <div class="comparison-card-desc">Lightweight, developer-friendly. Focus on AI prototyping with the simplest possible setup. Limited production features and scale.</div>
+          <div class="comparison-card-verdict"><strong>Choose Qdrant when:</strong> you need production performance, quantization, distributed deployment, or datasets exceeding single-machine memory. Choose Chroma when: quick prototype, simplest setup.</div>
+        </div>
       </div>
     </section>
 
     <section class="content-section">
-      <h2>When to Choose What</h2>
-
-      <div class="decision-card">
-        <h3><span class="decision-icon">&#x2705;</span> Choose Qdrant when...</h3>
-        <p>You need rich payload filtering combined with vector search. You want an open-source, self-hostable solution with flexible quantization, multi-vector support, and a Rust-based engine with predictable performance.</p>
-      </div>
-
-      <div class="decision-card">
-        <h3><span class="decision-icon">&#x1F4CC;</span> Choose Pinecone when...</h3>
-        <p>You want zero-ops managed vector search and do not need self-hosting. Best for teams that want to focus on application logic rather than infrastructure management.</p>
-      </div>
-
-      <div class="decision-card">
-        <h3><span class="decision-icon">&#x1F4CC;</span> Choose Weaviate when...</h3>
-        <p>You need built-in embedding generation (vectorizer modules) and a GraphQL interface. Strong for knowledge graph applications that combine vector search with structured data relationships.</p>
-      </div>
-
-      <div class="decision-card">
-        <h3><span class="decision-icon">&#x1F4CC;</span> Choose Milvus when...</h3>
-        <p>You need GPU-accelerated indexing and search at massive scale with Kubernetes-native distributed deployment. Best for teams with existing K8s infrastructure and billion-scale requirements.</p>
-      </div>
-
-      <div class="decision-card">
-        <h3><span class="decision-icon">&#x1F4CC;</span> Choose pgvector when...</h3>
-        <p>Your vector search needs are modest and you want to keep everything in PostgreSQL. Ideal for SQL-first teams where vector search is a secondary feature.</p>
-      </div>
-
-      <div class="decision-card">
-        <h3><span class="decision-icon">&#x1F4CC;</span> Choose Chroma when...</h3>
-        <p>You need a lightweight, Python-native vector store for prototyping, notebooks, and small-scale applications. Fastest path from zero to working demo.</p>
-      </div>
-    </section>
-
-    <div class="honest-take">
       <h2>The Honest Take</h2>
-      <p>Qdrant occupies a strong position in the vector database landscape: it is the go-to choice for teams that need a self-hosted, production-grade vector database with excellent filtering and memory efficiency. Its Rust foundation provides a genuine performance advantage over Go- and Python-based alternatives.</p>
-      <p>The combination of rich filtering, flexible quantization, and multi-vector support makes it particularly well-suited for complex production applications like multi-tenant RAG systems.</p>
-      <p>The main trade-offs are the lack of built-in embedding generation (you bring your own embeddings) and the JSON query language (less familiar than SQL for some teams). For teams that want zero-ops simplicity, Pinecone remains the path of least resistance. For teams invested in the Kubernetes ecosystem at billion-scale, Milvus is worth evaluating. But for the broad middle ground of production vector search applications, Qdrant delivers an excellent balance of performance, flexibility, and operational simplicity.</p>
-    </div>
-
+      <div class="callout info">
+        <strong>Summary</strong>
+        Qdrant excels as a production vector database for AI applications that need fast filtered search, flexible quantization, and horizontal scaling. Its Rust foundation provides genuine performance and safety advantages. The filtered HNSW implementation is best-in-class, and the multi-vector/hybrid search capabilities cover the full spectrum of modern retrieval needs.
+      </div>
+      <p>The honest weakness is that Qdrant is a specialized tool: it does vector search extremely well but nothing else. If you need relational queries, complex analytics, or sophisticated full-text search alongside vector search, you will run multiple systems.</p>
+      <p>For most teams building AI applications in 2026, Qdrant is the right default choice for the vector search layer -- it has the performance, features, and ecosystem support to handle production workloads, with enough flexibility to grow from prototype to scale.</p>
+    </section>
   </main>
 
   <section class="references-footer">
-    <h3>References &amp; Resources</h3>
+    <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item"><span class="reference-title"><a href="https://liquidmetal.ai/casesAndBlogs/vector-comparison/" target="_blank">Vector Database Comparison (LiquidMetal AI)</a></span><span class="reference-type-tag">blog</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://www.firecrawl.dev/blog/best-vector-databases" target="_blank">Best Vector Databases 2026 (Firecrawl)</a></span><span class="reference-type-tag">blog</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://tensorblue.com/blog/vector-database-comparison-pinecone-weaviate-qdrant-milvus-2025" target="_blank">Vector Database Comparison (TensorBlue)</a></span><span class="reference-type-tag">blog</span></li>
+      <li class="reference-item">&#x1F4F0; <a href="https://tensorblue.com/blog/vector-database-comparison-pinecone-weaviate-qdrant-milvus-2025" target="_blank" rel="noopener noreferrer">Vector Database Comparison 2025</a> <span class="reference-domain">tensorblue.com</span></li>
+      <li class="reference-item">&#x1F4F0; <a href="https://research.aimultiple.com/vector-database-for-rag/" target="_blank" rel="noopener noreferrer">Top Vector Database for RAG</a> <span class="reference-domain">aimultiple.com</span></li>
+      <li class="reference-item">&#x1F4F0; <a href="https://medium.com/@elisheba.t.anderson/choosing-the-right-vector-database-opensearch-vs-pinecone-vs-qdrant-vs-weaviate-vs-milvus-vs-037343926d7e" target="_blank" rel="noopener noreferrer">Choosing the Right Vector Database</a> <span class="reference-domain">medium.com</span></li>
     </ul>
   </section>
 
-  <div class="page-nav-footer">
+  <nav class="page-nav-footer">
     <a href="faq.html" class="prev">FAQ</a>
-    <a href="index.html" class="next">Back to Home</a>
-  </div>
-
+    <a href="index.html" class="next">Home</a>
+  </nav>
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
-
   <script>
-    document.getElementById('navHamburger').addEventListener('click', function() {
-      this.classList.toggle('open');
-      document.getElementById('navPages').classList.toggle('mobile-open');
-    });
-    window.addEventListener('scroll', function() {
-      var bar = document.querySelector('.nav-progress-bar');
-      var h = document.documentElement.scrollHeight - window.innerHeight;
-      bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%';
-    });
+    document.getElementById('navHamburger').addEventListener('click',function(){this.classList.toggle('open');document.getElementById('navPages').classList.toggle('open')});
+    function copyPageAsMarkdown(){var c=document.querySelector('.content-area');var t='# Trade-offs & Limitations\n\n';c.querySelectorAll('h2,h3,p,li').forEach(function(e){if(e.tagName==='H2')t+='\n## '+e.textContent+'\n\n';else if(e.tagName==='H3')t+='### '+e.textContent+'\n\n';else if(e.tagName==='LI')t+='- '+e.textContent.trim()+'\n';else t+=e.textContent+'\n\n'});navigator.clipboard.writeText(t).then(function(){var b=document.querySelector('.copy-md-btn');b.textContent='Copied!';setTimeout(function(){b.innerHTML='&#x1F4CB; Copy as Markdown'},2000)})}
   </script>
 </body>
 </html>

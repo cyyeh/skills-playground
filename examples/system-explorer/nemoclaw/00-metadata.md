@@ -1,9 +1,9 @@
 ## Metadata
 - **Name:** NemoClaw
-- **Category:** Secure AI Agent Runtime & Orchestration Stack
+- **Category:** AI Agent Security & Orchestration Platform
 - **Official URL:** https://www.nvidia.com/en-us/ai/nemoclaw/
 - **GitHub:** NVIDIA/NemoClaw
-- **Tag:** latest
-- **License:** Apache-2.0
-- **Latest Version:** Early Preview (alpha, March 2026)
-- **Analysis Date:** 2026-03-31
+- **Tag:** main
+- **License:** Apache 2.0
+- **Latest Version:** Alpha Preview (March 2026)
+- **Analysis Date:** 2026-04-01

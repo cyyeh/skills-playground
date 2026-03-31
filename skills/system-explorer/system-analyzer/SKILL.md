@@ -74,13 +74,31 @@ Go beyond training data. Be aggressive about gathering real, current information
 
 **Source Code Research (when GitHub repo is available):**
 
-This is NOT optional — when the system has a public GitHub repository, always perform source code research to feed the Implementation Details section's Source Code Walkthrough.
+This is NOT optional — when the system has a public GitHub repository, always perform source code research to feed the Implementation Details section's Source Code Walkthrough. For systems spanning multiple repositories (listed in the `Additional Repos` metadata field), repeat these steps for each repo.
 
-1. Fetch the repository file tree using WebFetch on `https://api.github.com/repos/{org}/{repo}/git/trees/{tag}?recursive=1` to understand the directory structure
-2. From the tree, identify 8-15 key source files that implement core concepts and architectural components discovered in Phase 1. Prioritize: main entry points, core data structures, key algorithms, configuration schemas.
-3. Fetch the content of those files using WebFetch on raw GitHub URLs: `https://raw.githubusercontent.com/{org}/{repo}/{tag}/{filepath}`
-4. Extract relevant code excerpts (20-60 lines each) with precise line ranges. For complex implementations, extract multiple consecutive excerpts from the same file to support multi-block sequences.
-5. Map each excerpt to the concept or component it implements (for cross-referencing in the Source Code Walkthrough). Flag concepts that will need multi-block sequences or the focus + context pattern.
+**Step 1 — Build a concept checklist.** Take every core concept from Phase 1 (typically 4-8 concepts) and every key architectural component. Write them down as a checklist. Every concept MUST be mapped to source code by the end of this phase.
+
+**Step 2 — Explore the repo structure.** Fetch the repository file tree using WebFetch on `https://api.github.com/repos/{org}/{repo}/git/trees/{tag}?recursive=1`. For large repos where the tree is truncated, browse key directories individually via the GitHub API: `https://api.github.com/repos/{org}/{repo}/contents/{path}?ref={tag}`.
+
+**Step 3 — Map each concept to source files using a concept-driven search.** For EACH concept on the checklist:
+1. Search the file tree for directories and files whose names match the concept (e.g., `hnsw_index/` for "HNSW Index", `artifact/` or `artifact_repo.py` for "Artifacts", `vector_storage/` for "Vectors")
+2. Fetch the most likely candidate files using raw GitHub URLs: `https://raw.githubusercontent.com/{org}/{repo}/{tag}/{filepath}`
+3. Identify the key type definition — the struct, class, trait, interface, or enum that IS the concept (e.g., `struct GraphLayers` for HNSW, `class Experiment` for Experiments, `enum Distance` for Distance Metrics)
+4. Identify key functions/methods that operate on that type (e.g., `create_experiment()`, `search_on_level()`, `apply()`)
+5. Extract a representative code excerpt (20-60 lines) that reveals the concept's implementation. Prefer code that shows design decisions over boilerplate.
+
+**Step 4 — Track coverage.** After searching, review the checklist. Every core concept should have at least one source mapping. If a concept has no mapping, try alternative search strategies:
+- Search for the concept name as a type/function name in different casings (CamelCase, snake_case, UPPER_CASE)
+- Browse the top-level `src/` or `lib/` directories for module names related to the concept
+- Check the project's README or ARCHITECTURE.md for pointers to key source files
+- For multi-repo systems, the concept may live in a different repo than the main one
+
+**Step 5 — Extract and annotate.** For each mapped concept, extract the code excerpt with precise line ranges. For complex implementations, extract multiple consecutive excerpts from the same file to support multi-block sequences. Flag concepts that will need multi-block sequences or the focus + context pattern.
+
+Record the final mapping as a working table for Phase 3:
+```
+| Concept | File | Lines | Key Types/Functions | Repo (if multi-repo) |
+```
 
 If the GitHub API rate-limits you, fall back to raw.githubusercontent.com URLs directly. If the system is closed-source, skip this step and note the limitation in the Implementation Details section.
 
@@ -124,7 +142,9 @@ Write the analysis as **multiple files** — one per section — instead of a si
 
 **Implementation Details — Source Code Walkthrough (MANDATORY for open-source systems):** When the system has a public GitHub repository and source code was gathered in Phase 2, the `05-implementation-details.md` file MUST include a `### Source Code Walkthrough` sub-section with actual annotated source code — not just a directory listing or prose description of the codebase structure. A "Source Code Structure" section that only lists directory paths is NOT a substitute.
 
-For each core concept (from `02-core-concepts.md`) and architectural component (from `03-architecture.md`), find and include the actual source code from the system's repository that implements it. Cross-reference explicitly: "This implements the [Concept Name] concept from Core Concepts" or "This is the [Component Name] component described in Architecture." Use the excerpts gathered during Phase 2's Source Code Research. Aim for 5-12 annotated source blocks with full `// source:` annotations. For complex concepts, use multi-block sequences (2-4 blocks chained with bridging commentary) or the focus + context pattern (critical excerpt in full, surrounding code summarized in prose with a GitHub permalink). See `references/section-templates/05-implementation-details.md` for the detailed template.
+Use the concept-to-source mapping table from Phase 2's Source Code Research. For EACH core concept (from `02-core-concepts.md`), include the actual source code that implements it. Cross-reference explicitly: "This implements the [Concept Name] concept from Core Concepts." The mapping table tells you which file, lines, and key types to use — transcribe those excerpts into annotated code blocks with `// source:`, `// github:`, and `// tag:` annotations. Aim for 5-12 annotated source blocks. For complex concepts, use multi-block sequences (2-4 blocks chained with bridging commentary) or the focus + context pattern (critical excerpt in full, surrounding code summarized in prose with a GitHub permalink). See `references/section-templates/05-implementation-details.md` for the detailed template.
+
+For multi-repo systems, include source blocks from all relevant repositories. Use the `// github:` annotation to override the default repo for blocks from secondary repos.
 
 If Phase 2's Source Code Research failed to fetch source files (rate limiting, repo not found), document the failure and retry with alternative URLs before falling back to a behavioral analysis. The absence of a Source Code Walkthrough for an open-source system is a review failure in Phase 4.
 
@@ -138,7 +158,15 @@ Before presenting to the user, review the analysis and fix issues. Iterate until
 3. **Analogies** — Does every Core Concepts entry (in `02-core-concepts.md`) have a real-world analogy? If any concept is explained with only abstract definitions, add an analogy.
 4. **Architecture "why"** — Does `03-architecture.md` explain WHY each component exists, not just what it does? If any component is just described without motivation, add the "why."
 5. **Code examples** — Does `05-implementation-details.md` have actual code snippets, config examples, or commands? If it reads like prose, add concrete examples.
-6. **Source code coverage (HARD FAIL for open-source systems)** — If the system has a public GitHub repository: Does `05-implementation-details.md` include a `### Source Code Walkthrough` sub-section (not `### Source Code Structure` or similar)? Does it contain at least 5 annotated source code blocks with actual code excerpts from the system's repository (not just directory listings or file path descriptions)? Does each block have `// source:`, `// github:`, and `// tag:` annotations? Are multi-block sequences or focus + context patterns used for complex concepts? Do the `// source:` paths correspond to real files discovered in Phase 2? Do the walkthrough entries map back to core concepts from `02-core-concepts.md` and components from `03-architecture.md`? If ANY of these checks fail for an open-source system, this is a BLOCKING failure — go back to Phase 2 to fetch source code and rewrite the section before proceeding. (Skip this check only if the system is genuinely closed-source with no public repository.)
+6. **Source code coverage (HARD FAIL for open-source systems)** — If the system has a public GitHub repository, verify ALL of the following:
+   - Does `05-implementation-details.md` include a `### Source Code Walkthrough` sub-section (not `### Source Code Structure` or similar)?
+   - Does it contain at least 5 annotated source code blocks with actual code excerpts from the system's repository (not just directory listings, not synthetic/illustrative code)?
+   - Does each block have `// source:`, `// github:`, and `// tag:` annotations?
+   - **Concept coverage check:** List every core concept from `02-core-concepts.md`. For EACH concept, verify there is at least one annotated source block in the walkthrough that implements it. Missing concepts = go back to Phase 2 and fetch their source.
+   - Do the `// source:` paths correspond to real files discovered in Phase 2?
+   - For multi-repo systems: are source blocks included from all relevant repositories (not just the primary one)?
+   - Are multi-block sequences or focus + context patterns used for complex concepts?
+   If ANY of these checks fail for an open-source system, this is a BLOCKING failure — go back to Phase 2 to fetch source code and rewrite the section before proceeding. (Skip this check only if the system is genuinely closed-source with no public repository.)
 7. **Honest trade-offs** — Does `09-tradeoffs.md` name real limitations and alternatives? If it reads like marketing copy, rewrite with honest assessments.
 8. **Q&A quality** — Are the questions in `08-common-qa.md` ones a senior engineer would actually ask? If any are trivial ("What is X?"), replace with deeper questions.
 9. **Factual accuracy** — Cross-check key claims against your web research. Are version numbers, URLs, and feature claims still current?

@@ -8,263 +8,142 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --color-bg: #FAF7F2; --color-bg-warm: #F5F0E8; --color-bg-code: #1E1E2E;
-      --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
-      --color-border: #E5DFD6; --color-border-light: #EEEBE5;
-      --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
-      --color-accent: #D4A843; --color-accent-hover: #BF9738;
-      --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
-      --color-success: #2D8B55; --color-success-light: #E8F5EE;
-      --color-error: #C93B3B; --color-error-light: #FDE8E8;
-      --color-info: #2A7B9B; --color-info-light: #E4F2F7;
-      --color-warning: #D4A843; --color-warning-light: #FDF6E4;
-      --font-display: 'Bricolage Grotesque', Georgia, serif;
-      --font-body: 'DM Sans', -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
-      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
-      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
-      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
-      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
-      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
-      --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
-      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
-      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
-      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
-      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--color-bg); background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%); font-family: var(--font-body); color: var(--color-text); line-height: var(--leading-normal); margin: 0; -webkit-font-smoothing: antialiased; }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2A7B9B;--color-accent-hover:#236A86;--color-accent-light:#E4F2F7;--color-accent-muted:#5A9DB5;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(42,123,155,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:var(--content-width);margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-4)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-2) 0 0;line-height:var(--leading-tight);width:100%}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.all{background:var(--color-accent-light);color:var(--color-accent)}.copy-md-btn{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-accent);background:var(--color-accent-light);border:1px solid transparent;border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-md-btn:hover{border-color:var(--color-accent);background:var(--color-surface)}
+    .content-area{max-width:var(--content-width);margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4)}
 
-    .site-nav { position: sticky; top: 0; z-index: 1000; height: var(--nav-height); background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border-light); }
-    .nav-progress-bar { position: absolute; top: 0; left: 0; height: 3px; width: 0%; background: var(--color-accent); transition: width 100ms linear; z-index: 1; }
-    .nav-inner { max-width: var(--content-width-wide); margin: 0 auto; height: 100%; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6); }
-    .nav-brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
-    .nav-brand:hover { color: var(--color-accent); }
-    .nav-pages { display: flex; align-items: center; gap: var(--space-1); flex: 1; overflow-x: auto; scrollbar-width: none; }
-    .nav-pages::-webkit-scrollbar { display: none; }
-    .nav-page-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--color-text-secondary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); white-space: nowrap; transition: color var(--duration-fast), background var(--duration-fast); }
-    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); }
-    .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
-    .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; padding: var(--space-2); background: none; border: none; cursor: pointer; flex-shrink: 0; }
-    .nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 1px; transition: transform var(--duration-fast), opacity var(--duration-fast); }
-    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
-    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    /* FAQ Accordion */
+    .faq-list{display:flex;flex-direction:column;gap:var(--space-4)}
+    .faq-item{background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden;border:1px solid var(--color-border-light)}
+    .faq-question{display:flex;justify-content:space-between;align-items:center;padding:var(--space-5) var(--space-6);cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:var(--text-base);color:var(--color-text);gap:var(--space-4);transition:background var(--duration-fast)}
+    .faq-question:hover{background:var(--color-bg-warm)}
+    .faq-toggle{flex-shrink:0;transition:transform var(--duration-fast);color:var(--color-text-muted)}.faq-item.open .faq-toggle{transform:rotate(180deg)}
+    .faq-answer{max-height:0;overflow:hidden;transition:max-height var(--duration-slow)}
+    .faq-item.open .faq-answer{max-height:2000px}
+    .faq-answer-inner{padding:0 var(--space-6) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.7;border-top:1px solid var(--color-border-light)}
+    .faq-answer-inner p{margin-top:var(--space-4)}
+    .faq-answer-inner code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-bg-warm);padding:2px 6px;border-radius:4px;color:var(--color-text)}
 
-    .page-header { max-width: var(--content-width); margin: var(--space-12) auto var(--space-8); padding: 0 var(--space-6); }
-    .page-header h1 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800; margin: 0 0 var(--space-3); line-height: var(--leading-tight); }
-    .page-level-badge { display: inline-block; font-size: var(--text-sm); font-weight: 600; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
-    .page-level-badge.all { background: var(--color-info-light); color: var(--color-info); }
-
-    .content-area { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6); }
-
-    .faq-item { background: var(--color-surface); border-radius: var(--radius-lg); margin-bottom: var(--space-4); box-shadow: var(--shadow-sm); overflow: hidden; }
-    .faq-question { display: flex; align-items: center; justify-content: space-between; padding: var(--space-5) var(--space-6); cursor: pointer; transition: background var(--duration-fast); }
-    .faq-question:hover { background: var(--color-surface-warm); }
-    .faq-question h3 { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); margin: 0; flex: 1; padding-right: var(--space-4); line-height: 1.4; }
-    .faq-arrow { font-size: var(--text-base); color: var(--color-accent); transition: transform var(--duration-fast); flex-shrink: 0; }
-    .faq-item.open .faq-arrow { transform: rotate(180deg); }
-    .faq-answer { display: none; padding: 0 var(--space-6) var(--space-6); }
-    .faq-item.open .faq-answer { display: block; }
-    .faq-answer p { font-size: var(--text-sm); line-height: 1.7; color: var(--color-text-secondary); margin: 0 0 var(--space-3); }
-    .faq-answer p:last-child { margin-bottom: 0; }
-    .faq-answer strong { color: var(--color-text); }
-    .faq-answer code { font-family: var(--font-mono); font-size: 0.85em; background: var(--color-bg-code); color: #CDD6F4; padding: 0.15em 0.4em; border-radius: 4px; }
-
-    .references-footer { max-width: var(--content-width); margin: var(--space-10) auto var(--space-4); padding: var(--space-6); background: var(--color-bg-warm); border-left: 3px solid var(--color-accent); border-radius: var(--radius-md); }
-    .references-footer h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin: 0 0 var(--space-4); }
-    .references-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-    .reference-item { display: flex; align-items: baseline; gap: var(--space-3); }
-    .reference-title { font-size: var(--text-sm); font-weight: 600; }
-    .reference-title a { color: var(--color-accent); text-decoration: none; }
-    .reference-title a:hover { text-decoration: underline; }
-    .reference-type-tag { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-border-light); padding: 1px 6px; border-radius: var(--radius-full); margin-left: var(--space-2); }
-
-    .page-nav-footer { display: flex; justify-content: space-between; align-items: center; max-width: var(--content-width); margin: var(--space-12) auto var(--space-6); padding: var(--space-6); border-top: 1px solid var(--color-border-light); }
-    .page-nav-footer a { font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; }
-    .page-nav-footer a:hover { color: var(--color-accent-hover); }
-    .page-nav-footer .prev::before { content: "\2190\00a0"; }
-    .page-nav-footer .next::after { content: "\00a0\2192"; }
-    .site-footer { text-align: center; padding: var(--space-8) var(--space-6); font-size: var(--text-sm); color: var(--color-text-muted); border-top: 1px solid var(--color-border-light); margin-top: var(--space-4); }
-
-    @media (max-width: 768px) { :root { --text-3xl: 1.5rem; --nav-height: 56px; } }
-    @media (max-width: 480px) {
-      .nav-hamburger { display: flex; }
-      .nav-pages { display: none; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border); box-shadow: var(--shadow-md); padding: var(--space-4); }
-      .nav-pages.mobile-open { display: flex; flex-direction: column; gap: var(--space-1); }
-      .page-nav-footer { flex-direction: column; gap: var(--space-4); }
-    }
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:var(--content-width);margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .references-footer{max-width:var(--content-width);margin:var(--space-8) auto;padding:var(--space-6);background:var(--color-surface-warm);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:center;gap:var(--space-3)}.reference-item a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm)}.reference-item a:hover{text-decoration:underline}.reference-domain{font-size:var(--text-xs);color:var(--color-text-muted)}
+    @media(max-width:768px){.nav-pages{display:none}.nav-pages.open{display:flex;flex-direction:column;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-4) var(--space-6);box-shadow:var(--shadow-md);z-index:999}.nav-hamburger{display:flex}.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
   </style>
 </head>
 <body>
-
-  <nav class="site-nav">
-    <div class="nav-progress-bar"></div>
-    <div class="nav-inner">
-      <a href="index.html" class="nav-brand">Qdrant</a>
-      <div class="nav-pages" id="navPages">
-        <a href="concepts.html" class="nav-page-link">Concepts</a>
-        <a href="architecture.html" class="nav-page-link">Architecture</a>
-        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
-        <a href="implementation.html" class="nav-page-link">Implementation</a>
-        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
-        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
-        <a href="faq.html" class="nav-page-link active">FAQ</a>
-        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
-      </div>
-      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  <nav class="site-nav"><div class="nav-inner">
+    <a href="index.html" class="nav-brand">Qdrant</a>
+    <div class="nav-pages" id="navPages">
+      <a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link active">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
     </div>
-  </nav>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  </div></nav>
 
   <header class="page-header">
-    <span class="page-level-badge all">All Levels</span>
-    <h1>Common Q&amp;A</h1>
+    <div><span class="page-level-badge all">All Levels</span><h1>Common Q&amp;A</h1></div>
+    <button class="copy-md-btn" onclick="copyPageAsMarkdown()">&#x1F4CB; Copy as Markdown</button>
   </header>
 
   <main class="content-area">
+    <section class="content-section">
+      <div class="faq-list">
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">How much RAM does Qdrant need for my dataset? <span class="faq-toggle">&#x25BC;</span></div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            <p><strong>Vectors in RAM:</strong> <code>N * D * 4</code> bytes for float32. 1M vectors at 1536d = ~5.7 GB.</p>
+            <p><strong>HNSW graph:</strong> ~<code>N * m * 2 * 8</code> bytes. 1M vectors, m=16 = ~256 MB.</p>
+            <p><strong>With scalar quantization (int8):</strong> Vector RAM drops to <code>N * D * 1</code> byte -- 4x reduction. 1M at 1536d = ~1.4 GB.</p>
+            <p><strong>With mmap:</strong> Vectors on disk, RAM depends on OS page cache. Full dataset can exceed RAM.</p>
+            <p><strong>Rule of thumb:</strong> Budget ~2 bytes/dimension/point for quantized + indexed storage. 10M points at 768d = ~15 GB.</p>
+          </div></div>
+        </div>
 
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>How does Qdrant compare to pgvector?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
-      </div>
-      <div class="faq-answer">
-        <p>pgvector adds vector search to PostgreSQL, convenient if you already use Postgres and have modest needs (up to ~100M vectors). Qdrant is purpose-built with a dedicated HNSW implementation, rich payload filtering, multiple quantization options, and native distributed mode.</p>
-        <p><strong>Choose pgvector</strong> when vector search is secondary and you want everything in one database. <strong>Choose Qdrant</strong> when vector search is core to your application and you need production-grade performance, scaling, or advanced features.</p>
-      </div>
-    </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">How do I choose between Cosine, Euclidean, and Dot Product? <span class="faq-toggle">&#x25BC;</span></div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            <p><strong>Cosine:</strong> Measures angle between vectors, ignoring magnitude. Best for most text embedding models (OpenAI, sentence-transformers). Qdrant pre-normalizes at insert time, making it as fast as Dot Product.</p>
+            <p><strong>Dot Product:</strong> Measures both direction and magnitude. Use when magnitude carries meaning (popularity-weighted embeddings). Identical to Cosine on L2-normalized vectors.</p>
+            <p><strong>Euclidean:</strong> Straight-line distance. Use for geometric applications or when the model documentation specifically recommends L2.</p>
+            <p><strong>When in doubt, use Cosine.</strong> It is the most universally compatible choice.</p>
+          </div></div>
+        </div>
 
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>How much memory does Qdrant need for my dataset?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
-      </div>
-      <div class="faq-answer">
-        <p><strong>Formula:</strong> <code>vectors = num_points x dimensions x 4 bytes</code> (float32) plus HNSW graph overhead (<code>~num_points x m x 2 x 8 bytes</code>).</p>
-        <p><strong>Example:</strong> 1M vectors at 1536 dimensions with m=16: vectors = ~5.7 GB, HNSW = ~256 MB, total ~6 GB. With scalar quantization: ~1.7 GB. With memmap storage, the OS page cache manages memory &mdash; you can serve datasets much larger than available RAM.</p>
-      </div>
-    </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">When should I enable quantization, and which type? <span class="faq-toggle">&#x25BC;</span></div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            <p><strong>Scalar (int8):</strong> 4x memory reduction, &lt;1% recall loss. Works with all models. Safest default.</p>
+            <p><strong>Binary:</strong> 32x reduction with Hamming distance. Only for compatible models (OpenAI text-embedding-3-large, Cohere embed-v3). Test recall first.</p>
+            <p><strong>Product:</strong> 8-32x reduction for high-dim vectors (1536+). Larger accuracy trade-off.</p>
+            <p><strong>No quantization:</strong> When accuracy is paramount and RAM is abundant, or for small datasets.</p>
+          </div></div>
+        </div>
 
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>Should I use cosine, dot product, or Euclidean distance?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
-      </div>
-      <div class="faq-answer">
-        <p>Use the metric that matches your embedding model's training. Most text embedding models (OpenAI, Cohere, sentence-transformers) work best with <strong>cosine similarity</strong>. If your vectors are already normalized (unit length), dot product is equivalent to cosine but slightly faster. Euclidean is for when absolute magnitude differences matter. <strong>When in doubt, start with cosine.</strong></p>
-      </div>
-    </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">How do I handle multi-tenancy? <span class="faq-toggle">&#x25BC;</span></div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            <p><strong>Payload filtering (recommended):</strong> Add <code>tenant_id</code> to every point, create keyword index, include in every query filter. Qdrant's filter-aware HNSW handles this efficiently.</p>
+            <p><strong>Shard-per-tenant (v1.16+):</strong> Large tenants get dedicated shards, small tenants share a fallback shard. Physical isolation with cost efficiency.</p>
+            <p><strong>Collection-per-tenant:</strong> Strongest isolation but scales poorly beyond ~100 tenants due to per-collection overhead.</p>
+          </div></div>
+        </div>
 
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>When should I use quantization, and which type?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
-      </div>
-      <div class="faq-answer">
-        <p><strong>Scalar (int8):</strong> Safest default. 4x memory reduction, less than 1% accuracy loss. Works with any model.</p>
-        <p><strong>Binary (1-bit):</strong> 32x compression, up to 40x speedup. Works best with high-dimensional embeddings (&gt;1024d) from models like OpenAI. Test with your specific model first.</p>
-        <p><strong>Product:</strong> Highest compression (up to 64x) but significant accuracy loss (~0.7 recall). Use only when memory is extremely constrained.</p>
-      </div>
-    </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">How do I optimize search latency for production? <span class="faq-toggle">&#x25BC;</span></div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            <p>1. Enable scalar quantization with <code>always_ram=true</code>. 2. Tune <code>hnsw_ef</code> (start at 128, lower for latency, raise for recall). 3. Build payload indexes on all filtered fields. 4. Use <code>indexed_only: true</code> to skip unindexed segments. 5. Right-size HNSW <code>m</code> parameter (16-32). 6. Monitor optimizer -- rising segment count means it is falling behind.</p>
+          </div></div>
+        </div>
 
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>How do I handle multi-tenancy?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
-      </div>
-      <div class="faq-answer">
-        <p><strong>Payload-based filtering:</strong> Store a <code>tenant_id</code> field and include it as a filter in every query. Simple, works well up to moderate tenant counts. Create a keyword index on the tenant field.</p>
-        <p><strong>Custom sharding (v1.7.0+):</strong> Assign each tenant a shard key for physical data isolation. Better performance for large tenant counts since Qdrant searches only the relevant shard.</p>
-      </div>
-    </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">How does Qdrant compare to pgvector? <span class="faq-toggle">&#x25BC;</span></div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            <p><strong>Performance:</strong> Qdrant is typically 5-20x faster, especially with filtering. SIMD-optimized, filterable HNSW vs. pgvector's general-purpose extension.</p>
+            <p><strong>Scalability:</strong> Qdrant supports horizontal sharding and replication. pgvector is limited to PostgreSQL's options.</p>
+            <p><strong>Features:</strong> Qdrant offers sparse vectors, named multi-vectors, multiple quantization methods, hybrid search with RRF.</p>
+            <p><strong>pgvector wins when:</strong> small dataset (&lt;1M vectors), simple filtering, you want a single database, operational simplicity matters most.</p>
+          </div></div>
+        </div>
 
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>Can Qdrant handle real-time updates?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
-      </div>
-      <div class="faq-answer">
-        <p>Yes. New points are immediately searchable via brute-force in the appendable segment. Once the optimizer builds the HNSW index (triggered at the indexing threshold), those points become available for fast indexed search. Points are never invisible &mdash; they are always searchable through one path or the other.</p>
-      </div>
-    </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">What is the maximum dataset size on a single node? <span class="faq-toggle">&#x25BC;</span></div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            <p>100M+ vectors with appropriate configuration. 100M at 768d with scalar quantization needs ~76 GB for quantized vectors + ~12 GB for HNSW graph. Fits on 128 GB RAM.</p>
+            <p>Beyond ~200M vectors, distributed deployment with multiple shards is recommended. Benchmarks show 3ms p99 latency for 1M OpenAI embeddings.</p>
+          </div></div>
+        </div>
 
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>How does Qdrant ensure data durability?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">How does Qdrant handle updates and deletes? <span class="faq-toggle">&#x25BC;</span></div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            <p><strong>Upserts:</strong> New points go to the appendable segment. Old versions are soft-deleted via ID tracker. During search, only the latest version is returned.</p>
+            <p><strong>Deletes:</strong> Soft-deleted via ID tracker. Points remain in HNSW graph but are excluded from results. VacuumOptimizer periodically rebuilds segments without deleted points.</p>
+            <p><strong>Why not modify HNSW in-place?</strong> Removing graph nodes requires complex rewiring that degrades quality. Soft-delete + periodic rebuild is simpler, faster per operation, and produces better graph quality.</p>
+          </div></div>
+        </div>
       </div>
-      <div class="faq-answer">
-        <p>All writes go to the Write-Ahead Log (WAL) before acknowledgment. The WAL is a sequential, append-only file that survives crashes. On recovery, Qdrant replays unprocessed WAL entries. The flush worker persists segment state every 5 seconds. In distributed mode, replication provides additional durability.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>What embedding model should I use?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
-      </div>
-      <div class="faq-answer">
-        <p><strong>General English text:</strong> OpenAI text-embedding-3-small (1536d) or sentence-transformers all-MiniLM-L6-v2 (384d, free, local).</p>
-        <p><strong>Multilingual:</strong> Cohere embed-multilingual-v3.0.</p>
-        <p><strong>Maximum quality:</strong> OpenAI text-embedding-3-large (3072d).</p>
-        <p><strong>On-device (no API):</strong> Qdrant's FastEmbed library included in the Python client.</p>
-        <p>All vectors in a collection must use the same model and dimensionality.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>Does Qdrant support hybrid search?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
-      </div>
-      <div class="faq-answer">
-        <p>Yes. Qdrant supports named vectors, allowing multiple vector types per point &mdash; for example, a dense embedding from a neural model and a sparse BM25 vector. You can search using either vector independently or combine results using fusion. Hybrid dense+sparse search often outperforms either approach alone.</p>
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-        <h3>What is the maximum number of vectors Qdrant can handle?</h3>
-        <span class="faq-arrow">&#x25BC;</span>
-      </div>
-      <div class="faq-answer">
-        <p>A single node can handle tens of millions of vectors depending on dimensionality and memory. With distributed mode, Qdrant scales horizontally to <strong>billions</strong> of vectors by sharding across nodes. The practical limit depends on hardware, dimensionality, quantization, and latency requirements. Qdrant Cloud has been tested with billion-scale deployments.</p>
-      </div>
-    </div>
-
+    </section>
   </main>
 
   <section class="references-footer">
-    <h3>References &amp; Resources</h3>
+    <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/documentation/" target="_blank">Qdrant Documentation</a></span><span class="reference-type-tag">official-docs</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/documentation/manage-data/quantization/" target="_blank">Quantization Documentation</a></span><span class="reference-type-tag">official-docs</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://github.com/orgs/qdrant/discussions" target="_blank">Qdrant GitHub Discussions</a></span><span class="reference-type-tag">github</span></li>
+      <li class="reference-item">&#x1F4C4; <a href="https://qdrant.tech/documentation/faq/" target="_blank" rel="noopener noreferrer">Qdrant FAQ</a> <span class="reference-domain">qdrant.tech</span></li>
+      <li class="reference-item">&#x1F4C4; <a href="https://qdrant.tech/documentation/guides/optimize/" target="_blank" rel="noopener noreferrer">Qdrant Performance Tuning Guide</a> <span class="reference-domain">qdrant.tech</span></li>
+      <li class="reference-item">&#x1F4C4; <a href="https://qdrant.tech/articles/vector-search-resource-optimization/" target="_blank" rel="noopener noreferrer">Vector Search Resource Optimization</a> <span class="reference-domain">qdrant.tech</span></li>
     </ul>
   </section>
 
-  <div class="page-nav-footer">
+  <nav class="page-nav-footer">
     <a href="ecosystem.html" class="prev">Ecosystem</a>
     <a href="tradeoffs.html" class="next">Trade-offs</a>
-  </div>
-
+  </nav>
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
-
   <script>
-    document.getElementById('navHamburger').addEventListener('click', function() {
-      this.classList.toggle('open');
-      document.getElementById('navPages').classList.toggle('mobile-open');
-    });
-    window.addEventListener('scroll', function() {
-      var bar = document.querySelector('.nav-progress-bar');
-      var h = document.documentElement.scrollHeight - window.innerHeight;
-      bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%';
-    });
+    document.getElementById('navHamburger').addEventListener('click',function(){this.classList.toggle('open');document.getElementById('navPages').classList.toggle('open')});
+    function copyPageAsMarkdown(){var t='# Common Q&A\n\n';document.querySelectorAll('.faq-item').forEach(function(item){var q=item.querySelector('.faq-question').textContent.trim();var a=item.querySelector('.faq-answer-inner').textContent.trim();t+='## '+q+'\n\n'+a+'\n\n'});navigator.clipboard.writeText(t).then(function(){var b=document.querySelector('.copy-md-btn');b.textContent='Copied!';setTimeout(function(){b.innerHTML='&#x1F4CB; Copy as Markdown'},2000)})}
   </script>
 </body>
 </html>

@@ -1,152 +1,110 @@
 ## How It Works
 <!-- level: intermediate -->
 <!-- references:
-- [MLflow Tracking API](https://mlflow.org/docs/latest/tracking/tracking-api) | docs
-- [MLflow Model Registry](https://mlflow.org/docs/latest/model-registry/) | docs
-- [MLflow Deployment](https://mlflow.org/docs/latest/deployment/index.html) | docs
-- [MLflow Tracing](https://mlflow.org/docs/latest/genai/tracing/) | docs
+- [MLflow Tracking Documentation](https://mlflow.org/docs/latest/tracking/) | official-docs
+- [Automatic Logging with MLflow](https://mlflow.org/docs/latest/tracking/autolog/) | official-docs
+- [MLflow Models Documentation](https://mlflow.org/docs/latest/ml/model/) | official-docs
+- [MLflow Model Registry](https://mlflow.org/docs/latest/ml/model-registry/) | official-docs
 -->
 
-### Workflow 1: Logging an Experiment
+### Experiment Tracking
 
-**Step 1 -- Set the tracking URI.** Point the client at a tracking server:
+MLflow's tracking system works through a layered client-server architecture. When you write `mlflow.log_metric("accuracy", 0.95)`, several things happen beneath the surface:
 
-```python
-import mlflow
-mlflow.set_tracking_uri("http://my-tracking-server:5000")
-```
+1. The fluent API checks the thread-local context for an active run. If none exists, it auto-creates one using the active experiment (set via `mlflow.set_experiment()` or the `MLFLOW_EXPERIMENT_NAME` environment variable).
 
-**Step 2 -- Create or set an experiment.** Experiments group related runs:
+2. The metric is validated (key must be a string, value must be numeric, step must be an integer), then packaged into a protobuf message.
 
-```python
-mlflow.set_experiment("fraud-detection-v2")
-```
+3. The `TrackingServiceClient` sends a REST API request to the tracking server at the configured tracking URI (`MLFLOW_TRACKING_URI`).
 
-**Step 3 -- Start a run and log data.** Everything inside the `with` block is recorded:
+4. The tracking server's request handler deserializes the protobuf, routes the request to the backend store, and the `SqlAlchemyStore` executes an INSERT into both the `metrics` table (full history) and the `latest_metrics` table (fast lookups).
 
-```python
-with mlflow.start_run():
-    mlflow.log_param("learning_rate", 0.01)
-    mlflow.log_param("n_estimators", 200)
+5. For metric deduplication, the store checks if an identical (run_id, key, timestamp, step, value) tuple already exists before inserting. The `latest_metrics` table is updated only if the new metric has a later timestamp or step than the existing latest entry.
 
-    # ... training code ...
+MLflow supports both synchronous and asynchronous logging. Async logging (enabled via `MLFLOW_ENABLE_ASYNC_LOGGING=true` or `synchronous=False`) buffers log calls and sends them in batches, reducing network overhead for high-frequency logging. The batch API (`mlflow.log_metrics()`, `mlflow.log_params()`) is recommended for bulk operations.
 
-    mlflow.log_metric("accuracy", 0.943)
-    mlflow.log_metric("f1_score", 0.917)
-    mlflow.log_artifact("confusion_matrix.png")
-    mlflow.sklearn.log_model(model, "model")
-```
+### Autologging
 
-**Step 4 -- View results.** Open the MLflow UI (`http://my-tracking-server:5000`), navigate to the experiment, and compare runs side by side with metric charts, parameter tables, and artifact viewers.
+Autologging is MLflow's "zero-code" tracking feature. When you call `mlflow.autolog()` or a framework-specific variant like `mlflow.sklearn.autolog()`, MLflow monkey-patches the training functions of supported ML libraries to automatically capture parameters, metrics, and models.
 
-**What happens under the hood:**
-- `start_run()` sends a `POST /api/2.0/mlflow/runs/create` to the tracking server.
-- Each `log_param`, `log_metric`, and `log_artifact` call sends its own REST request.
-- The tracking server writes metadata to the backend store (database) and artifacts to the artifact store (e.g., S3).
-- The UI queries the backend store and renders run comparisons.
+The mechanism works through the `autologging_integration` decorator and `safe_patch` utility:
 
-### Workflow 2: Using Autologging
+1. **Registration:** Each supported library (scikit-learn, PyTorch, TensorFlow, XGBoost, etc.) has an autolog function decorated with `@autologging_integration("library_name")`. This registers the integration and stores its configuration.
 
-Instead of manual `log_param` and `log_metric` calls, autologging captures everything automatically:
+2. **Patching:** When autologging is enabled, MLflow patches key methods on the ML framework. For scikit-learn, it patches `fit()`, `fit_transform()`, and `fit_predict()` on all estimators. For PyTorch, it patches the training loop. For LangChain, it patches `invoke()` and `__call__()`.
 
-```python
-import mlflow
-mlflow.autolog()
+3. **Interception:** When the patched method is called (e.g., `model.fit(X, y)`), the patch wrapper automatically creates a run, logs relevant parameters (from the estimator's `get_params()`), logs metrics (from `score()`), and saves the trained model as an artifact.
 
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+4. **Safety:** The `safe_patch` mechanism ensures that autologging failures never break user code. If logging fails, it catches the exception, logs a warning, and lets the original function proceed normally.
 
-X_train, X_test, y_train, y_test = train_test_split(X, y)
-model = RandomForestClassifier(n_estimators=200, max_depth=10)
-model.fit(X_train, y_train)
-```
+The autologging configuration is stored in a global dictionary `AUTOLOGGING_INTEGRATIONS` protected by a thread-safe lock. Each integration can be independently enabled/disabled and configured with options like `log_models`, `log_datasets`, `log_input_examples`, and `silent`.
 
-MLflow's autologging hooks into the library's `.fit()` method using monkey-patching. It automatically logs all constructor parameters, training metrics, the fitted model artifact, and (for supported libraries) feature importance plots and evaluation metrics.
+### Model Packaging (MLmodel Format)
 
-Autologging supports 20+ libraries: scikit-learn, TensorFlow, Keras, PyTorch, XGBoost, LightGBM, CatBoost, Spark, Statsmodels, and more.
+When you call `mlflow.sklearn.log_model(model, "model")`, MLflow creates a standardized model package:
 
-### Workflow 3: Registering a Model
+1. **Serialization:** The framework-specific module serializes the model. For scikit-learn, this uses `pickle` or `cloudpickle`. For PyTorch, `torch.save()`. For TensorFlow, `tf.saved_model.save()`.
 
-**Step 1 -- Register from a run.** After training, promote a model to the registry:
+2. **MLmodel File Generation:** MLflow creates an `MLmodel` YAML file describing the model:
+   ```yaml
+   artifact_path: model
+   flavors:
+     python_function:
+       loader_module: mlflow.sklearn
+       python_version: 3.10.12
+       env: conda.yaml
+     sklearn:
+       pickled_model: model.pkl
+       sklearn_version: 1.3.0
+       serialization_format: cloudpickle
+   signature:
+     inputs: '[{"name": "feature1", "type": "double"}, ...]'
+     outputs: '[{"type": "long"}]'
+   model_uuid: a1b2c3d4-...
+   ```
 
-```python
-result = mlflow.register_model(
-    model_uri="runs:/abc123def456/model",
-    name="fraud-detector"
-)
-```
+3. **Environment Capture:** MLflow generates `conda.yaml` and `requirements.txt` files listing the exact package versions used during training. This ensures the model can be loaded in an identical environment during serving.
 
-This creates a new version (e.g., version 3) of the registered model "fraud-detector," linked to the specified run.
+4. **Artifact Upload:** The entire package (model file, MLmodel, conda.yaml, requirements.txt) is uploaded to the artifact store as a directory.
 
-**Step 2 -- Assign an alias.** Mark the new version as the production candidate:
+The key insight is the **flavor system**. A single model can have multiple flavors -- the `sklearn` flavor for native scikit-learn operations, and the `python_function` (pyfunc) flavor for generic inference. The pyfunc flavor is the universal interface: any MLflow model can be loaded as a pyfunc and called with `model.predict(data)`, regardless of the underlying framework. This is what enables framework-agnostic deployment.
 
-```python
-from mlflow import MlflowClient
-client = MlflowClient()
-client.set_registered_model_alias("fraud-detector", "champion", version=3)
-```
+### Model Registry Workflow
 
-**Step 3 -- Load by alias.** Downstream services load the model without hardcoding a version number:
+The model registry manages the lifecycle of production models through a state machine:
 
-```python
-model = mlflow.pyfunc.load_model("models:/fraud-detector@champion")
-predictions = model.predict(new_data)
-```
+1. **Registration:** `mlflow.register_model(model_uri, "fraud-detector")` creates a `RegisteredModel` entry (if new) and a `ModelVersion` linked to the run's model artifact. The version number auto-increments.
 
-### Workflow 4: Deploying a Model
+2. **Aliasing:** Model versions can be assigned aliases like "champion" (the current best) and "challenger" (the candidate being evaluated). Aliases are mutable pointers -- reassigning "champion" to a new version is atomic.
 
-**Option A -- Local REST server:**
+3. **Stage Transitions:** The classic workflow uses stages: None -> Staging -> Production -> Archived. Each transition can be gated by organizational policies (automated tests, human review, performance thresholds).
 
-```bash
-mlflow models serve -m "models:/fraud-detector@champion" --port 5001
-```
+4. **Version Comparison:** The registry UI and API let you compare metrics, parameters, and artifacts across model versions side by side. This supports data-driven promotion decisions.
 
-This starts a Flask server with a `/invocations` endpoint that accepts JSON or CSV input.
+5. **Deployment:** Production systems load models by alias or version: `mlflow.pyfunc.load_model("models:/fraud-detector@champion")`. When the alias moves to a new version, the next model load picks up the new version automatically.
 
-**Option B -- Docker container:**
+The registry stores all version metadata (creation time, source run, description, tags) in the backend store. The model artifacts themselves remain in the artifact store -- the registry just stores a URI pointing to them. This avoids duplicating large model files.
 
-```bash
-mlflow models build-docker -m "models:/fraud-detector@champion" -n fraud-detector-image
-docker run -p 5001:8080 fraud-detector-image
-```
+### Model Serving and Deployment
 
-**Option C -- Cloud deployment (SageMaker):**
+MLflow provides multiple deployment paths:
 
-```python
-mlflow.sagemaker.deploy(
-    app_name="fraud-detector",
-    model_uri="models:/fraud-detector@champion",
-    region_name="us-west-2",
-    mode="create"
-)
-```
+**Local Serving:** `mlflow models serve -m models:/my-model/1 -p 5001` starts a REST API server wrapping the model. It creates a virtual environment from the model's conda.yaml, loads the model, and serves predictions on a `/invocations` endpoint.
 
-**Option D -- Kubernetes (via Seldon Core or KServe):**
+**Docker Containerization:** `mlflow models build-docker -m models:/my-model/1 -n my-model-image` packages the model into a Docker image with all dependencies. The image includes a Gunicorn/Flask server ready for Kubernetes deployment.
 
-MLflow provides plugins that generate Kubernetes-native deployment manifests from MLflow models.
+**Batch Inference:** Load the model in a Spark job or Python script and call `model.predict()` on a dataset. The pyfunc interface accepts pandas DataFrames, numpy arrays, and Spark DataFrames.
 
-### Workflow 5: GenAI Tracing and Observability
+**Cloud Deployment:** MLflow integrates with AWS SageMaker, Azure ML, and Databricks for managed model serving with auto-scaling, A/B testing, and monitoring.
 
-Since MLflow 3.0, the platform includes comprehensive tracing for GenAI applications:
+### Performance Characteristics
 
-**Step 1 -- Enable tracing.** For supported libraries, tracing is automatic:
+**Where it excels:**
+- Experiment tracking at scale -- the SQL backend handles millions of runs with efficient indexing on experiment_id, metric values, and parameters. Batch logging and async mode handle high-frequency metric streams without bottlenecking training.
+- Model packaging -- the MLmodel format adds minimal overhead (a few YAML files) to the actual model serialization. Loading a model from the registry adds only the time to download artifacts from the artifact store.
+- Framework agnosticism -- the pyfunc flavor means a single deployment pipeline works for any framework, reducing operational complexity.
 
-```python
-import mlflow
-mlflow.openai.autolog()  # or mlflow.langchain.autolog()
-```
-
-**Step 2 -- View traces.** Every LLM call, tool invocation, and retrieval step is captured as a span in a trace. The MLflow UI shows the full request lifecycle with inputs, outputs, latency, and token counts.
-
-**Step 3 -- Evaluate.** Use built-in or custom scorers to evaluate agent quality:
-
-```python
-results = mlflow.evaluate(
-    model=my_agent,
-    data=eval_dataset,
-    model_type="agent",
-    evaluators=["correctness", "safety", "relevance"]
-)
-```
-
-This runs each evaluation example through the agent, applies LLM judges, and produces a scored report with per-example and aggregate metrics.
+**Where it's slower:**
+- The tracking server adds network latency to every log call. For extremely high-frequency logging (thousands of metrics per second), consider batching or async mode.
+- Large artifact uploads can be slow through the tracking server proxy. For multi-gigabyte models, configure direct artifact access to the underlying store (S3, GCS) to bypass the server.
+- The file-based backend store (used by default) doesn't support concurrent writes well. Switch to a database-backed store for any team usage.

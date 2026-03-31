@@ -8,251 +8,117 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --color-bg: #FAF7F2; --color-bg-warm: #F5F0E8; --color-bg-code: #1E1E2E;
-      --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
-      --color-border: #E5DFD6; --color-border-light: #EEEBE5;
-      --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
-      --color-accent: #D4A843; --color-accent-hover: #BF9738;
-      --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
-      --color-success: #2D8B55; --color-success-light: #E8F5EE;
-      --color-error: #C93B3B; --color-error-light: #FDE8E8;
-      --color-info: #2A7B9B; --color-info-light: #E4F2F7;
-      --color-warning: #D4A843; --color-warning-light: #FDF6E4;
-      --font-display: 'Bricolage Grotesque', Georgia, serif;
-      --font-body: 'DM Sans', -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
-      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
-      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
-      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
-      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
-      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
-      --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
-      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
-      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
-      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
-      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--color-bg); background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%); font-family: var(--font-body); color: var(--color-text); line-height: var(--leading-normal); margin: 0; -webkit-font-smoothing: antialiased; }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2A7B9B;--color-accent-hover:#236A86;--color-accent-light:#E4F2F7;--color-accent-muted:#5A9DB5;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(42,123,155,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:var(--content-width);margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-4)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-2) 0 0;line-height:var(--leading-tight);width:100%}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.beginner{background:var(--color-success-light);color:var(--color-success)}.copy-md-btn{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-accent);background:var(--color-accent-light);border:1px solid transparent;border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-md-btn:hover{border-color:var(--color-accent);background:var(--color-surface)}
+    .content-area{max-width:var(--content-width);margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4)}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
 
-    .site-nav { position: sticky; top: 0; z-index: 1000; height: var(--nav-height); background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border-light); }
-    .nav-progress-bar { position: absolute; top: 0; left: 0; height: 3px; width: 0%; background: var(--color-accent); transition: width 100ms linear; z-index: 1; }
-    .nav-inner { max-width: var(--content-width-wide); margin: 0 auto; height: 100%; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6); }
-    .nav-brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
-    .nav-brand:hover { color: var(--color-accent); }
-    .nav-pages { display: flex; align-items: center; gap: var(--space-1); flex: 1; overflow-x: auto; scrollbar-width: none; }
-    .nav-pages::-webkit-scrollbar { display: none; }
-    .nav-page-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--color-text-secondary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); white-space: nowrap; transition: color var(--duration-fast), background var(--duration-fast); }
-    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); }
-    .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
-    .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; padding: var(--space-2); background: none; border: none; cursor: pointer; flex-shrink: 0; }
-    .nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 1px; transition: transform var(--duration-fast), opacity var(--duration-fast); }
-    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
-    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-
-    .page-header { max-width: var(--content-width); margin: var(--space-12) auto var(--space-8); padding: 0 var(--space-6); }
-    .page-header h1 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800; margin: 0 0 var(--space-3); line-height: var(--leading-tight); }
-    .page-level-badge { display: inline-block; font-size: var(--text-sm); font-weight: 600; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
-    .page-level-badge.beginner { background: var(--color-success-light); color: var(--color-success); }
-
-    .content-area { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6); }
-    .content-section { margin-bottom: var(--space-10); }
-    .content-section h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; margin: 0 0 var(--space-4); }
-    .content-section h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; margin: var(--space-6) 0 var(--space-3); }
-    .content-section p { font-size: var(--text-base); line-height: 1.7; margin: 0 0 var(--space-4); }
-
-    code { font-family: var(--font-mono); font-size: 0.88em; background: var(--color-bg-code); color: #CDD6F4; padding: 0.15em 0.4em; border-radius: 4px; }
-
-    .use-case-card { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-8); box-shadow: var(--shadow-sm); margin-bottom: var(--space-8); border-left: 5px solid var(--uc-color, var(--color-accent)); }
-    .use-case-card h2 { display: flex; align-items: center; gap: var(--space-3); }
-    .use-case-icon { font-size: 1.6rem; }
-    .use-case-section-label { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-2); }
-    .use-case-list { list-style: none; padding: 0; margin: 0 0 var(--space-4); }
-    .use-case-list li { padding: var(--space-2) 0; padding-left: var(--space-5); position: relative; line-height: 1.6; color: var(--color-text-secondary); }
-    .use-case-list li::before { content: ""; position: absolute; left: 0; top: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent); }
-
-    .callout { display: flex; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-md); margin: var(--space-4) 0 var(--space-5); border-left: 4px solid; }
-    .callout-insight { background: var(--color-accent-light); border-color: var(--color-accent); }
-    .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
-    .callout-content { font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--color-text-secondary); }
-    .callout-content strong { color: var(--color-text); }
-
-    .code-block { background: var(--color-bg-code); color: #CDD6F4; padding: var(--space-5); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: var(--text-sm); line-height: 1.6; overflow-x: auto; margin: var(--space-4) 0; white-space: pre; }
-    .code-block .comment { color: #6C7086; }
-    .code-block .keyword { color: #CBA6F7; }
-    .code-block .string { color: #A6E3A1; }
-    .code-block .func { color: #89B4FA; }
-
-    .references-footer { max-width: var(--content-width); margin: var(--space-10) auto var(--space-4); padding: var(--space-6); background: var(--color-bg-warm); border-left: 3px solid var(--color-accent); border-radius: var(--radius-md); }
-    .references-footer h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; margin: 0 0 var(--space-4); }
-    .references-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-    .reference-item { display: flex; align-items: baseline; gap: var(--space-3); }
-    .reference-title { font-size: var(--text-sm); font-weight: 600; }
-    .reference-title a { color: var(--color-accent); text-decoration: none; }
-    .reference-title a:hover { text-decoration: underline; }
-    .reference-type-tag { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-border-light); padding: 1px 6px; border-radius: var(--radius-full); margin-left: var(--space-2); }
-
-    .page-nav-footer { display: flex; justify-content: space-between; align-items: center; max-width: var(--content-width); margin: var(--space-12) auto var(--space-6); padding: var(--space-6); border-top: 1px solid var(--color-border-light); }
-    .page-nav-footer a { font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; }
-    .page-nav-footer a:hover { color: var(--color-accent-hover); }
-    .page-nav-footer .prev::before { content: "\2190\00a0"; }
-    .page-nav-footer .next::after { content: "\00a0\2192"; }
-    .site-footer { text-align: center; padding: var(--space-8) var(--space-6); font-size: var(--text-sm); color: var(--color-text-muted); border-top: 1px solid var(--color-border-light); margin-top: var(--space-4); }
-
-    @media (max-width: 768px) { :root { --text-3xl: 1.5rem; --nav-height: 56px; } .use-case-card { padding: var(--space-6); } }
-    @media (max-width: 480px) {
-      .nav-hamburger { display: flex; }
-      .nav-pages { display: none; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border); box-shadow: var(--shadow-md); padding: var(--space-4); }
-      .nav-pages.mobile-open { display: flex; flex-direction: column; gap: var(--space-1); }
-      .page-nav-footer { flex-direction: column; gap: var(--space-4); }
-    }
+    /* Case study cards */
+    .case-cards{display:grid;grid-template-columns:1fr;gap:var(--space-6);margin:var(--space-6) 0}
+    .case-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-6);box-shadow:var(--shadow-sm);border-left:4px solid var(--color-accent)}
+    .case-card-company{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-accent);margin-bottom:var(--space-1)}
+    .case-card-industry{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
+    .case-card-desc{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text);line-height:1.6}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;font-size:var(--text-sm);line-height:1.6}.callout.warning{background:var(--color-warning-light);border-left:4px solid var(--color-warning)}.callout.success{background:var(--color-success-light);border-left:4px solid var(--color-success)}.callout strong{display:block;margin-bottom:var(--space-1)}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:var(--content-width);margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .references-footer{max-width:var(--content-width);margin:var(--space-8) auto;padding:var(--space-6);background:var(--color-surface-warm);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:600;margin-bottom:var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:center;gap:var(--space-3)}.reference-item a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm)}.reference-item a:hover{text-decoration:underline}.reference-domain{font-size:var(--text-xs);color:var(--color-text-muted)}
+    @media(max-width:768px){.nav-pages{display:none}.nav-pages.open{display:flex;flex-direction:column;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-4) var(--space-6);box-shadow:var(--shadow-md);z-index:999}.nav-hamburger{display:flex}.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
   </style>
 </head>
 <body>
-
-  <nav class="site-nav">
-    <div class="nav-progress-bar"></div>
-    <div class="nav-inner">
-      <a href="index.html" class="nav-brand">Qdrant</a>
-      <div class="nav-pages" id="navPages">
-        <a href="concepts.html" class="nav-page-link">Concepts</a>
-        <a href="architecture.html" class="nav-page-link">Architecture</a>
-        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
-        <a href="implementation.html" class="nav-page-link">Implementation</a>
-        <a href="use-cases.html" class="nav-page-link active">Use Cases</a>
-        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
-        <a href="faq.html" class="nav-page-link">FAQ</a>
-        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
-      </div>
-      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  <nav class="site-nav"><div class="nav-inner">
+    <a href="index.html" class="nav-brand">Qdrant</a>
+    <div class="nav-pages" id="navPages">
+      <a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link active">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
     </div>
-  </nav>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  </div></nav>
 
   <header class="page-header">
-    <span class="page-level-badge beginner">Beginner-Intermediate</span>
-    <h1>Use Cases &amp; Case Studies</h1>
+    <div><span class="page-level-badge beginner">Beginner-Intermediate</span><h1>Use Cases &amp; Case Studies</h1></div>
+    <button class="copy-md-btn" onclick="copyPageAsMarkdown()">&#x1F4CB; Copy as Markdown</button>
   </header>
 
   <main class="content-area">
+    <section class="content-section">
+      <h2>When to Use Qdrant</h2>
+      <h3>Retrieval-Augmented Generation (RAG)</h3>
+      <p>Store document chunk embeddings and retrieve the most relevant ones when users ask questions. Qdrant's payload filtering enables scoping retrieval by document category, date range, or access level -- critical for production RAG with multi-tenancy.</p>
+      <h3>Semantic Search</h3>
+      <p>Search that understands meaning rather than just keywords. "Affordable family vacation" returns results about "budget-friendly trips with kids" even though no words overlap. Hybrid search (dense + sparse vectors with RRF) delivers the best of both worlds.</p>
+      <h3>Recommendation Systems</h3>
+      <p>Embed items and users into the same vector space, then find items most similar to a user's preference vector. Qdrant's recommendation API supports positive and negative examples for nuanced "more like this, less like that" suggestions.</p>
+      <h3>AI Agent Memory</h3>
+      <p>AI agents store embeddings of past interactions and learned facts. When recalling context, they query Qdrant with the current conversation embedding. Payload filtering enables time-based and topic-based retrieval.</p>
+      <h3>Anomaly Detection</h3>
+      <p>Embed normal behavior patterns as vectors. New observations far from all stored vectors (low similarity) are flagged as anomalies. Qdrant's fast nearest-neighbor search makes this real-time.</p>
+    </section>
 
-    <div class="use-case-card" style="--uc-color: var(--color-info)">
-      <h2><span class="use-case-icon">&#x1F4DA;</span> Retrieval-Augmented Generation (RAG)</h2>
-      <p>RAG is the most prominent use case for Qdrant. An LLM's responses are enhanced with relevant context retrieved from a vector database, reducing hallucinations and grounding answers in actual data.</p>
-
-      <div class="use-case-section-label">How Qdrant Fits In</div>
-      <ul class="use-case-list">
-        <li>Documents are chunked and embedded using a model like OpenAI text-embedding-3-small</li>
-        <li>Vectors are stored in Qdrant with payloads containing original text, source URL, and metadata</li>
-        <li>User questions are embedded and searched against Qdrant for relevant chunks</li>
-        <li>Payload filters narrow by source, date, permission level, or topic</li>
-        <li>Retrieved chunks are injected into the LLM prompt as context</li>
-      </ul>
-
-      <div class="code-block"><span class="comment"># RAG search with filtering</span>
-results = client.<span class="func">query_points</span>(
-    collection_name=<span class="string">"documents"</span>,
-    query=question_embedding,
-    query_filter=Filter(must=[
-        FieldCondition(key=<span class="string">"source"</span>, match=MatchValue(value=<span class="string">"internal-docs"</span>)),
-        FieldCondition(key=<span class="string">"date"</span>, range=Range(gte=<span class="string">"2025-01-01"</span>))
-    ]),
-    with_payload=<span class="keyword">True</span>,
-    limit=<span class="keyword">10</span>
-)</div>
-
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content"><strong>Why Qdrant excels:</strong> The combination of high-performance vector search with rich payload filtering is critical for production RAG. You can filter by document source, date range, user permissions, or any custom metadata &mdash; all within the vector search operation, without sacrificing latency.</div>
+    <section class="content-section">
+      <h2>When NOT to Use Qdrant</h2>
+      <div class="callout warning">
+        <strong>Not a general-purpose database.</strong> No SQL JOINs, GROUP BY aggregations, or ACID transactions. Use PostgreSQL for relational workloads.
       </div>
-    </div>
-
-    <div class="use-case-card" style="--uc-color: var(--color-success)">
-      <h2><span class="use-case-icon">&#x1F50E;</span> Semantic Search</h2>
-      <p>Traditional keyword search fails when users express the same intent with different words. Semantic search uses vector representations to find results based on meaning rather than exact matches.</p>
-
-      <div class="use-case-section-label">How Qdrant Fits In</div>
-      <ul class="use-case-list">
-        <li>Products, articles, or documents are embedded and stored with full metadata payloads</li>
-        <li>User queries are embedded using the same model</li>
-        <li>Qdrant returns the most semantically similar items, filtered by category, availability, or language</li>
-      </ul>
-
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content"><strong>Real-world pattern:</strong> An e-commerce platform embeds product descriptions and reviews. When a user searches "comfortable running shoes for flat feet," Qdrant returns relevant products filtered by availability and price range &mdash; even if no product title contains the exact phrase "flat feet." Sub-3ms latency for 1M vectors makes this viable for real-time user-facing search.</div>
+      <div class="callout warning">
+        <strong>Small datasets (&lt; 10K vectors).</strong> HNSW overhead isn't justified. Use brute-force search in NumPy or qdrant-client local mode.
       </div>
-    </div>
-
-    <div class="use-case-card" style="--uc-color: var(--color-accent)">
-      <h2><span class="use-case-icon">&#x1F3AF;</span> Recommendation Systems</h2>
-      <p>Recommendation engines suggest items based on user preferences, behavioral patterns, or item similarity. Vector databases provide a natural foundation for collaborative and content-based filtering.</p>
-
-      <div class="use-case-section-label">How Qdrant Fits In</div>
-      <ul class="use-case-list">
-        <li>User and item profiles are represented as vectors derived from behavior or content</li>
-        <li>Qdrant's recommend API uses positive examples (liked items) and negative examples (items to avoid)</li>
-        <li>Named vectors enable multi-modal recommendations (visual + text embeddings per product)</li>
-        <li>MMR (Maximal Marginal Relevance) balances relevance with diversity</li>
-      </ul>
-
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content"><strong>Real-world pattern:</strong> A streaming platform represents each movie as a vector based on plot, genre, cast, and visual style. The recommend API uses a watched movie as a positive example and skipped movies as negative examples, filtered by content rating preferences.</div>
+      <div class="callout warning">
+        <strong>Write-heavy transactional workloads.</strong> Writes go through WAL and background optimization. Not designed for high-frequency, low-latency writes with immediate consistency.
       </div>
-    </div>
+    </section>
 
-    <div class="use-case-card" style="--uc-color: var(--color-error)">
-      <h2><span class="use-case-icon">&#x1F6A8;</span> Anomaly Detection</h2>
-      <p>Anomaly detection identifies data points that deviate significantly from normal patterns. In vector space, anomalies are points far from any cluster of normal behavior.</p>
-
-      <div class="use-case-section-label">How Qdrant Fits In</div>
-      <ul class="use-case-list">
-        <li>Normal behavior patterns are embedded and stored in Qdrant</li>
-        <li>New data points are embedded and searched against the database</li>
-        <li>High nearest-neighbor distances flag anomalous data points</li>
-        <li>Payload filtering enables contextual anomaly detection (per-server, per-time-window)</li>
-      </ul>
-
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content"><strong>Real-world pattern:</strong> A cybersecurity company embeds network traffic patterns. Each connection is compared against known normal patterns, filtered by network segment and time window. Connections with high distance scores trigger automated investigation workflows. Qdrant's speed enables real-time detection on streaming data.</div>
+    <section class="content-section">
+      <h2>Real-World Deployments</h2>
+      <div class="case-cards">
+        <div class="case-card">
+          <div class="case-card-company">Tripadvisor</div>
+          <div class="case-card-industry">Travel &amp; Hospitality</div>
+          <div class="case-card-desc">Powers semantic search and recommendation across millions of hotels, restaurants, and attractions. Vector search understands travel intent ("cozy beachfront with snorkeling") while payload filtering handles structured constraints (location, price, rating).</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card-company">HubSpot</div>
+          <div class="case-card-industry">CRM &amp; Marketing</div>
+          <div class="case-card-desc">AI-powered CRM features: finding similar companies, matching contacts to ideal customer profiles, and content recommendations. Multi-tenancy via payload-based isolation serves their massive customer base securely.</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card-company">Bazaarvoice</div>
+          <div class="case-card-industry">Product Reviews &amp; Commerce</div>
+          <div class="case-card-desc">Processes billions of product reviews across thousands of brands. Semantic search finds similar complaints across brands and matches descriptions to relevant reviews. Horizontal scaling handles data volume.</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card-company">Bosch</div>
+          <div class="case-card-industry">Manufacturing &amp; IoT</div>
+          <div class="case-card-desc">Anomaly detection in manufacturing: sensor readings are embedded and compared against historical patterns. Engineers also search millions of technical documents using natural language queries.</div>
+        </div>
+        <div class="case-card">
+          <div class="case-card-company">OpenTable</div>
+          <div class="case-card-industry">Restaurant &amp; Dining</div>
+          <div class="case-card-desc">Improved restaurant recommendations by embedding diner preferences and restaurant characteristics. Considers ambiance, price sensitivity, and occasion type beyond simple cuisine matching.</div>
+        </div>
       </div>
-    </div>
-
+    </section>
   </main>
 
   <section class="references-footer">
-    <h3>References &amp; Resources</h3>
+    <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/rag/" target="_blank">Qdrant RAG Use Case</a></span><span class="reference-type-tag">official-docs</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/use-cases/" target="_blank">Qdrant Use Cases</a></span><span class="reference-type-tag">official-docs</span></li>
-      <li class="reference-item"><span class="reference-title"><a href="https://qdrant.tech/documentation/tutorials-build-essentials/rag-deepseek/" target="_blank">5-Minute RAG with DeepSeek</a></span><span class="reference-type-tag">official-docs</span></li>
+      <li class="reference-item">&#x1F4C4; <a href="https://qdrant.tech/rag/" target="_blank" rel="noopener noreferrer">Qdrant RAG Use Case</a> <span class="reference-domain">qdrant.tech</span></li>
+      <li class="reference-item">&#x1F4C4; <a href="https://qdrant.tech/ai-agents/" target="_blank" rel="noopener noreferrer">AI Agents with Qdrant</a> <span class="reference-domain">qdrant.tech</span></li>
+      <li class="reference-item">&#x1F4F0; <a href="https://www.businesswire.com/news/home/20260312313902/en/" target="_blank" rel="noopener noreferrer">Qdrant Raises $50M Series B</a> <span class="reference-domain">businesswire.com</span></li>
     </ul>
   </section>
 
-  <div class="page-nav-footer">
+  <nav class="page-nav-footer">
     <a href="implementation.html" class="prev">Implementation</a>
     <a href="ecosystem.html" class="next">Ecosystem</a>
-  </div>
-
+  </nav>
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
-
   <script>
-    document.getElementById('navHamburger').addEventListener('click', function() {
-      this.classList.toggle('open');
-      document.getElementById('navPages').classList.toggle('mobile-open');
-    });
-    window.addEventListener('scroll', function() {
-      var bar = document.querySelector('.nav-progress-bar');
-      var h = document.documentElement.scrollHeight - window.innerHeight;
-      bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%';
-    });
+    document.getElementById('navHamburger').addEventListener('click',function(){this.classList.toggle('open');document.getElementById('navPages').classList.toggle('open')});
+    function copyPageAsMarkdown(){var c=document.querySelector('.content-area');var t='# Use Cases\n\n';c.querySelectorAll('h2,h3,p,.case-card-company,.case-card-desc').forEach(function(e){if(e.classList.contains('case-card-company'))t+='\n**'+e.textContent+'**\n';else if(e.classList.contains('case-card-desc'))t+=e.textContent+'\n\n';else if(e.tagName==='H2')t+='\n## '+e.textContent+'\n\n';else if(e.tagName==='H3')t+='### '+e.textContent+'\n\n';else t+=e.textContent+'\n\n'});navigator.clipboard.writeText(t).then(function(){var b=document.querySelector('.copy-md-btn');b.textContent='Copied!';setTimeout(function(){b.innerHTML='&#x1F4CB; Copy as Markdown'},2000)})}
   </script>
 </body>
 </html>

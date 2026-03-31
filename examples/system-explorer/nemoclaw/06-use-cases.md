@@ -1,89 +1,43 @@
 ## Use Cases & Case Studies
 <!-- level: beginner-intermediate -->
 <!-- references:
-- [NVIDIA NemoClaw Enterprise AI](https://www.mindstudio.ai/blog/what-is-nemoclaw-nvidia-enterprise-ai-agents) | article
-- [NemoClaw Enterprise Guide](https://www.ai.cc/blogs/nvidia-nemoclaw-open-source-ai-agent-2026-guide/) | article
-- [NVIDIA AI Agents](https://nvidianews.nvidia.com/news/ai-agents) | announcement
-- [NemoClaw Enterprise Platform](https://www.1950.ai/post/nvidia-launches-nemoclaw-the-open-source-ai-agent-platform-set-to-transform-enterprise-automation) | article
+- [NemoClaw Overview](https://docs.nvidia.com/nemoclaw/latest/about/overview.html) | official-docs
+- [NVIDIA NemoClaw: Engineering Autonomy Within Enterprise Guardrails](https://hyperframeresearch.com/2026/03/24/nvidia-nemoclaw-engineering-autonomy-within-enterprise-guardrails/) | blog
+- [Nvidia NemoClaw Brings Security to OpenClaw](https://venturebeat.com/technology/nvidia-lets-its-claws-out-nemoclaw-brings-security-scale-to-the-agent) | blog
 -->
 
-### Use Case 1: Secure Code Assistant for Regulated Industries
+### When to Use NemoClaw
 
-**Scenario:** A financial services firm wants to deploy an AI coding assistant that can read internal codebases, write code, run tests, and submit pull requests — but cannot exfiltrate proprietary source code or send it to external LLM providers.
+**Always-On AI Assistants in Enterprise Environments:** You need an AI agent that runs continuously -- answering questions, writing code, automating tasks -- but your security team requires strict control over what the agent can access. NemoClaw provides the isolation guarantees that make always-on agents acceptable in enterprise environments.
 
-**How NemoClaw solves it:**
-- The **Privacy Router** classifies all prompts containing internal code as "sensitive" and routes them exclusively to a locally deployed Nemotron model. No proprietary code ever reaches a cloud API.
-- The **Network Policy Engine** allowlists only the company's internal Git server, CI/CD pipeline, and package registry. Attempts to reach unauthorized endpoints (e.g., pastebin.com) are blocked at the kernel level.
-- **Audit logging** records every file the agent reads, every code change it proposes, and every tool it invokes — providing a compliance-ready trail for SOX and PCI-DSS auditors.
-- The agent operates inside a **sandboxed container** with filesystem access restricted to the project workspace. It cannot read other directories on the host system, access Docker sockets, or escalate privileges.
+**Privacy-Sensitive Development Work:** Your team works with proprietary code, internal APIs, or customer data. You want the productivity benefits of an AI coding assistant but cannot allow prompts containing sensitive context to leave your network. NemoClaw's privacy router keeps sensitive inference local while allowing cloud models for non-sensitive tasks.
 
-**Result:** Developers get an always-on coding assistant that reviews PRs, writes unit tests, and automates boilerplate — while the security team has verifiable evidence that sensitive code stays within the organization's infrastructure.
+**Multi-Provider Inference Management:** You use different LLM providers for different tasks (e.g., OpenAI for creative writing, Anthropic for safety-critical analysis, local Nemotron for confidential data). NemoClaw's inference routing centralizes provider management and ensures the right provider handles the right requests.
 
----
+**Sandboxed Code Execution:** Your agent generates and runs code. Without sandboxing, a hallucinated `rm -rf /` or a malicious pip package could damage your system. NemoClaw's filesystem and process isolation contain the blast radius to the sandbox directory.
 
-### Use Case 2: Enterprise Business Process Automation
+**Team Agent Deployment:** You manage agents for multiple team members and need a standardized, reproducible deployment. NemoClaw's blueprint system ensures every agent gets the same security baseline, and state migration enables moving agents between machines.
 
-**Scenario:** A large organization wants AI agents to automate cross-system workflows: monitoring Slack for support requests, creating tickets in Jira, querying a knowledge base, drafting responses, and escalating to humans when confidence is low.
+### When NOT to Use NemoClaw
 
-**How NemoClaw solves it:**
-- **OpenClaw's multi-agent orchestration** supports supervisor-worker patterns. A supervisor agent receives the Slack message, classifies the request, and delegates to specialized worker agents (ticket creation, knowledge retrieval, response drafting).
-- **Tool registration** provides typed interfaces for each integration:
-  - `slack_read` — fetches messages from specified channels
-  - `jira_create_ticket` — creates tickets with structured fields
-  - `knowledge_search` — queries the internal knowledge base
-  - `slack_respond` — posts responses back to the channel
-- **Network policies** restrict each agent to its required endpoints. The Slack agent can only reach `api.slack.com`; the Jira agent can only reach `company.atlassian.net`. No single agent has access to all systems.
-- **Operator approval workflows** ensure that the agent escalates to a human when it encounters ambiguous requests or needs to perform high-impact actions (e.g., closing a customer account).
+**You Don't Use OpenClaw:** NemoClaw is specifically built for OpenClaw. If you use a different AI agent (Claude Code, Cursor, Windsurf), you would use OpenShell directly rather than NemoClaw, as NemoClaw's blueprint and onboarding are OpenClaw-specific.
 
-**Result:** Support response times drop from hours to minutes. Every automated action is logged and auditable. The blast radius of any single agent compromise is limited to its assigned system.
+**Production Workloads (Today):** NemoClaw is in alpha. APIs, configuration schemas, and runtime behavior are subject to breaking changes between releases. For production deployments, wait for a stable release.
 
----
+**Simple, Stateless LLM Usage:** If you just need to send prompts to an LLM API and get responses -- no autonomous agent, no code execution, no persistent state -- NemoClaw's overhead is unnecessary. Use the LLM API directly or through a lightweight SDK.
 
-### Use Case 3: Agentic RAG (Retrieval-Augmented Generation with Tools)
+**Windows-Only Environments:** NemoClaw requires Linux (Ubuntu 22.04+) or macOS with Docker. There is no native Windows support; WSL with Docker Desktop is the workaround, but it adds complexity and potential performance overhead.
 
-**Scenario:** A healthcare research organization needs an AI assistant that can answer clinical questions by searching internal medical databases, retrieving relevant papers, cross-referencing drug interaction databases, and synthesizing evidence-based responses — all while maintaining HIPAA compliance.
+**Resource-Constrained Machines:** The sandbox image is approximately 2.4 GB compressed, and the system requires a minimum of 8 GB RAM (16 GB recommended). Machines with less than 8 GB RAM may experience out-of-memory issues. If you're working on a lightweight laptop or VPS, NemoClaw may not be practical.
 
-**How NemoClaw solves it:**
-- The **Privacy Router** ensures all queries containing patient identifiers, medical record numbers, or PHI are routed to the on-premises Nemotron model. No patient data ever transits to external providers.
-- **Tool-calling capabilities** allow the agent to:
-  - Search PubMed and internal research databases
-  - Query drug interaction APIs
-  - Retrieve patient-relevant clinical guidelines
-  - Cross-reference findings across multiple sources
-- **NeMo Guardrails integration** applies behavioral constraints: the agent is prohibited from providing direct medical diagnoses, always includes source citations, and flags when confidence is below a threshold.
-- The **sandbox** restricts the agent's filesystem access to the research data directory only. Patient records in other systems remain inaccessible even if the agent attempts to access them.
+**Multi-Tenant or Multi-Agent Governance:** NemoClaw operates at the single-sandbox level. If you need to manage policies, permissions, and audit trails across multiple teams, agents, and environments, you need an orchestration layer above NemoClaw. The tool does not provide fleet management or cross-tenant governance.
 
-**Result:** Researchers get an intelligent assistant that dramatically accelerates literature review and evidence synthesis, while HIPAA compliance is enforced at the infrastructure level rather than relying on prompt-level instructions.
+### Real-World Use Cases
 
----
+**Secure Coding Assistant on DGX Spark:** A development team deploys NemoClaw on an NVIDIA DGX Spark workstation. The agent runs Nemotron locally for all code review and generation tasks involving proprietary source code. For architectural planning and documentation, it routes to a frontier cloud model. The privacy router ensures no proprietary code leaves the local network.
 
-### Use Case 4: DevOps Infrastructure Agent
+**Research Lab Agent with Controlled Internet Access:** A research lab runs NemoClaw to give an AI agent access to internal datasets and compute resources. The network policy allowlists only specific academic API endpoints (arXiv, Semantic Scholar) and the team's internal registry. The agent can fetch papers and search for relevant work but cannot access social media, arbitrary websites, or exfiltrate data.
 
-**Scenario:** A platform engineering team wants an AI agent that monitors infrastructure health, responds to alerts, diagnoses issues, and executes remediation actions — running 24/7 as an always-on operations assistant.
+**DevOps Automation with Guardrails:** A platform engineering team uses NemoClaw to run an agent that automates infrastructure tasks: writing Terraform configurations, debugging CI failures, and managing Kubernetes manifests. The sandbox filesystem isolation prevents the agent from accessing production credentials stored outside `/sandbox`, and the seccomp filter prevents dangerous system calls.
 
-**How NemoClaw solves it:**
-- **Always-on operation** is a core NemoClaw capability. Unlike request-response chatbots, the OpenClaw agent runs as a persistent service, continuously monitoring alert channels and responding without human initiation.
-- **Tool integration** connects to:
-  - Monitoring systems (Prometheus, Datadog) for metric queries
-  - Cloud APIs (AWS, GCP) for resource management
-  - Kubernetes APIs for pod management and scaling
-  - Alerting systems (PagerDuty, OpsGenie) for incident routing
-- **Network policies** use granular per-binary controls: the agent can query Prometheus (read-only) but cannot modify alerting rules. It can scale Kubernetes deployments but cannot delete namespaces.
-- **Operator approval** is required for high-risk actions: restarting production services, modifying network configurations, or accessing production databases triggers a human approval prompt before execution.
-- **Audit logging** provides a complete timeline of every diagnostic action and remediation step, essential for post-incident review and compliance.
-
-**Result:** Mean time to resolution drops significantly as the agent handles routine diagnostics and known remediations automatically. Critical actions still require human approval. Every action is logged for incident review.
-
----
-
-### Cross-Cutting Themes
-
-Several patterns emerge across these use cases:
-
-1. **Progressive trust:** Organizations start with minimal permissions and expand agent capabilities as they observe reliable behavior. NemoClaw's policy hot-reload supports this without service interruption.
-
-2. **Blast radius limitation:** Network policy isolation ensures that a compromised or misbehaving agent can only affect the specific systems it was granted access to, not the entire corporate network.
-
-3. **Compliance by architecture:** Instead of relying on prompt-level instructions ("don't share sensitive data"), NemoClaw enforces compliance at the kernel level. This provides verifiable guarantees that auditors can validate.
-
-4. **Human-in-the-loop for high-risk actions:** The real-time approval workflow allows agents to be autonomous for routine tasks while requiring human judgment for consequential actions — a practical balance between automation speed and operational safety.
+**Messaging-Integrated Team Assistant:** A distributed team deploys NemoClaw with Telegram and Slack bridges. Team members interact with the agent through their existing messaging tools. The agent processes requests in the sandbox, and the messaging bridges (running on the host) forward responses. Provider credentials stay on the host, outside the agent's reach.
