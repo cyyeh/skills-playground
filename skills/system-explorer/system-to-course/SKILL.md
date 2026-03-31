@@ -208,6 +208,9 @@ Read `references/design-system.md` for the complete token system. Key principles
 
 ## Gotchas
 
+### Inline Code Selector Scoping
+When styling inline `<code>` elements inside `.content-section`, ALWAYS scope to `.content-section p code, .content-section li code` — never use the bare `.content-section code` selector. The bare selector also matches `<code>` inside `<pre>` in code blocks, overriding the dark Catppuccin background with a light color.
+
 ### Tooltip Clipping
 Containers with `overflow: hidden` will clip tooltips. Use `position: fixed` and append tooltips to `document.body`. Calculate position from `getBoundingClientRect()`.
 

@@ -369,6 +369,17 @@ Generic template for all content pages: `concepts.html`, `architecture.html`, `h
       margin-bottom: var(--space-4);
     }
 
+    /* Inline code in text — MUST scope to p/li to avoid overriding code block styling */
+    .content-section p code,
+    .content-section li code {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      background: var(--color-surface-warm);
+      border: 1px solid var(--color-border-light);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
     /* Alternating section backgrounds */
     .content-section:nth-child(even) {
       background: var(--color-bg-warm);
