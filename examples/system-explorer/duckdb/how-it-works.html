@@ -161,7 +161,7 @@
   <main class="content-area">
 
     <!-- Section 1: Vectorized Query Processing -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Vectorized Query Processing</h2>
       <p>DuckDB's execution engine processes data in vectors of <code>STANDARD_VECTOR_SIZE</code> (2048) values. Every operator in the pipeline receives a <strong>DataChunk</strong> &mdash; a collection of <code>Vector</code> objects, one per column &mdash; and produces a transformed DataChunk as output.</p>
       <p>Each Vector stores its data in a flat array optimized for CPU cache access. When the engine executes a filter like <code>WHERE price &gt; 100</code>, it doesn't check one row at a time. Instead, it runs a tight loop comparing 2048 price values against 100 in a single batch. Modern compilers auto-vectorize these loops into <span class="glossary-term" data-definition="Single Instruction, Multiple Data. CPU instructions that perform the same operation on multiple data points simultaneously (e.g., SSE processes 4 floats, AVX processes 8 floats per cycle).">SIMD</span> instructions (SSE, AVX), processing 4&ndash;8 comparisons per CPU cycle.</p>
@@ -196,7 +196,7 @@
     </section>
 
     <!-- Section 2: Push-Based Pipeline Execution -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Push-Based Pipeline Execution</h2>
       <p>DuckDB's executor arranges physical operators into <strong>pipelines</strong> &mdash; chains of operators that process data without materializing intermediate results. Each pipeline has:</p>
       <ul>
@@ -244,7 +244,7 @@
     </section>
 
     <!-- Section 3: Morsel-Driven Parallelism -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Morsel-Driven Parallelism</h2>
       <p>DuckDB parallelizes query execution using the <a href="https://db.in.tum.de/~leis/papers/morsels.pdf" target="_blank" rel="noopener noreferrer">morsel-driven model</a> (SIGMOD 2014). Instead of partitioning data upfront or using exchange operators (like Spark), DuckDB uses a dynamic work-stealing approach:</p>
       <ol>
@@ -265,7 +265,7 @@
     </section>
 
     <!-- Section 4: Storage Engine -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Storage Engine</h2>
       <p>DuckDB uses a custom single-file storage format designed for analytical access patterns.</p>
 
@@ -331,7 +331,7 @@
     </section>
 
     <!-- Section 5: Query Optimizer Internals -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Query Optimizer Internals</h2>
       <p>The optimizer runs 30+ passes sequentially on the logical plan. Key passes include:</p>
 
@@ -356,7 +356,7 @@
     </section>
 
     <!-- Section 6: Performance Characteristics -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Performance Characteristics</h2>
 
       <h3>Where DuckDB Excels</h3>
@@ -418,7 +418,7 @@
 
   </main>
 
-  <section class="references-footer animate-in">
+  <section class="references-footer">
     <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
       <li class="reference-item">

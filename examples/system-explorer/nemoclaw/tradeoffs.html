@@ -40,7 +40,7 @@
   <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge intermediate">Intermediate</span><h1>Trade-offs &amp; Limitations</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
 
   <main class="content-area">
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Strengths</h2>
       <div class="concept-cards stagger-children">
         <div class="concept-card animate-in" style="--card-color:#2D8B55"><div class="card-icon">&#x1F6E1;&#xFE0F;</div><h4 class="card-title">Defense-in-Depth Security</h4><p class="card-desc">Three kernel-level isolation mechanisms (Landlock, seccomp, network namespaces) with host-side credential storage and deny-by-default networking. No single mechanism is the sole line of defense.</p></div>
@@ -51,7 +51,7 @@
       </div>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Limitations</h2>
       <div class="callout callout-warning"><div class="callout-icon">&#x26A0;&#xFE0F;</div><div class="callout-content"><strong>Alpha maturity:</strong> Released March 16, 2026, with no stable release yet. APIs, schemas, and behavior may change without notice. No organization has run it in production at scale -- real-world failure modes are not yet catalogued.</div></div>
       <div class="callout callout-warning"><div class="callout-icon">&#x26A0;&#xFE0F;</div><div class="callout-content"><strong>Linux-only kernel isolation:</strong> Landlock, seccomp, and network namespaces are Linux kernel features. macOS/Windows support runs Linux inside a VM, adding complexity and reducing the directness of security guarantees.</div></div>
@@ -59,7 +59,7 @@
       <div class="callout callout-info"><div class="callout-icon">&#x2139;&#xFE0F;</div><div class="callout-content"><strong>Infrastructure weight:</strong> Requires Docker, OpenShell runtime, and a ~2.4 GB sandbox image. Significant setup overhead for teams without existing container infrastructure.</div></div>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Alternatives Comparison</h2>
       <div class="sys-comparison">
         <div class="sys-comparison-header">
@@ -94,7 +94,7 @@
       </div>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>The Honest Take</h2>
       <div class="callout callout-insight"><div class="callout-icon">&#x1F52D;</div><div class="callout-content"><strong>Bottom line:</strong> NemoClaw addresses a real and growing problem -- autonomous AI agents that execute arbitrary code need stronger security boundaries than traditional development tools. Its architecture is sound (host-side credentials, kernel-level isolation, deny-by-default networking) and the wrapping-over-forking approach makes it sustainable. However, it is two weeks old, explicitly alpha, and requires a non-trivial infrastructure commitment.</div></div>
       <p><strong>Recommend for:</strong> Teams already evaluating always-on AI agents with the operational maturity to tolerate alpha-stage software.</p>

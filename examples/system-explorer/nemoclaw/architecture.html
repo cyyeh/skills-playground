@@ -77,7 +77,7 @@
 
   <main class="content-area">
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>High-Level Design</h2>
       <p>NemoClaw's architecture is a two-layer system with a clear separation of concerns: a thin <span class="glossary-term" data-definition="A typed superset of JavaScript that compiles to plain JavaScript. Used for the NemoClaw CLI and plugin layer because it integrates with the Node.js-based OpenClaw ecosystem.">TypeScript</span> plugin handles the user-facing CLI and orchestration logic, while a <span class="glossary-term" data-definition="An interpreted, high-level programming language. Used for the NemoClaw blueprint runtime because it interacts with OpenShell's Python-based tooling.">Python</span> blueprint runtime handles the actual provisioning and management of sandboxed environments.</p>
       <p>The overall design follows a "wrapping" philosophy rather than a "forking" one. Instead of modifying OpenClaw's source code to add security, NemoClaw places an unmodified OpenClaw installation inside a controlled container and governs it from the outside -- like surrounding an existing building with a security perimeter rather than renovating its interior.</p>
@@ -90,7 +90,7 @@
       </div>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>System Architecture Diagram</h2>
       <p>Click any component to see details about its role in the system.</p>
 
@@ -150,7 +150,7 @@
       </div>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Data Flow</h2>
       <p>A typical interaction follows this path through the system, from user message to agent response:</p>
 
@@ -189,7 +189,7 @@
       </div>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Key Design Decisions</h2>
 
       <div class="callout callout-insight">

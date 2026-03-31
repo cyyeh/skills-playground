@@ -32,7 +32,7 @@
   <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge intermediate">Intermediate</span><h1>Trade-offs &amp; Limitations</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
 
   <main class="content-area">
-    <section class="content-section animate-in">
+    <section class="content-section">
       <h2>Strengths</h2>
       <p><strong>Predictable Rust-native performance.</strong> No GC pauses. Sub-20ms p50 at billion-scale with tight p99 variance.</p>
       <p><strong>Best-in-class filtered vector search.</strong> Filterable HNSW integrates payload conditions into graph traversal with adaptive query planning. Most competitors pre-filter or post-filter; Qdrant avoids both pathological cases.</p>
@@ -40,7 +40,7 @@
       <p><strong>Flexible deployment model.</strong> Single Docker container to multi-node Kubernetes cluster to edge devices. Apache 2.0 license, no vendor lock-in.</p>
     </section>
 
-    <section class="content-section animate-in">
+    <section class="content-section">
       <h2>Limitations</h2>
       <p><strong>Eventual consistency for points.</strong> Writes bypass Raft. A write-then-immediate-read may miss the just-written point unless <code style="font-family:var(--font-mono);font-size:var(--text-sm)">read_consistency: "all"</code> is used.</p>
       <p><strong>HNSW rebuild cost on bulk updates.</strong> Replacing &gt;10% of vectors triggers expensive optimization cycles. Freshly inserted points have higher search latency until optimization completes.</p>
@@ -48,7 +48,7 @@
       <p><strong>Memory pressure without quantization.</strong> 1B 768-dim float32 vectors need ~2.9TB RAM uncompressed. Quantization is effectively required at scale.</p>
     </section>
 
-    <section class="content-section animate-in">
+    <section class="content-section">
       <h2>Alternatives Comparison</h2>
       <div class="sys-comparison">
         <div class="sys-cards">
@@ -60,7 +60,7 @@
       </div>
     </section>
 
-    <section class="content-section animate-in">
+    <section class="content-section">
       <h2>The Honest Take</h2>
       <div class="callout callout-insight"><div class="callout-icon">&#x1F4A1;</div><div class="callout-content"><strong>Bottom line:</strong> Qdrant is the right choice for teams that need a self-hosted, production-grade vector database with strong filtered search, flexible quantization, and Rust's performance guarantees. It hits the sweet spot between Pinecone's zero-ops simplicity and Milvus's enterprise-scale complexity. Choose Pinecone if you want zero operational overhead, Milvus if you need proven billion-scale distributed deployments, or pgvector if vector search is a minor feature alongside SQL workloads.</div></div>
     </section>

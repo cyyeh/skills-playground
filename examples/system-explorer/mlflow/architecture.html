@@ -42,7 +42,7 @@
 
   <div class="content-area">
 
-    <div class="content-section animate-in">
+    <div class="content-section">
       <h2>High-Level Design</h2>
       <p>MLflow follows a client-server architecture with a clean separation between <span class="glossary-term" data-def="Relational database storing experiment, run, metric, and model metadata.">metadata storage</span> and <span class="glossary-term" data-def="Object storage (S3, GCS, local filesystem) for large files like model weights.">artifact storage</span>. The system has three layers: a <strong>client SDK layer</strong> (Python, TypeScript, Java, R), a <strong>service layer</strong> (the Tracking Server with REST endpoints and web UI), and a <strong>storage layer</strong> split into a Backend Store and an Artifact Store.</p>
       <p>This separation is deliberate -- metadata queries (searching runs, comparing metrics) have very different access patterns from artifact retrieval (downloading a 2GB model file), so the two storage systems can be scaled and optimized independently.</p>
@@ -105,7 +105,7 @@
       </div>
     </div>
 
-    <div class="content-section animate-in">
+    <div class="content-section">
       <h2>Key Design Decisions</h2>
 
       <div class="callout tip">
@@ -137,7 +137,7 @@
       </div>
     </div>
 
-    <div class="content-section animate-in">
+    <div class="content-section">
       <h2>Data Flow: Tracking a Training Run</h2>
       <div class="flow-diagram">
         <h3>End-to-End Request Flow</h3>
@@ -157,7 +157,7 @@
       </div>
     </div>
 
-    <div class="references-footer animate-in">
+    <div class="references-footer">
       <h3>&#x1F4DA; References</h3>
       <ul class="references-list">
         <li class="reference-item"><span class="reference-type-icon">&#x1F4D6;</span><span class="reference-title"><a href="https://mlflow.org/docs/latest/self-hosting/architecture/overview/" target="_blank" rel="noopener noreferrer">MLflow Architecture Overview</a></span></li>

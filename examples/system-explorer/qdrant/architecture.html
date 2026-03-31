@@ -80,7 +80,7 @@
   </header>
 
   <main class="content-area">
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>High-Level Design</h2>
       <p>Qdrant follows a shared-nothing, peer-to-peer distributed architecture. There is no single master or dedicated coordinator node. The system is organized in concentric layers: the <strong>API layer</strong> accepts client requests, the <strong>collection layer</strong> manages logical data organization, the <strong>shard layer</strong> handles distribution across nodes, and the <strong>segment layer</strong> provides storage and indexing.</p>
 
@@ -149,7 +149,7 @@
       <p style="font-size:var(--text-sm);color:var(--color-text-muted);text-align:center;margin-top:var(--space-2)">Click any component to see details</p>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Design Decisions</h2>
 
       <h3>Why Rust?</h3>

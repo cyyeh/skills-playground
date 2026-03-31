@@ -31,7 +31,7 @@
   <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge">All Levels</span><h1>Common Q&amp;A</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
 
   <main class="content-area">
-    <section class="content-section animate-in">
+    <section class="content-section">
       <p>Hard, practical questions a senior engineer would ask when evaluating or operating Qdrant. Click any question to expand the answer.</p>
       <div class="accordion">
         <div class="accordion-item"><div class="accordion-header" onclick="this.parentElement.classList.toggle('open')"><span class="accordion-toggle">&#x25BC;</span>What happens to in-flight writes if a node crashes during replication?</div><div class="accordion-body"><div class="accordion-content">Durability depends on <code>write_consistency_factor</code>. Default (1): write acknowledged after one replica persists to WAL &mdash; if that node crashes, data may be lost. With <code>majority</code>, multiple replicas must persist before acknowledgment. On recovery, WAL replays uncommitted ops. If a replica falls behind, <code>wal_delta</code> transfer catches up with minimal data, falling back to <code>stream_records</code> for full resync.</div></div></div>

@@ -49,7 +49,7 @@
   <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge intermediate">Intermediate</span><h1>How It Works</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
 
   <main class="content-area">
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>HNSW Graph Construction &amp; Search</h2>
       <p>The Hierarchical Navigable Small World algorithm is the heart of Qdrant's search performance. When an immutable segment is built, the HNSW constructor assigns each vector a random level using an exponential distribution. Most vectors land at level 0 (densest layer); fewer reach higher levels.</p>
       <h3>Construction</h3>
@@ -59,13 +59,13 @@
       <div class="callout callout-tip"><div class="callout-icon">&#x1F4A1;</div><div class="callout-content"><strong>Tuning tip:</strong> Start with defaults (<code>m=16</code>, <code>ef_construct=100</code>). If recall is too low, increase <code>ef_construct</code> first (try 200), then <code>m</code> (try 32). At search time, increase <code>ef</code> (the search parameter) for higher recall at the cost of latency. Rule of thumb: <code>ef</code> should be at least 2x your top_k.</div></div>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Filterable HNSW</h2>
       <p>Standard HNSW assumes all points are candidates. When payload filters restrict the search space, Qdrant's <a href="https://qdrant.tech/course/essentials/day-2/filterable-hnsw/" target="_blank" rel="noopener noreferrer">filterable HNSW</a> integrates filtering directly into graph traversal: each candidate node is checked against the filter via payload indexes, but filtered-out nodes' graph links are still traversed as "stepping stones" to reach qualifying nodes.</p>
       <p>The query planner estimates filter cardinality and selects the optimal strategy: <strong>high cardinality</strong> uses HNSW with in-traversal filtering; <strong>medium cardinality</strong> uses HNSW with expanded ef; <strong>low cardinality</strong> (below <code style="font-family:var(--font-mono);font-size:var(--text-sm);background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px">full_scan_threshold</code>) skips HNSW entirely and brute-force scores the payload-matching points.</p>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Quantization Engine</h2>
       <p>Qdrant implements three quantization strategies, each trading accuracy for memory and speed. All use a two-phase approach: quantized vectors produce a fast approximate ranking, then oversampled top candidates are re-scored against full-precision vectors.</p>
 
@@ -76,7 +76,7 @@
       <div class="callout callout-warning"><div class="callout-icon">&#x26A0;&#xFE0F;</div><div class="callout-content"><strong>Binary quantization caveat:</strong> Works best with high-dimensional embeddings (1024+ dimensions) from models like OpenAI's text-embedding-3-large. For lower-dimensional embeddings (384-768), binary quantization loses too much information &mdash; use scalar quantization instead.</div></div>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>Performance Characteristics</h2>
       <div class="perf-gauge animate-in"><div class="perf-gauge-label"><span>Search Latency (p50, billion-scale)</span><span class="perf-gauge-value">&lt;20ms with quantization</span></div><div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="90" style="background:var(--color-success)"></div></div></div>
       <div class="perf-gauge animate-in"><div class="perf-gauge-label"><span>GPU Index Build Speedup</span><span class="perf-gauge-value">Up to 10x vs CPU-only</span></div><div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="85" style="background:var(--color-accent)"></div></div></div>

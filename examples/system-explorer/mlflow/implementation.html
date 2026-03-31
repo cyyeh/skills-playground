@@ -58,7 +58,7 @@
       </div>
     </div>
 
-    <div class="content-section animate-in">
+    <div class="content-section">
       <h2>Getting Started</h2>
       <div class="code-block"><div class="code-block-header"><span class="code-lang">bash</span><button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code>pip install mlflow</code></pre></div>
       <div class="code-block"><div class="code-block-header"><span class="code-lang">python</span><button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code><span class="code-keyword">import</span> mlflow
@@ -76,7 +76,7 @@ mlflow server \
     --host 0.0.0.0 --port 5000</code></pre></div>
     </div>
 
-    <div class="content-section animate-in">
+    <div class="content-section">
       <h2>Configuration Essentials</h2>
       <table class="config-table">
         <thead><tr><th>Config</th><th>Default</th><th>Purpose</th></tr></thead>
@@ -90,7 +90,7 @@ mlflow server \
       </table>
     </div>
 
-    <div class="content-section animate-in">
+    <div class="content-section">
       <h2>Code Patterns</h2>
       <h3>Auto-logging with scikit-learn</h3>
       <div class="code-block"><div class="code-block-header"><span class="code-lang">python</span><button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code><span class="code-keyword">import</span> mlflow
@@ -124,7 +124,7 @@ model.fit(X, y)</code></pre></div>
     <span class="code-keyword">return</span> generate_answer(query, context)  <span class="code-comment"># Auto-traced child span</span></code></pre></div>
     </div>
 
-    <div class="content-section animate-in">
+    <div class="content-section">
       <h2>Source Code Walkthrough</h2>
 
       <h3>Fluent API -- Run Management</h3>
@@ -201,7 +201,7 @@ model.fit(X, y)</code></pre></div>
       <div class="callout-content"><p><strong>Deployment tip:</strong> For production, use PostgreSQL with 2-4 vCPUs and 8-16 GB RAM. Use S3 for artifact storage with direct client uploads (proxy-free mode) to avoid routing multi-GB model files through the tracking server. Run multiple stateless server instances behind a load balancer for high availability.</p></div>
     </div>
 
-    <div class="references-footer animate-in">
+    <div class="references-footer">
       <h3>&#x1F4DA; References</h3>
       <ul class="references-list">
         <li class="reference-item"><span class="reference-type-icon">&#x1F4D6;</span><span class="reference-title"><a href="https://mlflow.org/docs/latest/getting-started/" target="_blank" rel="noopener noreferrer">MLflow Installation Guide</a></span></li>

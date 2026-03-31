@@ -193,7 +193,7 @@
   <main class="content-area">
 
     <!-- High-Level Design -->
-    <section class="content-section animate-in">
+    <section class="content-section">
       <h2>High-Level Design</h2>
       <p>DuckDB follows a classic database architecture organized as a multi-stage query processing pipeline, but with critical design choices optimized for analytical workloads. The system is a single-process, multi-threaded C++ library with zero external dependencies. Every component &mdash; from SQL parsing to storage management &mdash; is compiled into a single library that runs inside the host application's process space.</p>
       <p>The architecture can be summarized as a pipeline:</p>
@@ -320,7 +320,7 @@
     </section>
 
     <!-- Key Components -->
-    <section class="content-section animate-in">
+    <section class="content-section">
       <h2>Key Components</h2>
       <p>Each stage of the pipeline is a distinct component with clear responsibilities. The separation between stages enables clean testing, extensibility, and the ability to inspect the query plan at any point in the transformation.</p>
 
@@ -419,7 +419,7 @@
     </section>
 
     <!-- Data Flow -->
-    <section class="content-section animate-in">
+    <section class="content-section">
       <h2>Data Flow</h2>
       <p>To understand how the components interact, let's trace a concrete query through the entire pipeline:</p>
 
@@ -479,7 +479,7 @@
     </section>
 
     <!-- Design Decisions -->
-    <section class="content-section animate-in">
+    <section class="content-section">
       <h2>Design Decisions</h2>
       <p>DuckDB's architecture reflects a series of deliberate trade-offs, each driven by the goal of making analytical queries on local data as fast and frictionless as possible.</p>
 
@@ -522,7 +522,7 @@
   </main>
 
   <!-- References -->
-  <section class="references-footer animate-in">
+  <section class="references-footer">
     <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
       <li class="reference-item">
