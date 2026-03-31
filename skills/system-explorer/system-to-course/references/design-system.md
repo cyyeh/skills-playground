@@ -978,6 +978,8 @@ Per-page button in the page header that copies LLM-friendly markdown content of 
 
 Content must be visible by default. Animations are opt-in via a `.js-ready` class that JavaScript adds to `<html>`. This ensures content is never hidden if JS fails to load.
 
+**IMPORTANT:** Never add `animate-in` to `<section class="content-section">` elements. Content sections must always be visible. Only use `animate-in` on decorative elements (page headers, cards, hero sections) where brief invisibility during animation is acceptable.
+
 ```css
 /* Default: content visible (no JS required) */
 .animate-in {

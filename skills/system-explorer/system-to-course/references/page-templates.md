@@ -464,7 +464,7 @@ Generic template for all content pages: `concepts.html`, `architecture.html`, `h
   <main class="content-area">
 
     <!-- BEGINNER SECTION EXAMPLE -->
-    <section class="content-section animate-in" data-level="beginner">
+    <section class="content-section" data-level="beginner">
       <h2>[SECTION_HEADING]</h2>
       <p>[SECTION_BODY_TEXT]</p>
 
@@ -475,7 +475,7 @@ Generic template for all content pages: `concepts.html`, `architecture.html`, `h
     </section>
 
     <!-- INTERMEDIATE SECTION EXAMPLE -->
-    <section class="content-section animate-in" data-level="intermediate">
+    <section class="content-section" data-level="intermediate">
       <h2>[SECTION_HEADING]</h2>
       <p>[SECTION_BODY_TEXT]</p>
 
@@ -491,7 +491,7 @@ Generic template for all content pages: `concepts.html`, `architecture.html`, `h
     </section>
 
     <!-- ADVANCED SECTION EXAMPLE -->
-    <section class="content-section animate-in" data-level="advanced">
+    <section class="content-section" data-level="advanced">
       <h2>[SECTION_HEADING]</h2>
       <p>[SECTION_BODY_TEXT]</p>
 
@@ -508,7 +508,7 @@ Generic template for all content pages: `concepts.html`, `architecture.html`, `h
 
     <!-- MULTI-LEVEL SECTION EXAMPLE
          Content visible to both intermediate and advanced users -->
-    <section class="content-section animate-in" data-level="intermediate advanced">
+    <section class="content-section" data-level="intermediate advanced">
       <h2>[SECTION_HEADING]</h2>
       <p>[SECTION_BODY_TEXT]</p>
 
@@ -520,7 +520,7 @@ Generic template for all content pages: `concepts.html`, `architecture.html`, `h
 
     <!-- ALL-LEVEL SECTION EXAMPLE
          Always visible regardless of level selection (e.g., summary, callouts) -->
-    <section class="content-section animate-in" data-level="beginner intermediate advanced">
+    <section class="content-section" data-level="beginner intermediate advanced">
       <h2>[SECTION_HEADING]</h2>
 
       <!-- Interactive element: Callout Box
