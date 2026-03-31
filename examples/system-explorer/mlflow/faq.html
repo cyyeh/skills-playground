@@ -12,271 +12,267 @@
       --color-bg: #FAF7F2; --color-bg-warm: #F5F0E8; --color-bg-code: #1E1E2E;
       --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
       --color-border: #E5DFD6; --color-border-light: #EEEBE5;
-      --color-surface: #FFFFFF; --color-accent: #D4A843; --color-accent-hover: #BF9738; --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
+      --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
+      --color-accent: #D4A843; --color-accent-hover: #BF9738;
+      --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
       --color-success: #2D8B55; --color-success-light: #E8F5EE;
+      --color-error: #C93B3B; --color-error-light: #FDE8E8;
       --color-info: #2A7B9B; --color-info-light: #E4F2F7;
       --color-warning: #D4A843; --color-warning-light: #FDF6E4;
       --font-display: 'Bricolage Grotesque', Georgia, serif;
       --font-body: 'DM Sans', -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem; --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
-      --leading-tight: 1.15; --leading-normal: 1.6;
-      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem;
+      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem; --text-4xl: 2.25rem;
+      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
       --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
       --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
       --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
-      --duration-fast: 150ms; --duration-slow: 500ms;
+      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
+      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
       --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     }
     *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body { background: var(--color-bg); background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%); font-family: var(--font-body); color: var(--color-text); line-height: var(--leading-normal); margin: 0; -webkit-font-smoothing: antialiased; }
     ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+
     .site-nav { position: sticky; top: 0; z-index: 1000; height: var(--nav-height); background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border-light); }
     .nav-progress-bar { position: absolute; top: 0; left: 0; height: 3px; width: 0%; background: var(--color-accent); transition: width 100ms linear; z-index: 1; }
     .nav-inner { max-width: var(--content-width-wide); margin: 0 auto; height: 100%; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6); }
-    .nav-brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; } .nav-brand:hover { color: var(--color-accent); }
-    .nav-pages { display: flex; align-items: center; gap: var(--space-1); flex: 1; overflow-x: auto; scrollbar-width: none; } .nav-pages::-webkit-scrollbar { display: none; }
+    .nav-brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+    .nav-brand:hover { color: var(--color-accent); }
+    .nav-pages { display: flex; align-items: center; gap: var(--space-1); flex: 1; overflow-x: auto; scrollbar-width: none; }
+    .nav-pages::-webkit-scrollbar { display: none; }
     .nav-page-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--color-text-secondary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); white-space: nowrap; transition: color var(--duration-fast), background var(--duration-fast); }
-    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); } .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
+    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); }
+    .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
     .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; padding: var(--space-2); background: none; border: none; cursor: pointer; flex-shrink: 0; }
     .nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 1px; transition: transform var(--duration-fast), opacity var(--duration-fast); }
-    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); } .nav-hamburger.open span:nth-child(2) { opacity: 0; } .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
     .page-header { max-width: var(--content-width); margin: var(--space-12) auto var(--space-8); padding: 0 var(--space-6); }
-    .page-header h1 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800; color: var(--color-text); margin: 0 0 var(--space-3); }
-    .page-level-badge { display: inline-block; font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
-    .page-level-badge.all { background: var(--color-accent-light); color: var(--color-accent); }
-    .content-area { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6); }
+    .page-header h1 { font-family: var(--font-display); font-size: var(--text-4xl); font-weight: 800; color: var(--color-text); margin: 0 0 var(--space-3); line-height: var(--leading-tight); }
+    .level-badge { display: inline-block; font-size: var(--text-xs); font-weight: 600; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; }
+    .level-badge.all { background: var(--color-accent-light); color: var(--color-accent); }
+    .page-header .subtitle { font-size: var(--text-lg); color: var(--color-text-secondary); margin-top: var(--space-3); }
 
-    /* Accordion */
-    .accordion-item { background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: var(--space-4); overflow: hidden; }
-    .accordion-header { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-5) var(--space-6); cursor: pointer; transition: background var(--duration-fast); user-select: none; }
-    .accordion-header:hover { background: var(--color-bg-warm); }
-    .accordion-number { font-family: var(--font-display); font-weight: 700; font-size: var(--text-sm); color: var(--color-accent); min-width: 2em; }
-    .accordion-question { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); color: var(--color-text); flex: 1; }
-    .accordion-chevron { flex-shrink: 0; width: 20px; height: 20px; color: var(--color-text-muted); transition: transform var(--duration-fast) var(--ease-out); }
-    .accordion-chevron svg { width: 20px; height: 20px; }
-    .accordion-item.open .accordion-chevron { transform: rotate(180deg); }
-    .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease-out); }
-    .accordion-item.open .accordion-body { max-height: 2000px; }
-    .accordion-body-inner { padding: 0 var(--space-6) var(--space-6); }
-    .accordion-body-inner p { font-size: var(--text-base); color: var(--color-text-secondary); line-height: 1.7; margin: 0 0 var(--space-3); }
-    .accordion-body-inner ul, .accordion-body-inner ol { margin: 0 0 var(--space-3); padding-left: var(--space-6); }
-    .accordion-body-inner li { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.7; margin-bottom: var(--space-2); }
-    .accordion-body-inner li strong { color: var(--color-text); }
-    .accordion-body-inner code { font-family: var(--font-mono); font-size: 0.88em; background: var(--color-bg-code); color: #CDD6F4; padding: 0.15em 0.4em; border-radius: 4px; }
+    .content { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6) var(--space-12); }
 
-    .references-footer { max-width: var(--content-width); margin: var(--space-10) auto var(--space-4); padding: var(--space-6); background: var(--color-bg-warm); border-left: 3px solid var(--color-accent); border-radius: var(--radius-md); }
-    .references-footer h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-4); }
-    .references-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-    .reference-item { display: flex; align-items: baseline; gap: var(--space-3); }
-    .reference-type-icon { font-size: var(--text-base); flex-shrink: 0; width: 1.5em; text-align: center; }
-    .reference-content { display: flex; flex-direction: column; gap: 2px; }
-    .reference-title { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; }
-    .reference-title a { color: var(--color-accent); text-decoration: none; } .reference-title a:hover { text-decoration: underline; }
-    .reference-domain { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); }
-    .reference-type-tag { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-border-light); padding: 1px 6px; border-radius: var(--radius-full); margin-left: var(--space-2); }
-    .page-nav-footer { display: flex; justify-content: space-between; align-items: center; max-width: var(--content-width); margin: var(--space-12) auto var(--space-6); padding: var(--space-6); border-top: 1px solid var(--color-border-light); }
-    .page-nav-footer a { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; display: flex; align-items: center; gap: var(--space-2); transition: color var(--duration-fast); }
-    .page-nav-footer a:hover { color: var(--color-accent-hover); }
-    .page-nav-footer .prev::before { content: "\2190\00a0"; } .page-nav-footer .next::after { content: "\00a0\2192"; }
-    .site-footer { text-align: center; padding: var(--space-8) var(--space-6); font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text-muted); border-top: 1px solid var(--color-border-light); margin-top: var(--space-4); }
-    .animate-in { opacity: 1; transform: none; }
-    .js-ready .animate-in { opacity: 0; transform: translateY(20px); transition: opacity var(--duration-slow) var(--ease-out), transform var(--duration-slow) var(--ease-out); }
-    .js-ready .animate-in.visible { opacity: 1; transform: translateY(0); }
-    @media (max-width: 768px) { :root { --text-3xl: 1.5rem; --nav-height: 56px; } }
-    @media (max-width: 480px) { .nav-hamburger { display: flex; } .nav-pages { display: none; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border); box-shadow: var(--shadow-md); padding: var(--space-4); } .nav-pages.mobile-open { display: flex; flex-direction: column; gap: var(--space-1); } .page-nav-footer { flex-direction: column; gap: var(--space-4); } }
+    /* FAQ items */
+    .faq-item { background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: var(--space-4); overflow: hidden; border: 1px solid var(--color-border-light); }
+    .faq-question {
+      display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-5);
+      cursor: pointer; transition: background var(--duration-fast); user-select: none;
+    }
+    .faq-question:hover { background: var(--color-bg-warm); }
+    .faq-q-icon {
+      width: 28px; height: 28px; border-radius: var(--radius-sm);
+      background: var(--color-accent-light); color: var(--color-accent);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 800; font-size: var(--text-sm); flex-shrink: 0;
+    }
+    .faq-q-text { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); color: var(--color-text); flex: 1; line-height: 1.4; }
+    .faq-chevron { color: var(--color-text-muted); transition: transform var(--duration-fast); font-size: var(--text-sm); flex-shrink: 0; margin-top: 4px; }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-answer { display: none; padding: 0 var(--space-5) var(--space-5); padding-left: calc(var(--space-5) + 28px + var(--space-3)); }
+    .faq-item.open .faq-answer { display: block; }
+    .faq-answer p { margin: 0 0 var(--space-3); color: var(--color-text-secondary); font-size: var(--text-sm); line-height: var(--leading-normal); }
+    .faq-answer p:last-child { margin-bottom: 0; }
+    .faq-answer code { font-family: var(--font-mono); font-size: 0.85em; background: var(--color-bg-warm); padding: 1px 5px; border-radius: 3px; color: var(--color-text); }
+    .faq-answer strong { color: var(--color-text); }
+
+    .page-footer { max-width: var(--content-width); margin: 0 auto; padding: var(--space-8) var(--space-6); border-top: 1px solid var(--color-border-light); }
+    .footer-nav { display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); }
+    .footer-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; padding: var(--space-2) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-sm); transition: all var(--duration-fast); }
+    .footer-link:hover { background: var(--color-accent-light); border-color: var(--color-accent-muted); }
+
+    @media (max-width: 768px) {
+      :root { --text-4xl: 1.875rem; --nav-height: 56px; }
+      .nav-pages { display: none; }
+      .nav-pages.mobile-open { display: flex; flex-direction: column; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--color-bg); border-bottom: 1px solid var(--color-border-light); padding: var(--space-4) var(--space-6); box-shadow: var(--shadow-md); z-index: 999; }
+      .nav-hamburger { display: flex; }
+      .faq-answer { padding-left: var(--space-5); }
+    }
   </style>
 </head>
 <body>
+
   <nav class="site-nav">
-    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-progress-bar" id="progress-bar"></div>
     <div class="nav-inner">
       <a href="index.html" class="nav-brand">MLflow</a>
       <div class="nav-pages" id="navPages">
-        <a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link active">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+        <a href="concepts.html" class="nav-page-link" data-page="concepts">Concepts</a>
+        <a href="architecture.html" class="nav-page-link" data-page="architecture">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link" data-page="how-it-works">How It Works</a>
+        <a href="implementation.html" class="nav-page-link" data-page="implementation">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link" data-page="use-cases">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link" data-page="ecosystem">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link active" data-page="faq">FAQ</a>
+        <a href="tradeoffs.html" class="nav-page-link" data-page="tradeoffs">Trade-offs</a>
       </div>
       <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
     </div>
   </nav>
 
-  <header class="page-header animate-in">
-    <span class="page-level-badge all">All Levels</span>
+  <header class="page-header">
+    <span class="level-badge all">All Levels</span>
     <h1>Common Q&amp;A</h1>
+    <p class="subtitle">Answers to the questions that come up most often when evaluating and using MLflow.</p>
   </header>
 
-  <main class="content-area">
-    <div class="accordion-item animate-in open" id="q1">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">01</span>
-        <span class="accordion-question">Should I use the file-based backend store or a database?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+  <main class="content">
+
+    <div class="faq-item open" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">What is the difference between MLflow and Databricks?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>For anything beyond solo experimentation, use a database backend (PostgreSQL recommended). The default SQLite/file-based store lacks concurrent access support, has no proper indexing, and becomes the primary bottleneck for UI performance as experiments grow.</p>
-        <p>The migration is straightforward: <code>mlflow server --backend-store-uri postgresql://user:pass@host:5432/mlflow</code>. Queries that take seconds with files complete in milliseconds with a properly indexed database.</p>
-      </div></div>
+      <div class="faq-answer">
+        <p>MLflow is the open-source project (Apache-2.0 licensed) that anyone can run anywhere. Databricks is the company that created MLflow and offers a managed, enterprise version as part of the Databricks Lakehouse Platform.</p>
+        <p>Managed MLflow on Databricks adds features like Unity Catalog integration, auto-scaling model serving, workspace access control, and the AI Gateway -- but the core MLflow functionality is identical to the open-source version. You are never locked into Databricks.</p>
+      </div>
     </div>
 
-    <div class="accordion-item animate-in" id="q2">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">02</span>
-        <span class="accordion-question">How do I handle model dependencies in production?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">Can I use MLflow without a tracking server?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>MLflow automatically captures <code>conda.yaml</code> and <code>requirements.txt</code> during model logging. However, relying solely on auto-captured dependencies is risky. Best practices:</p>
-        <ul>
-          <li><strong>Pin exact versions</strong> in your requirements</li>
-          <li><strong>Test in isolation</strong> before registering the model</li>
-          <li><strong>Use Docker-based serving</strong> (<code>mlflow models build-docker</code>) for full environment reproducibility</li>
-          <li>For models with <strong>system-level dependencies</strong> (CUDA, C libraries), use a custom Docker base image</li>
-        </ul>
-      </div></div>
+      <div class="faq-answer">
+        <p>Yes. By default, MLflow writes to a local <code>./mlruns</code> directory -- no server needed. This is fine for individual use on a laptop or in a single notebook.</p>
+        <p>However, for team collaboration, a remote tracking server backed by a database and cloud artifact store is strongly recommended. The tracking server also enables the web UI for visual comparison of runs.</p>
+      </div>
     </div>
 
-    <div class="accordion-item animate-in" id="q3">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">03</span>
-        <span class="accordion-question">What's the difference between model stages and model aliases?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">How does autologging work, and does it affect training performance?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>Model stages (Staging, Production, Archived) are <strong>deprecated</strong> in MLflow 3.x. Model aliases (e.g., <code>@champion</code>, <code>@challenger</code>) are the recommended replacement.</p>
-        <p>Aliases are more flexible: you can define arbitrary alias names, reassign them atomically, and a single model version can have multiple aliases. Stages were limited to a fixed set and had issues with concurrent transitions.</p>
-      </div></div>
+      <div class="faq-answer">
+        <p>Autologging uses <strong>monkey-patching</strong> to intercept <code>.fit()</code> calls in supported libraries. It logs parameters before training and metrics/artifacts after training completes.</p>
+        <p>The performance overhead is minimal -- typically less than 1% of total training time -- because logging calls are I/O-bound (network requests to the tracking server) and happen at the start/end of training, not during computation-heavy forward/backward passes. If logging fails, the training code continues uninterrupted thanks to the <code>safe_patch</code> wrapper.</p>
+      </div>
     </div>
 
-    <div class="accordion-item animate-in" id="q4">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">04</span>
-        <span class="accordion-question">How do I scale the tracking server for large teams?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">What happens when my tracking server goes down during training?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>Run the tracking server behind a reverse proxy (Nginx) with multiple Gunicorn workers (4-8 per CPU core). Use PostgreSQL with connection pooling (PgBouncer). Enable async logging on the client side. For artifact-heavy workloads, use artifact proxy mode.</p>
-        <ul>
-          <li><strong>Client:</strong> <code>mlflow.config.enable_async_logging(True)</code></li>
-          <li><strong>Server:</strong> <code>--gunicorn-opts "--workers 8 --timeout 120"</code></li>
-          <li><strong>Database:</strong> PostgreSQL with PgBouncer for connection pooling</li>
-          <li><strong>Artifacts:</strong> <code>--serve-artifacts</code> to centralize access control</li>
-        </ul>
-      </div></div>
+      <div class="faq-answer">
+        <p>If the tracking server is unreachable, MLflow client calls will raise exceptions. However, autologging is wrapped in a <code>safe_patch</code> that catches exceptions and logs warnings without crashing your training code.</p>
+        <p>For manual logging, you should wrap <code>mlflow.log_*</code> calls in try/except blocks in production. Some teams also configure a local fallback store and sync results later.</p>
+      </div>
     </div>
 
-    <div class="accordion-item animate-in" id="q5">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">05</span>
-        <span class="accordion-question">How does MLflow compare to just using TensorBoard?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">How do I handle large artifacts (multi-GB models)?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>TensorBoard excels at visualizing training curves for a single experiment (especially TensorFlow/PyTorch). MLflow operates at a higher level: it manages multiple experiments, compares runs, versions models, and tracks the full lifecycle to production.</p>
-        <p>Many teams use both &mdash; TensorBoard for deep-dive training visualization, MLflow for experiment management and production governance. They're complementary, not competing.</p>
-      </div></div>
+      <div class="faq-answer">
+        <p>Use a cloud artifact store (S3, Azure Blob, GCS) rather than the tracking server's local filesystem. Enable the artifact proxy (<code>--serve-artifacts</code>) on the tracking server so clients upload through the server, or configure direct client-to-store access for higher throughput.</p>
+        <p>For very large models (10GB+), consider using MLflow's support for external artifact URIs that reference pre-existing storage locations instead of uploading through the API.</p>
+      </div>
     </div>
 
-    <div class="accordion-item animate-in" id="q6">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">06</span>
-        <span class="accordion-question">Can MLflow track distributed training jobs?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">Can I track experiments in Jupyter notebooks?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>Yes, but with nuance. For data-parallel training (PyTorch DDP, Horovod), log from <strong>only one process</strong> (typically rank 0) to avoid duplicate entries. Each node can log to the same remote tracking server. MLflow does not orchestrate the distributed training itself &mdash; that remains the job of the training framework and cluster manager.</p>
-      </div></div>
+      <div class="faq-answer">
+        <p>Absolutely. MLflow is designed for notebook-first workflows. Add <code>mlflow.autolog()</code> at the top of your notebook, and every cell that trains a model will be tracked.</p>
+        <p>You can view runs in the MLflow UI, or query them directly in the notebook using <code>mlflow.search_runs()</code> which returns a Pandas DataFrame -- perfect for inline analysis without leaving the notebook environment.</p>
+      </div>
     </div>
 
-    <div class="accordion-item animate-in" id="q7">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">07</span>
-        <span class="accordion-question">How do I secure a production MLflow deployment?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">How do model aliases work compared to the old stage transitions?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>MLflow's open-source version does not include built-in authentication. For production:</p>
-        <ol>
-          <li>Deploy behind a reverse proxy with <strong>OAuth2/OIDC authentication</strong></li>
-          <li>Use <strong>artifact proxy mode</strong> to avoid distributing object store credentials</li>
-          <li><strong>Restrict network access</strong> to the tracking server</li>
-          <li>Encrypt data <strong>in transit</strong> (TLS) and <strong>at rest</strong> (S3 server-side encryption)</li>
-          <li>Consider <strong>Databricks Managed MLflow</strong> for built-in access control, audit logging, and workspace isolation</li>
-        </ol>
-      </div></div>
+      <div class="faq-answer">
+        <p>Before MLflow 2.9, the Model Registry used fixed stages: &ldquo;Staging&rdquo;, &ldquo;Production&rdquo;, &ldquo;Archived.&rdquo; These were replaced by <strong>aliases</strong> -- arbitrary string labels (e.g., &ldquo;champion&rdquo;, &ldquo;challenger&rdquo;, &ldquo;shadow&rdquo;) that you define.</p>
+        <p>Aliases are more flexible: you can have any number of them, they are mutable pointers to specific versions, and they work better with modern CI/CD and A/B testing workflows. To load a model by alias: <code>mlflow.pyfunc.load_model("models:/my-model@champion")</code>.</p>
+      </div>
     </div>
 
-    <div class="accordion-item animate-in" id="q8">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">08</span>
-        <span class="accordion-question">What are the gotchas when migrating from MLflow 2.x to 3.x?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">Is MLflow suitable for deep learning with long-running training?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>Key changes in MLflow 3.x:</p>
-        <ul>
-          <li>The <strong>LoggedModel</strong> entity is now first-class (models tracked independently of runs)</li>
-          <li>Model <strong>stages are deprecated</strong> in favor of aliases</li>
-          <li>The <strong>tracing API</strong> has been significantly expanded</li>
-          <li>Most 2.x tracking code works without changes</li>
-        </ul>
-        <p>Main migration tasks: replace stage-based workflows with alias-based ones, update code that relies on stage transitions, and adopt new tracing APIs for GenAI workloads.</p>
-      </div></div>
+      <div class="faq-answer">
+        <p>Yes. For deep learning, use <code>mlflow.log_metric("loss", value, step=epoch)</code> to log metrics at each epoch, creating time-series plots in the UI. Autologging for PyTorch, TensorFlow, and Keras handles this automatically.</p>
+        <p>For very long runs (hours to days), metrics are persisted incrementally -- you can view partial results before training finishes. Parent/child runs let you organize hyperparameter sweeps where a parent run contains the sweep configuration and child runs contain individual trials.</p>
+      </div>
     </div>
 
-    <div class="accordion-item animate-in" id="q9">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">09</span>
-        <span class="accordion-question">How do I evaluate LLM outputs systematically?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">How do I migrate from Weights &amp; Biases (or another tool) to MLflow?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>Use <code>mlflow.evaluate()</code> with LLM judges. MLflow provides 50+ built-in metrics and judges that assess answer relevance, faithfulness, toxicity, and more. You can also define custom judges.</p>
-        <p>Evaluations can be run from code or directly from the Traces UI (no-code evaluation). For production monitoring, configure continuous evaluation with LLM judges that automatically score new traces as they arrive.</p>
-      </div></div>
+      <div class="faq-answer">
+        <p>There is no one-click migration, but the process is straightforward:</p>
+        <p><strong>1.</strong> Export your W&amp;B runs as CSV or JSON.<br>
+        <strong>2.</strong> Write a script that reads the exported data and calls <code>mlflow.log_param()</code>, <code>mlflow.log_metric()</code>, and <code>mlflow.log_artifact()</code> for each run.<br>
+        <strong>3.</strong> For models, re-log them using the appropriate MLflow flavor.</p>
+        <p>Many teams run both tools in parallel during migration, logging to MLflow and the existing tool simultaneously, then switching over once the team is comfortable.</p>
+      </div>
     </div>
 
-    <div class="accordion-item animate-in" id="q10">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <span class="accordion-number">10</span>
-        <span class="accordion-question">How do I handle experiment cleanup and storage costs?</span>
-        <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+    <div class="faq-item" onclick="this.classList.toggle('open')">
+      <div class="faq-question">
+        <span class="faq-q-icon">Q</span>
+        <span class="faq-q-text">Can MLflow handle multi-tenant or multi-team setups?</span>
+        <span class="faq-chevron">&#x25BC;</span>
       </div>
-      <div class="accordion-body"><div class="accordion-body-inner">
-        <p>Use <code>mlflow gc</code> to garbage-collect deleted runs and reclaim artifact storage. Set retention policies at the experiment level. For S3/GCS artifact stores, configure lifecycle rules to transition old artifacts to cheaper storage tiers.</p>
-        <p>Monitor backend database size and vacuum regularly. For large-scale cleanup, use the MlflowClient API to programmatically delete runs matching specific criteria (age, tags, metrics below threshold).</p>
-      </div></div>
+      <div class="faq-answer">
+        <p>Since MLflow 3.10, the tracking server supports <strong>organizations</strong> -- a multi-workspace feature that lets teams logically isolate experiments, models, and prompts within a single server.</p>
+        <p>For earlier versions, teams typically use separate experiments with naming conventions, or deploy separate tracking server instances. On Databricks, Unity Catalog provides fine-grained access control across workspaces. For open-source deployments, you can add authentication via a reverse proxy (nginx with OIDC) or use MLflow's built-in authentication (available since MLflow 2.5).</p>
+      </div>
     </div>
+
   </main>
 
-  <section class="references-footer">
-    <h3>&#x1F4DA; References &amp; Resources</h3>
-    <ul class="references-list">
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://mlflow.org/docs/latest/self-hosting/troubleshooting/" target="_blank" rel="noopener noreferrer">MLflow Troubleshooting &amp; FAQs</a></span><span class="reference-domain">mlflow.org</span><span class="reference-type-tag">official-docs</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://www.asigmo.com/post/mlflow-best-practices-and-lessons-learned" target="_blank" rel="noopener noreferrer">MLflow Best Practices and Lessons Learned</a></span><span class="reference-domain">asigmo.com</span><span class="reference-type-tag">blog</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4BB;</span><div class="reference-content"><span class="reference-title"><a href="https://github.com/mlflow/mlflow/issues" target="_blank" rel="noopener noreferrer">MLflow GitHub Issues</a></span><span class="reference-domain">github.com</span><span class="reference-type-tag">github</span></div></li>
-    </ul>
-  </section>
-
-  <div class="page-nav-footer">
-    <a href="ecosystem.html" class="prev">Ecosystem</a>
-    <a href="tradeoffs.html" class="next">Trade-offs</a>
-  </div>
-  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+  <footer class="page-footer">
+    <div class="footer-nav">
+      <a href="ecosystem.html" class="footer-link prev">&larr; Ecosystem</a>
+      <a href="tradeoffs.html" class="footer-link next">Trade-offs &rarr;</a>
+    </div>
+  </footer>
 
   <script>
-    document.documentElement.classList.add("js-ready");
-    function toggleAccordion(header) {
-      var item = header.parentElement;
-      var wasOpen = item.classList.contains('open');
-      item.classList.toggle('open');
-    }
-    document.getElementById('navHamburger').addEventListener('click', function() { this.classList.toggle('open'); document.getElementById('navPages').classList.toggle('mobile-open'); });
-    window.addEventListener('scroll', function() { var bar = document.querySelector('.nav-progress-bar'); var h = document.documentElement.scrollHeight - window.innerHeight; bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%'; }, { passive: true });
-    var observer = new IntersectionObserver(function(entries) { entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-    document.querySelectorAll('.animate-in').forEach(function(el) { observer.observe(el); });
+    window.addEventListener('scroll', function() {
+      requestAnimationFrame(function() {
+        var pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        document.getElementById('progress-bar').style.width = Math.min(pct, 100) + '%';
+      });
+    }, { passive: true });
+    var hamburger = document.getElementById('navHamburger');
+    var navPages = document.getElementById('navPages');
+    hamburger.addEventListener('click', function() { hamburger.classList.toggle('open'); navPages.classList.toggle('mobile-open'); });
     var STORAGE_KEY = 'mlflow-course-visited';
-    function getVisited() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; } }
-    function markVisited(p) { var v = getVisited(); if (v.indexOf(p) === -1) { v.push(p); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(v)); } catch(e) {} } }
+    function markVisited(p) { try { var v = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; if(v.indexOf(p)===-1){v.push(p);localStorage.setItem(STORAGE_KEY,JSON.stringify(v));}} catch(e){} }
     markVisited('faq');
   </script>
 </body>

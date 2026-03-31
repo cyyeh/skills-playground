@@ -2,64 +2,171 @@
 <!-- level: intermediate -->
 <!-- references:
 - [NemoClaw Architecture Reference](https://docs.nvidia.com/nemoclaw/latest/reference/architecture.html) | official-docs
-- [How NemoClaw Works](https://docs.nvidia.com/nemoclaw/latest/about/how-it-works.html) | official-docs
-- [NemoClaw GitHub - Repository Structure](https://github.com/NVIDIA/NemoClaw) | github
+- [NemoClaw GitHub](https://github.com/NVIDIA/NemoClaw) | github
+- [NemoClaw Architecture Deep Dive](https://particula.tech/blog/nvidia-nemoclaw-openclaw-enterprise-security) | article
+- [How NemoClaw Actually Works](https://www.yottalabs.ai/post/how-nemoclaw-actually-works-architecture-scaling-and-deployment-explained) | article
 -->
 
-NemoClaw is a two-tier system layered atop NVIDIA OpenShell. The architecture follows a deliberate separation of concerns: a lightweight TypeScript plugin handles user interaction and CLI wiring, while a versioned Python blueprint manages all orchestration logic for sandbox creation, policy enforcement, and inference routing.
+NemoClaw's architecture follows a defense-in-depth model with four distinct layers, each providing independent security guarantees. The key architectural insight is that policy enforcement happens *outside* the agent's address space — a compromised agent cannot modify its own constraints.
 
-### High-Level Architecture
+### High-Level Component Diagram
 
-The system consists of four main layers, each with a distinct responsibility:
+```
++------------------------------------------------------------------+
+|  USER INTERFACES                                                  |
+|  [Terminal TUI]  [Telegram]  [Discord]  [Slack]  [CLI]          |
++------------------------------------------------------------------+
+        |                                                           
+        v                                                           
++------------------------------------------------------------------+
+|  NEMOCLAW CLI (TypeScript Plugin Layer)                          |
+|  +-----------+ +-----------+ +-----------+ +-----------+        |
+|  | launch    | | connect   | | status    | | logs      |        |
+|  +-----------+ +-----------+ +-----------+ +-----------+        |
+|  +--------------------+ +--------------------+                   |
+|  | Blueprint Resolver | | Digest Verifier    |                   |
+|  +--------------------+ +--------------------+                   |
+|  +--------------------+                                          |
+|  | State Manager      |                                          |
+|  +--------------------+                                          |
++------------------------------------------------------------------+
+        |                                                           
+        v                                                           
++------------------------------------------------------------------+
+|  BLUEPRINT LAYER (Python Orchestration)                          |
+|  +-----------------------------------------------------------+  |
+|  | blueprint.yaml  — version constraints & manifest          |  |
+|  | openclaw-sandbox.yaml  — network & filesystem policies    |  |
+|  | Blueprint Runner — Plan → Apply → Status lifecycle        |  |
+|  +-----------------------------------------------------------+  |
++------------------------------------------------------------------+
+        |                                                           
+        v                                                           
++==================================================================+
+||  OPENSHELL RUNTIME (Kernel-Level Enforcement)                  ||
+||                                                                 ||
+||  +-----------------------------------------------------------+ ||
+||  |  SANDBOX CONTAINER                                        | ||
+||  |  +-----------------------------------------------------+ | ||
+||  |  |  OPENCLAW AGENT                                      | | ||
+||  |  |  +----------+ +----------+ +----------+             | | ||
+||  |  |  | Planner  | | Executor | | Tools    |             | | ||
+||  |  |  +----------+ +----------+ +----------+             | | ||
+||  |  |  +----------+ +----------+                          | | ||
+||  |  |  | Memory   | | NemoClaw |                          | | ||
+||  |  |  |          | | Plugin   |                          | | ||
+||  |  |  +----------+ +----------+                          | | ||
+||  |  +-----------------------------------------------------+ | ||
+||  +-----------------------------------------------------------+ ||
+||                                                                 ||
+||  +-----------------------------------------------------------+ ||
+||  |  POLICY ENGINE (Rust)                                     | ||
+||  |  [Network Policy] [Filesystem Policy] [Process Limits]    | ||
+||  +-----------------------------------------------------------+ ||
+||                                                                 ||
+||  +-----------------------------------------------------------+ ||
+||  |  KERNEL SECURITY                                          | ||
+||  |  [Landlock] [seccomp] [Network Namespaces] [Cap Drop]    | ||
+||  +-----------------------------------------------------------+ ||
++==================================================================+
+        |                                                           
+        v                                                           
++------------------------------------------------------------------+
+|  INFERENCE LAYER                                                  |
+|  +--------------------+    +-------------------+                 |
+|  | Privacy Router     | -> | Local Nemotron    |                 |
+|  | (Sensitivity       |    | (On-Premises)     |                 |
+|  |  Classification)   |    +-------------------+                 |
+|  +--------------------+    +-------------------+                 |
+|          |              -> | Cloud Providers   |                 |
+|          |                 | (OpenAI, etc.)    |                 |
+|          |                 +-------------------+                 |
+|          v                                                       |
+|  +--------------------+                                          |
+|  | Credential         |                                          |
+|  | Injection Gateway  |                                          |
+|  +--------------------+                                          |
++------------------------------------------------------------------+
+        |                                                           
+        v                                                           
++------------------------------------------------------------------+
+|  HOST-SIDE STATE                                                  |
+|  ~/.nemoclaw/credentials.json  — Provider API keys              |
+|  ~/.nemoclaw/sandboxes.json    — Sandbox registry               |
+|  Audit logs  — Kernel-level action recording                    |
++------------------------------------------------------------------+
+```
 
-**1. CLI Layer (TypeScript Plugin)**
-The plugin (`nemoclaw/src/`) registers commands under `openclaw nemoclaw` using Commander.js. It contains the entry point (`index.ts`), CLI wiring (`cli.ts`), and command modules for launch, connect, status, logs, and slash-command handling. This layer runs in-process with the OpenClaw gateway and is intentionally kept thin — its job is to accept user input, resolve the correct blueprint version, and delegate orchestration to the blueprint subprocess.
+### Layer 1: TypeScript Plugin Layer
 
-**2. Orchestration Layer (Python Blueprint)**
-The blueprint (`nemoclaw-blueprint/`) is a versioned artifact containing the Dockerfile, security policies, network rules, and Python orchestration logic. It follows a five-stage lifecycle: resolve (locate and validate the artifact), verify (check the digest), plan (determine required OpenShell resources), apply (execute the plan via OpenShell CLI), and status (report deployment state). The blueprint is immutable once published — any changes require a new version with a new digest.
+The plugin layer is a TypeScript Commander CLI extension that integrates with the OpenClaw CLI. It handles:
 
-**3. Security Layer (OpenShell Runtime)**
-NVIDIA OpenShell provides the foundational security primitives. It creates and manages sandbox containers, enforces Landlock filesystem policies, applies seccomp BPF syscall filters, configures network namespaces for egress control, and hosts the inference routing gateway. OpenShell operates entirely outside the agent's reach — the agent cannot modify, disable, or bypass its controls.
+- **Command registration:** Exposes `launch`, `connect`, `status`, and `logs` commands
+- **Blueprint resolution:** Locates and downloads blueprint artifacts from OCI registries with local caching
+- **Digest verification:** Ensures artifact integrity before deployment
+- **Subprocess execution:** Invokes the Python blueprint runner as a child process
+- **State management:** Persists sandbox configurations in `~/.nemoclaw/sandboxes.json`
 
-**4. Agent Layer (OpenClaw)**
-The OpenClaw agent runs inside the sandbox container. It sees a standard Linux environment with `/sandbox` and `/tmp` as writable directories, a local inference endpoint at `inference.local`, and network access limited to policy-approved endpoints. From the agent's perspective, it operates normally — the security controls are transparent and cannot be detected or circumvented.
+The plugin also provides the `/nemoclaw` slash command within the agent's chat interface, giving operators real-time control over sandbox behavior.
 
-### Component Interactions
+### Layer 2: Python Blueprint Layer
 
-The components interact through a clear chain of command:
+The blueprint is a versioned artifact that declaratively defines the sandbox environment. It contains:
 
-- **User → Plugin:** The operator runs `nemoclaw onboard`, `nemoclaw connect`, or other CLI commands.
-- **Plugin → Blueprint:** The plugin downloads the blueprint artifact, verifies its digest, and executes it as a subprocess.
-- **Blueprint → OpenShell:** The blueprint calls `openshell sandbox create`, `openshell provider add`, and `openshell policy apply` to configure the runtime.
-- **OpenShell → Sandbox:** OpenShell creates the isolated container, applies security policies, and starts the agent process.
-- **Agent → OpenShell Gateway:** All inference requests from the agent go through `inference.local`, which OpenShell routes to the configured provider.
-- **Agent → Network Policy:** All outbound connections are intercepted by the network namespace. Unapproved destinations are blocked and surfaced to the operator.
+- **`blueprint.yaml`:** Version constraints and the deployment manifest
+- **`openclaw-sandbox.yaml`:** Network egress rules, filesystem mount policies, and process restrictions
+- **Blueprint Runner:** A TypeScript runtime that executes a five-stage lifecycle:
+  1. **Resolve** — Locate the blueprint artifact and check version compatibility
+  2. **Verify** — Validate the OCI digest for tamper detection
+  3. **Plan** — Calculate the diff between current and desired sandbox state
+  4. **Apply** — Execute OpenShell CLI commands to create or update resources
+  5. **Status** — Report the sandbox's current configuration and health
 
-### Repository Structure
+### Layer 3: OpenShell Runtime (The Security Boundary)
 
-The codebase is organized into five main directories:
+This is the most critical layer — the point where NemoClaw diverges from permissive agent frameworks. OpenShell provides:
 
-- `bin/` — CLI entry point (CommonJS wrapper)
-- `nemoclaw/` — TypeScript plugin source (Commander CLI extension)
-- `nemoclaw-blueprint/` — Blueprint YAML, policies, Dockerfile, and Python orchestration
-- `scripts/` — Installation, uninstallation, and automation helpers
-- `test/` — Integration and end-to-end tests
-- `docs/` — Sphinx/MyST documentation source
+**Out-of-Process Policy Engine:** A Rust-based service running in a separate process from the agent. It intercepts system calls and network requests at the kernel boundary. Because the engine runs outside the agent's address space, a compromised agent cannot tamper with its own restrictions.
 
-### Host-Side State
+**Kernel Security Primitives:**
+- **Landlock:** Linux security module for fine-grained filesystem access control. The sandbox can only read and write to `/sandbox` and `/tmp`; system paths are read-only.
+- **seccomp:** Syscall filtering that restricts which kernel functions the sandbox process can invoke, blocking dangerous operations like raw socket creation or kernel module loading.
+- **Network namespaces:** Complete network isolation. The sandbox has its own network stack with no default routes. All traffic must go through the OpenShell gateway.
+- **Capability dropping:** The container runs with minimal Linux capabilities, preventing privilege escalation.
 
-NemoClaw stores configuration and metadata on the host filesystem:
+**Network Policy Enforcement:** Every outbound connection is validated against the YAML policy. Unknown destinations are blocked by default. When an agent attempts to reach an unapproved endpoint, the request is surfaced in the operator's TUI for real-time approval or denial.
 
-- `~/.nemoclaw/credentials.json` — Provider API keys (never copied into the sandbox)
-- `~/.nemoclaw/sandboxes.json` — Sandbox metadata and version tracking
-- `~/.openclaw/openclaw.json` — OpenClaw configuration snapshots
+### Layer 4: Inference Layer
 
-### Design Principles
+The inference layer manages all LLM communication:
 
-The architecture adheres to five core tenets:
+**Privacy Router:** Classifies each inference request by data sensitivity using organization-defined rules. Sensitive requests (containing PII, proprietary code, financial data) are routed to local Nemotron models. Non-sensitive requests can go to cloud providers.
 
-1. **Thin plugin, versioned blueprint** — The plugin stays stable; orchestration logic evolves in the blueprint.
-2. **CLI boundary respect** — The `nemoclaw` CLI is the primary management interface; no hidden background processes.
-3. **Supply chain safety** — Blueprint artifacts are immutable, versioned, and digest-verified before execution.
-4. **OpenShell-native** — New installations use `openshell sandbox create` directly, not plugin-driven bootstrapping.
-5. **Reproducible setup** — Re-running setup recreates the sandbox from identical blueprint and policy definitions.
+**Credential Injection Gateway:** The sandbox never holds API credentials. The gateway intercepts outgoing inference requests and injects the appropriate authentication tokens based on the configured provider. Supported providers:
+- **NVIDIA Endpoints** (default) — `nvidia/nemotron-3-super-120b-a12b`
+- **Local Ollama** — for air-gapped environments
+- **Custom providers** — any OpenAI-compatible API endpoint
+
+### Data Flow
+
+A typical request traverses the stack as follows:
+
+1. User sends a message via terminal, Telegram, or other channel
+2. The message bridge (SSH-based, avoiding direct network exposure for the agent) delivers it into the sandbox
+3. OpenClaw's planner evaluates the request and determines if tools are needed
+4. If tools are required, the agent invokes registered tools within the sandbox
+5. If external network access is needed, the Network Policy Engine evaluates the request
+6. If inference is needed, the Privacy Router classifies sensitivity and selects a provider
+7. The Inference Gateway proxies the request with injected credentials
+8. The response flows back through the same path, with every step logged in the audit trail
+9. The final response is delivered to the user via the same messaging channel
+
+### Security Architecture Principles
+
+**Defense in Depth:** Multiple independent security layers ensure that no single failure compromises the system. Even if the agent bypasses one control, others remain active.
+
+**Least Privilege:** The sandbox starts with no capabilities and adds only what is explicitly needed. Network, filesystem, and process access must be granted by policy.
+
+**Out-of-Process Enforcement:** Security policies are enforced by a separate process (the Rust policy engine) at the kernel level. This architectural separation is the key innovation — prompt-level guardrails can be bypassed through injection; kernel-level policies cannot.
+
+**Credential Isolation:** API keys, tokens, and authentication secrets live on the host, not in the sandbox. The gateway injects them at the boundary, so a sandbox compromise cannot leak credentials.

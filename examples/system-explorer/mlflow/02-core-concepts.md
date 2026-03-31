@@ -1,72 +1,75 @@
 ## Core Concepts
 <!-- level: beginner -->
 <!-- references:
-- [MLflow Concepts](https://mlflow.org/docs/latest/tracking/) | official-docs
-- [MLflow Model Registry](https://mlflow.org/docs/latest/ml/model-registry/) | official-docs
-- [MLflow Models Documentation](https://mlflow.org/docs/latest/ml/) | official-docs
-- [MLflow GenAI Features](https://mlflow.org/docs/latest/genai/index.html) | official-docs
+- [MLflow Concepts](https://mlflow.org/docs/latest/tracking/) | docs
+- [MLflow Models](https://mlflow.org/docs/latest/models.html) | docs
+- [MLflow Model Registry](https://mlflow.org/docs/latest/model-registry/) | docs
 -->
 
-### Experiments & Runs
+### Experiments
 
-**Definition:** An Experiment is a named container that groups related ML training runs. A Run is a single execution of ML code -- it captures everything about one attempt: the code version, parameters, metrics over time, and output artifacts.
+**Definition:** An experiment is a named grouping of runs that correspond to a specific task or project -- for example, "fraud-detection-v2" or "image-classifier-resnet."
 
-**Analogy:** Think of an experiment as a lab notebook for a research question ("Which model architecture works best for churn prediction?"). Each run is a page in that notebook -- one set of knobs turned, one set of measurements recorded.
+**Analogy:** Think of an experiment as a folder on your desk labeled with a project name. Every time you try a different approach, you drop a new sheet of results into that folder.
 
-**Why it matters:** Without structured experiments, teams lose track of what they tried, what worked, and why. Experiments and runs create an auditable, searchable history so you can compare any two attempts side by side, weeks or months later.
+**Why it matters:** Without experiments, runs scatter across an unnamed default bucket. Experiments let teams organize work by project, compare results within a domain, and keep the tracking server navigable as usage grows.
 
-### Parameters, Metrics & Artifacts
+### Runs
 
-**Definition:** Parameters are input configuration values (learning rate, batch size, number of trees). Metrics are output measurements (accuracy, loss, F1 score) that can be logged at each training step. Artifacts are output files (trained model weights, plots, data snapshots) stored alongside the run.
+**Definition:** A run is a single execution of ML training code. Each run captures parameters (inputs), metrics (outputs), tags (metadata), artifacts (files), and the source code or Git commit that produced it.
 
-**Analogy:** In a cooking experiment, parameters are your recipe (ingredients and temperatures), metrics are your taste scores, and artifacts are the actual dishes and photos you produced.
+**Analogy:** A run is one entry in your lab notebook -- the specific recipe you tried, the measurements you took, and the sample you produced.
 
-**Why it matters:** This triple -- inputs, measurements, outputs -- is the minimum information needed to reproduce and evaluate any ML experiment. MLflow logs them in a structured, queryable store so you never lose the connection between "what I configured" and "what I got."
+**Why it matters:** Runs are the atomic unit of reproducibility. By logging everything about a single execution, you can always go back and understand what happened, why a metric changed, or which hyperparameters produced the best result.
 
-### MLflow Tracking
+### Tracking
 
-**Definition:** MLflow Tracking is the logging and querying subsystem. It provides a Python/R/Java/REST API to log parameters, metrics, and artifacts during training, plus a web UI for visual exploration, comparison, and search across all runs.
+**Definition:** MLflow Tracking is the logging API and UI for recording and querying runs. You call functions like `mlflow.log_param()`, `mlflow.log_metric()`, and `mlflow.log_artifact()` from your training code, and everything gets written to a backend store.
 
-**Analogy:** Tracking is the lab's record-keeping system -- every scientist (data scientist) writes their observations in the same format, and anyone can search and compare results on the shared dashboard.
+**Analogy:** Tracking is the lab notebook itself -- the system that captures every experiment's details as they happen, and the index that lets you find them later.
 
-**Why it matters:** Tracking is typically the first MLflow component teams adopt. It replaces ad-hoc spreadsheets, scattered CSV files, and "I think the best model was in that Jupyter notebook from last Tuesday" with a centralized, versioned, programmatically accessible experiment store.
-
-### MLflow Projects
-
-**Definition:** An MLflow Project is a standard format for packaging reusable, reproducible ML code. A project is simply a directory (or Git repo) with an MLproject file that declares entry points, parameters, and environment dependencies (Conda, Docker, or system).
-
-**Analogy:** Think of a Project as a recipe card that not only lists ingredients (parameters) and steps (entry points) but also specifies the exact kitchen setup (environment) needed -- down to the brand of oven (Docker image) or spice rack (Conda environment).
-
-**Why it matters:** Projects solve the "works on my machine" problem. Any team member can run `mlflow run <project-uri>` and get a bit-for-bit reproducible execution environment, whether the project lives in a Git repo, a local folder, or an S3 bucket.
-
-### MLflow Models
-
-**Definition:** An MLflow Model is a standard packaging format that bundles a trained model with metadata describing multiple "flavors" -- different ways to load the model. For example, a scikit-learn model can be loaded as a generic Python function, as a native sklearn object, or served as a REST endpoint.
-
-**Analogy:** A Model is like a universal power adapter for your trained model. You train it once, and the multi-flavor packaging lets you plug it into different deployment targets (batch scoring, REST API, Spark UDF, edge device) without rewriting anything.
-
-**Why it matters:** The model flavor system decouples training from serving. Data scientists train models with their preferred framework (PyTorch, TensorFlow, XGBoost, LightGBM, etc.), and operations teams deploy them through a uniform interface, regardless of the underlying framework.
+**Why it matters:** Tracking is the foundation of MLflow. Without it, experiment results live in scattered CSVs, terminal output, and team Slack messages. With tracking, every result is centralized, searchable, and comparable.
 
 ### Model Registry
 
-**Definition:** The Model Registry is a centralized store for managing the full lifecycle of MLflow Models. It provides model versioning, stage transitions (e.g., Staging to Production), model aliases (e.g., @champion), annotations, and lineage back to the originating experiment run.
+**Definition:** The Model Registry is a centralized store for managing the full lifecycle of MLflow Models. It provides model versioning, aliasing (e.g., "champion", "challenger"), tagging, annotations, and lineage back to the experiment and run that produced each version.
 
-**Analogy:** If MLflow Models is the universal adapter, the Model Registry is the equipment library. When a new version arrives, it gets cataloged, labeled, and shelved. Before it goes to the factory floor (production), a librarian (governance process) must sign off.
+**Analogy:** The Model Registry is the trophy case for your models. Every model that makes it past experimentation gets a version number, a label, and a place where the team can inspect, compare, and approve it before it goes to production.
 
-**Why it matters:** In production settings, you need to know exactly which model version is serving traffic, who promoted it, and what experiment produced it. The registry provides this audit trail and prevents unvetted models from reaching production.
+**Why it matters:** In production ML, you need to know exactly which model is serving traffic, who trained it, what data it was trained on, and how to roll back. The registry provides this governance layer.
 
-### MLflow Tracing (GenAI)
+### MLflow Projects
 
-**Definition:** MLflow Tracing provides end-to-end observability for GenAI applications. It automatically captures every LLM call, tool invocation, and retrieval step in agent workflows, linking traces to the exact code, data, and prompts that generated them. It supports auto-tracing for 20+ frameworks including OpenAI, Anthropic, LangChain, and LlamaIndex.
+**Definition:** An MLflow Project is a convention for packaging ML code into reusable, reproducible units. An `MLproject` file defines entry points, parameters, and the environment (Conda, Docker, or system) needed to run the code.
 
-**Analogy:** Tracing is like a flight recorder for your AI agent. Every decision the agent makes -- every API call, every tool use, every retrieval -- gets logged with timestamps and context, so when something goes wrong (or right), you can replay the entire sequence.
+**Analogy:** A project is a recipe card that lists not just the ingredients (parameters) and steps (code), but also the kitchen (environment) needed to cook the dish.
 
-**Why it matters:** LLM applications are non-deterministic and multi-step. Without tracing, debugging why an agent gave a bad answer requires guesswork. Tracing gives you full visibility into token costs, latency, and the decision chain, in both development and production.
+**Why it matters:** Projects solve the "it worked on my machine" problem. Anyone can run `mlflow run <project-uri>` and get the same environment and execution, whether on a laptop, a CI server, or a cloud cluster.
 
-### AI Gateway
+### Artifacts
 
-**Definition:** The MLflow AI Gateway provides a unified, governed endpoint for accessing multiple LLM providers (OpenAI, Anthropic, Azure OpenAI, etc.). It handles credential management, rate limiting, request routing, cost tracking, and automatic trace capture for every request.
+**Definition:** Artifacts are output files associated with a run -- model weights, plots, serialized data, evaluation reports, or any other file. They are stored in an artifact store (local filesystem, S3, Azure Blob, GCS, etc.).
 
-**Analogy:** The AI Gateway is like a corporate switchboard for LLM calls. Instead of every team dialing providers directly (and managing their own API keys and billing), they call through the switchboard, which handles routing, logging, and cost control centrally.
+**Analogy:** Artifacts are the physical samples and photos from your lab work -- not the numbers in the notebook, but the tangible outputs you can pick up and use.
 
-**Why it matters:** As organizations scale LLM usage, managing API keys, tracking costs per team, enforcing rate limits, and maintaining observability across multiple providers becomes critical. The gateway centralizes all of this in one governed layer.
+**Why it matters:** Metrics tell you how good a model is, but artifacts give you the actual model. The artifact store ensures every version of every model is preserved and retrievable.
+
+### Model Flavors
+
+**Definition:** A model flavor is a standard packaging format that describes how to load and serve a model. MLflow defines native flavors for frameworks like `sklearn`, `pytorch`, `tensorflow`, `xgboost`, `spark`, `langchain`, and many more. The universal `pyfunc` flavor lets any MLflow model be loaded as a generic Python function.
+
+**Analogy:** Flavors are like universal power adapters. Your model was trained with PyTorch (a Japanese plug), but the `pyfunc` flavor lets it plug into any MLflow-compatible socket -- a REST API, a Spark job, or a Kubernetes deployment.
+
+**Why it matters:** Without flavors, deploying a model means writing custom loading and serving code for every framework. Flavors abstract this away, enabling a single deployment pipeline for all your models.
+
+### Recipes (Pipelines)
+
+**Definition:** MLflow Recipes (formerly MLflow Pipelines) provide opinionated, production-ready templates for common ML workflows like classification and regression. They define a step-by-step pipeline from data ingestion through training, evaluation, and registration.
+
+**Analogy:** If MLflow Projects are recipe cards, Recipes are the full meal-prep kits -- pre-portioned ingredients, step-by-step instructions, and quality-check steps built in.
+
+**Why it matters:** Recipes reduce boilerplate and enforce best practices for teams that want a structured, repeatable ML workflow without building a pipeline framework from scratch.
+
+### How They Fit Together
+
+An **experiment** groups related **runs**. Each run uses the **tracking** API to log parameters, metrics, and **artifacts** (including models saved in specific **flavors**). Promising models graduate to the **model registry**, where they are versioned, aliased, and governed. **Projects** ensure that the code behind any run can be reproduced in a consistent environment. **Recipes** provide turnkey templates that orchestrate all of the above into a production-ready pipeline. Together, these concepts form a complete lifecycle: experiment, track, package, register, deploy, and monitor.

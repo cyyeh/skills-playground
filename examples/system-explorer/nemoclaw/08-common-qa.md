@@ -1,48 +1,95 @@
 ## Common Q&A
 <!-- level: all -->
 <!-- references:
-- [NemoClaw Developer Guide - Overview](https://docs.nvidia.com/nemoclaw/latest/about/overview.html) | official-docs
-- [NVIDIA NemoClaw: What It Secures, and Why It Matters](https://emelia.io/hub/nvidia-nemoclaw-explained) | blog
-- [NemoClaw Is Not the Fix. Here Is What Is Missing.](https://augmentedmind.substack.com/p/nemoclaw-is-not-the-fix-here-is-what-is-missing) | blog
-- [MAESTRO Threat Modeling - NemoClaw](https://kenhuangus.substack.com/p/maestro-threat-modeling-nemoclaw) | blog
+- [NemoClaw GitHub Issues](https://github.com/NVIDIA/NemoClaw/issues) | github
+- [NemoClaw Developer Guide](https://docs.nvidia.com/nemoclaw/latest/index.html) | official-docs
+- [NVIDIA Developer Forums](https://forums.developer.nvidia.com/t/total-nightmare-nemoclaw-over-paperclip-over-openclaw-over-vllm-over-dokers-over-llm-flavours-over-linux/363682) | forum
+- [NemoClaw FAQ](https://github.com/NVIDIA/NemoClaw/blob/main/README.md) | github
 -->
 
-### Q1: Does NemoClaw replace OpenClaw?
+### Q1: Is NemoClaw a model, a framework, or a runtime?
 
-No. NemoClaw is a complementary security layer, not a replacement. It wraps an existing OpenClaw installation inside a hardened sandbox with managed inference and network controls. Your existing OpenClaw agent — its skills, memory, configuration, and messaging integrations — runs unchanged inside the NemoClaw sandbox. Think of NemoClaw as adding walls, locks, and a security guard to a house that already exists.
+**NemoClaw is a runtime and security layer**, not a model or a full agent framework. It wraps the existing OpenClaw agent framework with NVIDIA's OpenShell runtime to provide sandboxing, policy enforcement, privacy routing, and managed inference. Think of it as the secure operating environment that an agent runs inside, rather than the agent itself.
 
-### Q2: Can an agent inside the sandbox bypass the security controls?
+---
 
-The security controls operate at the kernel level, outside the agent's process. Landlock filesystem policies are applied by the OpenShell supervisor before the agent process starts and are locked — the agent cannot modify them. seccomp filters are similarly locked at container creation. The network namespace gives the agent a completely separate view of the network — it cannot even see the host's interfaces. However, no sandbox is perfectly escape-proof. NemoClaw provides defense-in-depth, not absolute guarantees. Kernel vulnerabilities, container runtime escapes, or novel attack techniques could theoretically bypass controls. Regular updates and security audits remain essential.
+### Q2: Do I need NVIDIA GPUs to use NemoClaw?
 
-### Q3: How much latency does inference routing add?
+**No.** NemoClaw itself requires no GPUs — its minimum requirement is just 4 vCPU, 8 GB RAM, and 20 GB disk. GPUs are only needed if you want to run Nemotron models locally for privacy routing. Without local GPUs, you can route all inference to cloud providers (NVIDIA Endpoints, OpenAI, Anthropic) through the NemoClaw gateway. Of course, local models require appropriate GPU hardware (the full Nemotron 3 Super 120B works best on DGX-class hardware, while the Nano 4B variant can run on consumer RTX cards).
 
-The inference routing through the OpenShell gateway adds minimal overhead — typically single-digit milliseconds for the proxy hop. The actual latency is dominated by the inference provider's response time (which ranges from hundreds of milliseconds to seconds depending on the model and input). For most use cases, the routing overhead is negligible compared to model inference time.
+---
 
-### Q4: Can I use NemoClaw with non-OpenClaw agents?
+### Q3: Is NemoClaw production-ready?
 
-NemoClaw is designed specifically for OpenClaw integration. The CLI plugin, blueprint, and onboarding flow all assume OpenClaw as the agent runtime. However, the underlying OpenShell runtime is agent-framework-agnostic. If you want sandbox isolation for a different agent framework, you can use OpenShell directly without NemoClaw. NemoClaw's value is the pre-packaged, tested integration with OpenClaw.
+**Not yet.** As of March 2026, NemoClaw is labeled as alpha software in early preview. The official documentation explicitly states: "APIs, configuration schemas, and runtime behavior are subject to breaking changes between releases. Do not use this software in production environments." The architecture and security model are sound, but the project has not undergone independent security audits, and the API surface is still stabilizing.
 
-### Q5: What happens when the agent needs a new network endpoint?
+---
 
-The deny-all-by-default policy blocks the connection immediately. The blocked request appears in the operator's terminal UI (`openshell term`) with full context: destination host, port, and the binary that made the request. The operator can approve or deny it in real time. Approved endpoints persist for the current session but do not modify the baseline policy file. For permanent changes, the operator edits `openclaw-sandbox.yaml` and reapplies the policy. Preset policy files exist for common integrations like PyPI, Docker Hub, Slack, and Jira.
+### Q4: How does NemoClaw differ from just running OpenClaw in a Docker container?
 
-### Q6: Does NemoClaw work on macOS or Windows?
+The difference is significant. A standard Docker container provides **process isolation** but does not enforce fine-grained network policies, filesystem access controls, or managed inference routing. NemoClaw adds:
+- **Landlock** filesystem restrictions (more granular than Docker volume mounts)
+- **seccomp** syscall filtering (blocking dangerous kernel operations)
+- **Network namespaces** with deny-by-default egress (standard containers have full outbound access)
+- **Out-of-process policy enforcement** (a Rust engine the agent cannot tamper with)
+- **Privacy routing** for inference (standard Docker has no concept of this)
+- **Credential isolation** (API keys never enter the container)
 
-Partially. NemoClaw's full security stack (Landlock, seccomp, network namespaces) requires Linux. On macOS with Apple Silicon, NemoClaw runs using Colima or Docker Desktop, but the kernel-level isolation is weaker because macOS does not support Landlock or Linux-native seccomp. On Windows, NemoClaw requires WSL2 with Docker Desktop. The sandbox runs inside the WSL Linux environment, which provides most Linux security features but adds another layer of abstraction. For production deployments with full security guarantees, Linux is the recommended platform.
+Standard Docker provides a sandbox; NemoClaw provides a hardened, policy-governed, auditable sandbox.
 
-### Q7: How do credentials stay safe if the agent is compromised?
+---
 
-API credentials (for inference providers and messaging platforms) are stored on the host at `~/.nemoclaw/credentials.json` and never copied into the sandbox. The agent communicates with `inference.local`, a virtual endpoint inside its network namespace. The OpenShell gateway on the host attaches credentials to outbound requests. Even if an attacker gains code execution inside the sandbox, they cannot read the credentials file (Landlock blocks access), cannot see the host's filesystem (container isolation), and cannot intercept the gateway's credential attachment (different network namespace).
+### Q5: Can I use NemoClaw with models other than Nemotron?
 
-### Q8: Is NemoClaw production-ready?
+**Yes.** NemoClaw supports any inference provider through three mechanisms:
+1. **NVIDIA Endpoints** for NVIDIA-hosted models (default: Nemotron 3 Super)
+2. **Local Ollama** for any model available through Ollama (Llama, Mistral, Qwen, etc.)
+3. **Custom OpenAI-compatible providers** for cloud APIs (OpenAI GPT-4o, Anthropic Claude, Google Gemini, etc.)
 
-No. As of March 2026, NemoClaw is in alpha (early preview). NVIDIA explicitly states that the software is not production-ready and that interfaces, APIs, and behavior may change without notice. It should be used for evaluation, development, and testing — not for production workloads handling sensitive data. The project has been publicly available for approximately two weeks and has not been battle-tested at scale.
+The Privacy Router decides which provider to use per-request based on data sensitivity. You can configure multiple providers and have sensitive queries routed to a local model while non-sensitive queries go to a more capable cloud model.
 
-### Q9: What is the Privacy Router?
+---
 
-The Privacy Router is NemoClaw's intelligent model routing layer that classifies each query by data sensitivity. Queries containing PII, proprietary code, financial data, or other sensitive categories are automatically routed to a local Nemotron model — they never leave your infrastructure. Non-sensitive queries can be routed to cloud models for faster or more capable responses. This allows teams to balance privacy requirements with model capability, using local models as a privacy floor and cloud models as a capability ceiling.
+### Q6: How much latency does NemoClaw add?
 
-### Q10: How does NemoClaw handle agent updates and blueprint versioning?
+The security pipeline adds approximately **300ms to the first request** in a session (sandbox initialization, policy engine startup, and initial route calculation) and **under 100ms for subsequent requests** (due to policy caching and persistent connections). The inference routing itself adds minimal overhead — it is primarily DNS resolution and policy lookup. In practice, the LLM inference time (typically 1-10 seconds) dominates total latency, making NemoClaw's overhead negligible.
 
-The plugin enforces version constraints when resolving blueprints. Each blueprint artifact is immutable and identified by a cryptographic digest. When NVIDIA publishes a new blueprint version, the plugin checks compatibility with the installed OpenShell and OpenClaw versions before applying the update. If the digest does not match the expected value, the update is rejected. This prevents supply-chain attacks where a tampered blueprint could modify the sandbox's security posture. Re-running onboard with a new blueprint version recreates the sandbox from scratch — there is no in-place upgrade mechanism.
+---
+
+### Q7: Can the agent bypass NemoClaw's security controls?
+
+**By design, no.** This is the key architectural innovation. Unlike prompt-level guardrails (which can be bypassed through prompt injection), NemoClaw's security is enforced at the Linux kernel level by a separate process:
+- **Landlock** prevents filesystem access regardless of what the agent attempts
+- **seccomp** blocks system calls before they reach the kernel
+- **Network namespaces** mean the agent has no network interface to manipulate
+- **The Policy Engine** runs in its own process — the agent cannot modify it
+
+Even if an attacker achieves arbitrary code execution inside the sandbox, they are still constrained by these kernel-level restrictions. However, no security system is perfect — NemoClaw has not yet been independently audited, and novel kernel exploits could theoretically bypass these controls.
+
+---
+
+### Q8: How does NemoClaw handle multi-agent scenarios?
+
+OpenClaw supports **supervisor-worker patterns** where a supervisor agent delegates tasks to specialized worker agents. In NemoClaw, each agent can run in its own sandbox with its own policy:
+- A supervisor agent might have network access to Slack and Jira
+- A code-writing worker agent might only have access to GitHub
+- A data analysis worker might only have access to the internal database
+
+This provides **per-agent blast radius limitation** — a compromised worker agent can only affect the systems it was explicitly granted access to.
+
+---
+
+### Q9: What operating systems does NemoClaw support?
+
+NemoClaw primarily targets **Ubuntu 22.04 LTS or later** on Linux, as it relies on Linux kernel security features (Landlock, seccomp, network namespaces) that are not available on other operating systems. For **macOS**, NemoClaw works via Colima or Docker Desktop, though the kernel-level security is provided by the container runtime's Linux VM rather than the host OS. For **Windows**, Docker Desktop with WSL is supported with the same caveat. Full security guarantees require a native Linux kernel.
+
+---
+
+### Q10: How do I monitor what the agent is doing?
+
+NemoClaw provides three monitoring mechanisms:
+1. **`nemoclaw logs`** — Streams structured audit logs including tool calls, network requests, and inference routing decisions
+2. **`nemoclaw status`** — Shows sandbox health, active policies, resource usage, and provider connectivity
+3. **`openshell term`** — Opens a TUI (terminal UI) for real-time interaction: viewing pending policy approval requests, inspecting current connections, and managing sandbox state
+
+All audit data is structured JSON, making it straightforward to pipe into enterprise logging systems (ELK stack, Splunk, Datadog) for centralized monitoring and alerting.

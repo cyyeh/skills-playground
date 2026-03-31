@@ -1,50 +1,89 @@
 ## Use Cases & Case Studies
 <!-- level: beginner-intermediate -->
 <!-- references:
-- [NVIDIA NemoClaw Product Page](https://www.nvidia.com/en-us/ai/nemoclaw/) | official-docs
-- [NemoClaw: NVIDIA's Open Source Stack for Running AI Agents You Can Actually Trust](https://dev.to/arshtechpro/nemoclaw-nvidias-open-source-stack-for-running-ai-agents-you-can-actually-trust-50gl) | blog
-- [OpenClaw Alternatives for Enterprise Security](https://dev.to/sebastian_chedal/openclaw-alternatives-for-enterprise-security-honest-2026-comparison-3oa2) | blog
+- [NVIDIA NemoClaw Enterprise AI](https://www.mindstudio.ai/blog/what-is-nemoclaw-nvidia-enterprise-ai-agents) | article
+- [NemoClaw Enterprise Guide](https://www.ai.cc/blogs/nvidia-nemoclaw-open-source-ai-agent-2026-guide/) | article
+- [NVIDIA AI Agents](https://nvidianews.nvidia.com/news/ai-agents) | announcement
+- [NemoClaw Enterprise Platform](https://www.1950.ai/post/nvidia-launches-nemoclaw-the-open-source-ai-agent-platform-set-to-transform-enterprise-automation) | article
 -->
 
-### When to Use NemoClaw
+### Use Case 1: Secure Code Assistant for Regulated Industries
 
-NemoClaw addresses a specific set of deployment scenarios where autonomous AI agents need to operate with reduced risk. Here are the primary use cases:
+**Scenario:** A financial services firm wants to deploy an AI coding assistant that can read internal codebases, write code, run tests, and submit pull requests — but cannot exfiltrate proprietary source code or send it to external LLM providers.
 
-### 1. Enterprise Agent Deployment
+**How NemoClaw solves it:**
+- The **Privacy Router** classifies all prompts containing internal code as "sensitive" and routes them exclusively to a locally deployed Nemotron model. No proprietary code ever reaches a cloud API.
+- The **Network Policy Engine** allowlists only the company's internal Git server, CI/CD pipeline, and package registry. Attempts to reach unauthorized endpoints (e.g., pastebin.com) are blocked at the kernel level.
+- **Audit logging** records every file the agent reads, every code change it proposes, and every tool it invokes — providing a compliance-ready trail for SOX and PCI-DSS auditors.
+- The agent operates inside a **sandboxed container** with filesystem access restricted to the project workspace. It cannot read other directories on the host system, access Docker sockets, or escalate privileges.
 
-**Scenario:** A company has been running OpenClaw agents internally for developer productivity — answering questions, writing code, managing tickets. Now they want to expand to production use but need security controls that satisfy their InfoSec team.
+**Result:** Developers get an always-on coding assistant that reviews PRs, writes unit tests, and automates boilerplate — while the security team has verifiable evidence that sensitive code stays within the organization's infrastructure.
 
-**How NemoClaw helps:** NemoClaw adds network egress controls, filesystem isolation, and managed inference routing without requiring the team to rewrite their existing OpenClaw configuration. The agent's learned skills and session history carry over. The InfoSec team gets audit visibility into every outbound connection and API call the agent makes, with real-time approval workflows for new endpoints.
+---
 
-### 2. Always-On Personal Assistants on Dedicated Hardware
+### Use Case 2: Enterprise Business Process Automation
 
-**Scenario:** A researcher or power user wants to run an autonomous AI assistant 24/7 on their NVIDIA DGX Spark or DGX Station, handling tasks like monitoring research papers, managing email, and running data analysis pipelines — all while keeping sensitive data local.
+**Scenario:** A large organization wants AI agents to automate cross-system workflows: monitoring Slack for support requests, creating tickets in Jira, querying a knowledge base, drafting responses, and escalating to humans when confidence is low.
 
-**How NemoClaw helps:** NemoClaw configures the agent to use local Nemotron models for sensitive queries (data never leaves the machine) while routing non-sensitive queries to cloud models for better capability. The sandbox prevents the agent from accessing files outside its designated workspace, even when running unattended for extended periods.
+**How NemoClaw solves it:**
+- **OpenClaw's multi-agent orchestration** supports supervisor-worker patterns. A supervisor agent receives the Slack message, classifies the request, and delegates to specialized worker agents (ticket creation, knowledge retrieval, response drafting).
+- **Tool registration** provides typed interfaces for each integration:
+  - `slack_read` — fetches messages from specified channels
+  - `jira_create_ticket` — creates tickets with structured fields
+  - `knowledge_search` — queries the internal knowledge base
+  - `slack_respond` — posts responses back to the channel
+- **Network policies** restrict each agent to its required endpoints. The Slack agent can only reach `api.slack.com`; the Jira agent can only reach `company.atlassian.net`. No single agent has access to all systems.
+- **Operator approval workflows** ensure that the agent escalates to a human when it encounters ambiguous requests or needs to perform high-impact actions (e.g., closing a customer account).
 
-### 3. Multi-Agent Development Environments
+**Result:** Support response times drop from hours to minutes. Every automated action is logged and auditable. The blast radius of any single agent compromise is limited to its assigned system.
 
-**Scenario:** A platform team is building internal tooling where multiple AI agents collaborate on tasks — one agent writes code, another reviews it, a third deploys it. Each agent needs different access levels and should not be able to interfere with the others.
+---
 
-**How NemoClaw helps:** Each agent runs in its own sandbox with independent network policies, filesystem boundaries, and inference configurations. One agent can be allowed access to GitHub while another is restricted to internal services only. The blueprint-based approach ensures every sandbox is reproducible and auditable.
+### Use Case 3: Agentic RAG (Retrieval-Augmented Generation with Tools)
 
-### 4. Compliance-Sensitive Environments
+**Scenario:** A healthcare research organization needs an AI assistant that can answer clinical questions by searching internal medical databases, retrieving relevant papers, cross-referencing drug interaction databases, and synthesizing evidence-based responses — all while maintaining HIPAA compliance.
 
-**Scenario:** A financial services firm wants to use AI agents for internal operations but must demonstrate to regulators that agents cannot exfiltrate customer data or make unauthorized external connections.
+**How NemoClaw solves it:**
+- The **Privacy Router** ensures all queries containing patient identifiers, medical record numbers, or PHI are routed to the on-premises Nemotron model. No patient data ever transits to external providers.
+- **Tool-calling capabilities** allow the agent to:
+  - Search PubMed and internal research databases
+  - Query drug interaction APIs
+  - Retrieve patient-relevant clinical guidelines
+  - Cross-reference findings across multiple sources
+- **NeMo Guardrails integration** applies behavioral constraints: the agent is prohibited from providing direct medical diagnoses, always includes source citations, and flags when confidence is below a threshold.
+- The **sandbox** restricts the agent's filesystem access to the research data directory only. Patient records in other systems remain inaccessible even if the agent attempts to access them.
 
-**How NemoClaw helps:** The deny-all-by-default network policy, combined with Landlock filesystem restrictions and seccomp syscall filtering, provides a defense-in-depth posture that can be documented for compliance audits. Every blocked connection attempt is logged with full context (host, port, requesting process). The operator approval workflow creates an auditable trail of all policy exceptions.
+**Result:** Researchers get an intelligent assistant that dramatically accelerates literature review and evidence synthesis, while HIPAA compliance is enforced at the infrastructure level rather than relying on prompt-level instructions.
 
-### 5. Secure Evaluation and Red-Teaming
+---
 
-**Scenario:** A security team wants to evaluate the behavior of AI agents under adversarial conditions — testing prompt injection attacks, tool misuse, and privilege escalation attempts — without risking the host system.
+### Use Case 4: DevOps Infrastructure Agent
 
-**How NemoClaw helps:** The sandbox provides a controlled environment where agents can be tested against attack scenarios. Even if a prompt injection successfully instructs the agent to attempt data exfiltration or privilege escalation, the kernel-level security controls prevent the actions from succeeding. The policy engine logs all blocked attempts, providing detailed telemetry for security analysis.
+**Scenario:** A platform engineering team wants an AI agent that monitors infrastructure health, responds to alerts, diagnoses issues, and executes remediation actions — running 24/7 as an always-on operations assistant.
 
-### When NOT to Use NemoClaw
+**How NemoClaw solves it:**
+- **Always-on operation** is a core NemoClaw capability. Unlike request-response chatbots, the OpenClaw agent runs as a persistent service, continuously monitoring alert channels and responding without human initiation.
+- **Tool integration** connects to:
+  - Monitoring systems (Prometheus, Datadog) for metric queries
+  - Cloud APIs (AWS, GCP) for resource management
+  - Kubernetes APIs for pod management and scaling
+  - Alerting systems (PagerDuty, OpsGenie) for incident routing
+- **Network policies** use granular per-binary controls: the agent can query Prometheus (read-only) but cannot modify alerting rules. It can scale Kubernetes deployments but cannot delete namespaces.
+- **Operator approval** is required for high-risk actions: restarting production services, modifying network configurations, or accessing production databases triggers a human approval prompt before execution.
+- **Audit logging** provides a complete timeline of every diagnostic action and remediation step, essential for post-incident review and compliance.
 
-NemoClaw is not the right choice for every situation:
+**Result:** Mean time to resolution drops significantly as the agent handles routine diagnostics and known remediations automatically. Critical actions still require human approval. Every action is logged for incident review.
 
-- **Quick experimentation:** If you are just trying out OpenClaw for the first time, the overhead of sandbox creation and policy management adds friction. Plain OpenClaw is better for exploration and learning.
-- **Cross-platform needs:** NemoClaw's full security stack is Linux-only. macOS and Windows WSL support exists but with reduced security guarantees (no Landlock on macOS, limited namespace isolation on WSL).
-- **Latency-sensitive applications:** The inference routing through the OpenShell gateway adds a small amount of latency compared to direct API calls. For latency-critical real-time applications, this overhead may be unacceptable.
-- **Lightweight chatbots:** If your agent only answers questions and never executes code or accesses external services, the security overhead of NemoClaw provides little benefit over a simpler deployment.
+---
+
+### Cross-Cutting Themes
+
+Several patterns emerge across these use cases:
+
+1. **Progressive trust:** Organizations start with minimal permissions and expand agent capabilities as they observe reliable behavior. NemoClaw's policy hot-reload supports this without service interruption.
+
+2. **Blast radius limitation:** Network policy isolation ensures that a compromised or misbehaving agent can only affect the specific systems it was granted access to, not the entire corporate network.
+
+3. **Compliance by architecture:** Instead of relying on prompt-level instructions ("don't share sensitive data"), NemoClaw enforces compliance at the kernel level. This provides verifiable guarantees that auditors can validate.
+
+4. **Human-in-the-loop for high-risk actions:** The real-time approval workflow allows agents to be autonomous for routine tasks while requiring human judgment for consequential actions — a practical balance between automation speed and operational safety.

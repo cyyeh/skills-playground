@@ -1,72 +1,88 @@
 ## Ecosystem & Integrations
 <!-- level: intermediate -->
 <!-- references:
-- [MLflow Integrations](https://mlflow.org) | official-docs
-- [MLflow Python API](https://mlflow.org/docs/latest/python_api/index.html) | official-docs
-- [MLflow GenAI Integrations](https://mlflow.org/docs/latest/genai/index.html) | official-docs
-- [MLflow on Databricks](https://docs.databricks.com/aws/en/mlflow/) | official-docs
+- [MLflow Integrations](https://mlflow.org/docs/latest/ml/) | docs
+- [MLflow Plugins](https://mlflow.org/docs/latest/ml/plugins) | docs
+- [MLflow GenAI Integrations](https://mlflow.org/genai) | docs
 -->
 
-### ML Framework Integrations
+### Framework Integrations
 
-MLflow provides native autologging for 20+ ML frameworks:
+MLflow provides native, first-class integrations with major ML and AI frameworks via dedicated modules:
 
-- **Scikit-learn:** Automatic logging of parameters, metrics, and serialized models. The most mature integration.
-- **PyTorch / PyTorch Lightning:** Logs training metrics, model checkpoints, and supports the `torch` model flavor.
-- **TensorFlow / Keras:** Autologging hooks into `model.fit()` to capture layer configurations, training curves, and saved models.
-- **XGBoost / LightGBM / CatBoost:** Parameter and metric autologging with native booster serialization.
-- **Spark MLlib:** Pipeline parameter logging and model serialization via the `spark` model flavor.
-- **Hugging Face Transformers:** Logs model cards, tokenizer configs, and training arguments. Supports the `transformers` flavor for serving.
-- **Statsmodels / Prophet / ARIMA:** Time series model support with parameter and metric logging.
+| Framework | MLflow Module | What's Logged |
+|-----------|--------------|---------------|
+| scikit-learn | `mlflow.sklearn` | Params, metrics, model, feature importance |
+| PyTorch | `mlflow.pytorch` | Params, loss curves, model state dict |
+| TensorFlow / Keras | `mlflow.tensorflow` | Params, epoch metrics, SavedModel |
+| XGBoost | `mlflow.xgboost` | Params, eval metrics, booster model |
+| LightGBM | `mlflow.lightgbm` | Params, metrics, booster model |
+| CatBoost | `mlflow.catboost` | Params, metrics, CatBoost model |
+| Spark MLlib | `mlflow.spark` | Params, metrics, PipelineModel |
+| Statsmodels | `mlflow.statsmodels` | Params, summary stats, model |
+| Prophet | `mlflow.prophet` | Params, forecast plots, model |
+| spaCy | `mlflow.spacy` | Pipeline config, model |
+| ONNX | `mlflow.onnx` | ONNX format model |
+| Transformers | `mlflow.transformers` | HuggingFace pipeline, config |
 
-### GenAI / LLM Integrations
+### GenAI and LLM Integrations
 
-MLflow 3.x provides auto-tracing (one-line instrumentation) for:
+Since MLflow 3.0, the platform has extensive GenAI support:
 
-- **OpenAI** -- Traces chat completions, embeddings, and function calls
-- **Anthropic** -- Traces Claude model interactions
-- **LangChain / LangGraph** -- Full agent workflow tracing with tool calls
-- **LlamaIndex** -- RAG pipeline tracing including retrieval steps
-- **DSPy** -- Program optimization traces
-- **CrewAI** -- Multi-agent collaboration traces
-- **AutoGen** -- Conversational agent traces
-- **Google Gemini** -- Chat and embedding traces (Python and TypeScript)
-- **AWS Bedrock** -- Model invocation traces
-- **Mistral AI** -- Chat completion traces
+- **OpenAI** (`mlflow.openai`): Autologging for Chat, Completions, and Embeddings API calls.
+- **LangChain** (`mlflow.langchain`): Tracing for chains, agents, tools, and retrievers.
+- **LlamaIndex** (`mlflow.llama_index`): Tracing for query engines, indices, and retrievers.
+- **Anthropic**: Tracing for Claude API calls.
+- **Amazon Bedrock**: Tracing for Bedrock model invocations.
+- **Google Gemini**: Tracing for Gemini API calls.
+- **DSPy**: Tracing for DSPy modules and optimizers.
+- **AutoGen / CrewAI**: Tracing for multi-agent frameworks.
+- **OpenTelemetry GenAI**: Native support for OTel GenAI Semantic Conventions (since 3.10).
 
 ### Cloud Platform Integrations
 
-- **Databricks (Managed MLflow):** Fully managed tracking server, model registry integrated with Unity Catalog, and serverless model serving. The most feature-complete deployment option.
-- **AWS SageMaker:** Deploy MLflow models directly to SageMaker endpoints. MLflow handles container packaging and endpoint configuration.
-- **Azure ML:** Native integration for model deployment to Azure ML managed endpoints. Azure Databricks provides managed MLflow.
-- **Google Cloud (Vertex AI):** MLflow models can be deployed to Vertex AI endpoints. GCS serves as the artifact store.
+**Databricks:** MLflow is the native ML platform on Databricks, with managed tracking, model registry, model serving, and the AI Gateway fully integrated. Databricks Unity Catalog extends the model registry with fine-grained access control.
 
-### Deployment Targets
+**AWS SageMaker:** MLflow can deploy models directly to SageMaker endpoints using `mlflow.sagemaker.deploy()`. AWS also offers managed MLflow on SageMaker AI.
 
-- **Docker:** `mlflow models build-docker` creates a self-contained container image for any MLflow model.
-- **Kubernetes:** Deploy model containers to K8s clusters via Seldon Core, KServe, or plain deployments.
-- **ONNX Runtime:** Convert models to ONNX for optimized inference across hardware targets.
-- **Spark:** Load models as Spark UDFs for batch scoring at scale with `mlflow.pyfunc.spark_udf()`.
+**Azure ML:** Azure Machine Learning integrates MLflow tracking and model registry natively. Models logged with MLflow can be deployed to Azure managed online endpoints.
 
-### Tool Ecosystem
+**Google Cloud:** MLflow can be deployed on GKE or Cloud Run. Vertex AI supports MLflow tracking for experiment management.
 
-- **MLflow Recipes:** Opinionated ML workflow templates (regression, classification) that encode best practices into predefined pipeline steps.
-- **MLflow Evaluate:** Programmatic model evaluation with 50+ built-in metrics and LLM judges for GenAI quality assessment.
-- **MLflow Deployments:** Unified deployment API supporting multiple serving platforms from a single interface.
+### Deployment Integrations
 
-### Language Support
+- **Docker:** Build container images with `mlflow models build-docker`.
+- **Kubernetes:** Deploy via Seldon Core, KServe, or custom Kubernetes manifests.
+- **Ray Serve:** Community plugin for Ray-based model serving.
+- **Databricks Model Serving:** Managed, auto-scaling model endpoints.
+- **SageMaker:** Direct deployment to SageMaker endpoints.
+- **Azure ML Endpoints:** Deploy to managed online/batch endpoints.
 
-- **Python:** Primary SDK with the richest feature set. All autologging and tracing integrations are Python-native.
-- **TypeScript/JavaScript:** MLflow client for Node.js environments. Auto-tracing for OpenAI and Gemini in TypeScript.
-- **Java/Scala:** Client library for JVM-based training pipelines and Spark integration.
-- **R:** R client for tracking experiments and logging models from R-based workflows.
-- **REST API:** Language-agnostic HTTP endpoints for all tracking, registry, and gateway operations.
+### Data and Feature Store Integrations
 
-### Complementary Tools
+- **Delta Lake:** Native integration for reading/writing Delta tables.
+- **Feast:** Feature store integration for feature retrieval during training and serving.
+- **Unity Catalog:** Databricks governance layer for models, data, and features.
 
-MLflow is commonly paired with:
-- **Airflow / Prefect / Dagster** for pipeline orchestration
-- **Feast / Tecton** for feature stores
-- **DVC** for data versioning
-- **Great Expectations** for data quality validation
-- **Prometheus / Grafana** for infrastructure monitoring alongside MLflow's experiment monitoring
+### CI/CD and Orchestration
+
+- **GitHub Actions:** MLflow runs can be triggered from CI pipelines.
+- **Apache Airflow:** Airflow operators for triggering MLflow runs and model registration.
+- **Prefect / Dagster:** Orchestrators can call MLflow APIs for experiment management.
+- **Jenkins:** Standard REST API integration for enterprise CI/CD.
+
+### Community and Governance
+
+- **Linux Foundation project** since 2024, ensuring vendor-neutral governance.
+- **900+ contributors** on GitHub.
+- **25+ million monthly PyPI downloads.**
+- Active community on GitHub Discussions, Slack, and Stack Overflow.
+- Regular releases (roughly monthly) with clear changelogs.
+- Plugin ecosystem with third-party extensions for custom stores, deployers, and evaluators.
+
+### Package Managers
+
+- **pip:** `pip install mlflow`
+- **conda:** `conda install -c conda-forge mlflow`
+- **UV:** Supported since MLflow 3.10 with automatic lockfile dependency detection.
+- **Docker:** Official images on Docker Hub and GitHub Container Registry.

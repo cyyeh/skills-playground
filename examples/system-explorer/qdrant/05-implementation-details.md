@@ -1,235 +1,79 @@
 ## Implementation Details
 <!-- level: advanced -->
 <!-- references:
-- [Qdrant Quickstart](https://qdrant.tech/documentation/quickstart/) | docs
-- [API & SDKs](https://qdrant.tech/documentation/interfaces/) | docs
-- [Installation](https://qdrant.tech/documentation/operations/installation/) | docs
-- [Capacity Planning](https://qdrant.tech/documentation/guides/capacity-planning/) | docs
-- [Database Optimization](https://qdrant.tech/documentation/faq/database-optimization/) | docs
-- [Optimizing Memory for Bulk Uploads](https://qdrant.tech/articles/indexing-optimization/) | blog
+- [Qdrant GitHub Repository](https://github.com/qdrant/qdrant) | github
+- [Vector Storage Formats (DeepWiki)](https://deepwiki.com/qdrant/qdrant/3.1-vector-storage-formats) | wiki
+- [Qdrant 1.13 - GPU Indexing & New Storage Engine](https://qdrant.tech/blog/qdrant-1.13.x/) | blog
+- [Scalar Quantization Article](https://qdrant.tech/articles/scalar-quantization/) | official-docs
+- [Binary Quantization Article](https://qdrant.tech/articles/binary-quantization/) | official-docs
+- [gRPC API Services (DeepWiki)](https://deepwiki.com/qdrant/qdrant/9.2-grpc-api-services) | wiki
 -->
 
-### Getting Started
+### Rust Core
 
-The fastest way to run Qdrant locally is via Docker:
+Qdrant is implemented entirely in Rust, leveraging the language's zero-cost abstractions, memory safety guarantees, and performance characteristics. The codebase is organized into several key crates:
 
-```bash
-docker run -p 6333:6333 -p 6334:6334 \
-  -v "$(pwd)/qdrant_storage:/qdrant/storage:z" \
-  qdrant/qdrant
-```
+- **lib/segment:** The core storage and indexing engine. Contains vector storage implementations, HNSW index builder, payload storage, and field indexes.
+- **lib/collection:** Collection management, shard orchestration, optimizer pipeline, and WAL integration.
+- **lib/storage:** The top-level TableOfContent, consensus integration, and dispatcher logic.
+- **src/:** The main binary entry point, API server setup, and configuration parsing.
 
-This exposes the REST API on port 6333 and gRPC on port 6334, with data persisted to a local directory.
+Rust's ownership model eliminates data races in the concurrent optimizer pipeline (update worker, optimize worker, flush worker all operating on shared segment state), and the async runtime (tokio) handles thousands of concurrent API connections with minimal overhead.
 
-### REST API Examples
+### Memory-Mapped File Storage
 
-**Create a collection:**
-```bash
-curl -X PUT http://localhost:6333/collections/my_collection \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "vectors": {
-      "size": 768,
-      "distance": "Cosine"
-    }
-  }'
-```
+Qdrant's memmap storage uses the `mmap` system call to create a virtual address space backed by disk files. Rather than loading entire vector files into RAM, the operating system's page cache manages which pages are resident in memory.
 
-**Upsert points:**
-```bash
-curl -X PUT http://localhost:6333/collections/my_collection/points \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "points": [
-      {
-        "id": 1,
-        "vector": [0.1, 0.2, ...],
-        "payload": {"city": "Berlin", "category": "tech"}
-      }
-    ]
-  }'
-```
+**How it works:** When a vector is accessed, the OS checks if the corresponding page is in the page cache. If yes (cache hit), the read is as fast as RAM. If not (cache miss), the page is loaded from disk. Frequently accessed vectors naturally stay in cache, while rarely accessed vectors are evicted. This provides an elegant memory management strategy — with abundant RAM, performance equals in-memory storage; with limited RAM, performance degrades gracefully rather than failing.
 
-**Search with filter:**
-```bash
-curl -X POST http://localhost:6333/collections/my_collection/points/query \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "query": [0.1, 0.2, ...],
-    "filter": {
-      "must": [{"key": "city", "match": {"value": "Berlin"}}]
-    },
-    "limit": 10
-  }'
-```
+**HNSW on disk:** The HNSW graph itself can also be memory-mapped (via `hnsw_config.on_disk: true`). Since HNSW traversal accesses a relatively small number of graph nodes per query, the working set stays in page cache even when the full graph does not fit in RAM.
 
-### Python Client
+### HNSW Graph Construction
 
-```python
-from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
+Qdrant's HNSW implementation follows the original algorithm with several optimizations:
 
-client = QdrantClient(url="http://localhost:6333")
+**Graph Structure:** The index is a multi-layer graph. Each layer contains a subset of all vectors. Layer 0 contains all vectors. Higher layers contain exponentially fewer vectors, selected randomly with probability `1/m`. Each vector maintains up to `m` bidirectional edges to its nearest neighbors on each layer (2*m on layer 0).
 
-# Create collection
-client.create_collection(
-    collection_name="my_collection",
-    vectors_config=VectorParams(size=768, distance=Distance.COSINE),
-)
+**Construction Algorithm:** For each new vector inserted:
+1. The vector enters at the top layer and greedily navigates to the nearest neighbor.
+2. At the designated insertion layer (determined by a random level assignment), the vector is connected to its `ef_construct` nearest neighbors.
+3. The algorithm descends to layer 0, connecting the vector at each layer.
+4. Existing edges are pruned to maintain the maximum `m` edges per node, using heuristic neighbor selection that prefers diverse directional connections.
 
-# Upsert points
-client.upsert(
-    collection_name="my_collection",
-    points=[
-        PointStruct(
-            id=1,
-            vector=[0.1, 0.2, ...],
-            payload={"city": "Berlin", "category": "tech"},
-        ),
-    ],
-)
+**Key Parameters:**
+- `m` (default: 16): Maximum edges per node. Higher values improve recall but increase memory and build time. Values of 16-64 are typical.
+- `ef_construct` (default: 100): Size of the dynamic candidate list during construction. Higher values yield a better-quality graph at the cost of slower indexing.
+- `max_indexing_threads`: Number of parallel threads for graph construction. GPU-accelerated indexing was introduced in v1.13 for faster builds.
 
-# Search with filter
-results = client.query_points(
-    collection_name="my_collection",
-    query=[0.1, 0.2, ...],
-    query_filter=models.Filter(
-        must=[models.FieldCondition(key="city", match=models.MatchValue(value="Berlin"))]
-    ),
-    limit=10,
-)
-```
+**Delta Encoding Optimization:** Qdrant compresses HNSW graph link storage using delta encoding — storing differences between sorted neighbor IDs rather than absolute IDs. This reduces memory consumption with minimal CPU overhead for decompression.
 
-For production workloads, use gRPC for lower latency:
-```python
-client = QdrantClient(url="http://localhost:6334", prefer_grpc=True)
-```
+**Incremental Building:** The `incremental_hnsw_building` feature flag enables incremental index construction, allowing the HNSW graph to be updated without full rebuilds when small batches of new points arrive.
 
-### Client Libraries
+### Quantization Internals
 
-Official SDKs are available for six languages:
+**Scalar Quantization (int8):** Each float32 dimension is linearly mapped to an int8 value. The mapping is learned from the data distribution: Qdrant computes quantile bounds (e.g., 0.99 quantile to exclude 1% of outliers), then maps the float range to [-128, 127]. Distance calculations on int8 values use SIMD-optimized integer arithmetic, yielding approximately 2x speedup. The `always_ram` option keeps quantized vectors in RAM even when original vectors use memmap.
 
-| Language | Package | Protocol |
-|----------|---------|----------|
-| Python | `qdrant-client` | REST + gRPC |
-| JavaScript/TypeScript | `@qdrant/js-client-rest` | REST |
-| Rust | `qdrant-client` (crate) | gRPC |
-| Go | `github.com/qdrant/go-client` | gRPC |
-| Java | `io.qdrant:client` | gRPC |
-| .NET/C# | `Qdrant.Client` | gRPC |
+**Binary Quantization (1-bit):** Each float32 dimension is converted to a single bit: 1 if positive, 0 if zero or negative. Distance computation uses XOR followed by popcount — hardware-accelerated CPU instructions that operate on 64 bits simultaneously. This yields up to 40x speedup with 32x memory compression. Works best with high-dimensional embeddings (>1024 dimensions) from models that produce well-distributed component values. Qdrant v1.15 introduced 1.5-bit and 2-bit variants that explicitly handle near-zero values for better accuracy.
 
-### Configuration
+**Product Quantization:** Vectors are divided into sub-vectors (chunks), and each chunk is independently quantized using k-means clustering with 256 centroids. Each sub-vector is replaced by an 8-bit centroid index. Compression ratios up to 64x are possible, but the approach is not SIMD-friendly and incurs significant accuracy loss (~0.7 recall). Best suited for extremely memory-constrained environments with high-dimensional vectors.
 
-Qdrant is configured via `config.yaml` or environment variables. Key settings:
+**Rescoring Pipeline:** During quantized search, Qdrant first retrieves candidates using the compressed vectors (fast but approximate). It then retrieves the original float32 vectors for the top candidates and recomputes exact distances. The `oversampling` parameter controls how many extra candidates are retrieved (e.g., 2.0 means retrieve 2x the requested limit, then rescore and return top-k).
 
-```yaml
-storage:
-  storage_path: ./storage          # Where data lives on disk
-  performance:
-    max_search_threads: 0          # 0 = auto (CPU count)
-    max_optimization_threads: 1
+### gRPC and REST API Design
 
-service:
-  host: 0.0.0.0
-  http_port: 6333
-  grpc_port: 6334
+The API layer is organized into distinct services, each handling specific aspects:
 
-cluster:
-  enabled: false                   # Set true for distributed mode
-  p2p:
-    port: 6335
+- **Collections Service:** Collection lifecycle (create, update, delete, list, info). Defined in `collections.proto`.
+- **Points Service:** Vector and payload CRUD operations (upsert, delete, get, scroll, search, recommend, discover). The most frequently used service. Defined in `points.proto`.
+- **Snapshots Service:** Snapshot creation, listing, download, and recovery.
+- **Cluster Service:** Cluster status, peer management, and shard operations.
 
-optimizers:
-  default_segment_number: 0        # 0 = auto
-  max_segment_size_kb: 0           # 0 = no limit
-  memmap_threshold_kb: 200000      # Switch to mmap above this size
-  indexing_threshold_kb: 20000     # Build HNSW above this size
-  flush_interval_sec: 5            # Disk flush frequency
-```
+REST uses actix-web with JSON serialization. gRPC uses tonic with Protocol Buffer serialization. Both are auto-generated from the same protobuf definitions, ensuring consistency. The REST API also serves an OpenAPI specification for client generation.
 
-Environment variable overrides follow the pattern `QDRANT__<SECTION>__<KEY>`, e.g., `QDRANT__SERVICE__HTTP_PORT=6333`.
+### Storage Format Evolution
 
-### Collection Configuration
+Qdrant has evolved its storage backend over time:
 
-Key parameters when creating a collection:
-
-```python
-client.create_collection(
-    collection_name="production",
-    vectors_config=VectorParams(
-        size=1536,
-        distance=Distance.COSINE,
-        on_disk=True,                # Store vectors on disk (mmap)
-    ),
-    hnsw_config=models.HnswConfigDiff(
-        m=16,                        # Edges per node
-        ef_construct=100,            # Build-time candidate list
-        full_scan_threshold=10000,   # Below this, skip HNSW
-    ),
-    quantization_config=models.ScalarQuantization(
-        scalar=models.ScalarQuantizationConfig(
-            type=models.ScalarType.INT8,
-            quantile=0.99,
-            always_ram=True,         # Keep quantized vectors in RAM
-        ),
-    ),
-    optimizers_config=models.OptimizersConfigDiff(
-        indexing_threshold=20000,
-    ),
-    shard_number=6,                  # Number of shards
-    replication_factor=2,            # Copies per shard
-)
-```
-
-### Deployment Options
-
-**Docker Compose (single node with monitoring):**
-```yaml
-services:
-  qdrant:
-    image: qdrant/qdrant:v1.17.1
-    ports:
-      - "6333:6333"
-      - "6334:6334"
-    volumes:
-      - qdrant_data:/qdrant/storage
-    environment:
-      QDRANT__CLUSTER__ENABLED: "false"
-```
-
-**Kubernetes (Helm chart for distributed cluster):**
-```bash
-helm repo add qdrant https://qdrant.github.io/qdrant-helm
-helm install qdrant qdrant/qdrant \
-  --set replicaCount=3 \
-  --set config.cluster.enabled=true
-```
-
-**Qdrant Cloud:** Fully managed service available on AWS, GCP, and Azure with a free 1GB tier requiring no credit card.
-
-### Performance Tuning Guide
-
-**Memory estimation formula:**
-```
-memory_size = num_vectors × vector_dimension × 4 bytes × 1.5
-```
-The 1.5 multiplier accounts for metadata, HNSW graph overhead, and temporary segments during optimization.
-
-**Key tuning strategies:**
-
-1. **Use mmap for large collections** — Set `on_disk=True` for vector storage. The OS cache will keep hot vectors in RAM.
-2. **Enable quantization** — Scalar quantization (INT8) provides 4x compression with minimal accuracy loss. Keep quantized vectors in RAM (`always_ram=True`) and original vectors on disk.
-3. **Tune HNSW parameters** — Start with `m=16, ef_construct=100`. Increase `m` for higher recall, increase `ef` at query time for accuracy.
-4. **Index payload fields** — Only fields used in filters should be indexed. Each index consumes memory.
-5. **Batch ingestion** — Use batch sizes of 1,000-10,000 for optimal throughput. For >1M points, use `upload_collection` for streaming from disk.
-6. **Shard planning** — Start with a shard count that divides evenly into your anticipated node counts (e.g., 12 shards for flexibility with 1, 2, 3, 6, or 12 nodes).
-
-### Monitoring
-
-Qdrant exposes Prometheus metrics at `/metrics` and provides a built-in web dashboard at the REST API root. Key metrics to monitor:
-
-- `qdrant_collections_total` — Number of active collections
-- `qdrant_points_total` — Total indexed points across all collections
-- `qdrant_search_latency_seconds` — Search latency histograms
-- `qdrant_grpc_responses_total` — gRPC request counts by status
-- Segment optimizer status — Pending optimizations indicate indexing backlog
+- **RocksDB era:** Early versions used RocksDB for both payload storage and structured metadata. RocksDB provides crash-safe key-value storage with good read/write performance.
+- **GridStore (v1.13+):** A custom block-based key-value storage engine designed as a RocksDB replacement. GridStore is optimized for Qdrant's specific access patterns — particularly the mix of random reads (payload lookups) and sequential writes (batch upserts). The `payload_index_skip_rocksdb` feature flag controls the migration path.
+- **Vector files:** Vector data is stored in flat binary files (sequential float32 arrays for dense vectors) or memory-mapped files, separate from the key-value store. This separation allows independent optimization of vector access patterns.

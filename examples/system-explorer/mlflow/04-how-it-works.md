@@ -1,72 +1,152 @@
 ## How It Works
 <!-- level: intermediate -->
 <!-- references:
-- [MLflow Tracking APIs](https://mlflow.org/docs/latest/tracking/tracking-api) | official-docs
-- [Model Registry Workflows](https://mlflow.org/docs/latest/ml/model-registry/workflow/) | official-docs
-- [LLM Tracing](https://mlflow.org/docs/latest/genai/tracing/) | official-docs
-- [MLflow Python API](https://mlflow.org/docs/latest/python_api/mlflow.html) | official-docs
+- [MLflow Tracking API](https://mlflow.org/docs/latest/tracking/tracking-api) | docs
+- [MLflow Model Registry](https://mlflow.org/docs/latest/model-registry/) | docs
+- [MLflow Deployment](https://mlflow.org/docs/latest/deployment/index.html) | docs
+- [MLflow Tracing](https://mlflow.org/docs/latest/genai/tracing/) | docs
 -->
 
-### How Experiment Tracking Works
+### Workflow 1: Logging an Experiment
 
-When you call `mlflow.start_run()`, the client creates a Run entity in the backend store via the tracking server's REST API. The run gets a unique UUID and is associated with an experiment. As training progresses, `mlflow.log_param()`, `mlflow.log_metric()`, and `mlflow.log_artifact()` send data to the server:
+**Step 1 -- Set the tracking URI.** Point the client at a tracking server:
 
-1. **Parameters** are stored as key-value pairs in the backend database, written once per run.
-2. **Metrics** support step-based logging -- you can log accuracy at each epoch, and MLflow stores the full time series, enabling metric history plots in the UI.
-3. **Artifacts** are uploaded to the artifact store (S3, GCS, local filesystem). The backend store only records the artifact URI, not the artifact content itself.
-4. **Tags** provide free-form metadata (e.g., `mlflow.runName`, `mlflow.source.type`) for filtering and search.
+```python
+import mlflow
+mlflow.set_tracking_uri("http://my-tracking-server:5000")
+```
 
-The tracking server batches metric writes and uses async logging (when enabled) to minimize overhead on the training loop. The MLflow UI queries the same REST API to render experiment dashboards, run comparisons, and metric charts.
+**Step 2 -- Create or set an experiment.** Experiments group related runs:
 
-### How Autologging Works
+```python
+mlflow.set_experiment("fraud-detection-v2")
+```
 
-When you call `mlflow.autolog()`, MLflow monkey-patches supported ML libraries (scikit-learn, PyTorch, TensorFlow, XGBoost, LightGBM, Spark MLlib, and 20+ others) to automatically intercept `fit()`, `train()`, and similar calls. The patches inject logging calls that capture:
+**Step 3 -- Start a run and log data.** Everything inside the `with` block is recorded:
 
-- Training parameters (hyperparameters passed to the model constructor)
-- Training metrics (loss, accuracy at each epoch for deep learning)
-- The trained model as an artifact (in the appropriate MLflow model flavor)
-- Input data signatures and examples (if enabled)
+```python
+with mlflow.start_run():
+    mlflow.log_param("learning_rate", 0.01)
+    mlflow.log_param("n_estimators", 200)
 
-Autologging reduces integration effort to a single line of code. Framework-specific autologgers can be configured independently -- for example, `mlflow.openai.autolog()` captures traces by default but can optionally log input/output examples.
+    # ... training code ...
 
-### How Model Packaging Works
+    mlflow.log_metric("accuracy", 0.943)
+    mlflow.log_metric("f1_score", 0.917)
+    mlflow.log_artifact("confusion_matrix.png")
+    mlflow.sklearn.log_model(model, "model")
+```
 
-When you call `mlflow.sklearn.log_model(model, "my_model")`, MLflow:
+**Step 4 -- View results.** Open the MLflow UI (`http://my-tracking-server:5000`), navigate to the experiment, and compare runs side by side with metric charts, parameter tables, and artifact viewers.
 
-1. Serializes the model using the framework's native format (e.g., `pickle` for sklearn, `torch.save` for PyTorch).
-2. Creates an `MLmodel` YAML descriptor that lists available "flavors" -- different interfaces for loading the model. A typical sklearn model has two flavors: `python_function` (generic) and `sklearn` (native).
-3. Generates a `conda.yaml` and `requirements.txt` that pin the exact library versions used during training.
-4. Optionally records an input signature (column names and types) and a sample input for validation.
-5. Uploads the entire directory to the artifact store as a single artifact.
+**What happens under the hood:**
+- `start_run()` sends a `POST /api/2.0/mlflow/runs/create` to the tracking server.
+- Each `log_param`, `log_metric`, and `log_artifact` call sends its own REST request.
+- The tracking server writes metadata to the backend store (database) and artifacts to the artifact store (e.g., S3).
+- The UI queries the backend store and renders run comparisons.
 
-The multi-flavor system means deployment tools can choose how to load the model. A REST serving endpoint uses the `python_function` flavor; a Spark batch job uses the `spark` flavor; a mobile deployment might use the `onnx` flavor.
+### Workflow 2: Using Autologging
 
-### How the Model Registry Works
+Instead of manual `log_param` and `log_metric` calls, autologging captures everything automatically:
 
-Once a model is logged, you can register it in the Model Registry:
+```python
+import mlflow
+mlflow.autolog()
 
-1. `mlflow.register_model()` creates a RegisteredModel entry (if new) and a new ModelVersion linked to the logged artifact.
-2. Each version maintains lineage: the run ID, experiment ID, and artifact path that produced it.
-3. Model aliases (e.g., `@champion`, `@challenger`) provide stable references that decouple consumers from version numbers. Promoting a new model to production means reassigning the `@champion` alias.
-4. Tags and descriptions provide human-readable context for governance and auditing.
-5. Downstream systems query the registry for the `@champion` version, ensuring they always get the approved model without code changes.
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
-### How Tracing Works (GenAI)
+X_train, X_test, y_train, y_test = train_test_split(X, y)
+model = RandomForestClassifier(n_estimators=200, max_depth=10)
+model.fit(X_train, y_train)
+```
 
-MLflow Tracing instruments GenAI applications using OpenTelemetry-compatible spans:
+MLflow's autologging hooks into the library's `.fit()` method using monkey-patching. It automatically logs all constructor parameters, training metrics, the fitted model artifact, and (for supported libraries) feature importance plots and evaluation metrics.
 
-1. Auto-tracing patches supported libraries (OpenAI, Anthropic, LangChain, etc.) to automatically wrap every LLM call, tool invocation, and retrieval step in a trace span.
-2. Each span records inputs, outputs, latency, token counts, and cost metadata.
-3. Spans are nested to reflect the call hierarchy -- an agent trace might contain spans for the orchestrator, a retrieval tool, and multiple LLM calls.
-4. Traces are linked to the MLflow experiment and run context, providing full lineage from a production trace back to the code version and configuration that produced it.
-5. Context propagation supports distributed tracing across microservices, so a trace can span multiple services in an agent architecture.
+Autologging supports 20+ libraries: scikit-learn, TensorFlow, Keras, PyTorch, XGBoost, LightGBM, CatBoost, Spark, Statsmodels, and more.
 
-### How Model Serving Works
+### Workflow 3: Registering a Model
 
-MLflow models can be served as REST endpoints via `mlflow models serve`:
+**Step 1 -- Register from a run.** After training, promote a model to the registry:
 
-1. The serving process loads the model using its `python_function` flavor.
-2. It starts a Flask/FastAPI server exposing `/invocations` and `/ping` endpoints.
-3. Input data is validated against the model's recorded signature.
-4. For production deployments, MLflow integrates with serving platforms: Docker containers, Kubernetes, AWS SageMaker, Azure ML, and Databricks Model Serving.
-5. Model aliases in the registry allow zero-downtime model swaps -- updating the `@champion` alias automatically routes traffic to the new version.
+```python
+result = mlflow.register_model(
+    model_uri="runs:/abc123def456/model",
+    name="fraud-detector"
+)
+```
+
+This creates a new version (e.g., version 3) of the registered model "fraud-detector," linked to the specified run.
+
+**Step 2 -- Assign an alias.** Mark the new version as the production candidate:
+
+```python
+from mlflow import MlflowClient
+client = MlflowClient()
+client.set_registered_model_alias("fraud-detector", "champion", version=3)
+```
+
+**Step 3 -- Load by alias.** Downstream services load the model without hardcoding a version number:
+
+```python
+model = mlflow.pyfunc.load_model("models:/fraud-detector@champion")
+predictions = model.predict(new_data)
+```
+
+### Workflow 4: Deploying a Model
+
+**Option A -- Local REST server:**
+
+```bash
+mlflow models serve -m "models:/fraud-detector@champion" --port 5001
+```
+
+This starts a Flask server with a `/invocations` endpoint that accepts JSON or CSV input.
+
+**Option B -- Docker container:**
+
+```bash
+mlflow models build-docker -m "models:/fraud-detector@champion" -n fraud-detector-image
+docker run -p 5001:8080 fraud-detector-image
+```
+
+**Option C -- Cloud deployment (SageMaker):**
+
+```python
+mlflow.sagemaker.deploy(
+    app_name="fraud-detector",
+    model_uri="models:/fraud-detector@champion",
+    region_name="us-west-2",
+    mode="create"
+)
+```
+
+**Option D -- Kubernetes (via Seldon Core or KServe):**
+
+MLflow provides plugins that generate Kubernetes-native deployment manifests from MLflow models.
+
+### Workflow 5: GenAI Tracing and Observability
+
+Since MLflow 3.0, the platform includes comprehensive tracing for GenAI applications:
+
+**Step 1 -- Enable tracing.** For supported libraries, tracing is automatic:
+
+```python
+import mlflow
+mlflow.openai.autolog()  # or mlflow.langchain.autolog()
+```
+
+**Step 2 -- View traces.** Every LLM call, tool invocation, and retrieval step is captured as a span in a trace. The MLflow UI shows the full request lifecycle with inputs, outputs, latency, and token counts.
+
+**Step 3 -- Evaluate.** Use built-in or custom scorers to evaluate agent quality:
+
+```python
+results = mlflow.evaluate(
+    model=my_agent,
+    data=eval_dataset,
+    model_type="agent",
+    evaluators=["correctness", "safety", "relevance"]
+)
+```
+
+This runs each evaluation example through the agent, applies LLM judges, and produces a scored report with per-example and aggregate metrics.

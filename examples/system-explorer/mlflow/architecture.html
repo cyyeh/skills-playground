@@ -13,20 +13,26 @@
       --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
       --color-border: #E5DFD6; --color-border-light: #EEEBE5;
       --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
-      --color-accent: #D4A843; --color-accent-hover: #BF9738; --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
+      --color-accent: #D4A843; --color-accent-hover: #BF9738;
+      --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
       --color-success: #2D8B55; --color-success-light: #E8F5EE;
+      --color-error: #C93B3B; --color-error-light: #FDE8E8;
       --color-info: #2A7B9B; --color-info-light: #E4F2F7;
       --color-warning: #D4A843; --color-warning-light: #FDF6E4;
       --font-display: 'Bricolage Grotesque', Georgia, serif;
       --font-body: 'DM Sans', -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem; --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
-      --leading-tight: 1.15; --leading-normal: 1.6;
-      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem;
+      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem; --text-4xl: 2.25rem;
+      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
       --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
       --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
-      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08); --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
-      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 500ms;
+      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
+      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
+      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
       --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     }
     *, *::before, *::after { box-sizing: border-box; }
@@ -51,286 +57,268 @@
     .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
     .page-header { max-width: var(--content-width); margin: var(--space-12) auto var(--space-8); padding: 0 var(--space-6); }
-    .page-header h1 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800; color: var(--color-text); margin: 0 0 var(--space-3); line-height: var(--leading-tight); }
-    .page-level-badge { display: inline-block; font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
-    .page-level-badge.intermediate { background: var(--color-info-light); color: var(--color-info); }
+    .page-header h1 { font-family: var(--font-display); font-size: var(--text-4xl); font-weight: 800; color: var(--color-text); margin: 0 0 var(--space-3); line-height: var(--leading-tight); }
+    .level-badge { display: inline-block; font-size: var(--text-xs); font-weight: 600; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; }
+    .level-badge.intermediate { background: var(--color-info-light); color: var(--color-info); }
+    .page-header .subtitle { font-size: var(--text-lg); color: var(--color-text-secondary); margin-top: var(--space-3); }
 
-    .content-area { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6); }
-    .content-section { margin-bottom: var(--space-10); }
-    .content-section h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-4); }
-    .content-section p { font-family: var(--font-body); font-size: var(--text-base); color: var(--color-text); line-height: 1.7; margin: 0 0 var(--space-4); }
+    .content { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6) var(--space-12); }
+    .content h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; margin: var(--space-12) 0 var(--space-4); color: var(--color-text); }
+    .content h3 { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; margin: var(--space-8) 0 var(--space-3); color: var(--color-text); }
+    .content p { margin: 0 0 var(--space-4); color: var(--color-text-secondary); line-height: var(--leading-normal); }
+    .content strong { color: var(--color-text); }
+    .content ul, .content ol { color: var(--color-text-secondary); margin: 0 0 var(--space-4); padding-left: var(--space-6); }
+    .content li { margin-bottom: var(--space-2); line-height: var(--leading-normal); }
+    .content code { font-family: var(--font-mono); font-size: 0.9em; background: var(--color-bg-warm); padding: 2px 6px; border-radius: 4px; color: var(--color-text); }
 
     /* Architecture diagram */
-    .arch-diagram { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-8); box-shadow: var(--shadow-md); margin: var(--space-8) 0; }
-    .arch-diagram h3 { font-family: var(--font-display); font-weight: 700; text-align: center; font-size: var(--text-xl); margin: 0 0 var(--space-6); }
-    .arch-layers { display: flex; flex-direction: column; gap: var(--space-4); }
-    .arch-layer { display: flex; gap: var(--space-4); align-items: stretch; }
-    .arch-layer.center { justify-content: center; }
-    .arch-box { flex: 1; padding: var(--space-5); border-radius: var(--radius-md); border: 2px solid; text-align: center; min-height: 80px; display: flex; flex-direction: column; justify-content: center; }
-    .arch-box-title { font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); margin-bottom: var(--space-1); }
-    .arch-box-desc { font-size: var(--text-xs); color: var(--color-text-secondary); line-height: 1.4; }
-    .arch-box.client { background: #E4F2F7; border-color: #2A7B9B; }
-    .arch-box.server { background: #FDF6E4; border-color: #D4A843; }
-    .arch-box.store { background: #E8F5EE; border-color: #2D8B55; }
-    .arch-box.gateway { background: #F3E8F9; border-color: #9B59B6; }
-    .arch-connector { text-align: center; color: var(--color-accent-muted); font-size: 1.4rem; padding: var(--space-1) 0; }
+    .arch-diagram { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-8); box-shadow: var(--shadow-md); margin: var(--space-8) 0; overflow-x: auto; }
+    .arch-diagram h3 { margin-top: 0; text-align: center; }
+    .arch-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-6); max-width: 600px; margin: 0 auto; }
+    .arch-row { display: flex; justify-content: center; gap: var(--space-4); flex-wrap: wrap; }
+    .arch-box {
+      padding: var(--space-3) var(--space-5); border-radius: var(--radius-sm); font-family: var(--font-display); font-weight: 600;
+      font-size: var(--text-sm); text-align: center; border: 2px solid; min-width: 140px;
+    }
+    .arch-box.client { background: #EDE9FE; border-color: #7C3AED; color: #5B21B6; }
+    .arch-box.server { background: var(--color-accent-light); border-color: var(--color-accent); color: var(--color-accent-hover); }
+    .arch-box.store { background: var(--color-info-light); border-color: var(--color-info); color: #1E6A85; }
+    .arch-box.registry { background: var(--color-success-light); border-color: var(--color-success); color: #1F6B3E; }
+    .arch-box.gateway { background: #FCE7F3; border-color: #DB2777; color: #9D174D; }
+    .arch-connector { text-align: center; color: var(--color-text-muted); font-size: var(--text-lg); font-weight: 700; }
+    .arch-label { font-size: var(--text-xs); color: var(--color-text-muted); text-align: center; display: block; margin-top: var(--space-1); }
 
-    /* Component cards */
-    .component-card { background: var(--color-surface); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow-sm); margin-bottom: var(--space-6); border-left: 4px solid var(--comp-color, var(--color-accent)); }
-    .component-card h3 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); margin: 0 0 var(--space-3); color: var(--color-text); }
-    .component-card p { font-size: var(--text-base); color: var(--color-text); line-height: 1.7; margin: 0 0 var(--space-3); }
-    .component-card ul { margin: 0; padding-left: var(--space-6); }
-    .component-card li { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.7; margin-bottom: var(--space-2); }
-    .component-card li strong { color: var(--color-text); }
+    /* Expandable sections */
+    .expandable { background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: var(--space-4); overflow: hidden; border: 1px solid var(--color-border-light); }
+    .expandable-header { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-5); cursor: pointer; transition: background var(--duration-fast); }
+    .expandable-header:hover { background: var(--color-bg-warm); }
+    .expandable-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .expandable-title { font-family: var(--font-display); font-weight: 600; font-size: var(--text-base); flex: 1; }
+    .expandable-chevron { color: var(--color-text-muted); transition: transform var(--duration-fast); font-size: var(--text-sm); }
+    .expandable.open .expandable-chevron { transform: rotate(180deg); }
+    .expandable-body { display: none; padding: 0 var(--space-5) var(--space-5); }
+    .expandable.open .expandable-body { display: block; }
+    .expandable-body p { font-size: var(--text-sm); }
+    .expandable-body ul { font-size: var(--text-sm); }
 
-    .callout { display: flex; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-md); margin: var(--space-4) 0 var(--space-5); border-left: 4px solid; }
-    .callout-insight { background: var(--color-accent-light); border-color: var(--color-accent); }
-    .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .callout { display: flex; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-sm); margin: var(--space-4) 0; }
+    .callout-icon { font-size: 1.2rem; flex-shrink: 0; line-height: 1.4; }
     .callout-content { font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--color-text-secondary); }
-    .callout-content strong { color: var(--color-text); }
+    .callout-tip { background: var(--color-success-light); border: 1px solid rgba(45,139,85,0.15); }
+    .callout-warning { background: var(--color-warning-light); border: 1px solid rgba(212,168,67,0.2); }
 
-    code { font-family: var(--font-mono); font-size: 0.88em; background: var(--color-bg-code); color: #CDD6F4; padding: 0.15em 0.4em; border-radius: 4px; }
+    /* Data flow */
+    .data-flow { background: var(--color-surface-warm); border-radius: var(--radius-md); padding: var(--space-6); margin: var(--space-6) 0; }
+    .data-flow h4 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); margin: 0 0 var(--space-3); }
+    .flow-steps { counter-reset: flow-step; }
+    .flow-step { display: flex; gap: var(--space-3); margin-bottom: var(--space-3); align-items: flex-start; }
+    .flow-step::before { counter-increment: flow-step; content: counter(flow-step); background: var(--color-accent); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .flow-step p { margin: 0; font-size: var(--text-sm); color: var(--color-text-secondary); }
 
-    .references-footer { max-width: var(--content-width); margin: var(--space-10) auto var(--space-4); padding: var(--space-6); background: var(--color-bg-warm); border-left: 3px solid var(--color-accent); border-radius: var(--radius-md); }
-    .references-footer h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-4); }
-    .references-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-    .reference-item { display: flex; align-items: baseline; gap: var(--space-3); }
-    .reference-type-icon { font-size: var(--text-base); flex-shrink: 0; width: 1.5em; text-align: center; }
-    .reference-content { display: flex; flex-direction: column; gap: 2px; }
-    .reference-title { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; }
-    .reference-title a { color: var(--color-accent); text-decoration: none; }
-    .reference-title a:hover { text-decoration: underline; }
-    .reference-domain { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); }
-    .reference-type-tag { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-border-light); padding: 1px 6px; border-radius: var(--radius-full); margin-left: var(--space-2); }
-
-    .page-nav-footer { display: flex; justify-content: space-between; align-items: center; max-width: var(--content-width); margin: var(--space-12) auto var(--space-6); padding: var(--space-6); border-top: 1px solid var(--color-border-light); }
-    .page-nav-footer a { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; display: flex; align-items: center; gap: var(--space-2); transition: color var(--duration-fast); }
-    .page-nav-footer a:hover { color: var(--color-accent-hover); }
-    .page-nav-footer .prev::before { content: "\2190\00a0"; }
-    .page-nav-footer .next::after { content: "\00a0\2192"; }
-    .site-footer { text-align: center; padding: var(--space-8) var(--space-6); font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text-muted); border-top: 1px solid var(--color-border-light); margin-top: var(--space-4); }
-
-    .animate-in { opacity: 1; transform: none; }
-    .js-ready .animate-in { opacity: 0; transform: translateY(20px); transition: opacity var(--duration-slow) var(--ease-out), transform var(--duration-slow) var(--ease-out); }
-    .js-ready .animate-in.visible { opacity: 1; transform: translateY(0); }
+    .page-footer { max-width: var(--content-width); margin: 0 auto; padding: var(--space-8) var(--space-6); border-top: 1px solid var(--color-border-light); }
+    .footer-nav { display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); }
+    .footer-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; padding: var(--space-2) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-sm); transition: all var(--duration-fast); }
+    .footer-link:hover { background: var(--color-accent-light); border-color: var(--color-accent-muted); }
 
     @media (max-width: 768px) {
-      :root { --text-3xl: 1.5rem; --nav-height: 56px; }
-      .arch-layer { flex-direction: column; }
-      .arch-diagram { padding: var(--space-5); }
-    }
-    @media (max-width: 480px) {
+      :root { --text-4xl: 1.875rem; --nav-height: 56px; }
+      .nav-pages { display: none; }
+      .nav-pages.mobile-open { display: flex; flex-direction: column; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--color-bg); border-bottom: 1px solid var(--color-border-light); padding: var(--space-4) var(--space-6); box-shadow: var(--shadow-md); z-index: 999; }
       .nav-hamburger { display: flex; }
-      .nav-pages { display: none; position: absolute; top: var(--nav-height); left: 0; right: 0; background: var(--color-surface); border-bottom: 1px solid var(--color-border); box-shadow: var(--shadow-md); padding: var(--space-4); }
-      .nav-pages.mobile-open { display: flex; flex-direction: column; gap: var(--space-1); }
-      .page-nav-footer { flex-direction: column; gap: var(--space-4); }
+      .arch-row { flex-direction: column; align-items: center; }
     }
   </style>
 </head>
 <body>
 
   <nav class="site-nav">
-    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-progress-bar" id="progress-bar"></div>
     <div class="nav-inner">
       <a href="index.html" class="nav-brand">MLflow</a>
       <div class="nav-pages" id="navPages">
-        <a href="index.html" class="nav-page-link">Home</a>
-        <a href="concepts.html" class="nav-page-link">Concepts</a>
-        <a href="architecture.html" class="nav-page-link active">Architecture</a>
-        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
-        <a href="implementation.html" class="nav-page-link">Implementation</a>
-        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
-        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
-        <a href="faq.html" class="nav-page-link">FAQ</a>
-        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+        <a href="concepts.html" class="nav-page-link" data-page="concepts">Concepts</a>
+        <a href="architecture.html" class="nav-page-link active" data-page="architecture">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link" data-page="how-it-works">How It Works</a>
+        <a href="implementation.html" class="nav-page-link" data-page="implementation">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link" data-page="use-cases">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link" data-page="ecosystem">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link" data-page="faq">FAQ</a>
+        <a href="tradeoffs.html" class="nav-page-link" data-page="tradeoffs">Trade-offs</a>
       </div>
       <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
     </div>
   </nav>
 
-  <header class="page-header animate-in">
-    <span class="page-level-badge intermediate">Intermediate</span>
+  <header class="page-header">
+    <span class="level-badge intermediate">Intermediate</span>
     <h1>Architecture</h1>
+    <p class="subtitle">How the tracking server, stores, registry, and gateway connect to form a complete ML platform.</p>
   </header>
 
-  <main class="content-area">
+  <main class="content">
 
-    <section class="content-section animate-in">
-      <h2>System Overview</h2>
-      <p>MLflow follows a client-server architecture with three core infrastructure components: the <strong>Tracking Server</strong>, the <strong>Backend Store</strong>, and the <strong>Artifact Store</strong>. These can run together on a single machine for development or be distributed across separate hosts for production scalability.</p>
-    </section>
-
-    <div class="arch-diagram animate-in">
-      <h3>MLflow Architecture</h3>
-      <div class="arch-layers">
-        <div class="arch-layer">
-          <div class="arch-box client">
-            <div class="arch-box-title">ML Training Code</div>
-            <div class="arch-box-desc">Python / R / Java SDK</div>
-          </div>
-          <div class="arch-box client">
-            <div class="arch-box-title">GenAI Application</div>
-            <div class="arch-box-desc">LLM agents, RAG pipelines</div>
-          </div>
-          <div class="arch-box client">
-            <div class="arch-box-title">MLflow UI</div>
-            <div class="arch-box-desc">React SPA (browser)</div>
-          </div>
+    <div class="arch-diagram">
+      <h3>System Architecture</h3>
+      <div class="arch-grid">
+        <div class="arch-row">
+          <div class="arch-box client">Python / R / Java Client<br><span class="arch-label">REST API calls</span></div>
         </div>
-        <div class="arch-connector">&#x25BC; REST API / HTTP &#x25BC;</div>
-        <div class="arch-layer">
-          <div class="arch-box server">
-            <div class="arch-box-title">MLflow Tracking Server</div>
-            <div class="arch-box-desc">FastAPI app &mdash; serves REST APIs + hosts UI + artifact proxy</div>
-          </div>
-          <div class="arch-box gateway">
-            <div class="arch-box-title">AI Gateway</div>
-            <div class="arch-box-desc">LLM proxy &mdash; routing, auth, cost tracking, tracing</div>
-          </div>
+        <div class="arch-connector">&#x2193;</div>
+        <div class="arch-row">
+          <div class="arch-box server">MLflow Tracking Server<br><span class="arch-label">Flask / Gunicorn</span></div>
+          <div class="arch-box gateway">AI Gateway<br><span class="arch-label">LLM Proxy Layer</span></div>
         </div>
-        <div class="arch-connector">&#x25BC; SQL / Object Store Protocol &#x25BC;</div>
-        <div class="arch-layer">
-          <div class="arch-box store">
-            <div class="arch-box-title">Backend Store</div>
-            <div class="arch-box-desc">PostgreSQL / MySQL / SQLite &mdash; metadata, metrics, params</div>
-          </div>
-          <div class="arch-box store">
-            <div class="arch-box-title">Artifact Store</div>
-            <div class="arch-box-desc">S3 / GCS / Azure Blob / HDFS &mdash; models, data, plots</div>
-          </div>
+        <div class="arch-connector">&#x2193;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x2193;</div>
+        <div class="arch-row">
+          <div class="arch-box store">Backend Store<br><span class="arch-label">PostgreSQL / MySQL / SQLite</span></div>
+          <div class="arch-box store">Artifact Store<br><span class="arch-label">S3 / Azure Blob / GCS / HDFS</span></div>
+        </div>
+        <div class="arch-connector">&#x2193;</div>
+        <div class="arch-row">
+          <div class="arch-box registry">Model Registry<br><span class="arch-label">Versions, Aliases, Lineage</span></div>
         </div>
       </div>
     </div>
 
-    <section class="content-section">
-      <h2>Core Components</h2>
-    </section>
+    <h2>Components in Detail</h2>
 
-    <div class="component-card animate-in" style="--comp-color: #D4A843">
-      <h3>Tracking Server</h3>
-      <p>The MLflow Tracking Server is a FastAPI application that exposes REST APIs for logging and querying experiment data. It serves dual roles:</p>
-      <ul>
-        <li><strong>API server:</strong> Accepts log calls from client SDKs (Python, R, Java) and queries from the UI. Handles run creation, parameter/metric logging, artifact management, and model registry operations.</li>
-        <li><strong>Web server:</strong> Hosts the MLflow UI &mdash; a React single-page application for visual exploration of experiments, run comparison, metric charts, and model registry management.</li>
-        <li><strong>Artifact proxy:</strong> Optionally relays artifact upload/download requests so clients never need direct access to the underlying object store, eliminating the need to distribute storage credentials.</li>
-      </ul>
-    </div>
-
-    <div class="component-card animate-in" style="--comp-color: #2D8B55">
-      <h3>Backend Store</h3>
-      <p>The Backend Store persists structured metadata: experiments, runs, parameters, metrics, tags, and model registry entries. MLflow supports two categories:</p>
-      <ul>
-        <li><strong>File-based (SQLite):</strong> Default for local development. Writes to a local <code>mlruns/</code> directory. Simple but unsuitable for concurrent production use due to locking limitations and lack of proper indexing.</li>
-        <li><strong>Database-based:</strong> PostgreSQL (recommended), MySQL, or MSSQL via SQLAlchemy. Provides proper indexing, concurrent access, and transactional guarantees required for team-scale deployments.</li>
-      </ul>
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content"><strong>Production tip:</strong> Always use PostgreSQL for production. The UI performance difference between file-based and database-backed stores is dramatic &mdash; queries that take seconds with files complete in milliseconds with a properly indexed database.</div>
+    <div class="expandable open" onclick="this.classList.toggle('open')">
+      <div class="expandable-header">
+        <span class="expandable-icon">&#x1F5A5;</span>
+        <span class="expandable-title">Tracking Server</span>
+        <span class="expandable-chevron">&#x25BC;</span>
+      </div>
+      <div class="expandable-body">
+        <p>The Tracking Server is an HTTP server (built on Flask, typically served via Gunicorn or Uvicorn) that exposes the MLflow REST API. It accepts requests from client libraries, writes metadata to the backend store, and manages artifact storage.</p>
+        <p>The server can run in three configurations:</p>
+        <ul>
+          <li><strong>Local mode:</strong> No server; the client writes directly to the local filesystem (<code>./mlruns</code>).</li>
+          <li><strong>Remote tracking server:</strong> A shared server that teams point their clients at, centralizing all experiment data.</li>
+          <li><strong>Tracking server with artifact proxy:</strong> The server proxies artifact read/write requests so clients never need direct access to the underlying object store.</li>
+        </ul>
       </div>
     </div>
 
-    <div class="component-card animate-in" style="--comp-color: #2A7B9B">
-      <h3>Artifact Store</h3>
-      <p>The Artifact Store handles large, unstructured files &mdash; model binaries, images, datasets, plots. The backend store only records artifact URIs; the actual data lives in the artifact store.</p>
-      <ul>
-        <li><strong>Local filesystem:</strong> Default (<code>./mlruns</code>). Fine for development.</li>
-        <li><strong>Cloud object stores:</strong> Amazon S3, Azure Blob Storage, Google Cloud Storage. The standard for production.</li>
-        <li><strong>Distributed filesystems:</strong> HDFS, NFS, SFTP. For on-premises environments.</li>
-      </ul>
+    <div class="expandable" onclick="this.classList.toggle('open')">
+      <div class="expandable-header">
+        <span class="expandable-icon">&#x1F4BE;</span>
+        <span class="expandable-title">Backend Store (Metadata)</span>
+        <span class="expandable-chevron">&#x25BC;</span>
+      </div>
+      <div class="expandable-body">
+        <p>The backend store persists structured metadata: experiments, runs, parameters, metrics, tags, and model registry data. MLflow supports:</p>
+        <ul>
+          <li><strong>File store:</strong> Flat files under <code>./mlruns</code>. Suitable only for local, single-user usage.</li>
+          <li><strong>Database store:</strong> Any SQLAlchemy-compatible database &mdash; SQLite, PostgreSQL, MySQL, or Microsoft SQL Server. Required for the Model Registry and recommended for any multi-user deployment.</li>
+        </ul>
+        <p>The database schema includes tables for <code>experiments</code>, <code>runs</code>, <code>params</code>, <code>metrics</code>, <code>tags</code>, <code>latest_metrics</code>, <code>registered_models</code>, and <code>model_versions</code>.</p>
+      </div>
     </div>
 
-    <div class="component-card animate-in" style="--comp-color: #9B59B6">
-      <h3>AI Gateway</h3>
-      <p>The AI Gateway sits as a reverse-proxy layer in front of LLM providers. It maintains route configurations mapping logical endpoint names to provider-specific credentials and models.</p>
-      <ul>
-        <li><strong>Authentication:</strong> Centralizes API key management &mdash; teams access LLMs through the gateway without seeing provider credentials.</li>
-        <li><strong>Cost tracking:</strong> Meters token usage and cost per route, per team, per experiment.</li>
-        <li><strong>Trace integration:</strong> Every proxied call automatically becomes a linked trace in the MLflow experiment context.</li>
-        <li><strong>Rate limiting:</strong> Prevents runaway costs from unbounded LLM calls.</li>
-      </ul>
+    <div class="expandable" onclick="this.classList.toggle('open')">
+      <div class="expandable-header">
+        <span class="expandable-icon">&#x1F4C2;</span>
+        <span class="expandable-title">Artifact Store (Files)</span>
+        <span class="expandable-chevron">&#x25BC;</span>
+      </div>
+      <div class="expandable-body">
+        <p>The artifact store persists large, unstructured files: serialized models, plots, datasets, and evaluation reports. It is completely separate from the backend store and supports:</p>
+        <ul>
+          <li>Local filesystem</li>
+          <li>Amazon S3 (and S3-compatible stores like MinIO)</li>
+          <li>Azure Blob Storage</li>
+          <li>Google Cloud Storage</li>
+          <li>HDFS and Databricks DBFS</li>
+          <li>FTP / SFTP</li>
+        </ul>
+        <p>When the tracking server runs with <code>--serve-artifacts</code>, it acts as an HTTP proxy to the artifact store, so clients only need network access to the tracking server.</p>
+      </div>
     </div>
 
-    <section class="content-section animate-in">
-      <h2>Deployment Topologies</h2>
-      <p>MLflow supports several deployment patterns, from solo development to enterprise-scale:</p>
-    </section>
-
-    <div class="component-card animate-in" style="--comp-color: #E0C06A">
-      <h3>1. Local Mode</h3>
-      <p>Client, tracking server, backend store, and artifact store all on one machine. The default when you run <code>mlflow ui</code> with no configuration. Good for solo experimentation and getting started.</p>
+    <div class="expandable" onclick="this.classList.toggle('open')">
+      <div class="expandable-header">
+        <span class="expandable-icon">&#x1F3E6;</span>
+        <span class="expandable-title">Model Registry</span>
+        <span class="expandable-chevron">&#x25BC;</span>
+      </div>
+      <div class="expandable-body">
+        <p>The Model Registry is a logical layer on top of the backend store (database-backed only). It provides:</p>
+        <ul>
+          <li><strong>Registered models:</strong> Named entries (e.g., &ldquo;fraud-detector&rdquo;) with descriptions and tags.</li>
+          <li><strong>Model versions:</strong> Immutable snapshots linked to a specific run and artifact path.</li>
+          <li><strong>Aliases:</strong> Mutable labels like &ldquo;champion&rdquo; or &ldquo;challenger&rdquo; that point to a specific version.</li>
+          <li><strong>Tags and annotations:</strong> Metadata for governance, review status, and documentation.</li>
+        </ul>
+      </div>
     </div>
 
-    <div class="component-card animate-in" style="--comp-color: #D4A843">
-      <h3>2. Remote Tracking Server</h3>
-      <p>A central tracking server with a PostgreSQL backend and remote artifact store (S3, GCS). Clients log over HTTP by setting <code>MLFLOW_TRACKING_URI</code>. The standard team deployment for 5-100 data scientists.</p>
+    <div class="expandable" onclick="this.classList.toggle('open')">
+      <div class="expandable-header">
+        <span class="expandable-icon">&#x1F310;</span>
+        <span class="expandable-title">AI Gateway</span>
+        <span class="expandable-chevron">&#x25BC;</span>
+      </div>
+      <div class="expandable-body">
+        <p>Introduced in MLflow 3.x, the AI Gateway is a centralized proxy for LLM API calls. It:</p>
+        <ul>
+          <li>Routes requests to multiple LLM providers (OpenAI, Anthropic, Cohere, etc.) through a unified API.</li>
+          <li>Manages credentials centrally so application code never contains API keys.</li>
+          <li>Tracks usage, latency, and cost per route.</li>
+          <li>Enforces rate limits and budget policies (daily, weekly, monthly).</li>
+          <li>Integrates with MLflow Tracing for end-to-end observability.</li>
+        </ul>
+      </div>
     </div>
 
-    <div class="component-card animate-in" style="--comp-color: #BF9738">
-      <h3>3. Tracking Server with Artifact Proxy</h3>
-      <p>The server proxies all artifact operations, so clients only need HTTP access to the server &mdash; no object store credentials. Recommended for security-sensitive environments. Enable with <code>--serve-artifacts</code>.</p>
+    <h2>Data Flow</h2>
+
+    <div class="data-flow">
+      <h4>Logging an Experiment Run</h4>
+      <div class="flow-steps">
+        <div class="flow-step"><p>Client calls <code>mlflow.start_run()</code>, sending a <code>POST /api/2.0/mlflow/runs/create</code> to the tracking server.</p></div>
+        <div class="flow-step"><p>Tracking server creates a run record in the backend store (database) and returns a run ID.</p></div>
+        <div class="flow-step"><p>Client logs params, metrics, and tags via REST. Each is written to the appropriate database table.</p></div>
+        <div class="flow-step"><p>Client logs artifacts (model files, plots). If artifact proxy is enabled, files pass through the tracking server to the artifact store (e.g., S3).</p></div>
+        <div class="flow-step"><p>Client calls <code>mlflow.end_run()</code>. The run status is updated to FINISHED in the backend store.</p></div>
+      </div>
     </div>
 
-    <div class="component-card animate-in" style="--comp-color: #9B59B6">
-      <h3>4. Managed MLflow (Databricks)</h3>
-      <p>Fully managed tracking server, model registry integrated with Unity Catalog, serverless model serving, and built-in access control. Removes all infrastructure management. The most feature-complete option for enterprises.</p>
+    <div class="data-flow">
+      <h4>Registering and Deploying a Model</h4>
+      <div class="flow-steps">
+        <div class="flow-step"><p>User calls <code>mlflow.register_model()</code>, creating a model version entry in the backend store linked to the run's artifact path.</p></div>
+        <div class="flow-step"><p>An alias (e.g., &ldquo;champion&rdquo;) is assigned to the new version to control which version serves production traffic.</p></div>
+        <div class="flow-step"><p>Deployment tools read the model artifacts from the artifact store, load the model using its flavor, and expose it via a REST endpoint.</p></div>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="callout-icon">&#x1F4A1;</span>
+      <div class="callout-content"><strong>Key insight:</strong> The backend store and artifact store are completely separate systems. The backend store holds small, structured metadata (params, metrics, tags). The artifact store holds large, unstructured files (models, images, data). This separation means you can scale each independently &mdash; a fast database for queries, and cheap object storage for files.</div>
     </div>
 
   </main>
 
-  <section class="references-footer">
-    <h3>&#x1F4DA; References &amp; Resources</h3>
-    <ul class="references-list">
-      <li class="reference-item">
-        <span class="reference-type-icon">&#x1F4C4;</span>
-        <div class="reference-content">
-          <span class="reference-title"><a href="https://mlflow.org/docs/latest/self-hosting/architecture/overview/" target="_blank" rel="noopener noreferrer">MLflow Architecture Overview</a></span>
-          <span class="reference-domain">mlflow.org</span>
-          <span class="reference-type-tag">official-docs</span>
-        </div>
-      </li>
-      <li class="reference-item">
-        <span class="reference-type-icon">&#x1F4C4;</span>
-        <div class="reference-content">
-          <span class="reference-title"><a href="https://mlflow.org/docs/latest/self-hosting/architecture/tracking-server/" target="_blank" rel="noopener noreferrer">MLflow Tracking Server</a></span>
-          <span class="reference-domain">mlflow.org</span>
-          <span class="reference-type-tag">official-docs</span>
-        </div>
-      </li>
-      <li class="reference-item">
-        <span class="reference-type-icon">&#x1F4C4;</span>
-        <div class="reference-content">
-          <span class="reference-title"><a href="https://mlflow.org/docs/latest/self-hosting/architecture/backend-store/" target="_blank" rel="noopener noreferrer">Backend Stores</a></span>
-          <span class="reference-domain">mlflow.org</span>
-          <span class="reference-type-tag">official-docs</span>
-        </div>
-      </li>
-      <li class="reference-item">
-        <span class="reference-type-icon">&#x1F4C4;</span>
-        <div class="reference-content">
-          <span class="reference-title"><a href="https://mlflow.org/docs/latest/self-hosting/architecture/artifact-store/" target="_blank" rel="noopener noreferrer">Artifact Stores</a></span>
-          <span class="reference-domain">mlflow.org</span>
-          <span class="reference-type-tag">official-docs</span>
-        </div>
-      </li>
-    </ul>
-  </section>
-
-  <div class="page-nav-footer">
-    <a href="concepts.html" class="prev">Concepts</a>
-    <a href="how-it-works.html" class="next">How It Works</a>
-  </div>
-
-  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+  <footer class="page-footer">
+    <div class="footer-nav">
+      <a href="concepts.html" class="footer-link prev">&larr; Core Concepts</a>
+      <a href="how-it-works.html" class="footer-link next">How It Works &rarr;</a>
+    </div>
+  </footer>
 
   <script>
-    document.documentElement.classList.add("js-ready");
-    document.getElementById('navHamburger').addEventListener('click', function() { this.classList.toggle('open'); document.getElementById('navPages').classList.toggle('mobile-open'); });
-    window.addEventListener('scroll', function() { var bar = document.querySelector('.nav-progress-bar'); var h = document.documentElement.scrollHeight - window.innerHeight; bar.style.width = h > 0 ? (window.scrollY / h * 100) + '%' : '0%'; }, { passive: true });
-    var observer = new IntersectionObserver(function(entries) { entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); } }); }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-    document.querySelectorAll('.animate-in').forEach(function(el) { observer.observe(el); });
+    window.addEventListener('scroll', function() {
+      requestAnimationFrame(function() {
+        var pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        document.getElementById('progress-bar').style.width = Math.min(pct, 100) + '%';
+      });
+    }, { passive: true });
+    var hamburger = document.getElementById('navHamburger');
+    var navPages = document.getElementById('navPages');
+    hamburger.addEventListener('click', function() { hamburger.classList.toggle('open'); navPages.classList.toggle('mobile-open'); });
     var STORAGE_KEY = 'mlflow-course-visited';
     function getVisited() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; } }
-    function markVisited(p) { var v = getVisited(); if (v.indexOf(p) === -1) { v.push(p); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(v)); } catch(e) {} } }
+    function markVisited(p) { var v = getVisited(); if (v.indexOf(p)===-1) { v.push(p); try{localStorage.setItem(STORAGE_KEY, JSON.stringify(v));}catch(e){} } }
     markVisited('architecture');
   </script>
 </body>

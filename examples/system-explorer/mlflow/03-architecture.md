@@ -1,44 +1,118 @@
 ## Architecture
 <!-- level: intermediate -->
 <!-- references:
-- [MLflow Architecture Overview](https://mlflow.org/docs/latest/self-hosting/architecture/overview/) | official-docs
-- [MLflow Tracking Server](https://mlflow.org/docs/latest/self-hosting/architecture/tracking-server/) | official-docs
-- [Backend Stores](https://mlflow.org/docs/latest/self-hosting/architecture/backend-store/) | official-docs
-- [Artifact Stores](https://mlflow.org/docs/latest/self-hosting/architecture/artifact-store/) | official-docs
+- [MLflow Tracking Server Architecture](https://mlflow.org/docs/latest/self-hosting/architecture/tracking-server/) | docs
+- [MLflow REST API](https://mlflow.org/docs/latest/rest-api.html) | docs
+- [MLflow AI Gateway](https://mlflow.org/ai-gateway) | docs
 -->
 
-### System Overview
+### High-Level Component Diagram
 
-MLflow's architecture follows a client-server design with three core infrastructure components: the Tracking Server, the Backend Store, and the Artifact Store. These can be deployed together on a single machine or distributed across separate hosts for production scalability.
+```
+                          +--------------------+
+                          |   Client Code      |
+                          | (Python/R/Java/    |
+                          |  REST API)         |
+                          +---------+----------+
+                                    |
+                           HTTP / gRPC
+                                    |
+                          +---------v----------+
+                          |  MLflow Tracking    |
+                          |      Server         |
+                          |  (Flask/Gunicorn)   |
+                          +----+--------+------+
+                               |        |
+                   +-----------+        +-----------+
+                   |                                |
+          +--------v--------+            +----------v---------+
+          |  Backend Store   |            |   Artifact Store    |
+          | (metadata)       |            |   (files/models)    |
+          | - SQLite         |            | - Local filesystem  |
+          | - MySQL          |            | - Amazon S3         |
+          | - PostgreSQL     |            | - Azure Blob        |
+          | - SQL Server     |            | - Google Cloud Stor.|
+          +--------+---------+            | - HDFS / DBFS       |
+                   |                      +----------+----------+
+                   |                                 |
+          +--------v---------+            +----------v---------+
+          | Model Registry   |            |  Artifact Proxy     |
+          | (versions, alias,|            |  (optional HTTP     |
+          |  tags, lineage)  |            |   passthrough)      |
+          +------------------+            +--------------------+
 
-### Tracking Server
+                          +--------------------+
+                          |   AI Gateway       |
+                          | (LLM proxy layer)  |
+                          | - Route to LLM     |
+                          |   providers        |
+                          | - Credential mgmt  |
+                          | - Usage tracking   |
+                          | - Rate limiting    |
+                          +--------------------+
+```
 
-The MLflow Tracking Server is a FastAPI application that exposes REST APIs for logging and querying experiment data. It serves two roles: (1) an API server that accepts log calls from the MLflow client SDK and queries from the UI, and (2) a web server hosting the MLflow UI -- a React-based single-page application for visual exploration of experiments, runs, and models. The server can also operate as an artifact proxy, relaying artifact upload/download requests so clients never need direct access to the underlying object store.
+### Components in Detail
 
-### Backend Store
+#### Tracking Server
 
-The Backend Store persists structured metadata: experiments, runs, parameters, metrics, tags, and model registry entries. MLflow supports two categories of backend:
+The Tracking Server is an HTTP server (built on Flask, typically served via Gunicorn or Uvicorn) that exposes the MLflow REST API. It accepts requests from client libraries, writes metadata to the backend store, and manages artifact storage.
 
-- **File-based store:** SQLite (default) writes metadata to a local `mlruns/` directory. Simple for local development but unsuitable for concurrent production use due to locking limitations.
-- **Database-based store:** PostgreSQL, MySQL, or MSSQL via SQLAlchemy. These provide proper indexing, concurrent access, and transactional guarantees required for team-scale and production deployments.
+The server can run in several configurations:
+1. **Local mode:** No server; the client writes directly to the local filesystem (`./mlruns`).
+2. **Remote tracking server:** A shared server that teams point their clients at, centralizing all experiment data.
+3. **Tracking server with artifact proxy:** The server proxies artifact read/write requests so clients never need direct access to the underlying object store (S3, Azure Blob, etc.).
 
-### Artifact Store
+#### Backend Store
 
-The Artifact Store handles large, unstructured files -- model binaries, images, datasets, plots. By default, artifacts live on the local filesystem alongside the backend store. For production, MLflow supports remote artifact stores: Amazon S3, Azure Blob Storage, Google Cloud Storage, HDFS, SFTP, and NFS. The tracking server can operate in "artifact proxy" mode, where all artifact traffic flows through the server rather than requiring clients to have direct credentials to the object store.
+The backend store persists structured metadata: experiments, runs, parameters, metrics, tags, and model registry data. MLflow supports:
 
-### Model Registry
+- **File store:** Flat files under `./mlruns`. Suitable only for local, single-user usage.
+- **Database store:** Any SQLAlchemy-compatible database -- SQLite, PostgreSQL, MySQL, or Microsoft SQL Server. Required for the Model Registry and recommended for any multi-user deployment.
 
-The Model Registry is a logical layer built on top of the Backend Store and Artifact Store. It provides model versioning, alias management (@champion, @challenger), tag-based metadata, and lifecycle stage tracking. Each registered model version maintains lineage links back to the MLflow run and logged model that produced it.
+The backend store schema uses tables for experiments, runs, params, metrics, tags, model versions, and registered models.
 
-### Deployment Patterns
+#### Artifact Store
 
-MLflow supports several deployment topologies:
+The artifact store persists large, unstructured files: serialized models, plots, datasets, evaluation reports. It is completely separate from the backend store and supports:
 
-1. **Local mode:** Client, tracking server, backend store, and artifact store all on one machine. Good for solo experimentation.
-2. **Remote tracking server:** A central tracking server with a database backend and remote artifact store. Clients log over HTTP. The standard team deployment.
-3. **Tracking server with artifact proxy:** The server proxies artifact operations, so clients only need HTTP access to the server -- no object store credentials needed. Recommended for security-sensitive environments.
-4. **Managed MLflow (Databricks):** A fully managed version with integrated governance, access control, and Unity Catalog integration. Removes all infrastructure management.
+- Local filesystem
+- Amazon S3 (and S3-compatible stores like MinIO)
+- Azure Blob Storage
+- Google Cloud Storage
+- HDFS
+- Databricks DBFS
+- FTP/SFTP
 
-### AI Gateway Architecture
+When the tracking server runs with `--serve-artifacts`, it acts as an HTTP proxy to the artifact store, so clients only need network access to the tracking server.
 
-The AI Gateway sits as a reverse-proxy layer in front of LLM providers. It maintains route configurations mapping logical endpoint names to provider-specific credentials and models. Each request flows through the gateway, which handles authentication, rate limiting, cost metering, and automatic trace capture before forwarding to the provider. The gateway integrates natively with MLflow Tracing, so every proxied call automatically becomes a linked trace in the experiment context.
+#### Model Registry
+
+The Model Registry is a logical layer on top of the backend store (database-backed only). It provides:
+
+- **Registered models:** Named entries (e.g., "fraud-detector") with descriptions and tags.
+- **Model versions:** Immutable snapshots linked to a specific run and artifact path.
+- **Aliases:** Mutable labels like "champion" or "challenger" that point to a specific version.
+- **Tags and annotations:** Metadata for governance, review status, and documentation.
+
+#### AI Gateway
+
+Introduced in MLflow 3.x, the AI Gateway is a centralized proxy for LLM API calls. It:
+
+- Routes requests to multiple LLM providers (OpenAI, Anthropic, Cohere, etc.) through a unified API.
+- Manages credentials centrally so application code never contains API keys.
+- Tracks usage, latency, and cost per route.
+- Enforces rate limits and budget policies (daily, weekly, monthly).
+- Integrates with MLflow Tracing for end-to-end observability.
+
+### Data Flow
+
+1. **Logging a run:** Client calls `mlflow.start_run()`. The tracking server creates a run record in the backend store. As the client logs params, metrics, and artifacts, each is written via REST API to the appropriate store.
+
+2. **Querying results:** The tracking UI (or API client) queries the backend store for runs, filters by metric thresholds, and renders comparisons. Artifact downloads are served through the tracking server (proxied) or directly from the artifact store.
+
+3. **Registering a model:** A user or CI pipeline calls `mlflow.register_model()`, which creates a model version entry in the backend store linked to the run's artifact path. Aliases are then assigned to control which version serves production traffic.
+
+4. **Serving a model:** The deployment tools read the model artifacts from the artifact store, load the model using its flavor, and expose it via a REST endpoint (Docker container, Kubernetes pod, or cloud-managed endpoint).
+
+5. **LLM gateway flow:** Application code sends a chat/completion request to the AI Gateway. The gateway resolves the route, injects credentials, forwards the request to the LLM provider, and logs the trace back to the tracking server for observability.

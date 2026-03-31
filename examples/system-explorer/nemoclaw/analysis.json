@@ -2,7 +2,7 @@
   "version": 2,
   "system": "NemoClaw",
   "github": "NVIDIA/NemoClaw",
-  "tag": "v0.1.0-preview",
+  "tag": "latest",
   "generated": "2026-03-31",
   "sections": [
     { "file": "00-metadata.md", "title": "Metadata", "level": null, "order": 0 },

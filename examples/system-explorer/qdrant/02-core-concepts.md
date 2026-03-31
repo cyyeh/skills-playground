@@ -1,103 +1,76 @@
 ## Core Concepts
 <!-- level: beginner -->
 <!-- references:
-- [Qdrant Documentation Overview](https://qdrant.tech/documentation/overview/) | docs
-- [Fundamentals of Qdrant: 6 Core Concepts](https://airbyte.com/data-engineering-resources/fundamentals-of-qdrant) | tutorial
-- [Points, Vectors and Payloads](https://qdrant.tech/course/essentials/day-1/embedding-models/) | course
-- [HNSW Indexing Fundamentals](https://qdrant.tech/course/essentials/day-2/what-is-hnsw/) | course
-- [Combining Vector Search and Filtering](https://qdrant.tech/course/essentials/day-2/filterable-hnsw/) | course
-- [Sparse Vectors and Inverted Indexes](https://qdrant.tech/course/essentials/day-3/sparse-vectors/) | course
+- [Qdrant Concepts Documentation](https://qdrant.tech/documentation/manage-data/) | official-docs
+- [The Fundamentals of Qdrant](https://airbyte.com/data-engineering-resources/fundamentals-of-qdrant) | blog
+- [HNSW Indexing Fundamentals](https://qdrant.tech/course/essentials/day-2/what-is-hnsw/) | official-docs
+- [Vector Quantization Methods](https://qdrant.tech/documentation/manage-data/quantization/) | official-docs
 -->
 
-### The Building Blocks of Vector Search
+### Vectors & Embeddings
 
-Qdrant is built on seven core concepts. Understanding them gives you the vocabulary to reason about how semantic search works, why certain queries are fast or slow, and how to structure your data for optimal retrieval.
+**Definition:** A vector (or embedding) is a list of floating-point numbers that represents a piece of data — a sentence, an image, a product, a user profile — in a high-dimensional space. These vectors are produced by machine learning models (like OpenAI's text-embedding-ada-002 or sentence-transformers) that learn to place similar items close together in this space.
 
----
+**Analogy:** Imagine every book in a library placed on a vast map where proximity represents similarity. Cookbooks cluster near each other, sci-fi novels group together, and a cookbook about science fiction cuisine sits between the two clusters. Vectors are the GPS coordinates on this map.
 
-### 1. Collections
+**Why it matters:** Vectors are the fundamental data type in Qdrant. Every search query starts with a vector, and Qdrant's job is to find the stored vectors that are closest to it. The quality of your search results depends on the quality of your embedding model, but Qdrant ensures the retrieval is fast and accurate.
 
-**Definition:** A collection is a named set of points that share the same vector configuration. It is the top-level organizational unit in Qdrant, analogous to a table in a relational database.
+### Points
 
-**Analogy:** Think of a collection as a filing cabinet. All folders (points) in the cabinet have the same structure — same number of dimensions for their vectors, same distance metric. You can have one cabinet for product embeddings and another for user embeddings.
+**Definition:** A point is the atomic unit of data in Qdrant. Each point consists of three parts: a unique identifier (64-bit integer or UUID), one or more vectors, and an optional JSON payload containing metadata. Points are what you insert, update, search for, and delete.
 
-**Why it matters:** When you create a collection, you define the vector size, distance metric (cosine, dot product, Euclidean, or Manhattan), and optional parameters like HNSW configuration and quantization. These choices are fixed for the collection's lifetime and directly affect search speed and accuracy.
+**Analogy:** Think of a point as a library card. The ID is the card number, the vector is the "location on the similarity map" where the book belongs, and the payload is all the extra information written on the card — title, author, genre, publication year.
 
----
+**Why it matters:** Points are the records you interact with through the API. When you upsert data, you are creating points. When you search, Qdrant returns the points whose vectors are most similar to your query vector. The payload on each point enables rich filtering without a separate metadata database.
 
-### 2. Points
+### Collections
 
-**Definition:** A point is the fundamental unit of data in Qdrant. Each point consists of a unique ID (64-bit integer or UUID), one or more vectors, and an optional JSON payload containing metadata.
+**Definition:** A collection is a named group of points that share the same vector configuration — dimensionality and distance metric. All vectors within a collection must have the same number of dimensions and are compared using the same similarity function. Collections are the top-level organizational unit.
 
-**Analogy:** Imagine a pin on a map. The pin's position represents the vector (where it sits in high-dimensional space), the pin's label is the ID, and a sticky note attached to it is the payload with extra information like name, category, or price.
+**Analogy:** A collection is like a filing cabinet where every folder uses the same labeling system. You would not mix folders labeled by Dewey Decimal with folders labeled by Library of Congress — similarly, you would not mix 384-dimensional vectors with 1536-dimensional vectors in the same collection.
 
-**Why it matters:** Points are what you search through. When you perform a similarity search, Qdrant finds the points whose vectors are closest to your query vector, then returns their IDs and payloads. The richer your payloads, the more you can filter and contextualize results.
+**Why it matters:** Collections define the schema for your vector data. When you create a collection, you choose the vector size (e.g., 1536 for OpenAI embeddings) and the distance metric (cosine, dot product, Euclidean, or Manhattan). This configuration determines how similarity is calculated for every search.
 
----
+### Payloads
 
-### 3. Vectors
+**Definition:** A payload is arbitrary JSON metadata attached to a point. Payloads can contain strings, numbers, booleans, arrays, nested objects, geo-coordinates, and datetime values. Payload fields can be indexed for efficient filtering during search.
 
-**Definition:** Vectors are fixed-length arrays of floating-point numbers that represent data in high-dimensional space. Qdrant supports three types:
+**Analogy:** If a vector tells you where an item sits on the similarity map, the payload is the item's detailed profile card — its category, price, creation date, language, author, and any other structured attribute you want to filter on.
 
-- **Dense vectors** — Traditional embeddings from models like OpenAI, Cohere, or sentence-transformers. Every dimension has a value. These capture semantic meaning.
-- **Sparse vectors** — Only non-zero dimensions are stored (like BM25, SPLADE, or miniCOIL outputs). Efficient for keyword-style lexical matching.
-- **Multi-dense vectors (multivectors)** — A list of dense vectors treated as a single entity. Used for late-interaction models like ColBERT, where each token gets its own embedding.
+**Why it matters:** Payloads enable filtered vector search, which is one of Qdrant's standout features. Instead of just finding the 10 most similar items globally, you can find the 10 most similar items that are also in the "electronics" category, priced under $50, and published after 2024. This combination of semantic similarity and structured filtering is essential for real-world applications.
 
-Qdrant also supports **named vectors**, allowing multiple vector spaces per point. For example, a product might have a text embedding and an image embedding stored as separate named vectors in the same point.
+### HNSW Index
 
-**Analogy:** Dense vectors are like GPS coordinates — every dimension contributes to the position. Sparse vectors are like a shopping list — only the items you need are listed, everything else is zero. Multivectors are like a fingerprint — multiple ridges (token embeddings) that together identify the whole.
+**Definition:** Hierarchical Navigable Small World (HNSW) is the primary indexing algorithm Qdrant uses for approximate nearest neighbor (ANN) search. It builds a multi-layered graph where each node is a vector, and edges connect nearby vectors. Upper layers contain fewer nodes with long-range connections for fast navigation; lower layers contain all nodes with short-range connections for precision.
 
-**Why it matters:** The vector type determines search behavior. Dense vectors excel at semantic understanding, sparse vectors preserve exact keyword matches, and combining them enables hybrid search that captures both meaning and precise terms.
+**Analogy:** Imagine navigating a city to find the closest coffee shop. At the highway level (top layer), you quickly drive to the right neighborhood. At the street level (middle layer), you navigate to the right block. At the sidewalk level (bottom layer), you walk to the exact shop. HNSW does this with vectors — it starts with coarse global navigation and progressively refines to precise local search.
 
----
+**Why it matters:** Brute-force comparison of a query vector against millions of stored vectors would be too slow. HNSW provides sub-linear search time — typically O(log n) — while maintaining high recall (usually 95-99%+). The trade-off is that it uses more memory for the graph structure and is an approximate algorithm, but in practice the accuracy loss is negligible for most applications.
 
-### 4. Payloads
+### Quantization
 
-**Definition:** Payloads are arbitrary JSON objects attached to points, storing metadata like category names, prices, dates, geographic coordinates, or any structured information relevant to your data.
+**Definition:** Quantization is a technique that compresses vector representations to reduce memory usage and speed up distance calculations. Qdrant supports three methods: Scalar Quantization (float32 to int8, 4x compression), Binary Quantization (float32 to 1-bit, 32x compression), and Product Quantization (divides vectors into sub-vectors, up to 64x compression).
 
-**Analogy:** If the vector is the "where" (position in meaning-space), the payload is the "what" — all the business context that makes a search result useful.
+**Analogy:** Think of quantization like reducing image resolution. A 4K photo (float32 vectors) is beautiful but takes a lot of storage. A compressed JPEG (scalar quantization) looks almost identical at a fraction of the size. A thumbnail (binary quantization) is much smaller and you can scan through thousands instantly, though you might want to double-check the full image for your final picks.
 
-**Why it matters:** Payloads enable filtered search. Instead of searching all 10 million vectors, you can search only vectors where `category = "electronics"` and `price < 100`. Qdrant indexes payload fields you specify, enabling these filters to run efficiently during the HNSW graph traversal rather than as a post-processing step.
+**Why it matters:** At scale, vector storage dominates memory costs. A collection of 10 million 1536-dimensional float32 vectors requires about 57 GB of RAM. With scalar quantization, that drops to ~14 GB. With binary quantization, it drops to ~1.8 GB. Quantization makes it practical to serve billion-scale vector collections on reasonable hardware, and Qdrant's rescoring mechanism (re-evaluating top candidates with original vectors) keeps accuracy high.
 
-Supported payload types include: keywords, integers, floats, booleans, text (full-text indexed), geo points, datetime, and UUIDs.
+### Filtering
 
----
+**Definition:** Filtering in Qdrant applies structured conditions on payload fields during vector search. Conditions include keyword match, numeric range, geo-radius, full-text search, datetime ranges, and nested field access. Filters use boolean logic with must, should, and must_not clauses.
 
-### 5. Filtering
+**Analogy:** Filtering is like adding WHERE clauses to a SQL query. Vector search alone is "find me similar items." Filtered vector search is "find me similar items WHERE category = 'shoes' AND price < 100 AND color IN ('red', 'blue')."
 
-**Definition:** Filtering narrows the search space based on payload conditions before or during vector similarity computation. Qdrant supports `must`, `should`, `must_not` clauses (similar to Elasticsearch), as well as range, geo-radius, full-text match, and nested filters.
+**Why it matters:** Real-world search applications almost always need filtering. A RAG system needs to filter by document source or date. A recommendation engine needs to filter by user region or product availability. Qdrant's filters are applied efficiently during the HNSW traversal (not as a post-processing step), which means filtering does not significantly degrade search performance.
 
-**Analogy:** Filtering is like telling a librarian: "Find me the books most similar in theme to this one, but only look in the science fiction section published after 2020." The librarian doesn't search the entire library — they go straight to the right shelves.
+### Distance Metrics
 
-**Why it matters:** In production, almost every vector search involves filters. "Find similar products in this category," "find matching resumes in this region," "find related articles from this year." Qdrant's filterable HNSW ensures that filtered searches remain fast by building filter-aware graph edges, rather than searching first and filtering after — which can discard most results and return poor-quality matches.
+**Definition:** A distance metric defines how similarity between two vectors is calculated. Qdrant supports four metrics: Cosine (angular similarity, ignores magnitude), Dot Product (accounts for both direction and magnitude), Euclidean (straight-line distance in vector space), and Manhattan (grid-based distance, robust to outliers).
 
----
+**Analogy:** Choosing a distance metric is like choosing how to measure the "closeness" of two cities. Euclidean distance is straight-line (as the crow flies). Manhattan distance follows the road grid. Cosine similarity measures the angle of the direction you would travel, ignoring how far away the cities are.
 
-### 6. HNSW Index
+**Why it matters:** The choice of distance metric must match your embedding model's training objective. Most text embedding models (OpenAI, Cohere, sentence-transformers) are trained with cosine similarity. Some models produce normalized vectors where dot product and cosine are equivalent. Choosing the wrong metric will produce poor search results even with a good model.
 
-**Definition:** Hierarchical Navigable Small World (HNSW) is Qdrant's primary vector index. It organizes vectors into a multi-layered graph where higher layers contain coarse, long-range connections and lower layers contain fine-grained, local connections.
+### How They Fit Together
 
-**Analogy:** Imagine navigating a city. First you take a highway (top layer) to get near your destination quickly, then switch to main roads (middle layers), then side streets (bottom layer) to reach the exact address. Each layer provides progressively finer navigation, and you never need to check every single street in the city.
-
-**Why it matters:** HNSW reduces similarity search from O(N) brute-force scans to approximately O(log N) graph traversals. The key tuning parameters are:
-
-- **m** — Maximum edges per node (typically 16-64). Higher values improve recall but use more memory.
-- **ef_construct** — Candidate list size during index building. Higher values produce a better graph but slower builds.
-- **ef** (at query time) — Candidate list size during search. Higher values improve recall at the cost of latency.
-
-Qdrant extends standard HNSW with **filterable HNSW**, which adds extra edges to maintain graph connectivity when filters exclude large portions of the graph. This is Qdrant's key algorithmic innovation.
-
----
-
-### 7. Quantization
-
-**Definition:** Quantization compresses vector representations to reduce memory usage and speed up distance calculations, at a controlled cost to search accuracy.
-
-Qdrant supports three quantization methods:
-- **Scalar quantization** — Converts 32-bit floats to 8-bit integers (4x compression)
-- **Product quantization (PQ)** — Divides vectors into subvectors and quantizes each independently (4x to 64x compression)
-- **Binary quantization** — Compresses each dimension to a single bit (32x compression)
-
-**Analogy:** Quantization is like reducing the resolution of an image. A 4K photo and a 720p version show the same scene, but the compressed version takes far less storage and loads faster. You trade some fine detail for massive efficiency gains.
-
-**Why it matters:** At scale, vectors dominate memory usage. A collection of 100 million 768-dimensional vectors requires ~286 GB of RAM at full precision. With scalar quantization that drops to ~72 GB; with binary quantization, ~9 GB. Quantization makes billion-scale deployments economically viable while maintaining 95-99% of full-precision search quality.
+When you use Qdrant, you first create a collection specifying the vector dimensionality and distance metric. You then upsert points, each containing a unique ID, one or more vectors (produced by your embedding model), and a JSON payload with metadata. Qdrant stores the vectors and builds an HNSW index graph connecting similar vectors across multiple layers. If you enable quantization, compressed copies of the vectors are created for fast initial distance calculations. When a search query arrives, Qdrant navigates the HNSW graph from the top layer down, progressively narrowing the candidate set. If you include payload filters, Qdrant applies them during the graph traversal using indexed payload fields, efficiently skipping points that do not match your criteria. The top candidates are optionally rescored against the original uncompressed vectors, and the final ranked results — complete with IDs, scores, and payloads — are returned through the REST or gRPC API.

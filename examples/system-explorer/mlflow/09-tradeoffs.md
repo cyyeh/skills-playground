@@ -1,78 +1,65 @@
 ## Trade-offs & Limitations
 <!-- level: intermediate -->
 <!-- references:
-- [MLflow vs Weights & Biases vs ZenML](https://www.zenml.io/blog/mlflow-vs-weights-and-biases) | blog
-- [Kubeflow vs MLflow](https://ubuntu.com/blog/kubeflow-vs-mlflow) | blog
-- [MLOps Tools Comparison](https://kanerika.com/blogs/mlops-tool/) | blog
-- [A Brief Comparison of Kubeflow vs MLflow](https://jfrog.com/blog/a-brief-comparison-of-kubeflow-vs-mlflow/) | blog
+- [MLflow vs W&B vs Neptune Comparison](https://neptune.ai/vs/wandb-mlflow) | comparison
+- [MLflow Alternatives - ZenML](https://www.zenml.io/blog/mlflow-alternatives) | comparison
+- [2025 MLOps Landscape](https://uplatz.com/blog/the-2025-mlops-landscape-a-comparative-analysis-of-mlflow-weights-biases-and-neptune/) | analysis
 -->
 
 ### Strengths
 
-- **Open source and vendor-neutral:** Apache 2.0 license with Linux Foundation governance. No lock-in to any cloud provider. You own your data and infrastructure.
-- **Low barrier to entry:** `pip install mlflow` and `mlflow.autolog()` gets you experiment tracking in minutes. No infrastructure required to start.
-- **Framework agnostic:** Works with any ML library. The model flavor system abstracts away framework differences for deployment.
-- **Massive community:** 800+ contributors, 18k+ GitHub stars, 25M+ monthly downloads. Extensive third-party integrations and community support.
-- **Full lifecycle coverage:** Tracking, model packaging, registry, serving, and (with 3.x) GenAI observability in a single platform.
-- **GenAI-native (3.x):** First-class tracing, LLM evaluation, and AI Gateway support. Not a bolted-on afterthought.
+**Open source and vendor-neutral.** Apache-2.0 licensed, no usage-based pricing, no data lock-in. You control the infrastructure, the data, and the upgrade schedule. This makes MLflow the default choice for organizations with strict data sovereignty requirements.
+
+**Breadth of scope.** MLflow covers experiment tracking, model registry, deployment, GenAI tracing, evaluation, and the AI Gateway in a single platform. Few alternatives match this breadth.
+
+**Massive ecosystem.** With 100+ library integrations, community plugins, and first-class support on Databricks, AWS, Azure, and GCP, MLflow fits into almost any ML stack.
+
+**Framework agnostic.** The flavor system means any model from any framework can be packaged, versioned, and deployed through the same pipeline.
+
+**Large community.** 25k+ GitHub stars, 900+ contributors, monthly releases, and strong documentation mean you are rarely stuck without answers.
 
 ### Limitations
 
-- **No built-in authentication:** The open-source server has no access control. Production deployments require a reverse proxy with external auth, which adds operational complexity.
-- **Not a pipeline orchestrator:** MLflow tracks experiments but doesn't schedule or orchestrate training pipelines. You need a separate tool (Airflow, Prefect, Kubeflow) for DAG-based workflows.
-- **UI performance at scale:** The tracking UI can become slow with thousands of runs if using the file-based backend. Even with a database, the UI's search and comparison features have limits at very high run counts.
-- **Single-writer artifact limitation:** Concurrent artifact writes from multiple processes can cause conflicts, especially with file-based stores. Remote stores (S3, GCS) handle this better.
-- **Limited real-time monitoring:** MLflow is designed for experiment logging, not real-time model monitoring. For data drift detection, prediction monitoring, and alerting, pair it with tools like Evidently, WhyLabs, or Arize.
+**UI is functional, not beautiful.** The MLflow UI is utilitarian. It gets the job done for run comparison and artifact browsing, but lacks the polished, real-time collaborative experience of Weights & Biases. Dashboard customization is limited.
 
-### MLflow vs. Weights & Biases (W&B)
+**Self-hosting overhead.** Running MLflow in production requires managing a tracking server, a database, an artifact store, authentication, and scaling. This operational burden is non-trivial. Managed offerings (Databricks, AWS SageMaker) reduce this, but at a cost.
 
-| Aspect | MLflow | W&B |
-|--------|--------|-----|
-| License | Open source (Apache 2.0) | Proprietary (free tier available) |
-| Hosting | Self-hosted or Databricks managed | SaaS-first (self-hosted available) |
-| Experiment tracking UI | Functional but basic | Rich, polished, collaborative |
-| Visualization | Standard charts, metric comparison | Advanced visualizations, custom panels, reports |
-| Pipeline orchestration | No | W&B Launch (limited) |
-| Model registry | Full-featured with aliases | Artifact versioning, less governance-focused |
-| GenAI/LLM support | Extensive (tracing, eval, gateway) | W&B Weave for tracing and eval |
-| Cost | Free (infra costs) | Free tier; $50-200/user/month for teams |
-| Data ownership | Full (your infrastructure) | Stored on W&B servers (or self-hosted) |
+**No built-in data versioning.** MLflow tracks model artifacts and metadata but does not version training datasets natively. You need a complementary tool (DVC, Delta Lake, LakeFS) for data lineage.
 
-**Choose MLflow when:** data sovereignty matters, you need full model lifecycle governance, you want vendor neutrality, or you're in a Databricks ecosystem.
+**Scaling challenges.** A single tracking server can become a bottleneck for very large organizations (10,000+ runs/day). Horizontal scaling requires infrastructure work (load balancers, read replicas). The search API can be slow on large datasets without careful database indexing.
 
-**Choose W&B when:** you want best-in-class visualization and collaboration UX, your team is small-to-medium, and you prefer SaaS simplicity over infrastructure management.
+**Autologging inconsistencies.** Autologging coverage varies across libraries. Some frameworks get comprehensive logging, others get minimal support. Custom models always require manual logging.
 
-### MLflow vs. DVC
+**Limited real-time collaboration.** Unlike W&B, MLflow does not natively support real-time shared dashboards, inline comments on runs, or team notification workflows.
 
-| Aspect | MLflow | DVC |
-|--------|--------|-----|
-| Primary focus | Full ML lifecycle | Data and model versioning (Git-based) |
-| Experiment tracking | Built-in with UI | Via DVCLive (lighter-weight) |
-| Data versioning | Limited (artifacts) | Core strength (Git-like for data) |
-| Pipeline orchestration | No | DVC Pipelines (DAG-based, declarative) |
-| Model registry | Full-featured | DVC Model Registry (simpler) |
-| Learning curve | Moderate | Gentle (Git-familiar concepts) |
+### Alternatives Comparison
 
-**Choose MLflow when:** you need full experiment tracking, model serving, and registry governance.
+| Feature | MLflow | Weights & Biases | Neptune | ClearML |
+|---------|--------|-------------------|---------|---------|
+| **License** | Apache-2.0 (OSS) | Proprietary SaaS | Proprietary SaaS | Apache-2.0 (OSS) |
+| **Hosting** | Self-hosted or managed | SaaS (self-hosted enterprise) | SaaS (self-hosted enterprise) | Self-hosted or SaaS |
+| **Experiment Tracking** | Strong | Excellent | Excellent | Strong |
+| **UI/UX** | Functional | Best-in-class | Very good | Good |
+| **Model Registry** | Built-in | Basic | Metadata-focused | Built-in |
+| **Deployment** | Built-in (Docker, K8s, cloud) | None (tracking only) | None (tracking only) | Built-in |
+| **GenAI/LLM Support** | Comprehensive (tracing, eval, gateway) | Weave (tracing) | Limited | Limited |
+| **Pricing** | Free (self-hosted) | Free tier, then ~$50/user/mo | Free tier, then ~$79/user/mo | Free (self-hosted), SaaS plans |
+| **Best For** | Full lifecycle, self-hosted, Databricks | Visualization, collaboration, research | Metadata queries, compliance | Automation, compute orchestration |
 
-**Choose DVC when:** data versioning is your primary concern and you want Git-native workflows.
+### Detailed Alternative Profiles
 
-### MLflow vs. Kubeflow
+**Weights & Biases (W&B):** The developer-experience king. Superior dashboards, real-time collaboration, sweep orchestration, and report sharing. Best for research teams that value visualization. Weakness: SaaS-only for most teams, limited deployment/registry features, higher cost at scale.
 
-| Aspect | MLflow | Kubeflow |
-|--------|--------|----------|
-| Primary focus | Experiment tracking + model management | Pipeline orchestration + training at scale |
-| Infrastructure | Lightweight (Python process) | Kubernetes-native (heavy infrastructure) |
-| Pipeline orchestration | No | Core strength (Kubeflow Pipelines) |
-| Distributed training | Tracks results, doesn't orchestrate | Manages distributed training (PyTorchJob, etc.) |
-| Model serving | Basic built-in, integrates with others | KServe (production-grade serving) |
-| Complexity | Low | High (requires Kubernetes expertise) |
-| Setup time | Minutes | Days to weeks |
+**Neptune.ai:** The enterprise metadata database. Excels at structured metadata queries, compliance auditing, and large-scale experiment tracking. Best for regulated industries needing governance. Weakness: no model deployment, smaller ecosystem.
 
-**Choose MLflow when:** you need experiment tracking and model management without heavy infrastructure overhead.
+**ClearML:** The automation platform. Combines experiment tracking with compute orchestration, data management, and pipeline automation. Best for teams that want an all-in-one MLOps platform without Databricks. Weakness: smaller community, documentation gaps.
 
-**Choose Kubeflow when:** you need Kubernetes-native pipeline orchestration and distributed training management. Many teams use both -- Kubeflow for orchestration, MLflow for tracking and registry.
+**Kubeflow:** The Kubernetes-native ML platform. Strong for pipeline orchestration and distributed training on K8s. Complementary to (not a replacement for) MLflow -- many teams use both. Weakness: complex setup, limited experiment tracking compared to MLflow.
 
-### The Pragmatic Recommendation
+### The Honest Take
 
-MLflow is the best starting point for most ML teams. Its low barrier to entry, vendor neutrality, and full lifecycle coverage make it a safe foundational choice. As teams scale, they typically layer complementary tools on top -- a pipeline orchestrator for workflow management, a feature store for feature engineering, and a monitoring tool for production observability -- rather than replacing MLflow.
+MLflow is the **safe, versatile default** for ML lifecycle management. Its open-source nature, broad integrations, and deployment capabilities make it the most practical choice for teams that want a single platform without SaaS lock-in. The GenAI features in MLflow 3.x have closed the gap with specialized tools.
+
+However, if your primary need is **beautiful, collaborative experiment visualization**, Weights & Biases is genuinely better. If you need **enterprise-grade metadata governance** and your models deploy through other means, Neptune may be a better fit. If you want **end-to-end compute orchestration** including GPU scheduling, ClearML offers more.
+
+The best strategy for most teams: start with MLflow (it is free and open source), and only add a specialized tool if you hit a specific limitation that matters to your workflow. Many organizations run MLflow alongside W&B -- using MLflow for the model registry and deployment pipeline, and W&B for experiment visualization and collaboration.

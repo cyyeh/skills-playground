@@ -25,8 +25,14 @@ Self-contained template for the Implementation Details section. Level: **advance
      These are USER-WRITTEN code examples (not source code from the system's repo). -->
 
 ### Source Code Walkthrough
-<!-- For each core concept and architectural component, include the actual source code
-     from the system's repository that implements it. Group by concept.
+<!-- MANDATORY for open-source systems with a public GitHub repository.
+     This section MUST contain actual annotated source code excerpts — NOT just a
+     directory listing or "Source Code Structure" overview. A section that only lists
+     file paths like "mlflow/tracking/ -- Client-side tracking API" is NOT a walkthrough.
+
+     For each core concept (from 02-core-concepts.md) and architectural component
+     (from 03-architecture.md), include the actual source code from the system's
+     repository that implements it. Group by concept.
 
      Structure:
 
@@ -95,7 +101,9 @@ Self-contained template for the Implementation Details section. Level: **advance
      - Cross-reference concept names from 02-core-concepts.md and component names
        from 03-architecture.md
      - If source code is unavailable (closed-source system), note this and provide
-       behavioral analysis instead -->
+       behavioral analysis instead
+     - If the system is open-source but you only have a directory listing, this section
+       is INCOMPLETE — go back to Phase 2 and fetch actual source files -->
 
 ### Deployment Considerations
 <!-- Production checklist: sizing, monitoring, backup, upgrade path. -->

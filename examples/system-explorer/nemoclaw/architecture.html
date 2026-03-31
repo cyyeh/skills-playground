@@ -8,29 +8,205 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
-    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
-    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-    .page-header{max-width:var(--content-width);margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:var(--leading-tight)}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}.page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}
-    .content-area{max-width:var(--content-width);margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}.content-section p,.content-section li{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}.content-section ul{padding-left:var(--space-6);margin:0 0 var(--space-4)}.content-section li{margin:0 0 var(--space-2)}
-    code{font-family:var(--font-mono);font-size:0.88em;background:var(--color-bg-code);color:#CDD6F4;padding:0.15em 0.4em;border-radius:4px}
-    .arch-layer{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6) var(--space-8);box-shadow:var(--shadow-sm);margin-bottom:var(--space-6);border-left:4px solid var(--layer-color,var(--color-accent));transition:transform var(--duration-fast),box-shadow var(--duration-fast)}.arch-layer:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}.arch-layer-header{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)}.arch-layer-icon{font-size:1.5rem;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--icon-bg,var(--color-accent-light));border-radius:var(--radius-sm);flex-shrink:0}.arch-layer-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);margin:0}.arch-layer-tag{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);background:var(--color-border-light);padding:2px 8px;border-radius:var(--radius-full)}.arch-layer p{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.7;margin:0 0 var(--space-3)}.arch-layer p:last-child{margin:0}
-    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-4) 0 var(--space-5);border-left:4px solid}.callout-insight{background:var(--color-accent-light);border-color:var(--color-accent)}.callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal);color:var(--color-text-secondary)}.callout-content strong{color:var(--color-text)}
-    .flow-diagram{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-8);box-shadow:var(--shadow-md);margin:var(--space-8) 0}.flow-diagram h3{font-family:var(--font-display);font-weight:700;margin-bottom:var(--space-6);text-align:center;font-size:var(--text-xl)}.flow-steps{display:flex;flex-direction:column;gap:0;align-items:center}.flow-step{display:flex;align-items:flex-start;gap:var(--space-4);padding:var(--space-4) var(--space-5);width:100%;max-width:640px;border-radius:var(--radius-sm);transition:background var(--duration-fast)}.flow-step:hover{background:var(--color-bg-warm)}.flow-step-num{width:36px;height:36px;border-radius:50%;background:var(--color-accent);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);flex-shrink:0}.flow-step-content{flex:1}.flow-step-title{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin:0 0 var(--space-1)}.flow-step-desc{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.6;margin:0}.flow-arrow{color:var(--color-accent-muted);text-align:center;font-size:1.2rem;padding:var(--space-1) 0}
-    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:0 0 var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-content{display:flex;flex-direction:column;gap:2px}.reference-title{font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}.reference-type-tag{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);background:var(--color-border-light);padding:1px 6px;border-radius:var(--radius-full);margin-left:var(--space-2)}
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:var(--content-width);margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;transition:color var(--duration-fast)}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
-    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
-    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
-    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.arch-layer{padding:var(--space-5)}}@media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+    :root {
+      --color-bg: #FAF7F2; --color-bg-warm: #F5F0E8; --color-bg-code: #1E1E2E;
+      --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
+      --color-border: #E5DFD6; --color-border-light: #EEEBE5;
+      --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
+      --color-accent: #D4A843; --color-accent-hover: #BF9738; --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
+      --color-success: #2D8B55; --color-success-light: #E8F5EE;
+      --color-error: #C93B3B; --color-error-light: #FDE8E8;
+      --color-info: #2A7B9B; --color-info-light: #E4F2F7;
+      --color-warning: #D4A843; --color-warning-light: #FDF6E4;
+      --color-level-beginner: #2D8B55; --color-level-intermediate: #D4A843; --color-level-advanced: #C93B3B;
+      --font-display: 'Bricolage Grotesque', Georgia, serif;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem; --text-4xl: 2.25rem;
+      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
+      --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
+      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
+      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
+      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--color-bg); background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%); font-family: var(--font-body); color: var(--color-text); line-height: var(--leading-normal); margin: 0; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+    .site-nav { position: sticky; top: 0; z-index: 1000; height: var(--nav-height); background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border-light); }
+    .nav-progress-bar { position: absolute; top: 0; left: 0; height: 3px; width: 0%; background: var(--color-accent); transition: width 100ms linear; z-index: 1; }
+    .nav-inner { max-width: var(--content-width-wide); margin: 0 auto; height: 100%; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6); }
+    .nav-brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; } .nav-brand:hover { color: var(--color-accent); }
+    .nav-pages { display: flex; align-items: center; gap: var(--space-1); flex: 1; overflow-x: auto; scrollbar-width: none; } .nav-pages::-webkit-scrollbar { display: none; }
+    .nav-page-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--color-text-secondary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); white-space: nowrap; transition: color var(--duration-fast), background var(--duration-fast); }
+    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); }
+    .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
+    .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; padding: var(--space-2); background: none; border: none; cursor: pointer; flex-shrink: 0; }
+    .nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 1px; transition: transform var(--duration-fast), opacity var(--duration-fast); }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); } .nav-hamburger.open span:nth-child(2) { opacity: 0; } .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    .page-header { max-width: var(--content-width); margin: 0 auto; padding: var(--space-12) var(--space-6) var(--space-8); }
+    .page-header .level-badge { display: inline-block; background: var(--color-accent-light); color: var(--color-accent); font-size: var(--text-xs); font-weight: 600; padding: 2px var(--space-2); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
+    .page-header h1 { font-family: var(--font-display); font-size: var(--text-4xl); font-weight: 800; color: var(--color-text); margin: 0 0 var(--space-4); line-height: var(--leading-tight); }
+    .page-header .subtitle { font-size: var(--text-lg); color: var(--color-text-secondary); margin: 0; }
+
+    .content { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6) var(--space-16); }
+    .content h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--color-text); margin: var(--space-12) 0 var(--space-4); }
+    .content h3 { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; color: var(--color-text); margin: var(--space-8) 0 var(--space-3); }
+    .content p { font-size: var(--text-base); color: var(--color-text-secondary); line-height: var(--leading-normal); margin: 0 0 var(--space-4); }
+
+    /* Architecture Diagram */
+    .arch-diagram {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-8);
+      margin: var(--space-8) 0;
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+    .arch-layer {
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-6);
+      margin-bottom: var(--space-4);
+      position: relative;
+    }
+    .arch-layer.layer-user { border-color: var(--color-info); background: var(--color-info-light); }
+    .arch-layer.layer-cli { border-color: var(--color-accent); background: var(--color-accent-light); }
+    .arch-layer.layer-blueprint { border-color: #8B7355; background: #FAF5ED; }
+    .arch-layer.layer-runtime { border-color: var(--color-error); background: var(--color-error-light); }
+    .arch-layer.layer-inference { border-color: var(--color-success); background: var(--color-success-light); }
+    .arch-layer-label {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-3);
+    }
+    .arch-layer.layer-user .arch-layer-label { color: var(--color-info); }
+    .arch-layer.layer-cli .arch-layer-label { color: var(--color-accent-hover); }
+    .arch-layer.layer-blueprint .arch-layer-label { color: #8B7355; }
+    .arch-layer.layer-runtime .arch-layer-label { color: var(--color-error); }
+    .arch-layer.layer-inference .arch-layer-label { color: var(--color-success); }
+    .arch-components {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+    .arch-component {
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: var(--radius-sm);
+      padding: var(--space-1) var(--space-3);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text);
+      white-space: nowrap;
+    }
+    .arch-arrow {
+      text-align: center;
+      color: var(--color-text-muted);
+      font-size: var(--text-lg);
+      margin: var(--space-2) 0;
+    }
+
+    /* Collapsible Sections */
+    .collapsible {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-4);
+      overflow: hidden;
+    }
+    .collapsible-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-5) var(--space-6);
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--duration-fast);
+    }
+    .collapsible-header:hover { background: var(--color-surface-warm); }
+    .collapsible-header h3 {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 0;
+    }
+    .collapsible-arrow {
+      font-size: var(--text-lg);
+      color: var(--color-text-muted);
+      transition: transform var(--duration-normal) var(--ease-out);
+    }
+    .collapsible.open .collapsible-arrow { transform: rotate(180deg); }
+    .collapsible-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--duration-slow) var(--ease-out);
+    }
+    .collapsible.open .collapsible-body { max-height: 2000px; }
+    .collapsible-body-inner {
+      padding: 0 var(--space-6) var(--space-6);
+    }
+    .collapsible-body-inner p {
+      font-size: var(--text-base);
+      color: var(--color-text-secondary);
+      line-height: var(--leading-normal);
+      margin: 0 0 var(--space-3);
+    }
+    .collapsible-body-inner ul {
+      margin: 0 0 var(--space-3);
+      padding-left: var(--space-6);
+      color: var(--color-text-secondary);
+    }
+    .collapsible-body-inner li { margin-bottom: var(--space-2); font-size: var(--text-base); }
+    .collapsible-body-inner strong { color: var(--color-text); }
+
+    .callout {
+      background: var(--color-accent-light);
+      border-left: 4px solid var(--color-accent);
+      border-radius: var(--radius-sm);
+      padding: var(--space-4) var(--space-5);
+      margin: var(--space-6) 0;
+    }
+    .callout p { color: var(--color-text); margin: 0; }
+    .callout strong { color: var(--color-accent-hover); }
+
+    .callout-info {
+      background: var(--color-info-light);
+      border-left-color: var(--color-info);
+    }
+    .callout-info strong { color: var(--color-info); }
+
+    .page-nav { display: flex; justify-content: space-between; align-items: center; max-width: var(--content-width); margin: 0 auto; padding: var(--space-8) var(--space-6); border-top: 1px solid var(--color-border-light); }
+    .page-nav a { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm); transition: background var(--duration-fast); }
+    .page-nav a:hover { background: var(--color-accent-light); }
+
+    @media (max-width: 768px) {
+      .nav-pages { display: none; } .nav-pages.open { display: flex; flex-direction: column; position: absolute; top: var(--nav-height); left: 0; right: 0; background: rgba(250,247,242,0.97); backdrop-filter: blur(12px); padding: var(--space-4) var(--space-6); border-bottom: 1px solid var(--color-border-light); gap: var(--space-1); }
+      .nav-hamburger { display: flex; }
+      .page-header h1 { font-size: var(--text-3xl); }
+      .arch-diagram { padding: var(--space-4); }
+      .arch-components { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
   <nav class="site-nav">
-    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-progress-bar" id="progressBar"></div>
     <div class="nav-inner">
       <a href="index.html" class="nav-brand">NemoClaw</a>
+      <button class="nav-hamburger" id="hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
       <div class="nav-pages" id="navPages">
-        <a href="index.html" class="nav-page-link">Home</a>
         <a href="concepts.html" class="nav-page-link">Concepts</a>
         <a href="architecture.html" class="nav-page-link active">Architecture</a>
         <a href="how-it-works.html" class="nav-page-link">How It Works</a>
@@ -40,172 +216,235 @@
         <a href="faq.html" class="nav-page-link">FAQ</a>
         <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
       </div>
-      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
     </div>
   </nav>
 
-  <header class="page-header animate-in">
-    <span class="page-level-badge intermediate">Intermediate</span>
+  <header class="page-header">
+    <span class="level-badge">Intermediate</span>
     <h1>Architecture</h1>
+    <p class="subtitle">Defense-in-depth: four independent security layers ensuring that no single failure compromises the system.</p>
   </header>
 
-  <main class="content-area">
-    <section class="content-section animate-in">
-      <h2>Four-Layer System Design</h2>
-      <p>NemoClaw is a two-tier system layered atop NVIDIA OpenShell. The architecture follows a deliberate separation of concerns: a lightweight TypeScript plugin handles user interaction, while a versioned Python blueprint manages all orchestration logic for sandbox creation, policy enforcement, and inference routing.</p>
-    </section>
+  <section class="content">
 
-    <div class="arch-layer animate-in" style="--layer-color:#89B4FA;--icon-bg:#E4F2F7">
-      <div class="arch-layer-header">
-        <div class="arch-layer-icon">&#x2328;&#xFE0F;</div>
-        <h3 class="arch-layer-title">Layer 1: CLI (TypeScript Plugin)</h3>
-        <span class="arch-layer-tag">nemoclaw/src/</span>
+    <h2>System Architecture Diagram</h2>
+    <div class="arch-diagram">
+      <div class="arch-layer layer-user">
+        <div class="arch-layer-label">User Interfaces</div>
+        <div class="arch-components">
+          <span class="arch-component">Terminal TUI</span>
+          <span class="arch-component">Telegram</span>
+          <span class="arch-component">Discord</span>
+          <span class="arch-component">Slack</span>
+          <span class="arch-component">CLI</span>
+        </div>
       </div>
-      <p>The plugin registers commands under <code>openclaw nemoclaw</code> using Commander.js. It contains the entry point (<code>index.ts</code>), CLI wiring (<code>cli.ts</code>), and command modules for launch, connect, status, logs, and slash-command handling. This layer runs in-process with the OpenClaw gateway and is intentionally kept thin.</p>
-      <p>Its job: accept user input, resolve the correct blueprint version, verify its digest, and delegate all orchestration to the blueprint subprocess.</p>
+      <div class="arch-arrow">&#x2193;</div>
+      <div class="arch-layer layer-cli">
+        <div class="arch-layer-label">Layer 1: TypeScript Plugin</div>
+        <div class="arch-components">
+          <span class="arch-component">launch</span>
+          <span class="arch-component">connect</span>
+          <span class="arch-component">status</span>
+          <span class="arch-component">logs</span>
+          <span class="arch-component">Blueprint Resolver</span>
+          <span class="arch-component">Digest Verifier</span>
+          <span class="arch-component">State Manager</span>
+        </div>
+      </div>
+      <div class="arch-arrow">&#x2193;</div>
+      <div class="arch-layer layer-blueprint">
+        <div class="arch-layer-label">Layer 2: Python Blueprint</div>
+        <div class="arch-components">
+          <span class="arch-component">blueprint.yaml</span>
+          <span class="arch-component">openclaw-sandbox.yaml</span>
+          <span class="arch-component">Blueprint Runner</span>
+          <span class="arch-component">Resolve &rarr; Verify &rarr; Plan &rarr; Apply &rarr; Status</span>
+        </div>
+      </div>
+      <div class="arch-arrow">&#x2193;</div>
+      <div class="arch-layer layer-runtime">
+        <div class="arch-layer-label">Layer 3: OpenShell Runtime (Security Boundary)</div>
+        <div class="arch-components">
+          <span class="arch-component">Sandbox Container</span>
+          <span class="arch-component">OpenClaw Agent</span>
+          <span class="arch-component">Planner</span>
+          <span class="arch-component">Executor</span>
+          <span class="arch-component">Tools</span>
+          <span class="arch-component">Memory</span>
+          <span class="arch-component">Policy Engine (Rust)</span>
+          <span class="arch-component">Landlock</span>
+          <span class="arch-component">seccomp</span>
+          <span class="arch-component">Network Namespaces</span>
+          <span class="arch-component">Capability Drop</span>
+        </div>
+      </div>
+      <div class="arch-arrow">&#x2193;</div>
+      <div class="arch-layer layer-inference">
+        <div class="arch-layer-label">Layer 4: Inference Layer</div>
+        <div class="arch-components">
+          <span class="arch-component">Privacy Router</span>
+          <span class="arch-component">Local Nemotron</span>
+          <span class="arch-component">Cloud Providers</span>
+          <span class="arch-component">Credential Injection Gateway</span>
+          <span class="arch-component">Audit Logs</span>
+        </div>
+      </div>
     </div>
 
-    <div class="arch-layer animate-in" style="--layer-color:#CBA6F7;--icon-bg:#F3EEFA">
-      <div class="arch-layer-header">
-        <div class="arch-layer-icon">&#x1F4D0;</div>
-        <h3 class="arch-layer-title">Layer 2: Orchestration (Python Blueprint)</h3>
-        <span class="arch-layer-tag">nemoclaw-blueprint/</span>
+    <h2>Layer Details</h2>
+
+    <div class="collapsible open">
+      <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Layer 1: TypeScript Plugin Layer</h3>
+        <span class="collapsible-arrow">&#x25BC;</span>
       </div>
-      <p>The blueprint is a versioned artifact containing the Dockerfile, security policies, network rules, and Python orchestration logic. It follows a five-stage lifecycle: <strong>resolve</strong> (locate and validate), <strong>verify</strong> (check digest), <strong>plan</strong> (determine required resources), <strong>apply</strong> (execute via OpenShell CLI), and <strong>status</strong> (report state).</p>
-      <p>The blueprint is immutable once published &mdash; any changes require a new version with a new digest. This guarantees supply-chain integrity.</p>
+      <div class="collapsible-body">
+        <div class="collapsible-body-inner">
+          <p>The plugin layer is a TypeScript Commander CLI extension that integrates with the OpenClaw CLI. It is the operator's primary interface for managing NemoClaw deployments.</p>
+          <ul>
+            <li><strong>Command registration:</strong> Exposes launch, connect, status, and logs commands for sandbox lifecycle management</li>
+            <li><strong>Blueprint resolution:</strong> Locates and downloads blueprint artifacts from OCI registries with local caching to avoid repeated downloads</li>
+            <li><strong>Digest verification:</strong> Ensures artifact integrity by validating OCI digests before deployment, aborting if tampering is detected</li>
+            <li><strong>Subprocess execution:</strong> Invokes the Python blueprint runner as a child process, maintaining separation between CLI and orchestration layers</li>
+            <li><strong>State management:</strong> Persists sandbox configurations in ~/.nemoclaw/sandboxes.json on the host filesystem</li>
+          </ul>
+          <p>The plugin also provides the /nemoclaw slash command within the agent's chat interface, giving operators real-time control over sandbox behavior without leaving the conversation.</p>
+        </div>
+      </div>
     </div>
 
-    <div class="arch-layer animate-in" style="--layer-color:#A6E3A1;--icon-bg:#E8F5EE">
-      <div class="arch-layer-header">
-        <div class="arch-layer-icon">&#x1F6E1;&#xFE0F;</div>
-        <h3 class="arch-layer-title">Layer 3: Security (OpenShell Runtime)</h3>
-        <span class="arch-layer-tag">NVIDIA Agent Toolkit</span>
+    <div class="collapsible">
+      <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Layer 2: Python Blueprint Layer</h3>
+        <span class="collapsible-arrow">&#x25BC;</span>
       </div>
-      <p>NVIDIA OpenShell provides the foundational security primitives: sandbox container management, Landlock filesystem policies, seccomp BPF syscall filters, network namespace configuration, and the inference routing gateway.</p>
-      <p>OpenShell operates entirely outside the agent's reach &mdash; the agent cannot modify, disable, or bypass its controls. The policy engine accepts rules from the blueprint and enforces them at the kernel level.</p>
+      <div class="collapsible-body">
+        <div class="collapsible-body-inner">
+          <p>The blueprint is a versioned artifact that declaratively defines the sandbox environment. It follows infrastructure-as-code principles, making deployments reproducible and auditable.</p>
+          <ul>
+            <li><strong>blueprint.yaml:</strong> Version constraints and the deployment manifest specifying compatible OpenShell and OpenClaw versions</li>
+            <li><strong>openclaw-sandbox.yaml:</strong> Network egress rules, filesystem mount policies, process restrictions, and seccomp profiles</li>
+            <li><strong>Blueprint Runner:</strong> A five-stage lifecycle executor:
+              <ul>
+                <li><strong>Resolve</strong> -- Locate the blueprint artifact and check version compatibility</li>
+                <li><strong>Verify</strong> -- Validate the OCI digest for tamper detection</li>
+                <li><strong>Plan</strong> -- Calculate the diff between current and desired sandbox state</li>
+                <li><strong>Apply</strong> -- Execute OpenShell CLI commands to create or update resources</li>
+                <li><strong>Status</strong> -- Report the sandbox's current configuration and health</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
 
-    <div class="arch-layer animate-in" style="--layer-color:#F38BA8;--icon-bg:#FDE8E8">
-      <div class="arch-layer-header">
-        <div class="arch-layer-icon">&#x1F916;</div>
-        <h3 class="arch-layer-title">Layer 4: Agent (OpenClaw)</h3>
-        <span class="arch-layer-tag">Inside Sandbox</span>
+    <div class="collapsible">
+      <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Layer 3: OpenShell Runtime (The Security Boundary)</h3>
+        <span class="collapsible-arrow">&#x25BC;</span>
       </div>
-      <p>The OpenClaw agent runs inside the sandbox container. It sees a standard Linux environment with <code>/sandbox</code> and <code>/tmp</code> as writable directories, a local inference endpoint at <code>inference.local</code>, and network access limited to policy-approved endpoints.</p>
-      <p>From the agent's perspective, it operates normally &mdash; the security controls are transparent and cannot be detected or circumvented.</p>
+      <div class="collapsible-body">
+        <div class="collapsible-body-inner">
+          <p>This is the most critical layer -- the point where NemoClaw diverges from permissive agent frameworks. OpenShell provides the actual security enforcement.</p>
+          <p><strong>Out-of-Process Policy Engine:</strong> A Rust-based service running in a separate process from the agent. It intercepts system calls and network requests at the kernel boundary. Because the engine runs outside the agent's address space, a compromised agent cannot tamper with its own restrictions.</p>
+          <p><strong>Kernel Security Primitives:</strong></p>
+          <ul>
+            <li><strong>Landlock:</strong> Linux security module for fine-grained filesystem access control. The sandbox can only read and write to /sandbox and /tmp; system paths are read-only.</li>
+            <li><strong>seccomp:</strong> Syscall filtering that restricts which kernel functions the sandbox process can invoke, blocking operations like raw socket creation or kernel module loading.</li>
+            <li><strong>Network namespaces:</strong> Complete network isolation. The sandbox has its own network stack with no default routes. All traffic must go through the OpenShell gateway.</li>
+            <li><strong>Capability dropping:</strong> The container runs with minimal Linux capabilities, preventing privilege escalation.</li>
+          </ul>
+          <p><strong>Network Policy Enforcement:</strong> Every outbound connection is validated against the YAML policy. Unknown destinations are blocked by default. When an agent attempts to reach an unapproved endpoint, the request is surfaced in the operator's TUI for real-time approval or denial.</p>
+        </div>
+      </div>
     </div>
 
-    <section class="content-section animate-in">
-      <h2>Component Interaction Chain</h2>
-      <div class="flow-diagram">
-        <h3>Request Flow</h3>
-        <div class="flow-steps">
-          <div class="flow-step">
-            <div class="flow-step-num">1</div>
-            <div class="flow-step-content">
-              <div class="flow-step-title">User &rarr; Plugin</div>
-              <div class="flow-step-desc">Operator runs <code>nemoclaw onboard</code>, <code>connect</code>, or other CLI commands.</div>
-            </div>
-          </div>
-          <div class="flow-arrow">&#x25BC;</div>
-          <div class="flow-step">
-            <div class="flow-step-num">2</div>
-            <div class="flow-step-content">
-              <div class="flow-step-title">Plugin &rarr; Blueprint</div>
-              <div class="flow-step-desc">Plugin downloads the blueprint artifact, verifies its digest, and executes it as a subprocess.</div>
-            </div>
-          </div>
-          <div class="flow-arrow">&#x25BC;</div>
-          <div class="flow-step">
-            <div class="flow-step-num">3</div>
-            <div class="flow-step-content">
-              <div class="flow-step-title">Blueprint &rarr; OpenShell</div>
-              <div class="flow-step-desc">Blueprint calls <code>openshell sandbox create</code>, <code>openshell provider add</code>, and <code>openshell policy apply</code>.</div>
-            </div>
-          </div>
-          <div class="flow-arrow">&#x25BC;</div>
-          <div class="flow-step">
-            <div class="flow-step-num">4</div>
-            <div class="flow-step-content">
-              <div class="flow-step-title">OpenShell &rarr; Sandbox</div>
-              <div class="flow-step-desc">OpenShell creates the isolated container, applies security policies, starts the agent process.</div>
-            </div>
-          </div>
-          <div class="flow-arrow">&#x25BC;</div>
-          <div class="flow-step">
-            <div class="flow-step-num">5</div>
-            <div class="flow-step-content">
-              <div class="flow-step-title">Agent &rarr; Gateway</div>
-              <div class="flow-step-desc">All inference requests go through <code>inference.local</code>. OpenShell routes them to the configured provider with host-side credentials.</div>
-            </div>
-          </div>
+    <div class="collapsible">
+      <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Layer 4: Inference Layer</h3>
+        <span class="collapsible-arrow">&#x25BC;</span>
+      </div>
+      <div class="collapsible-body">
+        <div class="collapsible-body-inner">
+          <p>The inference layer manages all LLM communication, providing privacy routing and credential isolation.</p>
+          <p><strong>Privacy Router:</strong> Classifies each inference request by data sensitivity using organization-defined rules. Sensitive requests (PII, proprietary code, financial data) route to local Nemotron models. Non-sensitive requests go to cloud providers for higher capability.</p>
+          <p><strong>Credential Injection Gateway:</strong> The sandbox never holds API credentials. The gateway intercepts outgoing inference requests and injects authentication tokens based on the configured provider.</p>
+          <p><strong>Supported Providers:</strong></p>
+          <ul>
+            <li><strong>NVIDIA Endpoints (default):</strong> nvidia/nemotron-3-super-120b-a12b</li>
+            <li><strong>Local Ollama:</strong> For air-gapped environments with any Ollama-compatible model</li>
+            <li><strong>Custom providers:</strong> Any OpenAI-compatible API endpoint (OpenAI, Anthropic, Google, etc.)</li>
+          </ul>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="content-section animate-in">
-      <h2>Repository Structure</h2>
-      <ul>
-        <li><code>bin/</code> &mdash; CLI entry point (CommonJS wrapper)</li>
-        <li><code>nemoclaw/</code> &mdash; TypeScript plugin source (Commander CLI extension)</li>
-        <li><code>nemoclaw-blueprint/</code> &mdash; Blueprint YAML, policies, Dockerfile, Python orchestration</li>
-        <li><code>scripts/</code> &mdash; Installation, uninstallation, and automation helpers</li>
-        <li><code>test/</code> &mdash; Integration and end-to-end tests</li>
-        <li><code>docs/</code> &mdash; Sphinx/MyST documentation source</li>
-      </ul>
-    </section>
+    <div class="callout">
+      <p><strong>Key Architectural Insight:</strong> The defining innovation of NemoClaw is out-of-process policy enforcement. Instead of embedding security rules in the agent's prompts (which can be bypassed) or in the agent's application code (which shares the agent's process), NemoClaw enforces security from a separate Rust process at the Linux kernel level. This creates a trust boundary that holds even if the agent is fully compromised.</p>
+    </div>
 
-    <section class="content-section animate-in">
-      <h2>Design Principles</h2>
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content">
-          <strong>Five core tenets:</strong> (1) Thin plugin, versioned blueprint &mdash; the plugin stays stable; orchestration evolves in the blueprint. (2) CLI boundary respect &mdash; no hidden background processes. (3) Supply chain safety &mdash; artifacts are immutable and digest-verified. (4) OpenShell-native &mdash; direct use of <code>openshell sandbox create</code>. (5) Reproducible setup &mdash; re-running recreates identical sandboxes.
+    <h2>Security Architecture Principles</h2>
+
+    <div class="collapsible open">
+      <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Defense in Depth</h3>
+        <span class="collapsible-arrow">&#x25BC;</span>
+      </div>
+      <div class="collapsible-body">
+        <div class="collapsible-body-inner">
+          <p>Multiple independent security layers ensure that no single failure compromises the system. Even if the agent bypasses one control (e.g., a Guardrails rule), the kernel-level restrictions (Landlock, seccomp, network namespaces) remain active. Each layer operates independently and does not depend on the others functioning correctly.</p>
         </div>
       </div>
-    </section>
-  </main>
+    </div>
 
-  <section class="references-footer">
-    <h3>&#x1F4DA; References &amp; Resources</h3>
-    <ul class="references-list">
-      <li class="reference-item">
-        <span class="reference-type-icon">&#x1F4C4;</span>
-        <div class="reference-content">
-          <span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/reference/architecture.html" target="_blank" rel="noopener noreferrer">NemoClaw Architecture Reference</a></span>
-          <span class="reference-domain">docs.nvidia.com</span><span class="reference-type-tag">official-docs</span>
+    <div class="collapsible">
+      <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Least Privilege</h3>
+        <span class="collapsible-arrow">&#x25BC;</span>
+      </div>
+      <div class="collapsible-body">
+        <div class="collapsible-body-inner">
+          <p>The sandbox starts with no capabilities and adds only what is explicitly needed. Network, filesystem, and process access must be granted by policy. This mirrors the security principle used in production infrastructure: deny everything by default, explicitly permit only what is required.</p>
         </div>
-      </li>
-      <li class="reference-item">
-        <span class="reference-type-icon">&#x1F4C4;</span>
-        <div class="reference-content">
-          <span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/about/how-it-works.html" target="_blank" rel="noopener noreferrer">How NemoClaw Works</a></span>
-          <span class="reference-domain">docs.nvidia.com</span><span class="reference-type-tag">official-docs</span>
+      </div>
+    </div>
+
+    <div class="collapsible">
+      <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Credential Isolation</h3>
+        <span class="collapsible-arrow">&#x25BC;</span>
+      </div>
+      <div class="collapsible-body">
+        <div class="collapsible-body-inner">
+          <p>API keys, tokens, and authentication secrets live on the host in ~/.nemoclaw/credentials.json, never in the sandbox. The Inference Gateway injects credentials at the boundary when proxying requests. A sandbox compromise cannot leak credentials because they were never present inside the sandbox.</p>
         </div>
-      </li>
-      <li class="reference-item">
-        <span class="reference-type-icon">&#x1F4BB;</span>
-        <div class="reference-content">
-          <span class="reference-title"><a href="https://github.com/NVIDIA/NemoClaw" target="_blank" rel="noopener noreferrer">NemoClaw GitHub Repository</a></span>
-          <span class="reference-domain">github.com</span><span class="reference-type-tag">github</span>
-        </div>
-      </li>
-    </ul>
+      </div>
+    </div>
+
+    <div class="callout-info callout">
+      <p><strong>Data Flow Summary:</strong> User message arrives via messaging bridge (SSH) &rarr; OpenClaw plans response &rarr; Tools execute inside sandbox &rarr; Network Policy Engine evaluates outbound requests &rarr; Privacy Router classifies inference sensitivity &rarr; Inference Gateway proxies with injected credentials &rarr; Response returns through same path &rarr; Every step logged in audit trail.</p>
+    </div>
+
   </section>
 
-  <div class="page-nav-footer">
-    <a href="concepts.html" class="prev">Concepts</a>
-    <a href="how-it-works.html" class="next">How It Works</a>
-  </div>
-
-  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+  <footer class="page-nav">
+    <a href="concepts.html">&larr; Core Concepts</a>
+    <a href="how-it-works.html">How It Works &rarr;</a>
+  </footer>
 
   <script>
-    document.documentElement.classList.add("js-ready");
-    document.getElementById('navHamburger').addEventListener('click',function(){this.classList.toggle('open');document.getElementById('navPages').classList.toggle('mobile-open')});
-    window.addEventListener('scroll',function(){var b=document.querySelector('.nav-progress-bar'),h=document.documentElement.scrollHeight-window.innerHeight;b.style.width=h>0?(window.scrollY/h*100)+'%':'0%'},{passive:true});
-    var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{threshold:0.08,rootMargin:'0px 0px -40px 0px'});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
-    var STORAGE_KEY='nemoclaw-course-visited';function getVisited(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]}catch(e){return[]}}function markVisited(p){var v=getVisited();if(v.indexOf(p)===-1){v.push(p);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(v))}catch(e){}}}markVisited('architecture');
+    window.addEventListener('scroll', function() {
+      var h = document.documentElement;
+      var scrollTop = h.scrollTop || document.body.scrollTop;
+      var scrollHeight = h.scrollHeight - h.clientHeight;
+      var progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+      document.getElementById('progressBar').style.width = progress + '%';
+    });
+    document.getElementById('hamburger').addEventListener('click', function() {
+      this.classList.toggle('open');
+      document.getElementById('navPages').classList.toggle('open');
+    });
   </script>
 </body>
 </html>

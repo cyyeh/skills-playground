@@ -1,171 +1,135 @@
 ## Implementation Details
 <!-- level: advanced -->
 <!-- references:
-- [MLflow Tracking APIs](https://mlflow.org/docs/latest/tracking/tracking-api) | official-docs
-- [MLflow Python API Reference](https://mlflow.org/docs/latest/api_reference/python_api/mlflow.html) | official-docs
-- [MLflow Self-Hosting Guide](https://mlflow.org/docs/latest/self-hosting/architecture/overview/) | official-docs
-- [MLflow Troubleshooting](https://mlflow.org/docs/latest/self-hosting/troubleshooting/) | official-docs
+- [MLflow REST API Reference](https://mlflow.org/docs/latest/rest-api.html) | docs
+- [MLflow Plugins](https://mlflow.org/docs/latest/ml/plugins) | docs
+- [MLflow Tracking Server Architecture](https://mlflow.org/docs/latest/self-hosting/architecture/tracking-server/) | docs
+- [MLflow GitHub Source](https://github.com/mlflow/mlflow) | github
 -->
 
-### Getting Started
+### Storage Backends
 
-Install MLflow and run your first tracked experiment:
+#### Backend Store (Metadata)
 
-```bash
-pip install mlflow
-
-# Start the tracking UI (optional -- MLflow works without a server)
-mlflow ui --port 5000
-```
-
-```python
-import mlflow
-
-# Set the tracking URI (defaults to local ./mlruns)
-mlflow.set_tracking_uri("http://localhost:5000")
-mlflow.set_experiment("my-first-experiment")
-
-with mlflow.start_run():
-    mlflow.log_param("learning_rate", 0.01)
-    mlflow.log_param("epochs", 100)
-
-    for epoch in range(100):
-        loss = train_one_epoch(model, data)
-        mlflow.log_metric("loss", loss, step=epoch)
-
-    mlflow.sklearn.log_model(model, "model")
-```
-
-### Autologging Setup
-
-```python
-import mlflow
-
-# Enable autologging for ALL supported frameworks
-mlflow.autolog()
-
-# Or enable for a specific framework with configuration
-mlflow.sklearn.autolog(
-    log_input_examples=True,
-    log_model_signatures=True,
-    log_models=True,
-    log_datasets=True,
-    silent=False,
-)
-```
-
-### Production Tracking Server Deployment
+MLflow uses SQLAlchemy as the ORM layer, which means any SQLAlchemy-compatible database works as a backend store. The connection is specified via a database URI:
 
 ```bash
-# PostgreSQL backend + S3 artifact store + artifact proxy
+mlflow server --backend-store-uri postgresql://user:pass@host:5432/mlflow
+```
+
+Supported backends:
+| Backend | URI Format | Notes |
+|---------|-----------|-------|
+| SQLite | `sqlite:///mlflow.db` | Single-user, file-based. Good for dev. |
+| PostgreSQL | `postgresql://...` | Recommended for production. |
+| MySQL | `mysql://...` | Supported via PyMySQL or mysqlclient. |
+| SQL Server | `mssql://...` | Supported via pyodbc. |
+| File Store | `./mlruns` | Legacy default. No registry support. |
+
+The database schema includes tables: `experiments`, `runs`, `params`, `metrics`, `tags`, `latest_metrics`, `registered_models`, `model_versions`, and `model_version_tags`.
+
+Metrics are stored with a `step` and `timestamp`, allowing time-series visualization. The `latest_metrics` table caches the final value of each metric for fast query and sorting.
+
+#### Artifact Store (Files)
+
+Artifact storage is pluggable and completely separate from the metadata store:
+
+```bash
 mlflow server \
-    --backend-store-uri postgresql://user:pass@db-host:5432/mlflow \
-    --artifacts-destination s3://my-mlflow-bucket/artifacts \
-    --serve-artifacts \
-    --host 0.0.0.0 \
-    --port 5000
+  --backend-store-uri postgresql://... \
+  --default-artifact-root s3://my-bucket/mlflow-artifacts
 ```
 
-Key configuration flags:
-- `--backend-store-uri`: Database connection string (PostgreSQL recommended for production)
-- `--artifacts-destination`: Remote artifact store location
-- `--serve-artifacts`: Enable artifact proxying through the tracking server
-- `--gunicorn-opts "--workers 4 --timeout 120"`: Tune the WSGI server for production load
+Each run gets a unique artifact directory: `<artifact-root>/<experiment-id>/<run-id>/artifacts/`. The artifact store interface defines operations: `log_artifact`, `log_artifacts`, `list_artifacts`, `download_artifacts`.
 
-### Docker Deployment
+When `--serve-artifacts` is enabled, the tracking server exposes an HTTP proxy at `/api/2.0/mlflow-artifacts/artifacts/`, so clients never need direct access to S3/Blob/GCS.
 
-```dockerfile
-FROM python:3.11-slim
-RUN pip install mlflow psycopg2-binary boto3
-EXPOSE 5000
-CMD ["mlflow", "server", \
-     "--backend-store-uri", "postgresql://...", \
-     "--artifacts-destination", "s3://...", \
-     "--serve-artifacts", \
-     "--host", "0.0.0.0", "--port", "5000"]
+### REST API Design
+
+The MLflow REST API follows a flat, resource-oriented design under `/api/2.0/mlflow/`:
+
+**Key endpoints:**
+- `POST /experiments/create` -- Create a new experiment
+- `GET /experiments/get` -- Get experiment metadata
+- `POST /runs/create` -- Start a new run
+- `POST /runs/log-parameter` -- Log a single parameter
+- `POST /runs/log-metric` -- Log a single metric
+- `POST /runs/log-batch` -- Log params, metrics, and tags in batch
+- `POST /runs/set-tag` -- Set a tag on a run
+- `GET /runs/search` -- Search runs with filter expressions
+- `POST /model-versions/create` -- Register a model version
+- `GET /registered-models/search` -- Search registered models
+
+The search API supports a SQL-like filter syntax:
+```
+metrics.accuracy > 0.9 AND params.model_type = 'random_forest'
 ```
 
-### Model Registration and Serving
+All API responses use JSON. Request bodies are also JSON (or Protobuf for internal use). The API is versioned via the URL path (`/api/2.0/`).
+
+### Client Libraries
+
+**Python (`mlflow` package):** The primary client. Provides high-level fluent API (`mlflow.log_param()`, `mlflow.start_run()`), lower-level `MlflowClient` class, and framework-specific modules (`mlflow.sklearn`, `mlflow.pytorch`, etc.).
+
+**R (`mlflow` CRAN package):** Wraps the REST API for R users. Supports tracking, model logging, and model serving.
+
+**Java (`mlflow-client`):** A Java client for JVM-based workflows, commonly used with Spark MLlib.
+
+**REST API:** Any language can interact with MLflow via HTTP. The REST API is the universal interface.
+
+### Plugin System
+
+MLflow provides extension points for custom integrations:
+
+**Tracking Store Plugins:** Implement a custom backend store by extending `AbstractStore`. Use case: proprietary databases or cloud-specific metadata stores.
+
+**Artifact Repository Plugins:** Extend `ArtifactRepository` to support custom file storage (e.g., a corporate artifact manager).
+
+**Model Registry Store Plugins:** Custom registry implementations for specialized governance requirements.
+
+**Deployment Plugins:** Define custom deployment targets by implementing the `BaseDeploymentClient` interface. Enables `mlflow deployments create -t <target>`.
+
+**Model Evaluation Plugins:** Custom evaluator functions for domain-specific metrics.
+
+Plugins are registered via Python entry points in `setup.py` or `pyproject.toml`:
+```python
+entry_points={
+    "mlflow.artifact_repository": [
+        "mystore=my_package.store:MyArtifactRepository"
+    ]
+}
+```
+
+### Autologging Implementation
+
+Autologging uses **monkey-patching** to intercept framework method calls. When you call `mlflow.autolog()`, MLflow:
+
+1. Detects which ML libraries are importable.
+2. For each supported library, patches the `.fit()` (or equivalent training) method.
+3. Before `.fit()` executes, the patch starts an MLflow run and logs constructor parameters.
+4. After `.fit()` completes, the patch logs training metrics, the fitted model, and any framework-specific artifacts (e.g., feature importance for tree models).
+5. The patch restores the original method signature, so the user's code is unaffected.
+
+This is implemented in `mlflow/utils/autologging_utils/` with a `safe_patch` decorator that handles exceptions gracefully -- if logging fails, the training code still runs.
+
+### Model Serialization
+
+MLflow models are stored as a directory containing:
+- `MLmodel` -- YAML file listing flavors, signatures, and metadata.
+- `model.pkl` (or framework-specific format) -- The serialized model.
+- `conda.yaml` / `requirements.txt` -- Environment dependencies.
+- `python_env.yaml` -- Python version and environment specification.
+
+Since MLflow 3.10, **pickle-free serialization** is supported using `torch.export` (PyTorch) and `skops` (scikit-learn), with a `MLFLOW_ALLOW_PICKLE_DESERIALIZATION` flag to control whether pickle-based models can be loaded (a security measure).
+
+### Model Signatures and Input Examples
+
+Models can include a **signature** that defines the expected input/output schema:
 
 ```python
-import mlflow
-
-# Register a model from an existing run
-model_uri = "runs:/<run-id>/model"
-mlflow.register_model(model_uri, "churn-predictor")
-
-# Set model alias for production
-from mlflow import MlflowClient
-client = MlflowClient()
-client.set_registered_model_alias("churn-predictor", "champion", version=3)
-
-# Load model by alias in production code
-model = mlflow.pyfunc.load_model("models:/churn-predictor@champion")
-predictions = model.predict(new_data)
+from mlflow.models import infer_signature
+signature = infer_signature(X_train, model.predict(X_train))
+mlflow.sklearn.log_model(model, "model", signature=signature)
 ```
 
-```bash
-# Serve a model as a REST endpoint
-mlflow models serve -m "models:/churn-predictor@champion" --port 8080
-
-# Invoke the endpoint
-curl -X POST http://localhost:8080/invocations \
-  -H "Content-Type: application/json" \
-  -d '{"inputs": [[5.1, 3.5, 1.4, 0.2]]}'
-```
-
-### GenAI Tracing Setup
-
-```python
-import mlflow
-
-# Auto-tracing for OpenAI (one line)
-mlflow.openai.autolog()
-
-# Manual tracing with decorators
-@mlflow.trace
-def my_agent(question: str) -> str:
-    context = retrieve_documents(question)
-    return generate_answer(question, context)
-
-# Access trace data programmatically
-traces = mlflow.search_traces(experiment_ids=["1"])
-```
-
-### AI Gateway Configuration
-
-```python
-from mlflow.gateway import MlflowGatewayClient
-
-# Create a route
-client = MlflowGatewayClient("http://gateway:5001")
-client.create_route(
-    name="gpt4-chat",
-    route_type="llm/v1/chat",
-    model={
-        "name": "gpt-4",
-        "provider": "openai",
-        "config": {"openai_api_key": "$OPENAI_API_KEY"}
-    }
-)
-```
-
-### Performance Tuning
-
-- **Async logging:** Call `mlflow.config.enable_async_logging(True)` to log metrics/params without blocking the training loop.
-- **Batch logging:** Use `mlflow.log_metrics()` (plural) and `mlflow.log_params()` to batch multiple values in a single API call.
-- **Database indexing:** Ensure your PostgreSQL backend has indexes on `runs.experiment_id`, `metrics.run_uuid`, and `params.run_uuid` for fast queries.
-- **Artifact cleanup:** Use `mlflow gc` or the MlflowClient to delete old runs and reclaim artifact storage.
-- **Worker scaling:** Run the tracking server behind Gunicorn with 4-8 workers per CPU core for production concurrency.
-
-### Source Code Structure
-
-The MLflow repository is organized as:
-- `mlflow/tracking/` -- Client-side tracking API and backend store implementations
-- `mlflow/store/` -- Backend store (SQL, file) and artifact store (S3, GCS, Azure) implementations
-- `mlflow/models/` -- Model packaging, flavors, and signature logic
-- `mlflow/server/` -- Tracking server (FastAPI app, REST handlers)
-- `mlflow/gateway/` -- AI Gateway server and route management
-- `mlflow/tracing/` -- GenAI tracing instrumentation and OpenTelemetry integration
-- `mlflow/pyfunc/` -- The universal python_function model flavor
-- `mlflow/recipes/` -- MLflow Recipes (formerly Pipelines) for opinionated ML workflows
+The signature is stored in the `MLmodel` file and enforced at serving time, rejecting malformed input before it reaches the model.

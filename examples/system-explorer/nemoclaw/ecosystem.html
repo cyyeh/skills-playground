@@ -8,28 +8,137 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-tight:1.15;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--duration-fast:150ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
-    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
-    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-    .page-header{max-width:var(--content-width);margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin:0 0 var(--space-3);line-height:var(--leading-tight)}.page-level-badge{display:inline-block;font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}.page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}
-    .content-area{max-width:var(--content-width);margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin:0 0 var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:var(--space-6) 0 var(--space-3)}.content-section p,.content-section li{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4)}.content-section ul{padding-left:var(--space-6);margin:0 0 var(--space-4)}.content-section li{margin:0 0 var(--space-2)}
-    .eco-card{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-sm);margin-bottom:var(--space-5);border-left:4px solid var(--card-color,var(--color-accent));transition:transform var(--duration-fast),box-shadow var(--duration-fast)}.eco-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}.eco-card h3{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);margin:0 0 var(--space-3);display:flex;align-items:center;gap:var(--space-2)}.eco-icon{font-size:1.3rem}.eco-card p{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.7;margin:0 0 var(--space-3)}.eco-card p:last-child{margin:0}
-    .info-table{width:100%;border-collapse:collapse;margin:var(--space-4) 0 var(--space-6);font-size:var(--text-sm)}.info-table th,.info-table td{padding:var(--space-3) var(--space-4);text-align:left;border-bottom:1px solid var(--color-border-light)}.info-table th{font-weight:600;background:var(--color-bg-warm);font-family:var(--font-display)}.info-table td{color:var(--color-text-secondary)}.info-table tr:hover td{background:var(--color-surface-warm,#FDF9F3)}
-    code{font-family:var(--font-mono);font-size:0.88em;background:var(--color-bg-code);color:#CDD6F4;padding:0.15em 0.4em;border-radius:4px}
-    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:0 0 var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-title{font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}.reference-type-tag{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);background:var(--color-border-light);padding:1px 6px;border-radius:var(--radius-full);margin-left:var(--space-2)}
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:var(--content-width);margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
-    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
-    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
-    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.info-table{font-size:var(--text-xs)}}@media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+    :root {
+      --color-bg: #FAF7F2; --color-bg-warm: #F5F0E8; --color-bg-code: #1E1E2E;
+      --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
+      --color-border: #E5DFD6; --color-border-light: #EEEBE5;
+      --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
+      --color-accent: #D4A843; --color-accent-hover: #BF9738; --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
+      --color-success: #2D8B55; --color-success-light: #E8F5EE;
+      --color-error: #C93B3B; --color-error-light: #FDE8E8;
+      --color-info: #2A7B9B; --color-info-light: #E4F2F7;
+      --color-level-beginner: #2D8B55; --color-level-intermediate: #D4A843; --color-level-advanced: #C93B3B;
+      --font-display: 'Bricolage Grotesque', Georgia, serif;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem; --text-4xl: 2.25rem;
+      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
+      --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
+      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
+      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
+      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 400ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--color-bg); background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%); font-family: var(--font-body); color: var(--color-text); line-height: var(--leading-normal); margin: 0; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+    .site-nav { position: sticky; top: 0; z-index: 1000; height: var(--nav-height); background: rgba(250,247,242,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border-light); }
+    .nav-progress-bar { position: absolute; top: 0; left: 0; height: 3px; width: 0%; background: var(--color-accent); transition: width 100ms linear; z-index: 1; }
+    .nav-inner { max-width: var(--content-width-wide); margin: 0 auto; height: 100%; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6); }
+    .nav-brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0; } .nav-brand:hover { color: var(--color-accent); }
+    .nav-pages { display: flex; align-items: center; gap: var(--space-1); flex: 1; overflow-x: auto; scrollbar-width: none; } .nav-pages::-webkit-scrollbar { display: none; }
+    .nav-page-link { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; color: var(--color-text-secondary); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); white-space: nowrap; transition: color var(--duration-fast), background var(--duration-fast); }
+    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); } .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
+    .nav-hamburger { display: none; flex-direction: column; justify-content: center; gap: 4px; width: 36px; height: 36px; padding: var(--space-2); background: none; border: none; cursor: pointer; flex-shrink: 0; }
+    .nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--color-text); border-radius: 1px; transition: transform var(--duration-fast), opacity var(--duration-fast); }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); } .nav-hamburger.open span:nth-child(2) { opacity: 0; } .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    .page-header { max-width: var(--content-width); margin: 0 auto; padding: var(--space-12) var(--space-6) var(--space-8); }
+    .page-header .level-badge { display: inline-block; background: var(--color-accent-light); color: var(--color-accent); font-size: var(--text-xs); font-weight: 600; padding: 2px var(--space-2); border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
+    .page-header h1 { font-family: var(--font-display); font-size: var(--text-4xl); font-weight: 800; color: var(--color-text); margin: 0 0 var(--space-4); line-height: var(--leading-tight); }
+    .page-header .subtitle { font-size: var(--text-lg); color: var(--color-text-secondary); margin: 0; }
+
+    .content { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6) var(--space-16); }
+    .content h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--color-text); margin: var(--space-12) 0 var(--space-4); }
+    .content h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; color: var(--color-text); margin: var(--space-6) 0 var(--space-3); }
+    .content p { font-size: var(--text-base); color: var(--color-text-secondary); line-height: var(--leading-normal); margin: 0 0 var(--space-4); }
+
+    .eco-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-6);
+      margin-bottom: var(--space-4);
+    }
+    .eco-card h3 { margin-top: 0; }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--space-6) 0;
+      font-size: var(--text-sm);
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .comparison-table th {
+      background: var(--color-bg-warm);
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--color-text);
+      text-align: left;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 2px solid var(--color-border);
+      white-space: nowrap;
+    }
+    .comparison-table td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border-light);
+      color: var(--color-text-secondary);
+      vertical-align: top;
+    }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .comparison-table td:first-child { font-weight: 600; color: var(--color-text); white-space: nowrap; }
+
+    .callout { background: var(--color-accent-light); border-left: 4px solid var(--color-accent); border-radius: var(--radius-sm); padding: var(--space-4) var(--space-5); margin: var(--space-6) 0; }
+    .callout p { color: var(--color-text); margin: 0; }
+    .callout strong { color: var(--color-accent-hover); }
+
+    .integration-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-3);
+      margin: var(--space-4) 0;
+    }
+    .integration-chip {
+      background: var(--color-surface-warm);
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      text-align: center;
+    }
+    .integration-chip strong { color: var(--color-text); display: block; margin-bottom: 2px; }
+
+    .page-nav { display: flex; justify-content: space-between; align-items: center; max-width: var(--content-width); margin: 0 auto; padding: var(--space-8) var(--space-6); border-top: 1px solid var(--color-border-light); }
+    .page-nav a { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); text-decoration: none; padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm); transition: background var(--duration-fast); }
+    .page-nav a:hover { background: var(--color-accent-light); }
+
+    @media (max-width: 768px) {
+      .nav-pages { display: none; } .nav-pages.open { display: flex; flex-direction: column; position: absolute; top: var(--nav-height); left: 0; right: 0; background: rgba(250,247,242,0.97); backdrop-filter: blur(12px); padding: var(--space-4) var(--space-6); border-bottom: 1px solid var(--color-border-light); gap: var(--space-1); }
+      .nav-hamburger { display: flex; }
+      .page-header h1 { font-size: var(--text-3xl); }
+      .comparison-table { font-size: var(--text-xs); }
+      .comparison-table th, .comparison-table td { padding: var(--space-2) var(--space-3); }
+      .integration-grid { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
   <nav class="site-nav">
-    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-progress-bar" id="progressBar"></div>
     <div class="nav-inner">
       <a href="index.html" class="nav-brand">NemoClaw</a>
+      <button class="nav-hamburger" id="hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
       <div class="nav-pages" id="navPages">
-        <a href="index.html" class="nav-page-link">Home</a>
         <a href="concepts.html" class="nav-page-link">Concepts</a>
         <a href="architecture.html" class="nav-page-link">Architecture</a>
         <a href="how-it-works.html" class="nav-page-link">How It Works</a>
@@ -39,112 +148,156 @@
         <a href="faq.html" class="nav-page-link">FAQ</a>
         <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
       </div>
-      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
     </div>
   </nav>
 
-  <header class="page-header animate-in">
-    <span class="page-level-badge intermediate">Intermediate</span>
+  <header class="page-header">
+    <span class="level-badge">Intermediate</span>
     <h1>Ecosystem &amp; Integrations</h1>
+    <p class="subtitle">Where NemoClaw fits in NVIDIA's AI stack and how it connects to the broader agent ecosystem.</p>
   </header>
 
-  <main class="content-area">
-    <section class="content-section animate-in">
-      <h2>Core Dependencies</h2>
-    </section>
+  <section class="content">
 
-    <div class="eco-card animate-in" style="--card-color:#A6E3A1">
-      <h3><span class="eco-icon">&#x1F916;</span> OpenClaw</h3>
-      <p>The open-source autonomous AI agent framework that NemoClaw wraps. OpenClaw provides task execution, tool use, memory, scheduled jobs, and messaging integrations. NemoClaw adds a security layer on top &mdash; your existing skills, configurations, and workflows carry over into the sandbox unchanged.</p>
+    <h2>NVIDIA's AI Stack</h2>
+
+    <div class="eco-card">
+      <h3>NeMo Framework</h3>
+      <p>NVIDIA's end-to-end platform for building, customizing, and deploying generative AI models. Covers data curation, pretraining, fine-tuning, alignment (RLHF/DPO), and evaluation. NemoClaw uses models produced by NeMo (particularly Nemotron) but does not train or fine-tune models. <strong>NeMo produces the models; NemoClaw provides the secure runtime to use them.</strong></p>
     </div>
 
-    <div class="eco-card animate-in" style="--card-color:#89B4FA">
-      <h3><span class="eco-icon">&#x1F6E1;&#xFE0F;</span> NVIDIA OpenShell</h3>
-      <p>NVIDIA's sandbox runtime for AI agents, part of the Agent Toolkit. Provides kernel-level isolation (Landlock, seccomp, network namespaces), inference routing gateway, and policy enforcement. OpenShell is agent-framework-agnostic; NemoClaw provides the OpenClaw-specific integration.</p>
+    <div class="eco-card">
+      <h3>Nemotron Models</h3>
+      <p>NVIDIA's open-source LLM family optimized for enterprise tasks: instruction following, agentic reasoning, and tool use.</p>
+      <div class="integration-grid">
+        <div class="integration-chip"><strong>Nemotron 3 Nano 4B</strong>Edge &amp; local deployment</div>
+        <div class="integration-chip"><strong>Nemotron 3 Super 120B</strong>MoE, 12B active/token</div>
+      </div>
+      <p>NemoClaw defaults to Nemotron 3 Super via NVIDIA Endpoints, but supports any model via Ollama or custom providers.</p>
     </div>
 
-    <div class="eco-card animate-in" style="--card-color:#CBA6F7">
-      <h3><span class="eco-icon">&#x1F9E0;</span> NVIDIA Nemotron Models</h3>
-      <p>NemoClaw is optimized for NVIDIA's Nemotron model family. Ranges from the 4B-parameter Nano variant (edge) to the 120B-parameter Super variant (full local inference). Using Nemotron keeps all data on-premises, but NemoClaw also supports OpenAI, Anthropic, Gemini, and any OpenAI-compatible endpoint.</p>
+    <div class="eco-card">
+      <h3>NVIDIA NIM (Inference Microservices)</h3>
+      <p>Containerized, optimized inference endpoints for NVIDIA models. NemoClaw routes inference through NIM-hosted models. NIM handles GPU optimization (TensorRT-LLM, batching, quantization); NemoClaw handles security and policy.</p>
     </div>
 
-    <section class="content-section animate-in">
-      <h2>Inference Provider Ecosystem</h2>
-      <table class="info-table">
-        <thead><tr><th>Provider</th><th>Protocol</th><th>Local/Cloud</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>NVIDIA Endpoints</td><td>OpenAI-compatible</td><td>Cloud</td><td>Hosted on <code>integrate.api.nvidia.com</code></td></tr>
-          <tr><td>OpenAI</td><td>Native OpenAI</td><td>Cloud</td><td>GPT-4o, o3, etc.</td></tr>
-          <tr><td>Anthropic</td><td>anthropic-messages</td><td>Cloud</td><td>Claude models</td></tr>
-          <tr><td>Google Gemini</td><td>OpenAI-compatible</td><td>Cloud</td><td>Via Google's endpoint</td></tr>
-          <tr><td>Ollama</td><td>OpenAI-compatible</td><td>Local</td><td>Any Ollama model</td></tr>
-          <tr><td>NVIDIA NIM</td><td>OpenAI-compatible</td><td>Local</td><td>Experimental, GPU-dependent</td></tr>
-          <tr><td>vLLM</td><td>OpenAI-compatible</td><td>Local</td><td>Experimental</td></tr>
-          <tr><td>Custom endpoints</td><td>OpenAI or Anthropic</td><td>Either</td><td>Proxies, gateways, internal APIs</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section class="content-section animate-in">
-      <h2>Messaging Platforms</h2>
-      <p>NemoClaw connects sandboxed agents to messaging platforms through host-side bridge processes. Bridges run outside the sandbox, so messaging credentials never enter the agent's environment.</p>
-      <ul>
-        <li><strong>Telegram</strong> &mdash; Bot integration via host-side relay</li>
-        <li><strong>Discord</strong> &mdash; Bot integration via host-side relay</li>
-        <li><strong>Slack</strong> &mdash; App integration via host-side relay</li>
-      </ul>
-    </section>
-
-    <section class="content-section animate-in">
-      <h2>Complementary Tools</h2>
-    </section>
-
-    <div class="eco-card animate-in" style="--card-color:#F38BA8">
-      <h3><span class="eco-icon">&#x1F4E6;</span> NanoClaw</h3>
-      <p>Alternative lightweight agent framework using fully containerized, ephemeral Kubernetes-native environments. While NemoClaw wraps existing OpenClaw setups, NanoClaw builds security in from the ground up. Different architectural philosophy &mdash; evaluate both for your use case.</p>
+    <div class="eco-card">
+      <h3>TensorRT-LLM</h3>
+      <p>High-performance inference engine optimizing transformer models for NVIDIA GPUs. When NemoClaw routes to local Nemotron models, TensorRT-LLM provides the inference acceleration (kernel fusion, in-flight batching, quantization). NemoClaw connects through NIM or Ollama, which use TensorRT-LLM under the hood.</p>
     </div>
 
-    <div class="eco-card animate-in" style="--card-color:#FAB387">
-      <h3><span class="eco-icon">&#x1F527;</span> NVIDIA Agent Toolkit</h3>
-      <p>The broader toolkit includes model optimization tools, inference servers (TensorRT-LLM, Triton), and evaluation frameworks. NemoClaw integrates naturally with other toolkit components for end-to-end agent deployment.</p>
+    <div class="eco-card">
+      <h3>NeMo Agent Toolkit (AgentIQ)</h3>
+      <p>Framework-agnostic library for connecting, evaluating, and accelerating teams of AI agents. Provides unified monitoring, Agent Performance Primitives (APP), and MCP client support. NemoClaw and the Agent Toolkit are complementary: the Toolkit optimizes performance; NemoClaw provides the secure runtime. <strong>OpenShell is part of the Agent Toolkit.</strong></p>
     </div>
 
-    <div class="eco-card animate-in" style="--card-color:#94E2D5">
-      <h3><span class="eco-icon">&#x1F50C;</span> MCP (Model Context Protocol)</h3>
-      <p>Standard protocol for AI agents to interact with external tools and data sources. OpenClaw supports MCP servers, and NemoClaw's network policy engine can be configured to allow connections to specific MCP endpoints while blocking unauthorized access.</p>
+    <div class="eco-card">
+      <h3>NeMo Guardrails</h3>
+      <p>Programmable behavioral constraints for LLMs: topical guardrails, safety guardrails, prompt injection blocking, output format enforcement. NemoClaw integrates with Guardrails at the application level, complementing its kernel-level security. <strong>Guardrails handles what the agent says; NemoClaw handles what the agent can do.</strong></p>
     </div>
 
-    <section class="content-section animate-in">
-      <h2>Community Resources</h2>
-      <ul>
-        <li><strong>GitHub:</strong> <a href="https://github.com/NVIDIA/NemoClaw" target="_blank" rel="noopener noreferrer">NVIDIA/NemoClaw</a> &mdash; Source, issues, discussions</li>
-        <li><strong>Documentation:</strong> <a href="https://docs.nvidia.com/nemoclaw/latest/" target="_blank" rel="noopener noreferrer">docs.nvidia.com/nemoclaw</a> &mdash; Developer guide</li>
-        <li><strong>Discord:</strong> Active community for support and discussion</li>
-        <li><strong>awesome-nemoclaw:</strong> Community-curated presets, recipes, and playbooks</li>
-      </ul>
-    </section>
-  </main>
+    <h2>OpenClaw Ecosystem</h2>
 
-  <section class="references-footer">
-    <h3>&#x1F4DA; References &amp; Resources</h3>
-    <ul class="references-list">
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/index.html" target="_blank" rel="noopener noreferrer">NVIDIA NemoClaw Developer Guide</a></span><span class="reference-domain">docs.nvidia.com</span><span class="reference-type-tag">official-docs</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://dev.to/mechcloud_academy/architecting-the-agentic-future-openclaw-vs-nanoclaw-vs-nvidias-nemoclaw-9f8" target="_blank" rel="noopener noreferrer">OpenClaw vs. NanoClaw vs. NemoClaw</a></span><span class="reference-domain">dev.to</span><span class="reference-type-tag">blog</span></div></li>
-    </ul>
+    <div class="eco-card">
+      <h3>OpenClaw Plugin System</h3>
+      <p>OpenClaw provides two extension mechanisms:</p>
+      <div class="integration-grid">
+        <div class="integration-chip"><strong>Agent Tools</strong>Functions the LLM can call</div>
+        <div class="integration-chip"><strong>Lifecycle Plugins</strong>Background hooks for auth &amp; logging</div>
+      </div>
+      <p>NemoClaw itself runs as an OpenClaw plugin, injecting security controls without modifying OpenClaw's core code.</p>
+    </div>
+
+    <div class="eco-card">
+      <h3>MCP (Model Context Protocol)</h3>
+      <p>OpenClaw natively supports MCP (Anthropic's open standard) at three levels:</p>
+      <div class="integration-grid">
+        <div class="integration-chip"><strong>Server-level</strong>Host MCP servers</div>
+        <div class="integration-chip"><strong>Client-level</strong>Connect to external MCP servers</div>
+        <div class="integration-chip"><strong>Gateway-level</strong>Composio managed OAuth</div>
+      </div>
+      <p>NemoClaw governs MCP connections through its network policy -- MCP servers requiring network access are subject to deny-by-default rules.</p>
+    </div>
+
+    <h2>Third-Party Integrations</h2>
+
+    <h3>Messaging Platforms</h3>
+    <div class="integration-grid">
+      <div class="integration-chip"><strong>Telegram</strong>Bot API bridge</div>
+      <div class="integration-chip"><strong>Discord</strong>Bot bridge</div>
+      <div class="integration-chip"><strong>Slack</strong>App bridge</div>
+      <div class="integration-chip"><strong>WhatsApp</strong>Gateway bridge</div>
+    </div>
+
+    <h3>SaaS Connectors (via Composio)</h3>
+    <div class="integration-grid">
+      <div class="integration-chip"><strong>Salesforce</strong>CRM</div>
+      <div class="integration-chip"><strong>Jira / Linear</strong>Project mgmt</div>
+      <div class="integration-chip"><strong>GitHub / GitLab</strong>Code repos</div>
+      <div class="integration-chip"><strong>Google Workspace</strong>Productivity</div>
+      <div class="integration-chip"><strong>Datadog</strong>Monitoring</div>
+      <div class="integration-chip"><strong>PagerDuty</strong>Alerting</div>
+    </div>
+
+    <h3>Hardware Platforms</h3>
+    <div class="integration-grid">
+      <div class="integration-chip"><strong>GeForce RTX</strong>Consumer local inference</div>
+      <div class="integration-chip"><strong>RTX PRO</strong>Professional workloads</div>
+      <div class="integration-chip"><strong>DGX Station/Spark</strong>Enterprise local</div>
+      <div class="integration-chip"><strong>Cloud GPU</strong>Any NVIDIA GPU provider</div>
+      <div class="integration-chip"><strong>CPU-only</strong>Cloud inference routing</div>
+    </div>
+
+    <h2>Ecosystem Comparison</h2>
+
+    <div style="overflow-x:auto;">
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>NemoClaw</th>
+          <th>LangChain</th>
+          <th>OpenAI Assistants</th>
+          <th>Claude + MCP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Agent runtime</td><td>Yes (OpenClaw)</td><td>Build-your-own</td><td>API-hosted</td><td>Client library</td></tr>
+        <tr><td>Kernel sandboxing</td><td>Yes (OpenShell)</td><td>No</td><td>Managed</td><td>No</td></tr>
+        <tr><td>Privacy routing</td><td>Local + cloud</td><td>Manual</td><td>Cloud-only</td><td>Cloud-only</td></tr>
+        <tr><td>Tool calling</td><td>Typed schemas</td><td>Tool classes</td><td>JSON schema</td><td>JSON schema</td></tr>
+        <tr><td>Network policy</td><td>Deny-default YAML</td><td>No</td><td>N/A (cloud)</td><td>No</td></tr>
+        <tr><td>MCP support</td><td>Yes (OpenClaw)</td><td>Via adapter</td><td>No</td><td>Native</td></tr>
+        <tr><td>Always-on</td><td>Native</td><td>Custom infra</td><td>No</td><td>No</td></tr>
+        <tr><td>Audit logging</td><td>Kernel-level</td><td>App-level</td><td>Via API</td><td>No built-in</td></tr>
+        <tr><td>Open source</td><td>Apache 2.0</td><td>MIT</td><td>No</td><td>Protocol open</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="callout">
+      <p><strong>Key Takeaway:</strong> NemoClaw is unique in providing kernel-level security for agent runtimes. Other frameworks excel in different areas -- LangChain has the broadest tool ecosystem, OpenAI Assistants has the simplest setup, and MCP provides the best standardized tool protocol. NemoClaw's value proposition is specifically in the security and governance layer.</p>
+    </div>
+
   </section>
 
-  <div class="page-nav-footer">
-    <a href="use-cases.html" class="prev">Use Cases</a>
-    <a href="faq.html" class="next">FAQ</a>
-  </div>
-  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+  <footer class="page-nav">
+    <a href="use-cases.html">&larr; Use Cases</a>
+    <a href="faq.html">FAQ &rarr;</a>
+  </footer>
 
   <script>
-    document.documentElement.classList.add("js-ready");
-    document.getElementById('navHamburger').addEventListener('click',function(){this.classList.toggle('open');document.getElementById('navPages').classList.toggle('mobile-open')});
-    window.addEventListener('scroll',function(){var b=document.querySelector('.nav-progress-bar'),h=document.documentElement.scrollHeight-window.innerHeight;b.style.width=h>0?(window.scrollY/h*100)+'%':'0%'},{passive:true});
-    var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{threshold:0.08,rootMargin:'0px 0px -40px 0px'});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
-    var STORAGE_KEY='nemoclaw-course-visited';function markVisited(p){try{var v=JSON.parse(localStorage.getItem(STORAGE_KEY))||[];if(v.indexOf(p)===-1){v.push(p);localStorage.setItem(STORAGE_KEY,JSON.stringify(v))}}catch(e){}}markVisited('ecosystem');
+    window.addEventListener('scroll', function() {
+      var h = document.documentElement;
+      var scrollTop = h.scrollTop || document.body.scrollTop;
+      var scrollHeight = h.scrollHeight - h.clientHeight;
+      var progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+      document.getElementById('progressBar').style.width = progress + '%';
+    });
+    document.getElementById('hamburger').addEventListener('click', function() {
+      this.classList.toggle('open');
+      document.getElementById('navPages').classList.toggle('open');
+    });
   </script>
 </body>
 </html>

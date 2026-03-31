@@ -1,14 +1,35 @@
 ## Overview
 <!-- level: beginner -->
 <!-- references:
-- [MLflow Official Website](https://mlflow.org) | official-docs
-- [MLflow GitHub Repository](https://github.com/mlflow/mlflow) | github
-- [MLflow 3.0 Announcement](https://www.databricks.com/blog/mlflow-30-unified-ai-experimentation-observability-and-governance) | blog
-- [MLflow Documentation](https://mlflow.org/docs/latest/) | official-docs
+- [MLflow Official Site](https://mlflow.org) | official
+- [MLflow GitHub](https://github.com/mlflow/mlflow) | github
+- [MLflow Documentation](https://mlflow.org/docs/latest/) | docs
 -->
 
-MLflow is an open-source platform for managing the complete machine learning lifecycle, from experiment tracking and reproducible runs to model packaging, versioning, and deployment. Originally created at Databricks in 2018 by Matei Zaharia (co-creator of Apache Spark), MLflow was designed to address the fragmented, ad-hoc nature of ML engineering workflows. It has since become the most widely adopted open-source MLOps platform, with over 800 community contributors, 25+ million monthly PyPI downloads, and adoption by more than 5,000 organizations worldwide. MLflow graduated to a Linux Foundation project, reinforcing its vendor-neutral governance.
+### What Is MLflow?
 
-The platform is organized around a modular architecture: MLflow Tracking logs experiments (parameters, metrics, artifacts); MLflow Projects packages ML code for reproducibility; MLflow Models provides a standard format for packaging models in multiple "flavors"; and the Model Registry offers centralized model versioning and lifecycle management. With the release of MLflow 3.0 in 2025, the platform expanded significantly into the GenAI and LLM space, adding first-class tracing for 20+ GenAI frameworks, LLM evaluation with 50+ built-in judges, an AI Gateway for unified model access with cost tracking, and the new LoggedModel entity as a first-class citizen for organizing agents and model variants.
+MLflow is an open-source platform for managing the entire machine learning lifecycle -- from experimentation and training through packaging, deployment, and monitoring. Originally created at Databricks in 2018, it has grown into one of the most widely adopted MLOps tools in the industry, with over 25,000 GitHub stars, 900+ contributors, and 25+ million monthly PyPI downloads as of early 2026.
 
-MLflow's one-sentence pitch: it gives any ML or AI team -- from a solo data scientist to a 500-person platform org -- a single, open-source control plane to track experiments, reproduce results, package models, and deploy them to production, without locking into any particular cloud vendor or ML framework.
+**One-sentence pitch:** MLflow is the lab notebook, model warehouse, and deployment pipeline for machine learning, all in one open-source toolkit.
+
+### Who Is It For?
+
+- **Data scientists** who want to track experiments without building custom logging infrastructure.
+- **ML engineers** who need to package models in a reproducible, framework-agnostic format and deploy them consistently.
+- **MLOps teams** managing model registries, governance, and production serving at organizational scale.
+- **GenAI developers** who need observability, tracing, and evaluation for LLM-powered applications and agents.
+
+### The Analogy
+
+Think of MLflow as the **version control system for machine learning**. Just as Git tracks every change to your source code, MLflow tracks every experiment you run -- the parameters you used, the metrics you got, the model artifacts you produced. And just as a CI/CD pipeline takes a Git commit and deploys it to production, MLflow takes a registered model version and deploys it to a serving endpoint.
+
+### Why It Matters
+
+Machine learning without experiment tracking is like software development without version control: you end up with unnamed scripts, lost results, and no way to reproduce what worked. MLflow solves the "it worked on my laptop" problem by recording everything needed to reproduce a run and by packaging models in a standard format that works across frameworks and deployment targets.
+
+### Key Differentiators
+
+- **Open source and vendor-neutral:** Apache-2.0 licensed, runs anywhere -- local, cloud, or on-prem.
+- **Framework agnostic:** Native integrations for PyTorch, TensorFlow, scikit-learn, XGBoost, Spark MLlib, LangChain, OpenAI, and 100+ other libraries.
+- **Unified platform:** Covers tracking, model registry, deployment, and (since MLflow 3.0) GenAI observability with tracing and evaluation.
+- **Massive community:** Backed by Databricks, adopted by thousands of organizations worldwide, and supported by a rich plugin ecosystem.
