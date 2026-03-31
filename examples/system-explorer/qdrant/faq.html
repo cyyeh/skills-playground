@@ -1,64 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Common Q&amp;A — Qdrant Course</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ — Qdrant Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- page-context: system:"Qdrant" page:"Common Q&A" level:"All Levels" -->
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2A7B9B;--color-accent-hover:#236A86;--color-accent-light:#E4F2F7;--color-accent-muted:#5A9DB5;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;--stagger-delay:120ms}
-    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(42,123,155,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
-    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-tight:1.15;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--duration-fast:150ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
     .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3);background:var(--color-accent-light);color:var(--color-accent)}
-    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
-    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
-    .accordion{margin:var(--space-4) 0}.accordion-item{border:1px solid var(--color-border-light);border-radius:var(--radius-md);margin-bottom:var(--space-3);overflow:hidden}.accordion-header{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-5);cursor:pointer;background:var(--color-surface);font-family:var(--font-display);font-weight:600;font-size:var(--text-base);transition:background var(--duration-fast)}.accordion-header:hover{background:var(--color-surface-warm)}.accordion-toggle{font-size:1rem;transition:transform var(--duration-fast);flex-shrink:0}.accordion-item.open .accordion-toggle{transform:rotate(180deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}.accordion-item.open .accordion-body{max-height:800px}.accordion-content{padding:0 var(--space-5) var(--space-5);font-size:var(--text-sm);line-height:var(--leading-normal);color:var(--color-text-secondary)}
-    a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
-    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s ease}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .page-header{max-width:var(--content-width);margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6)}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:var(--leading-tight)}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}.page-level-badge.all-levels{background:var(--color-accent-light);color:var(--color-accent)}
+    .content-area{max-width:var(--content-width);margin:0 auto;padding:0 var(--space-6)}.content-intro{font-size:var(--text-lg);color:var(--color-text-secondary);margin-bottom:var(--space-8);line-height:1.7}
+    code{font-family:var(--font-mono);font-size:0.88em;background:var(--color-bg-code);color:#CDD6F4;padding:0.15em 0.4em;border-radius:4px}
+
+    .accordion-list{display:flex;flex-direction:column;gap:var(--space-4)}.accordion-item{background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden}.accordion-header{display:flex;align-items:center;gap:var(--space-4);padding:var(--space-5) var(--space-6);cursor:pointer;user-select:none;transition:background var(--duration-fast)}.accordion-header:hover{background:var(--color-bg-warm)}.accordion-number{font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);color:var(--color-accent);width:2em;flex-shrink:0}.accordion-question{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);color:var(--color-text);flex:1;line-height:1.4}.accordion-chevron{flex-shrink:0;width:20px;height:20px;transition:transform var(--duration-fast)}.accordion-chevron svg{width:100%;height:100%}.accordion-item.open .accordion-chevron{transform:rotate(180deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height 0.4s ease}.accordion-item.open .accordion-body{max-height:2000px}.accordion-body-inner{padding:0 var(--space-6) var(--space-6) var(--space-6)}.accordion-body-inner p{font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}.accordion-body-inner p:last-child{margin:0}
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-4) 0;border-left:4px solid}.callout.tip{background:var(--color-info-light);border-color:var(--color-info)}.callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal);color:var(--color-text-secondary)}.callout-content strong{color:var(--color-text)}.callout-content p{font-size:var(--text-sm);margin:0 0 var(--space-2)}.callout-content p:last-child{margin:0}
+
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:var(--content-width);margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;transition:color var(--duration-fast)}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
     .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
     .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
-    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}}
-    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
-    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}}
+    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.accordion-header{padding:var(--space-4)}.accordion-body-inner{padding:0 var(--space-4) var(--space-4) var(--space-4)}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.accordion-number{display:none}}
   </style>
 </head>
 <body>
-  <nav class="site-nav"><div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div><div class="nav-inner"><a href="index.html" class="nav-brand">Qdrant</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link active">Q&amp;A</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
 
-  <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge">All Levels</span><h1>Common Q&amp;A</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+  <nav class="site-nav">
+    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">Qdrant</a>
+      <div class="nav-pages" id="navPages">
+        <a href="index.html" class="nav-page-link">Home</a>
+        <a href="concepts.html" class="nav-page-link">Concepts</a>
+        <a href="architecture.html" class="nav-page-link">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
+        <a href="implementation.html" class="nav-page-link">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link active">FAQ</a>
+        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <header class="page-header animate-in">
+    <span class="page-level-badge all-levels">All Levels</span>
+    <h1>Common Q&amp;A</h1>
+  </header>
 
   <main class="content-area">
-    <section class="content-section">
-      <p>Hard, practical questions a senior engineer would ask when evaluating or operating Qdrant. Click any question to expand the answer.</p>
-      <div class="accordion">
-        <div class="accordion-item"><div class="accordion-header" onclick="this.parentElement.classList.toggle('open')"><span class="accordion-toggle">&#x25BC;</span>What happens to in-flight writes if a node crashes during replication?</div><div class="accordion-body"><div class="accordion-content">Durability depends on <code>write_consistency_factor</code>. Default (1): write acknowledged after one replica persists to WAL &mdash; if that node crashes, data may be lost. With <code>majority</code>, multiple replicas must persist before acknowledgment. On recovery, WAL replays uncommitted ops. If a replica falls behind, <code>wal_delta</code> transfer catches up with minimal data, falling back to <code>stream_records</code> for full resync.</div></div></div>
-        <div class="accordion-item"><div class="accordion-header" onclick="this.parentElement.classList.toggle('open')"><span class="accordion-toggle">&#x25BC;</span>How do I choose the right quantization method?</div><div class="accordion-body"><div class="accordion-content"><strong>Binary</strong> (32x compression, 40x speedup): best for 1024+ dim embeddings (OpenAI, Cohere). <strong>Scalar</strong> (4x compression, 2x speedup): safe default for 384-768 dim. <strong>Product</strong> (4-64x): most aggressive, tolerate 5-10% recall loss. Always benchmark with your data: create quantized and unquantized collections, compare recall@k.</div></div></div>
-        <div class="accordion-item"><div class="accordion-header" onclick="this.parentElement.classList.toggle('open')"><span class="accordion-toggle">&#x25BC;</span>How does Qdrant handle stale reads in a distributed cluster?</div><div class="accordion-body"><div class="accordion-content">By default, reads go to local replica only (lowest latency, potentially stale). Configure <code>read_consistency</code> per request: <code>majority</code> reads from &gt;50% of replicas, <code>quorum</code> requires agreement, <code>all</code> reads every replica. Use selectively for freshness-critical operations rather than blanket-applying to all reads.</div></div></div>
-        <div class="accordion-item"><div class="accordion-header" onclick="this.parentElement.classList.toggle('open')"><span class="accordion-toggle">&#x25BC;</span>What are the practical scaling limits?</div><div class="accordion-body"><div class="accordion-content"><strong>Memory:</strong> ~1B 768-dim vectors per 256GB node with scalar quantization (quantized in RAM, originals on disk). <strong>Shards:</strong> 12+ recommended, max practical ~hundreds per collection. <strong>Cluster:</strong> tested with dozens of nodes. <strong>Payload indexes:</strong> high-cardinality fields increase memory. For billion-scale, use multi-tenant sharding with <code>shard_key</code>.</div></div></div>
-        <div class="accordion-item"><div class="accordion-header" onclick="this.parentElement.classList.toggle('open')"><span class="accordion-toggle">&#x25BC;</span>How should I tune HNSW parameters?</div><div class="accordion-body"><div class="accordion-content">Start with defaults (<code>m=16</code>, <code>ef_construct=100</code>). If recall is low: increase <code>ef_construct</code> first (200, then 400). If still insufficient, increase <code>m</code> (32, then 48). At search time, set <code>ef</code> to at least 2x top_k. Lower <code>full_scan_threshold</code> if filtered queries match small subsets. Always measure recall@k against brute-force ground truth.</div></div></div>
-        <div class="accordion-item"><div class="accordion-header" onclick="this.parentElement.classList.toggle('open')"><span class="accordion-toggle">&#x25BC;</span>Separate collections vs. shard keys for multi-tenancy?</div><div class="accordion-body"><div class="accordion-content"><strong>Separate collections:</strong> strongest isolation, but unmanageable beyond ~100 tenants. <strong>Payload filtering:</strong> simplest, but every query traverses entire HNSW. <strong>Custom shard keys</strong> (recommended): assign <code>shard_key</code> per tenant. Queries specify shard key and only search that tenant's shard. For heterogeneous tenants, v1.16's tiered multitenancy promotes large tenants to own shards.</div></div></div>
-        <div class="accordion-item"><div class="accordion-header" onclick="this.parentElement.classList.toggle('open')"><span class="accordion-toggle">&#x25BC;</span>How do I diagnose high search latency?</div><div class="accordion-body"><div class="accordion-content">(1) Check segment count &mdash; high count means optimizer is behind. (2) Check optimizer status. (3) Enable scalar quantization with <code>always_ram: true</code>. (4) Ensure filtered fields have payload indexes. (5) Lower <code>ef</code> if &gt;512. (6) Limit <code>optimizers_threads</code> to reduce CPU contention. (7) Monitor via Prometheus <code>qdrant_search_latency_seconds</code>.</div></div></div>
-        <div class="accordion-item"><div class="accordion-header" onclick="this.parentElement.classList.toggle('open')"><span class="accordion-toggle">&#x25BC;</span>How does Qdrant compare to pgvector?</div><div class="accordion-body"><div class="accordion-content">pgvector: zero extra infrastructure, full SQL, transactional consistency. Works well for &lt;10M vectors where vector search is secondary. Trade-offs at scale: shares resources with transactional workload, no built-in sharding, no quantization. Choose Qdrant when vector search is a primary workload with dedicated performance/scaling needs.</div></div></div>
+    <p class="content-intro animate-in">Senior-level questions about Qdrant &mdash; the kind you'd ask when evaluating it for production.</p>
+
+    <div class="accordion-list">
+
+      <div class="accordion-item open animate-in">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="accordion-number">01</span>
+          <span class="accordion-question">How much memory does Qdrant need for N vectors?</span>
+          <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p><strong>Rule of thumb:</strong> <code>memory = num_vectors x dimensions x 4 bytes x 1.5</code></p>
+            <p>The 4 accounts for 32-bit floats; the 1.5x covers HNSW graph overhead, metadata, and temporary segments during optimization. Example: 10M vectors at 768 dims = ~46 GB RAM.</p>
+            <div class="callout tip">
+              <span class="callout-icon">&#x1F4A1;</span>
+              <div class="callout-content">
+                <p><strong>To reduce memory:</strong> Use mmap storage (<code>on_disk=True</code>), enable scalar quantization (4x savings), or binary quantization (32x savings). With mmap + scalar quantization, 10M vectors can be served with ~3 GB RAM.</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+
+      <div class="accordion-item animate-in">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="accordion-number">02</span>
+          <span class="accordion-question">How do I scale Qdrant for growing data?</span>
+          <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p><strong>Vertical:</strong> Add RAM, use faster NVMe SSDs for mmap, increase CPU cores. <strong>Horizontal:</strong> Start with more shards than nodes (e.g., 12 shards on 3 nodes), add nodes and Qdrant rebalances automatically.</p>
+            <p><strong>Key tip:</strong> Start with <code>shard_number=12</code>. This allows scaling from 1 to 2, 3, 4, 6, or 12 nodes without resharding. Resharding an existing collection requires creating a new collection and re-ingesting data, since shard count is immutable after creation.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item animate-in">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="accordion-number">03</span>
+          <span class="accordion-question">What consistency guarantees does Qdrant provide?</span>
+          <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p><strong>Single-node:</strong> Strong consistency &mdash; reads always see the latest writes after WAL flush.</p>
+            <p><strong>Distributed:</strong> Configurable per operation. Write to <code>1</code> replica (fastest, eventual), <code>majority</code>, <code>all</code> (strongest), or <code>quorum</code>. Reads similarly configurable.</p>
+            <p><strong>Important:</strong> Qdrant does NOT support multi-document ACID transactions. Each point operation is atomic, but there is no way to atomically update multiple points across collections.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item animate-in">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="accordion-number">04</span>
+          <span class="accordion-question">How do I handle multi-tenancy?</span>
+          <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p>Three approaches, from simplest to most scalable:</p>
+            <p><strong>1. Payload filtering:</strong> Store <code>tenant_id</code> in payloads and filter. Simplest, but all tenants share the HNSW graph.</p>
+            <p><strong>2. Collection-per-tenant:</strong> Clean isolation, but operational overhead with many collections.</p>
+            <p><strong>3. Custom sharding (recommended):</strong> Use shard keys with tenant IDs. Each tenant's data goes to a dedicated shard. Searches route only to the relevant shard, combining isolation with efficient search. Qdrant v1.16 introduced tiered multitenancy to further optimize this pattern.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item animate-in">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="accordion-number">05</span>
+          <span class="accordion-question">What happens when a node goes down?</span>
+          <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p>With <code>replication_factor >= 2</code>: reads continue from surviving replicas with no user-visible impact. When the node recovers, Qdrant synchronizes automatically via WAL-based catch-up. If permanently lost, a new replica can be created on a different node.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item animate-in">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="accordion-number">06</span>
+          <span class="accordion-question">How do I tune search accuracy vs. latency?</span>
+          <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p>Three levers: <strong>1)</strong> HNSW <code>ef</code> (query-time) &mdash; higher explores more candidates, improving recall but increasing latency. Start at 128. <strong>2)</strong> HNSW <code>m</code> (build-time) &mdash; more edges per node improves connectivity. Range: 16-64. <strong>3)</strong> Quantization + <code>oversampling</code> &mdash; retrieve extra candidates with quantized vectors, then rescore with full precision.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item animate-in">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <span class="accordion-number">07</span>
+          <span class="accordion-question">What operational gotchas should I watch for?</span>
+          <span class="accordion-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-body-inner">
+            <p><strong>Optimization backlog:</strong> After bulk uploads, HNSW building can take significant time and memory. Don't benchmark during active optimization.</p>
+            <p><strong>Memory spikes:</strong> Segment merging temporarily doubles memory. Ensure headroom.</p>
+            <p><strong>Shard count is immutable:</strong> Plan ahead. You cannot change <code>shard_number</code> after creation.</p>
+            <p><strong>gRPC compatibility:</strong> v1.17 changed gRPC response format for vectors. Update client libraries before upgrading.</p>
+            <p><strong>Payload index memory:</strong> Each indexed field consumes memory. Only index fields used in filters.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </main>
 
-  <section class="references-footer"><h3>&#x1F4DA; References &amp; Resources</h3><ul class="references-list">
-    <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://qdrant.tech/documentation/" target="_blank" rel="noopener noreferrer">Qdrant Documentation</a></span><span class="reference-domain">qdrant.tech</span></div></li>
-    <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://qdrant.tech/documentation/operations/distributed_deployment/" target="_blank" rel="noopener noreferrer">Distributed Deployment Guide</a></span><span class="reference-domain">qdrant.tech</span></div></li>
-  </ul></section>
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <span class="reference-title"><a href="https://qdrant.tech/documentation/guides/capacity-planning/" target="_blank" rel="noopener noreferrer">Capacity Planning Guide</a></span>
+        <span class="reference-domain">qdrant.tech</span>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <span class="reference-title"><a href="https://qdrant.tech/documentation/faq/database-optimization/" target="_blank" rel="noopener noreferrer">Database Optimization FAQ</a></span>
+        <span class="reference-domain">qdrant.tech</span>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4F0;</span>
+        <span class="reference-title"><a href="https://qdrant.tech/articles/memory-consumption/" target="_blank" rel="noopener noreferrer">Minimal RAM for a Million Vectors</a></span>
+        <span class="reference-domain">qdrant.tech</span>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <span class="reference-title"><a href="https://qdrant.tech/documentation/operations/distributed_deployment/" target="_blank" rel="noopener noreferrer">Distributed Deployment</a></span>
+        <span class="reference-domain">qdrant.tech</span>
+      </li>
+    </ul>
+  </section>
 
-  <div class="page-nav-footer"><a href="ecosystem.html" class="prev">Ecosystem</a><a href="tradeoffs.html" class="next">Trade-offs</a></div>
-  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+  <div class="page-nav-footer">
+    <a href="ecosystem.html" class="prev">Ecosystem</a>
+    <a href="tradeoffs.html" class="next">Trade-offs</a>
+  </div>
+
+  <footer class="site-footer"><p>Generated by <strong>System Explorer</strong> &mdash; an interactive course built from system analysis</p></footer>
+
   <script>
     document.documentElement.classList.add("js-ready");
-    function copyPageAsMarkdown(){var c=document.querySelector('.content-area');navigator.clipboard.writeText('# Qdrant - Common Q&A\n\n'+c.innerText).then(function(){var b=document.querySelector('.copy-markdown-btn');b.classList.add('copied');b.querySelector('.btn-label').textContent='Copied!';setTimeout(function(){b.classList.remove('copied');b.querySelector('.btn-label').textContent='Copy as Markdown'},2000)})}
-    document.getElementById('navHamburger').addEventListener('click',function(){this.classList.toggle('open');document.getElementById('navPages').classList.toggle('mobile-open')});
-    var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
-    window.addEventListener('scroll',function(){var b=document.querySelector('.nav-progress-bar');var h=document.documentElement.scrollHeight-window.innerHeight;b.style.width=h>0?(window.scrollY/h*100)+'%':'0%'});
+    function toggleAccordion(header){var item=header.parentElement;var wasOpen=item.classList.contains('open');document.querySelectorAll('.accordion-item').forEach(function(i){i.classList.remove('open')});if(!wasOpen){item.classList.add('open')}}
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
+    function updateProgressBar(){var s=window.scrollY,h=document.documentElement.scrollHeight-window.innerHeight,p=h>0?(s/h)*100:0;document.querySelector('.nav-progress-bar').style.width=p+'%'}window.addEventListener('scroll',function(){requestAnimationFrame(updateProgressBar)},{passive:true});
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
+    var STORAGE_KEY='qdrant-course-visited';function getVisited(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]}catch(e){return[]}}function markVisited(p){var v=getVisited();if(v.indexOf(p)===-1){v.push(p);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(v))}catch(e){}}}function renderVisitedDots(){var v=getVisited();document.querySelectorAll('.nav-page-link[data-page]').forEach(function(l){var p=l.getAttribute('data-page');if(v.indexOf(p)!==-1&&!l.querySelector('.visited-dot')){var d=document.createElement('span');d.className='visited-dot';d.title='Visited';l.appendChild(d)}})}markVisited('faq');renderVisitedDots();
   </script>
 </body>
 </html>

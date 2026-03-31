@@ -1,107 +1,126 @@
 ## Architecture
 <!-- level: intermediate -->
 <!-- references:
-- [Built for Vector Search](https://qdrant.tech/articles/dedicated-vector-search/) | blog
-- [Distributed Deployment](https://qdrant.tech/documentation/operations/distributed_deployment/) | official-docs
-- [Qdrant High-Performance Vector Search Engine](https://qdrant.tech/qdrant-vector-database/) | official-docs
-- [Exploring Distributed Vector Databases Performance on HPC Platforms](https://arxiv.org/html/2509.12384v1) | paper
+- [Qdrant System Architecture (DeepWiki)](https://deepwiki.com/qdrant/qdrant/2-system-architecture) | analysis
+- [Distributed Deployment](https://qdrant.tech/documentation/operations/distributed_deployment/) | docs
+- [Shards and Replica Sets (DeepWiki)](https://deepwiki.com/qdrant/qdrant/2.4-shards-and-replica-sets) | analysis
+- [Introducing Gridstore](https://qdrant.tech/articles/gridstore-key-value-storage/) | blog
+- [Qdrant Overview](https://qdrant.tech/documentation/overview/) | docs
 -->
 
 ### High-Level Design
 
-Qdrant follows a shared-nothing, peer-to-peer distributed architecture where each node is a full participant in the cluster -- there is no single master or dedicated coordinator node. The system is organized in concentric layers: the API layer accepts client requests via REST/gRPC, the collection layer manages logical data organization, the shard layer handles distribution across nodes, and the segment layer provides the actual storage and indexing engine.
+Qdrant is a multi-threaded, network-accessible vector database server written in Rust. In single-node mode it runs as a standalone process; in distributed mode it forms a symmetric peer-to-peer cluster where every node runs the full stack. The architecture is organized in four layers:
 
-```
-                         ┌──────────────────────────────────┐
-                         │          Client SDKs             │
-                         │   (Python, JS, Rust, Go, Java)   │
-                         └──────────────┬───────────────────┘
-                                        │
-                         ┌──────────────▼───────────────────┐
-                         │        API Layer                  │
-                         │   REST (port 6333)                │
-                         │   gRPC (port 6334)                │
-                         │   Web UI Dashboard                │
-                         └──────────────┬───────────────────┘
-                                        │
-              ┌─────────────────────────▼──────────────────────────┐
-              │               Collection Layer                      │
-              │  ┌─────────────┐  ┌─────────────┐  ┌────────────┐ │
-              │  │ Collection A│  │ Collection B│  │Collection C│ │
-              │  └──────┬──────┘  └──────┬──────┘  └─────┬──────┘ │
-              └─────────┼────────────────┼───────────────┼─────────┘
-                        │                │               │
-         ┌──────────────▼──────────────────────────────────────────┐
-         │                    Shard Layer                            │
-         │   ┌──────────┐ ┌──────────┐ ┌──────────┐               │
-         │   │ Shard 0  │ │ Shard 1  │ │ Shard 2  │  (per node)   │
-         │   │ Replica   │ │ Replica   │ │ Replica   │               │
-         │   │ Set       │ │ Set       │ │ Set       │               │
-         │   └────┬─────┘ └────┬─────┘ └────┬─────┘               │
-         └────────┼────────────┼────────────┼──────────────────────┘
-                  │            │            │
-    ┌─────────────▼─────────────────────────▼──────────────────────┐
-    │                    Segment Layer                               │
-    │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-    │  │   Mutable     │  │  Immutable    │  │  Immutable    │       │
-    │  │   Segment     │  │  Segment      │  │  Segment      │       │
-    │  │  (WAL-backed) │  │ (HNSW index) │  │ (HNSW index) │       │
-    │  └──────────────┘  └──────────────┘  └──────────────┘       │
-    │                                                               │
-    │  Storage: Gridstore (custom) + mmap + optional disk offload  │
-    └───────────────────────────────────────────────────────────────┘
-```
+1. **API Layer** — REST (port 6333) and gRPC (port 6334) interfaces accepting client requests
+2. **Table of Contents (TOC)** — The central storage orchestrator that manages all collections
+3. **Shard Layer** — Horizontal partitioning via shards, each managed by a ReplicaSet
+4. **Segment Layer** — The core storage units containing vector data, payload data, and indexes
 
-### Key Components
+### API Layer
 
-**API Layer (REST + gRPC)** -- Provides the external interface for all client interactions. The REST API on port 6333 handles JSON-based requests and also serves the built-in web dashboard for cluster monitoring. The gRPC API on port 6334 provides higher-throughput binary communication, used by most client SDKs for production workloads. The API layer exists because Qdrant needs to serve diverse client ecosystems -- from quick prototyping with curl to high-throughput production pipelines -- without forcing a single protocol choice.
+Qdrant exposes two external API interfaces:
 
-**Collection Manager** -- Orchestrates the lifecycle of collections: creation, configuration changes, deletion, and schema management. It resolves which shards and replicas own a given request and coordinates distributed operations. This component exists because collections are the user-facing boundary -- every operation is scoped to a collection, and the manager ensures configuration consistency across the cluster via [Raft consensus](https://qdrant.tech/documentation/operations/distributed_deployment/).
+- **REST API** (port 6333) — OpenAPI 3.0 compliant, built on actix-web. Best for prototyping and debugging.
+- **gRPC API** (port 6334) — High-performance binary protocol built with tonic. Recommended for production workloads due to lower serialization overhead.
+- **Internal gRPC** (port 6335) — Used exclusively for cluster coordination: Raft consensus, shard transfers, health checks. Never exposed to clients.
 
-**Shard Holder & Replica Sets** -- Each collection is divided into shards, and each shard has a ShardReplicaSet that manages one or more replicas across nodes. The replica set handles read/write routing: reads prefer the local replica for latency, writes fan out to all replicas for durability. This component exists because horizontal scaling and fault tolerance require data partitioning (sharding) and redundancy (replication). Qdrant uses [consistent hashing](https://qdrant.tech/documentation/operations/distributed_deployment/) for automatic shard assignment, or user-defined shard keys for multi-tenant scenarios.
+Both REST and gRPC expose the same operations: collection management, point CRUD, search, recommendation, and cluster management.
 
-**Segment Holder & Optimizer** -- Within each shard, data lives in segments -- the fundamental storage and indexing units. The segment holder manages a mix of mutable segments (accepting writes) and immutable segments (fully indexed for search). A background [optimizer](https://qdrant.tech/articles/dedicated-vector-search/) monitors segment sizes and merges small segments, converts mutable segments to immutable with HNSW indexes, and compacts deleted data. This component exists because building an HNSW index is expensive (non-linear construction time), so Qdrant amortizes the cost by writing to lightweight mutable segments first and building full indexes in the background.
+### Table of Contents (TOC)
 
-**HNSW Index Engine** -- The core approximate nearest neighbor (ANN) search implementation. Each immutable segment builds its own HNSW graph with configurable parameters (m, ef_construct, ef). The engine supports filterable HNSW -- integrating payload conditions directly into graph traversal -- and GPU-accelerated index construction. This component exists because brute-force vector comparison is O(n) per query, which is unacceptable at scale. HNSW provides O(log n) approximate search with tunable recall-latency trade-offs.
+The TOC is the central orchestrator that sits between the API layer and the storage layer. It:
 
-**Gridstore (Custom Storage Engine)** -- Qdrant's purpose-built storage engine optimized for fixed-size vector data. Unlike general-purpose key-value stores, Gridstore exploits the fact that all vectors in a collection have identical byte size, making offset calculation trivial and eliminating the overhead of variable-length record management. This component exists because vectors have a fundamentally different access pattern than typical database records -- fixed size, sequential scan-friendly, and amenable to memory-mapped I/O.
+- Manages collection lifecycle (create, update, delete)
+- Routes operations to the correct shard based on point ID or shard key
+- Coordinates distributed operations across cluster nodes
+- Manages collection aliases for zero-downtime migrations
 
-**Write-Ahead Log (WAL)** -- Ensures durability by persisting every write operation before it is applied to segments. On recovery, the WAL replays uncommitted operations to restore segment state. The WAL exists because crash recovery needs to be deterministic -- without it, a crash during a segment write could leave data in an inconsistent state.
+### Shard Layer
 
-**Raft Consensus Layer** -- Manages cluster-wide agreement on topology changes, collection metadata, and shard assignments. Qdrant uses Raft for structural operations (creating collections, moving shards, changing replica states) but deliberately excludes point-level operations from consensus to avoid the latency overhead. This design exists because cluster coordination needs strong consistency (you cannot have two nodes disagree on which collections exist), but point operations need speed and can tolerate eventual consistency between replicas.
+Collections are horizontally partitioned into **shards** for scalability:
 
-### Data Flow
+- **Auto sharding (default)** — Points are distributed across shards using a hash ring based on point ID. The number of shards is set at collection creation via `shard_number`.
+- **Custom sharding** — Users define shard keys (e.g., tenant ID) for data locality control, enabling efficient multi-tenancy.
 
-A vector search request flows through Qdrant in the following steps:
+Each shard is managed by a **ReplicaSet** that coordinates between local and remote replicas:
 
-1. **Client sends request** -- A search query arrives via REST or gRPC, specifying the collection name, query vector, optional filters, and result limit.
+- **Local replicas** reside on the current node and process reads/writes directly
+- **Remote replicas** are proxied to other cluster nodes via internal gRPC
 
-2. **API layer routes to collection** -- The API handler validates the request, resolves the collection, and determines read consistency requirements (local, majority, quorum, or all).
+Replication factor determines how many copies of each shard exist across the cluster. With `replication_factor >= 2`, the system tolerates node failures without data loss.
 
-3. **Collection fans out to shards** -- The collection manager identifies which shards need to participate. For unfiltered queries, all shards are queried. For queries with shard keys (multi-tenant), only matching shards participate.
+### Segment Layer
 
-4. **Shard replica selection** -- Each shard's ReplicaSet selects the best replica to query. Local replicas are preferred for latency. If read consistency requires multiple replicas, the request goes to the required number of peers.
+Segments are the fundamental storage units within shards. Each segment stores a subset of points and independently maintains:
 
-5. **Segment-level search** -- Within each local shard, the SegmentsSearcher fans out the query across all segments concurrently using a thread pool. For each segment, the query planner decides the strategy: HNSW graph search (most queries), payload-index-only search (low-cardinality filters), or brute-force scan (very small segments).
+- **Vector storage** — The actual vector data (in-memory, memory-mapped, or quantized)
+- **Payload storage** — JSON metadata indexed for filtering
+- **Vector index** — HNSW graph for fast approximate nearest neighbor search
+- **Payload index** — Inverted indexes and range indexes for filtered search
+- **ID tracker** — Maps external point IDs to internal segment-local IDs
 
-6. **HNSW traversal with filtering** -- In the HNSW path, the search starts at the top layer's entry point and greedily descends through layers, scoring neighbors and following the best edges. If payload filters are active, the filterable HNSW conditions each traversal step on the payload index, skipping filtered-out nodes while maintaining graph connectivity.
+Segments transition through lifecycle states:
 
-7. **Quantized scoring (optional)** -- If quantization is enabled, initial scoring uses compressed vectors in RAM for speed. The top candidates are then re-scored against full-precision vectors (from disk or memory) for accuracy.
+- **Appendable (Plain)** — Accepts new writes directly, no HNSW index. Fast writes, slow search.
+- **Indexed (Immutable)** — HNSW index built, optimized for search. Created when segments reach size thresholds.
+- **Proxy** — Temporary segments created during optimization to maintain read availability.
 
-8. **Segment result merge** -- The BatchResultAggregator merges results from all segments within a shard, deduplicating by point ID and keeping the highest-scored entries per the requested limit.
+### Write-Ahead Log (WAL)
 
-9. **Cross-shard merge** -- Results from all shards are merged using k-way merge, respecting distance ordering. Payload and vector data are fetched if requested (using an optimization that defers payload transfer when the cost exceeds a threshold).
+Every write operation is first persisted to the WAL before being applied to segments. This ensures durability — if the server crashes, operations can be replayed from the WAL on restart. Key WAL configuration:
 
-10. **Response to client** -- The final ranked list of ScoredPoints (IDs, scores, optional payloads and vectors) is serialized and returned to the client.
+- **Capacity per segment** — Controls WAL file sizes
+- **Pre-allocated segments** — Reduces allocation overhead during writes
+- **Retention policy** — Closed WAL segments are freed once their operations are confirmed applied to segments
+
+In v1.17, Qdrant actively frees cache memory for closed WAL segments to reduce memory pressure.
+
+### Optimizers (Async Workers)
+
+Each local shard runs three asynchronous worker pools:
+
+1. **Update Worker** — Applies point operations (upsert, delete, set_payload) from the WAL to appendable segments. Operations are ACKed immediately after WAL persistence.
+2. **Optimize Worker** — Builds HNSW indexes, merges small segments into larger ones, vacuums deleted points. Runs continuously without blocking writes.
+3. **Flush Worker** — Persists in-memory segment state to disk at configurable intervals (default: 5 seconds).
+
+This separation ensures that expensive operations like HNSW index building never block write acknowledgment.
+
+### Storage Engine: Gridstore
+
+As of v1.17, Qdrant has fully replaced RocksDB with **Gridstore**, a custom-built key-value store designed specifically for vector database workloads. Gridstore provides:
+
+- Lower tail latencies by reducing lock contention
+- Better control over storage layout and I/O patterns
+- Tighter integration with Qdrant's segment lifecycle
+- Elimination of RocksDB compaction stalls
+
+Direct upgrades from v1.15.x (RocksDB) to v1.17.x (Gridstore-only) are not supported; users must upgrade through v1.16.x first.
+
+### Vector Storage Formats
+
+Qdrant provides multiple vector storage backends optimized for different access patterns:
+
+- **SimpleVectorStorage** — Full vectors in RAM (Vec). Fastest search, highest memory cost.
+- **MmapVectorStorage** — Memory-mapped files for indexed segments. OS manages caching.
+- **AppendableVectorStorage** — Chunked mmap enabling efficient appends for writable segments.
+- **MultiDenseVectorStorage** — Multiple vectors per point for late-interaction models (ColBERT).
+
+### Distributed Mode
+
+When `cluster.enabled = true`, Qdrant forms a symmetric peer-to-peer cluster:
+
+- **Raft Consensus** — Used for metadata operations: creating/deleting collections, shard transfers, configuration changes. One peer serves as Raft leader.
+- **Direct Peer-to-Peer** — Data operations (upsert, delete, search) bypass Raft entirely. They go directly to the relevant shard replicas via internal gRPC on port 6335.
+- **Clock Tags** — Data operations use vector clock-style tags for causal ordering without the overhead of full consensus.
+- **Consistency Levels** — Clients can choose per-operation: `1` (fast, eventual), `majority`, `all` (strict, slower), or `quorum`.
+
+This split design is crucial: metadata operations are rare and need strong consistency, while data operations are frequent and need low latency.
 
 ### Design Decisions
 
-**Rust as the implementation language.** Qdrant chose Rust for memory safety without garbage collection pauses, predictable latency at the 99th percentile, and the ability to use unsafe SIMD intrinsics for distance calculations without risking memory corruption elsewhere. This decision means no GC stop-the-world pauses during search -- critical for latency-sensitive workloads -- but increases development velocity cost compared to Go or Java.
-
-**Segments over monolithic indexes.** Rather than building one giant HNSW graph per collection (which would make updates extremely expensive), Qdrant splits data into segments with individual indexes. New data enters mutable segments (fast writes, scan-based search) and migrates to immutable segments (HNSW-indexed, fast search) via background optimization. This amortizes index build cost but means freshly inserted points have slightly higher search latency until optimization completes.
-
-**Raft for metadata, not for points.** Point-level writes bypass Raft consensus and fan out directly to replicas. This gives Qdrant high write throughput (no consensus round-trip per point) at the cost of eventual consistency between replicas. Structural operations (collection creation, shard moves) go through Raft for strong consistency. This split exists because most vector workloads are write-heavy during ingestion and read-heavy during serving -- optimizing for both requires different consistency models.
-
-**Filterable HNSW instead of pre/post-filtering.** Most vector databases either filter before search (breaking HNSW graph connectivity) or after search (wasting compute on irrelevant results). Qdrant integrates filtering into the HNSW traversal itself, conditioning graph navigation on payload indexes. When filters are too restrictive (low cardinality), the query planner automatically falls back to a payload-index-only search. This design avoids the pathological cases of both approaches but adds complexity to the index implementation.
-
-**Custom storage engine over embedded databases.** Instead of using RocksDB or LevelDB (common choices for embedded storage), Qdrant built Gridstore -- a storage engine that exploits the fixed-size nature of vectors. Because every vector in a collection has identical byte size, storage locations can be calculated by simple arithmetic rather than B-tree lookups. This provides predictable low-latency access and efficient memory-mapped I/O, but means Qdrant maintains a larger codebase than systems that delegate to off-the-shelf storage.
+- **Rust over C++/Go/Java** — Memory safety without GC pauses, critical for predictable search latency
+- **Symmetric cluster** — Every node runs the full stack, simplifying operations (no dedicated coordinator nodes)
+- **WAL-first writes** — Durability guaranteed before acknowledgment, with async indexing
+- **Segment-based storage** — Enables zero-copy optimization: new indexes are built on copies while the original segment serves reads
+- **Custom storage (Gridstore)** — Purpose-built for vector workloads rather than relying on general-purpose key-value stores

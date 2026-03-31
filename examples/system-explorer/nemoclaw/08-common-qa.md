@@ -1,43 +1,48 @@
 ## Common Q&A
 <!-- level: all -->
 <!-- references:
-- [NemoClaw Troubleshooting](https://docs.nvidia.com/nemoclaw/latest/reference/troubleshooting.html) | official-docs
-- [NemoClaw Architecture](https://docs.nvidia.com/nemoclaw/latest/reference/architecture.html) | official-docs
-- [NemoClaw Network Policies](https://docs.nvidia.com/nemoclaw/latest/reference/network-policies.html) | official-docs
+- [NemoClaw Developer Guide - Overview](https://docs.nvidia.com/nemoclaw/latest/about/overview.html) | official-docs
+- [NVIDIA NemoClaw: What It Secures, and Why It Matters](https://emelia.io/hub/nvidia-nemoclaw-explained) | blog
+- [NemoClaw Is Not the Fix. Here Is What Is Missing.](https://augmentedmind.substack.com/p/nemoclaw-is-not-the-fix-here-is-what-is-missing) | blog
+- [MAESTRO Threat Modeling - NemoClaw](https://kenhuangus.substack.com/p/maestro-threat-modeling-nemoclaw) | blog
 -->
 
-### Q: What happens if the agent is compromised via prompt injection -- can it escape the sandbox?
+### Q1: Does NemoClaw replace OpenClaw?
 
-The sandbox is designed to contain even a worst-case scenario where an attacker achieves arbitrary code execution inside the container. The three-layer isolation (Landlock for filesystem, seccomp for syscalls, network namespaces for networking) is enforced at the Linux kernel level, not by the application. A compromised agent cannot mount new filesystems, trace other processes, or bypass network restrictions because the kernel blocks these operations before they execute. The most important practical consequence: API keys are stored on the host and injected by the OpenShell gateway during request forwarding, so even full sandbox compromise cannot exfiltrate credentials. That said, container escapes are not theoretically impossible -- they require kernel vulnerabilities, which is why defense in depth (all three mechanisms plus host-side credential storage) matters.
+No. NemoClaw is a complementary security layer, not a replacement. It wraps an existing OpenClaw installation inside a hardened sandbox with managed inference and network controls. Your existing OpenClaw agent — its skills, memory, configuration, and messaging integrations — runs unchanged inside the NemoClaw sandbox. Think of NemoClaw as adding walls, locks, and a security guard to a house that already exists.
 
-### Q: How does NemoClaw compare to just running OpenClaw in a Docker container with restricted networking?
+### Q2: Can an agent inside the sandbox bypass the security controls?
 
-A plain Docker container with `--network=none` plus a reverse proxy could approximate some of NemoClaw's functionality, but you would be reimplementing several things from scratch: the inference routing that keeps API keys host-side, the per-domain/per-method network policy engine, the real-time approval workflow for blocked requests, the blueprint versioning with digest verification, and the onboarding wizard that validates inference providers. NemoClaw packages these into a coherent stack. The trade-off is complexity: NemoClaw adds OpenShell as a dependency and prescribes a specific deployment model, while a DIY Docker approach gives you more flexibility at the cost of more work.
+The security controls operate at the kernel level, outside the agent's process. Landlock filesystem policies are applied by the OpenShell supervisor before the agent process starts and are locked — the agent cannot modify them. seccomp filters are similarly locked at container creation. The network namespace gives the agent a completely separate view of the network — it cannot even see the host's interfaces. However, no sandbox is perfectly escape-proof. NemoClaw provides defense-in-depth, not absolute guarantees. Kernel vulnerabilities, container runtime escapes, or novel attack techniques could theoretically bypass controls. Regular updates and security audits remain essential.
 
-### Q: Can I run multiple sandboxed agents simultaneously?
+### Q3: How much latency does inference routing add?
 
-Yes. Each sandbox is an independent container instance with its own name (RFC 1123 format), network namespace, and policy configuration. You can run `nemoclaw onboard` multiple times to create different sandboxes with different inference providers or network policies. The `nemoclaw list` command shows all registered sandboxes. The practical limit is host resources: each sandbox consumes memory and CPU, and if using local inference, the model runtime adds significant overhead.
+The inference routing through the OpenShell gateway adds minimal overhead — typically single-digit milliseconds for the proxy hop. The actual latency is dominated by the inference provider's response time (which ranges from hundreds of milliseconds to seconds depending on the model and input). For most use cases, the routing overhead is negligible compared to model inference time.
 
-### Q: What is the latency overhead of inference routing through OpenShell?
+### Q4: Can I use NemoClaw with non-OpenClaw agents?
 
-The routing adds one extra network hop (sandbox to OpenShell gateway to provider). For cloud inference providers, this overhead is typically negligible compared to the LLM inference time itself, which ranges from hundreds of milliseconds to several seconds. For local inference (Ollama, NIM), the hop is entirely local and adds sub-millisecond latency. The network policy check is a local table lookup and does not measurably affect latency. The most noticeable delay is during initial sandbox setup, where the 2.4 GB container image must be downloaded and extracted.
+NemoClaw is designed specifically for OpenClaw integration. The CLI plugin, blueprint, and onboarding flow all assume OpenClaw as the agent runtime. However, the underlying OpenShell runtime is agent-framework-agnostic. If you want sandbox isolation for a different agent framework, you can use OpenShell directly without NemoClaw. NemoClaw's value is the pre-packaged, tested integration with OpenClaw.
 
-### Q: How do I grant the agent access to a new API without restarting the sandbox?
+### Q5: What happens when the agent needs a new network endpoint?
 
-There are two approaches. For immediate, session-scoped access: wait for the agent to attempt the request, then approve it in the OpenShell TUI (`openshell term`). The approval applies for the current session only. For persistent access: use `openshell policy set <policy-file>` with an updated YAML file to modify the running sandbox's network policy without restart. For changes that should survive sandbox recreation, edit the policy YAML in the blueprint and re-onboard.
+The deny-all-by-default policy blocks the connection immediately. The blocked request appears in the operator's terminal UI (`openshell term`) with full context: destination host, port, and the binary that made the request. The operator can approve or deny it in real time. Approved endpoints persist for the current session but do not modify the baseline policy file. For permanent changes, the operator edits `openclaw-sandbox.yaml` and reapplies the policy. Preset policy files exist for common integrations like PyPI, Docker Hub, Slack, and Jira.
 
-### Q: Is NemoClaw locked into NVIDIA hardware?
+### Q6: Does NemoClaw work on macOS or Windows?
 
-No. NemoClaw is hardware-agnostic at the agent layer. The sandbox runs on any Linux machine with Docker, regardless of GPU vendor. The NVIDIA-specific optimizations are in the inference layer: Nemotron models and NVIDIA NIM run best on NVIDIA GPUs. But you can use non-NVIDIA inference providers (OpenAI, Anthropic, Ollama with CPU-only models) on AMD or Intel hardware. The kernel-level isolation mechanisms (Landlock, seccomp, namespaces) are Linux kernel features, not NVIDIA-specific.
+Partially. NemoClaw's full security stack (Landlock, seccomp, network namespaces) requires Linux. On macOS with Apple Silicon, NemoClaw runs using Colima or Docker Desktop, but the kernel-level isolation is weaker because macOS does not support Landlock or Linux-native seccomp. On Windows, NemoClaw requires WSL2 with Docker Desktop. The sandbox runs inside the WSL Linux environment, which provides most Linux security features but adds another layer of abstraction. For production deployments with full security guarantees, Linux is the recommended platform.
 
-### Q: What happens to agent state if the host machine reboots?
+### Q7: How do credentials stay safe if the agent is compromised?
 
-The sandbox container persists across host reboots if Docker is configured to restart containers automatically (the default for most Docker installations). Agent state inside `/sandbox` is preserved in the container's filesystem layer. However, session-level policy approvals (granted via the TUI) are not persisted -- only static policy changes (written to the YAML file) survive restarts. NemoClaw's workspace documentation includes backup and restore procedures for the `/sandbox` directory.
+API credentials (for inference providers and messaging platforms) are stored on the host at `~/.nemoclaw/credentials.json` and never copied into the sandbox. The agent communicates with `inference.local`, a virtual endpoint inside its network namespace. The OpenShell gateway on the host attaches credentials to outbound requests. Even if an attacker gains code execution inside the sandbox, they cannot read the credentials file (Landlock blocks access), cannot see the host's filesystem (container isolation), and cannot intercept the gateway's credential attachment (different network namespace).
 
-### Q: Can I use NemoClaw with a model provider not in the supported list?
+### Q8: Is NemoClaw production-ready?
 
-Yes, through the "Custom OpenAI-compatible" or "Custom Anthropic-compatible" provider options during onboarding. Any endpoint that speaks the OpenAI `/chat/completions` or Anthropic `/v1/messages` protocol can be configured. NemoClaw validates custom endpoints by sending a real inference request during onboarding (rather than checking a `/models` endpoint) because many proxy servers lack standardized model listing. The trade-off is that you are responsible for ensuring the custom endpoint is reliable and correctly implements the protocol.
+No. As of March 2026, NemoClaw is in alpha (early preview). NVIDIA explicitly states that the software is not production-ready and that interfaces, APIs, and behavior may change without notice. It should be used for evaluation, development, and testing — not for production workloads handling sensitive data. The project has been publicly available for approximately two weeks and has not been battle-tested at scale.
 
-### Q: How mature is NemoClaw for production use?
+### Q9: What is the Privacy Router?
 
-As of March 2026, NemoClaw is explicitly alpha software. The project was released on March 16, 2026, and has not yet had a production-ready release. APIs, configuration schemas, and runtime behavior may change without notice. The project's GitHub repository shows high community interest (17,800+ stars in two weeks), but stars measure interest, not stability. For production environments, treat NemoClaw as an evaluation tool and plan for re-onboarding during upgrades.
+The Privacy Router is NemoClaw's intelligent model routing layer that classifies each query by data sensitivity. Queries containing PII, proprietary code, financial data, or other sensitive categories are automatically routed to a local Nemotron model — they never leave your infrastructure. Non-sensitive queries can be routed to cloud models for faster or more capable responses. This allows teams to balance privacy requirements with model capability, using local models as a privacy floor and cloud models as a capability ceiling.
+
+### Q10: How does NemoClaw handle agent updates and blueprint versioning?
+
+The plugin enforces version constraints when resolving blueprints. Each blueprint artifact is immutable and identified by a cryptographic digest. When NVIDIA publishes a new blueprint version, the plugin checks compatibility with the installed OpenShell and OpenClaw versions before applying the update. If the digest does not match the expected value, the update is rejected. This prevents supply-chain attacks where a tampered blueprint could modify the sandbox's security posture. Re-running onboard with a new blueprint version recreates the sandbox from scratch — there is no in-place upgrade mechanism.

@@ -1,85 +1,120 @@
 ## Ecosystem & Integrations
 <!-- level: intermediate -->
 <!-- references:
-- [Qdrant Integrations Partners](https://qdrant.tech/partners/) | official-docs
-- [LangChain Integration](https://qdrant.tech/documentation/frameworks/langchain/) | official-docs
-- [LlamaIndex Integration](https://qdrant.tech/documentation/frameworks/llama-index/) | official-docs
-- [Qdrant GitHub Organization](https://github.com/qdrant) | github
+- [LangChain Integration](https://qdrant.tech/documentation/frameworks/langchain/) | docs
+- [LlamaIndex Integration](https://qdrant.tech/documentation/frameworks/llama-index/) | docs
+- [Qdrant Cloud](https://qdrant.tech/cloud/) | official
+- [Qdrant Hybrid Cloud](https://qdrant.tech/hybrid-cloud/) | official
+- [Qdrant Pricing](https://qdrant.tech/pricing/) | official
 -->
 
-### Official Tools & Extensions
+### Framework Integrations
 
-**Client SDKs (GA, actively maintained):**
-- **[Python SDK](https://github.com/qdrant/qdrant-client)** -- The most feature-complete client. Supports sync/async operations, local in-memory mode for testing (`:memory:`), and automatic batching. Installable via `pip install qdrant-client`.
-- **[JavaScript/TypeScript SDK](https://github.com/qdrant/qdrant-js)** -- Full REST and gRPC support for Node.js and browser environments. Installable via `npm install @qdrant/js-client-rest`.
-- **[Rust SDK](https://github.com/qdrant/rust-client)** -- Native Rust client using gRPC via Tonic. Provides the tightest integration for Rust-based applications.
-- **[Go SDK](https://github.com/qdrant/go-client)** -- gRPC-based client for Go services.
-- **[Java SDK](https://github.com/qdrant/java-client)** -- gRPC-based client for JVM applications.
-- **[.NET SDK](https://github.com/qdrant/qdrant-dotnet)** -- gRPC-based client for C#/.NET applications.
+Qdrant has first-class integrations with the major AI/ML frameworks:
 
-**Qdrant Cloud** -- Fully managed deployment with automatic scaling, monitoring, and backups. Supports dedicated clusters in AWS, GCP, and Azure. Includes a free tier for development. The Cloud API is [Terraform-enabled](https://qdrant.tech/blog/2025-recap/) for infrastructure-as-code workflows.
+#### LangChain
+LangChain is the most widely used LLM application framework. Qdrant integrates as a vector store via the `langchain-qdrant` package, supporting:
+- Dense and sparse vector search
+- Hybrid retrieval combining semantic and lexical search
+- Metadata filtering using LangChain's filter syntax
+- Async operations for high-throughput pipelines
+- Multi-tenancy via collection partitioning
 
-**Qdrant Cloud Inference** -- A managed embedding service that unifies vector generation and storage. Send raw text or images, and the service handles embedding generation, vector storage, and search in a single API call -- eliminating the need to manage separate embedding model deployments.
+```python
+from langchain_qdrant import QdrantVectorStore
+from langchain_openai import OpenAIEmbeddings
 
-**Qdrant Edge** -- Extends Qdrant's retrieval capabilities to edge devices (mobile, IoT, local workstations) for low-latency, privacy-preserving search without server dependency. Useful for offline-capable applications and on-device AI agents.
-
-**Web Dashboard** -- Built-in UI at `http://localhost:6333/dashboard` for browsing collections, inspecting points, running test queries, and monitoring cluster health. No additional deployment required -- it ships with the Qdrant binary.
-
-**Helm Chart** -- Official [Kubernetes Helm chart](https://github.com/qdrant/qdrant-helm) for deploying Qdrant clusters on Kubernetes with configurable replicas, persistent volumes, and resource limits.
-
-### Community Ecosystem
-
-**LLM Orchestration Frameworks:**
-- **[LangChain](https://qdrant.tech/documentation/frameworks/langchain/)** -- First-class integration as a `QdrantVectorStore`. Supports dense, sparse, and hybrid retrieval. Distributed as a LangChain partner package (`langchain-qdrant`). The most popular integration by usage.
-- **[LlamaIndex](https://qdrant.tech/documentation/frameworks/llama-index/)** -- `QdrantVectorStore` for LlamaIndex's data framework. Supports document ingestion, indexing, and query pipelines backed by Qdrant.
-- **[Haystack](https://qdrant.tech/documentation/frameworks/)** -- Integration with deepset's Haystack NLP framework for building RAG and search pipelines.
-- **[AutoGen / CrewAI / Semantic Kernel](https://qdrant.tech/partners/)** -- Integrations for Microsoft's agentic frameworks and multi-agent systems, using Qdrant as persistent memory and knowledge retrieval.
-
-**Embedding Providers:**
-- **OpenAI** -- Direct embedding API compatibility. Qdrant's FastEmbed library provides local alternative models.
-- **Cohere** -- Embed API support for text and multilingual embeddings.
-- **[FastEmbed](https://github.com/qdrant/fastembed)** -- Qdrant's own lightweight, fast embedding library supporting ONNX models for local inference without GPU dependency. Supports text, image, and sparse embeddings.
-
-**Data Pipeline Tools:**
-- **[Airbyte](https://airbyte.com/data-engineering-resources/fundamentals-of-qdrant)** -- ELT connector for loading data from 300+ sources into Qdrant.
-- **[Unstructured](https://qdrant.tech/documentation/frameworks/)** -- Document parsing and preprocessing pipeline that feeds into Qdrant.
-- **[n8n](https://qdrant.tech/blog/2025-recap/)** -- Official node for the n8n workflow automation platform.
-
-**Monitoring and Observability:**
-- **Prometheus** -- Native metrics endpoint at `/metrics` for Prometheus scraping.
-- **Grafana** -- Community dashboards available for visualizing Qdrant metrics.
-- **OpenTelemetry** -- Request tracing support for distributed tracing systems.
-
-### Common Integration Patterns
-
-**RAG Pipeline: LangChain + Qdrant + OpenAI**
-
-The most common integration pattern. Documents are chunked, embedded via OpenAI's API, stored in Qdrant with metadata payloads, and retrieved at query time to augment LLM prompts:
-
-```
-Documents → Chunker → OpenAI Embeddings → Qdrant (store)
-User Query → OpenAI Embedding → Qdrant (search) → Top-K chunks → LLM (generate answer)
+vectorstore = QdrantVectorStore.from_documents(
+    documents,
+    OpenAIEmbeddings(),
+    url="http://localhost:6333",
+    collection_name="my_docs",
+)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 ```
 
-This pattern works with any embedding provider (Cohere, FastEmbed, HuggingFace models) and any LLM (Claude, GPT, Llama, Mistral).
+#### LlamaIndex
+LlamaIndex simplifies data ingestion and indexing for LLM applications. Qdrant serves as a vector store backend:
+- Supports all Qdrant vector types (dense, sparse, multivector)
+- Hybrid search with fusion strategies
+- Multi-tenancy with user-level filtering
+- Batch ingestion optimizations
 
-**Agentic RAG: AI Agents + Qdrant as Memory**
+```python
+from llama_index.vector_stores.qdrant import QdrantVectorStore
 
-In agentic AI architectures, Qdrant serves as both long-term memory and knowledge retrieval. Agents (built with LangChain, AutoGen, or CrewAI) store conversation history, retrieved facts, and intermediate reasoning steps as vectors. On each turn, the agent retrieves relevant context from Qdrant to inform its next action. Qdrant's filtering enables agents to scope retrieval by conversation session, user, topic, or time window.
-
-**Hybrid Search Pipeline: Dense + Sparse + Reranking**
-
-For applications requiring both semantic and keyword precision, combine Qdrant's dense and sparse vector support:
-
+vector_store = QdrantVectorStore(
+    client=qdrant_client,
+    collection_name="my_index",
+    enable_hybrid=True,
+)
 ```
-Query → Dense Embedding (semantic meaning)
-      → Sparse Embedding (keyword terms, e.g., SPLADE/BM25)
-      → Qdrant Hybrid Search (RRF fusion of dense + sparse results)
-      → Optional: Cross-encoder reranker for final precision
-```
 
-This pattern is especially effective for e-commerce search, legal document retrieval, and technical documentation where both meaning and specific terminology matter.
+#### Haystack
+Deepset's Haystack framework uses Qdrant as a document store for building search and RAG pipelines. The `QdrantDocumentStore` supports embedding retrieval, filtering, and batch operations.
 
-**Real-Time Feature Store: Embedding Lookup for ML**
+#### Microsoft Semantic Kernel
+Qdrant integrates with Microsoft's Semantic Kernel as a memory store, enabling AI agents to persist and retrieve semantic memories across conversation sessions.
 
-Use Qdrant as a real-time feature store for ML models that need nearest-neighbor features. Store user/item embeddings and retrieve similar users or items at inference time to feed collaborative filtering or ranking models. Qdrant's gRPC API and low-latency search make it suitable for online serving with p99 latency requirements under 50ms.
+#### Spring AI
+For Java/Spring Boot applications, Qdrant provides a vector store integration through Spring AI, enabling enterprise Java applications to leverage vector search.
+
+### Embedding Model Integrations
+
+Qdrant works with any embedding model that produces fixed-length vectors. Common pairings include:
+
+| Provider | Models | Dimensions |
+|----------|--------|------------|
+| OpenAI | text-embedding-3-small/large | 1536 / 3072 |
+| Cohere | embed-v3 | 1024 |
+| Google | text-embedding-004 | 768 |
+| Voyage AI | voyage-3 | 1024 |
+| HuggingFace | BGE, GTE, E5, all-MiniLM | 384-1024 |
+| Jina AI | jina-embeddings-v3 | 1024 |
+| Ollama | nomic-embed-text, mxbai-embed | 768-1024 |
+
+For sparse vectors, common models include SPLADE++, BM25 (via Qdrant's built-in tokenizer), and miniCOIL.
+
+### Qdrant Cloud
+
+Qdrant offers three managed deployment options:
+
+#### Managed Cloud
+- Fully managed clusters on AWS, GCP, or Azure
+- Free 1GB tier (no credit card required)
+- Automatic backups, monitoring, and alerting
+- Zero-downtime upgrades for HA clusters
+- Pay-as-you-go billing based on compute, memory, storage, and inference tokens
+
+#### Hybrid Cloud
+- Managed Qdrant clusters running in your own Kubernetes infrastructure
+- Data stays within your network — Qdrant Cloud only manages the control plane
+- Supports any cloud provider, on-premises, or edge environments
+- Starting at $0.014/hour
+
+#### Private Cloud
+- Full control over Qdrant database clusters in any Kubernetes environment
+- Custom pricing for enterprise deployments
+- Suitable for organizations with strict data sovereignty requirements
+
+### Qdrant Edge
+
+Introduced in v1.17, **Qdrant Edge** is an in-process version of Qdrant that shares the same internals, storage format, and Points API as the server version. It enables:
+- Embedding Qdrant directly in applications without a separate server process
+- Edge computing deployments with limited resources
+- Mobile and IoT applications requiring local vector search
+- Testing and development without running a server
+
+### Observability & DevOps
+
+- **Prometheus metrics** — Exposed at `/metrics` endpoint for Grafana dashboards
+- **OpenTelemetry** — Distributed tracing support for debugging search pipelines
+- **Qdrant Web Dashboard** — Built-in UI for browsing collections, points, and running test queries
+- **Helm Charts** — Official Kubernetes deployment charts with configurable replicas, resources, and persistence
+- **Terraform** — Community providers for infrastructure-as-code deployments
+
+### Data Migration Tools
+
+- **Qdrant Migration Tool** — CLI tool for migrating between Qdrant instances
+- **Snapshot API** — Create and restore collection snapshots for backup and migration
+- **Bulk Upload APIs** — Streaming upload endpoints optimized for large-scale data ingestion

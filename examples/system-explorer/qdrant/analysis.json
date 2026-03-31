@@ -2,7 +2,7 @@
   "version": 2,
   "system": "Qdrant",
   "github": "qdrant/qdrant",
-  "tag": "v1.13.2",
+  "tag": "v1.17.1",
   "generated": "2026-03-31",
   "sections": [
     { "file": "00-metadata.md", "title": "Metadata", "level": null, "order": 0 },

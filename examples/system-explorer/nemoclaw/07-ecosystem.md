@@ -1,37 +1,63 @@
 ## Ecosystem & Integrations
 <!-- level: intermediate -->
 <!-- references:
-- [NVIDIA Agent Toolkit](https://docs.nvidia.com/nemoclaw/latest/about/overview.html) | official-docs
+- [NVIDIA NemoClaw Developer Guide](https://docs.nvidia.com/nemoclaw/latest/index.html) | official-docs
 - [NemoClaw Inference Profiles](https://docs.nvidia.com/nemoclaw/latest/reference/inference-profiles.html) | official-docs
-- [awesome-nemoclaw](https://github.com/VoltAgent/awesome-nemoclaw) | github
+- [Architecting the Agentic Future: OpenClaw vs. NanoClaw vs. NemoClaw](https://dev.to/mechcloud_academy/architecting-the-agentic-future-openclaw-vs-nanoclaw-vs-nvidias-nemoclaw-9f8) | blog
 -->
 
-### Official Tools & Extensions
+NemoClaw sits at the intersection of the NVIDIA AI platform, the OpenClaw agent ecosystem, and the broader landscape of AI safety and security tooling. Understanding its ecosystem helps you choose the right components and plan integrations.
 
-**NVIDIA OpenShell** -- The runtime foundation that NemoClaw builds on. OpenShell provides kernel-level sandboxing, network namespace isolation, and the gateway that routes inference requests. While NemoClaw can be thought of as a purpose-built configuration for OpenShell, OpenShell itself is a general-purpose agent runtime that can host other agent frameworks beyond OpenClaw -- like how Docker can run any containerized application, not just the one you happen to use most.
+### Core Dependencies
 
-**NVIDIA Nemotron** -- NVIDIA's family of open-source language models, optimized for the NemoClaw inference pipeline. Nemotron models (including Nemotron 3 Super 120B) can run locally via NVIDIA NIM or accessed through [build.nvidia.com](https://build.nvidia.com/nemoclaw). Using Nemotron with NemoClaw provides the tightest integration because the inference routing is pre-configured for NVIDIA's model endpoints.
+**OpenClaw**
+NemoClaw is built to wrap OpenClaw, the open-source autonomous AI agent framework. OpenClaw provides the agent runtime — task execution, tool use, memory, scheduled jobs, and messaging integrations. NemoClaw does not replace OpenClaw; it adds a security layer on top. Your existing OpenClaw skills, configurations, and workflows carry over into the NemoClaw sandbox.
 
-**NVIDIA NIM (NVIDIA Inference Microservices)** -- A containerized inference runtime for self-hosting LLMs on NVIDIA hardware. NemoClaw supports NIM as a local inference backend, allowing the entire agent stack (sandbox + model) to run on-premises with no external API calls -- like having both the factory and the power plant on the same site.
+**NVIDIA OpenShell**
+OpenShell is NVIDIA's sandbox runtime for AI agents, part of the NVIDIA Agent Toolkit. It provides the kernel-level isolation primitives (Landlock, seccomp, network namespaces), the inference routing gateway, and the policy enforcement engine. OpenShell is the foundation that NemoClaw's blueprints build upon. OpenShell can be used independently for other agent frameworks, but NemoClaw provides the OpenClaw-specific integration.
 
-**NVIDIA Agent Toolkit** -- The broader suite that includes OpenShell, NemoClaw, and other tools for building and deploying AI agents. NemoClaw is the Toolkit's answer to the specific problem of running coding assistants securely.
+**NVIDIA Nemotron Models**
+NemoClaw is optimized (but not limited to) NVIDIA's Nemotron model family for local inference. Nemotron models range from the 4B-parameter Nano variant (suitable for edge deployment) to the 120B-parameter Super variant (full local inference with strong capabilities). Using Nemotron models locally keeps all data on-premises, but you can also use OpenAI, Anthropic, Gemini, or any OpenAI-compatible endpoint.
 
-### Community Ecosystem
+### Inference Provider Ecosystem
 
-**awesome-nemoclaw** -- A community-curated collection of [presets, recipes, and playbooks](https://github.com/VoltAgent/awesome-nemoclaw) for sandboxed OpenClaw operations. This repository aggregates community-contributed network policy configurations, deployment scripts, and operational runbooks for common NemoClaw use cases.
+NemoClaw supports a broad range of inference providers through the OpenShell gateway:
 
-**OpenClaw Extensions (ClawHub)** -- NemoClaw's network policy includes an allowlist entry for ClawHub, the OpenClaw extension registry. This means sandboxed agents can install and use OpenClaw extensions (MCP servers, custom tools) within the security boundary. The extension ecosystem that exists for OpenClaw carries directly into NemoClaw deployments.
+| Provider | Protocol | Local/Cloud | Notes |
+|----------|----------|-------------|-------|
+| NVIDIA Endpoints | OpenAI-compatible | Cloud | Hosted on `integrate.api.nvidia.com` |
+| OpenAI | Native OpenAI | Cloud | GPT-4o, o3, etc. |
+| Anthropic | anthropic-messages | Cloud | Claude 4 Opus, Sonnet, etc. |
+| Google Gemini | OpenAI-compatible | Cloud | Via Google's compatible endpoint |
+| Ollama | OpenAI-compatible | Local | Any model available in Ollama |
+| NVIDIA NIM | OpenAI-compatible | Local | GPU-dependent, experimental |
+| vLLM | OpenAI-compatible | Local | Experimental (`localhost:8000`) |
+| Custom endpoints | OpenAI or Anthropic | Either | Proxies, gateways, internal APIs |
 
-**Messaging Bridge Community** -- While NemoClaw ships with official bridges for Telegram, Discord, and Slack, the bridge architecture is straightforward enough that community members can build connectors for additional platforms. Each bridge is a standalone script that translates platform-specific messaging APIs into OpenClaw agent messages.
+### Messaging Platform Integrations
 
-### Common Integration Patterns
+NemoClaw supports connecting sandboxed agents to messaging platforms through host-side bridge processes:
 
-**NemoClaw + Ollama for fully local inference.** This is the privacy-maximizing configuration: the agent runs in a sandbox, and all model calls go to a locally-running Ollama instance. No data leaves the machine. NemoClaw handles Ollama setup during onboarding, including model pulling and warming. This pattern suits organizations with strict data sovereignty requirements -- like a self-contained research station that generates its own power and grows its own food.
+- **Telegram** — Bot integration via host-side relay process
+- **Discord** — Bot integration via host-side relay process
+- **Slack** — App integration via host-side relay process
 
-**NemoClaw + NVIDIA Endpoints for cloud-scale inference.** For teams that need access to larger models (like Nemotron 3 Super 120B) without the hardware to run them locally, NemoClaw routes inference through build.nvidia.com. The sandbox still provides network and filesystem isolation, while the cloud provides model capabilities. The trade-off is that inference data leaves the local machine, though it is encrypted in transit.
+Messaging bridges run outside the sandbox, maintaining the security boundary. The agent communicates with the bridge through the sandbox's internal API, and messaging credentials never enter the sandbox.
 
-**NemoClaw + Telegram/Slack for team-accessible agents.** Connecting a messaging bridge transforms a sandboxed coding agent into a team resource. Multiple team members can interact with the same agent through their existing chat tools. The sandbox ensures that even if a team member asks the agent to do something unexpected, the network policy and approval workflow provide guardrails.
+### Complementary Tools
 
-**NemoClaw + GitHub for repository-aware agents.** The default network policy allows access to GitHub's API and hosting endpoints. This enables common workflows where the agent reads repository contents, reviews pull requests, or creates issues -- all within the sandbox. Access to GitHub is read-write at the API level but still subject to the agent's GitHub credentials and the repository's own access controls.
+**NanoClaw**
+NanoClaw is an alternative lightweight agent framework that takes a different approach to security — using fully containerized, ephemeral environments with Kubernetes-native orchestration. While NemoClaw wraps an existing OpenClaw setup with security controls, NanoClaw builds security into the agent framework from the ground up. Teams evaluating agent platforms should consider both.
 
-**NemoClaw + custom OpenAI-compatible proxies for enterprise model routing.** Organizations that run model gateways (LiteLLM, vLLM behind a reverse proxy, or custom routing infrastructure) can configure NemoClaw to point at their internal endpoint. NemoClaw validates the endpoint during onboarding by sending a real inference request, since custom proxies often lack standardized `/models` endpoints.
+**NVIDIA Agent Toolkit**
+The broader NVIDIA Agent Toolkit includes tools beyond OpenShell and NemoClaw, such as model optimization tools, inference servers (TensorRT-LLM, Triton), and evaluation frameworks. NemoClaw integrates naturally with other toolkit components for end-to-end agent deployment.
+
+**MCP (Model Context Protocol)**
+The Model Context Protocol provides a standard way for AI agents to interact with external tools and data sources. OpenClaw supports MCP servers, and NemoClaw's network policy engine can be configured to allow connections to specific MCP server endpoints while blocking unauthorized access.
+
+### Community Resources
+
+- **GitHub Repository:** [NVIDIA/NemoClaw](https://github.com/NVIDIA/NemoClaw) — Source code, issues, discussions
+- **Official Documentation:** [docs.nvidia.com/nemoclaw](https://docs.nvidia.com/nemoclaw/latest/) — Developer guide, API reference
+- **Discord Community:** Active community for support and discussion
+- **awesome-nemoclaw:** Community-curated collection of presets, recipes, and playbooks for common NemoClaw configurations

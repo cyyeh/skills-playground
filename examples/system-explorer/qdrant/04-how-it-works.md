@@ -1,112 +1,124 @@
 ## How It Works
 <!-- level: intermediate -->
 <!-- references:
-- [HNSW Indexing Fundamentals](https://qdrant.tech/course/essentials/day-2/what-is-hnsw/) | official-docs
-- [Combining Vector Search and Filtering](https://qdrant.tech/course/essentials/day-2/filterable-hnsw/) | official-docs
-- [What is Vector Quantization?](https://qdrant.tech/articles/what-is-vector-quantization/) | blog
-- [A Complete Guide to Filtering in Vector Search](https://qdrant.tech/articles/vector-search-filtering/) | blog
-- [Vector Search Resource Optimization Guide](https://qdrant.tech/articles/vector-search-resource-optimization/) | official-docs
+- [HNSW Indexing Fundamentals](https://qdrant.tech/course/essentials/day-2/what-is-hnsw/) | course
+- [Filterable HNSW](https://qdrant.tech/articles/filtrable-hnsw/) | blog
+- [Combining Vector Search and Filtering](https://qdrant.tech/course/essentials/day-2/filterable-hnsw/) | course
+- [HNSW Index Implementation (DeepWiki)](https://deepwiki.com/qdrant/qdrant/3.2-payload-indexing-and-filtering) | analysis
+- [Vector Search Resource Optimization Guide](https://qdrant.tech/articles/vector-search-resource-optimization/) | blog
+- [Hybrid Search with Query API](https://qdrant.tech/articles/hybrid-search/) | blog
 -->
 
-### HNSW Graph Construction and Search
+### The HNSW Search Algorithm
 
-The Hierarchical Navigable Small World algorithm is the heart of Qdrant's search performance. Understanding how it builds and traverses the graph reveals why Qdrant can find approximate nearest neighbors in logarithmic time.
+HNSW (Hierarchical Navigable Small World) is the heart of Qdrant's search engine. Understanding how it works reveals why vector search can be so fast.
 
-**Graph Construction.** When an immutable segment is built, the HNSW constructor assigns each vector a random level using an exponential distribution controlled by a `level_factor` (derived from the `m` parameter). Most vectors land at level 0 (the densest layer); progressively fewer reach higher levels. Construction proceeds in two phases: a single-threaded bootstrap phase inserts the first batch of points (controlled by `SINGLE_THREADED_HNSW_BUILD_THRESHOLD`) to establish basic graph connectivity, then a parallel phase uses [Rayon](https://docs.rs/rayon/) thread pools to insert remaining points concurrently.
+#### Building the Graph
 
-For each new point, the algorithm:
-1. Starts at the current entry point and greedily descends through upper layers (beam width 1), finding the closest node at each level.
-2. At the point's assigned level and below, it searches for `ef_construct` nearest neighbors.
-3. It selects up to `m` neighbors to link using a heuristic that rejects candidates whose distance to already-selected neighbors is less than their distance to the new point -- preventing redundant short-range links and promoting graph diversity.
-4. Bidirectional links are established: the new point links to its neighbors, and those neighbors add back-links to the new point (pruning if they exceed `m` or `m0` connections).
+When vectors are indexed, HNSW constructs a multi-layered graph:
 
-**Graph Search.** A search query follows a similar top-down traversal:
-1. Enter at the highest layer's entry point.
-2. At each layer above the base, greedily walk toward the query vector (beam width 1), moving to whichever neighbor is closest to the query.
-3. At the base layer (level 0), expand the search with beam width `ef` (the search-time parameter), maintaining a priority queue of candidates and a visited set.
-4. Return the top-k closest points from the priority queue.
+1. **Layer assignment** — Each new vector is randomly assigned a maximum layer using an exponential decay function. Most vectors exist only on layer 0 (the bottom); a few reach higher layers.
+2. **Connection phase** — Starting from the top layer's entry point, the algorithm greedily navigates to the nearest neighbors of the new vector, then creates bidirectional edges. This repeats at each layer down to layer 0.
+3. **Edge pruning** — Each node maintains at most `m` connections per layer (configurable, typically 16-64). The `ef_construct` parameter controls how many candidates are evaluated during construction — higher values produce a better-connected graph at the cost of slower builds.
 
-The key parameters that control quality and speed:
-- **`m`** (default 16): Maximum edges per node at non-zero levels. Higher values improve recall but increase memory and build time.
-- **`m0`** (typically 2*m = 32): Maximum edges per node at level 0. The base layer is denser because it is where final results are found.
-- **`ef_construct`** (default 100): Search width during construction. Higher values build better graphs but take longer.
-- **`ef`** (search-time parameter): Search width during queries. Higher values improve recall at the cost of latency.
+The result is a navigable graph where high layers provide "express lanes" (few nodes, long-distance connections) and low layers provide "local streets" (many nodes, fine-grained connections).
 
-### Filterable HNSW
+#### Searching the Graph
 
-Standard HNSW assumes all points are candidates. When payload filters restrict the search space, naive approaches break down: pre-filtering removes points from the graph, destroying connectivity and trapping the search in disconnected components; post-filtering wastes compute scoring irrelevant points.
+Given a query vector, HNSW search proceeds:
 
-Qdrant solves this with [filterable HNSW](https://qdrant.tech/course/essentials/day-2/filterable-hnsw/), which integrates filtering directly into graph traversal:
+1. **Enter at the top** — Start at the graph's entry point on the highest layer.
+2. **Greedy descent** — At each layer, greedily navigate to the node closest to the query vector. This uses the "express lanes" to quickly reach the right neighborhood.
+3. **Expand at the bottom** — On layer 0, perform a beam search with `ef` candidates (configurable at query time). This explores the local neighborhood thoroughly to find the best matches.
+4. **Return top-k** — Sort candidates by distance and return the requested number of nearest neighbors.
 
-1. **Payload indexes** are maintained alongside the HNSW graph. These are inverted indexes mapping payload field values to point IDs -- similar to indexes in a traditional document database.
-2. During HNSW traversal, each candidate node is checked against the filter condition using the payload index. Filtered-out nodes are skipped but their graph links are still traversed -- the algorithm uses them as "stepping stones" to reach qualifying nodes.
-3. The HNSW graph itself is conditioned on possible filtering dimensions during construction: additional links are built to maintain connectivity for common filter patterns.
+The key insight: higher layers have exponentially fewer nodes, so the greedy descent is O(log N). The expensive detailed search only happens in the local neighborhood at the bottom layer.
 
-**Adaptive Query Planning.** Qdrant's query planner estimates the cardinality of a filter (how many points it matches) and selects the optimal strategy:
-- **High cardinality** (filter matches most points): Use standard HNSW with in-traversal filtering.
-- **Medium cardinality**: Use HNSW with aggressive filtering and expanded ef to compensate for reduced graph connectivity.
-- **Low cardinality** (filter matches very few points, below `full_scan_threshold`): Skip HNSW entirely. Use the payload index to enumerate matching points and brute-force score them. This is faster when the candidate set is small enough.
+### Filterable HNSW: Qdrant's Key Innovation
 
-This adaptive approach means Qdrant avoids the pathological cases of both pre-filtering and post-filtering, though it requires maintaining both HNSW and payload indexes simultaneously.
+Standard HNSW has a fundamental problem with filters: if you search the graph and then filter results, you may discard most matches and return poor-quality results. If you filter first and then search, the graph may become disconnected (many nodes removed), causing the search to miss entire regions.
 
-### Segment Lifecycle and Optimization
+Qdrant solves this with **filterable HNSW**:
 
-Qdrant's segment architecture is a key differentiator -- it allows concurrent reads, writes, and index building without global locks.
+1. **Payload-aware edges** — During index construction, Qdrant builds additional edges between nodes that share common payload values. For each indexed payload field value, a subgraph of matching nodes is constructed, and extra edges are added to ensure these subgraphs remain navigable.
+2. **Filter-during-search** — During search, the HNSW traversal checks each candidate against the filter condition. Non-matching candidates are skipped but still used for navigation (they help traverse the graph). Only matching candidates are added to the result set.
+3. **Adaptive strategy** — Qdrant automatically chooses the best search strategy based on the estimated filter selectivity:
+   - **Low selectivity (broad filter)** — Uses the standard HNSW graph with filter checks
+   - **Medium selectivity** — Uses filterable HNSW with extra edges
+   - **High selectivity (narrow filter)** — Falls back to filtered scan of the payload index, then rescores candidates
 
-**Mutable Segments** accept new points immediately. They use a simple scan-based search (no HNSW graph), which is fast for small segment sizes but degrades linearly as the segment grows. Writes are backed by a Write-Ahead Log (WAL) for durability.
+This adaptive approach ensures good performance regardless of how selective the filter is.
 
-**Immutable Segments** are created when the optimizer converts a mutable segment. The optimizer:
-1. Takes a snapshot of the mutable segment's data.
-2. Builds an HNSW index on the snapshot (potentially GPU-accelerated).
-3. Applies any quantization (scalar, product, or binary).
-4. Atomically swaps the new immutable segment in, replacing the old mutable segment.
-5. Search operations seamlessly transition -- queries that were scanning the mutable segment now traverse the HNSW graph of the immutable segment.
+### ACORN Algorithm
 
-**Merge Optimization** periodically combines small immutable segments into larger ones, reducing the number of segments that must be searched per query. The optimizer balances segment count (fewer is better for search) against segment size (smaller is better for index build time).
+For queries with multiple high-cardinality filters, Qdrant implements the **ACORN** (Approximate Computation of k-nearest neighbors Over Realistic datasets with Noise) algorithm. ACORN improves search accuracy when filters combine multiple conditions that individually match many points but together match few — a scenario where standard filterable HNSW can struggle.
 
-**Deletion Handling.** Deleted points are marked with a tombstone rather than physically removed. When tombstone density exceeds a threshold, the optimizer compacts the segment, physically removing deleted data and rebuilding the index. This avoids the cost of modifying HNSW graphs in-place (which would require expensive relinking).
+### Scoring and Distance Metrics
 
-### Quantization Engine
+Qdrant supports four distance metrics for measuring vector similarity:
 
-Qdrant implements three quantization strategies, each trading accuracy for memory and speed differently:
+- **Cosine** — Measures the angle between vectors (normalized dot product). Most common for text embeddings. Range: -1 to 1.
+- **Dot Product** — Raw inner product. Useful when vector magnitude carries meaning. Range: unbounded.
+- **Euclidean (L2)** — Straight-line distance in vector space. Lower is more similar. Range: 0 to infinity.
+- **Manhattan (L1)** — Sum of absolute differences. Less sensitive to outlier dimensions. Range: 0 to infinity.
 
-**[Scalar Quantization](https://qdrant.tech/articles/scalar-quantization/)** maps each float32 dimension (4 bytes) to an int8 value (1 byte), achieving 4x compression. The mapping learns the range [min, max] for each dimension and linearly scales values to [0, 255]. Distance calculations on int8 values leverage SIMD instructions for ~2x additional speedup beyond the memory savings.
+The distance metric is set per collection (or per named vector) at creation time. It affects both index construction and search. Internally, Qdrant uses SIMD-optimized distance functions for maximum throughput.
 
-**[Product Quantization](https://qdrant.tech/articles/product-quantization/)** divides each vector into sub-vectors (e.g., a 768-dimensional vector into 96 sub-vectors of 8 dimensions each), then clusters each sub-vector space into 256 centroids using k-means. Each sub-vector is replaced by its 1-byte centroid ID, achieving compression ratios from 4x to 64x. Distance computation uses pre-computed lookup tables. The trade-off: product quantization is not SIMD-friendly, so while it compresses more aggressively than scalar, individual distance calculations are slower.
+### The Indexing Pipeline
 
-**[Binary Quantization](https://qdrant.tech/articles/binary-quantization/)** reduces each dimension to a single bit (positive or negative), achieving 32x compression. Distance computation becomes a bitwise XOR followed by a popcount -- native CPU operations that deliver up to 40x speed improvement over float32. Binary quantization works best with high-dimensional vectors from models like OpenAI's Ada-002 (1536 dimensions) or Cohere's embeddings, where the information loss per dimension is offset by the sheer number of dimensions.
+When you upsert points into Qdrant, they flow through a multi-stage pipeline:
 
-**Oversampling and Re-scoring.** All quantization methods use a two-phase approach: the quantized vectors produce a fast, approximate ranking, then the top candidates (oversampled by a configurable factor) are re-scored against the full-precision vectors for final ranking. This recovers most of the accuracy lost during quantization.
+1. **WAL persistence** — The operation is written to the write-ahead log. The client receives an acknowledgment.
+2. **Appendable segment** — The point is added to a writable segment with no HNSW index (plain storage). This ensures fast write ingestion.
+3. **Threshold detection** — The optimize worker monitors segment sizes. When an appendable segment exceeds the configured threshold, optimization is triggered.
+4. **Segment optimization** — A new indexed segment is built:
+   - Vector data is organized into the chosen storage format (mmap or in-memory)
+   - HNSW index is constructed with the configured `m` and `ef_construct` parameters
+   - Payload indexes are built for indexed fields
+5. **Segment swap** — The new indexed segment atomically replaces the old appendable segment. Reads switch seamlessly via a proxy segment during the transition.
+6. **WAL cleanup** — Once all operations in a WAL segment have been applied and the segment is indexed, the WAL segment is freed.
 
-### Distributed Consensus and Replication
+### Segment Lifecycle
 
-In distributed mode, Qdrant uses the [Raft consensus protocol](https://qdrant.tech/documentation/operations/distributed_deployment/) with a critical optimization: consensus governs cluster structure only, not individual data operations.
+Segments go through distinct phases:
 
-**What Raft controls:**
-- Cluster membership (which peers are alive)
-- Collection metadata (schemas, configurations)
-- Shard assignments (which shard replicas live on which peers)
-- Replica state transitions (Active, Dead, Initializing, etc.)
+```
+[New writes] --> Appendable Segment (no HNSW, fast writes)
+                      |
+                 [Size threshold reached]
+                      |
+                      v
+              Optimization (build HNSW, build payload indexes)
+                      |
+                      v
+              Indexed Segment (HNSW graph, fast search)
+                      |
+                 [Many deletes accumulated]
+                      |
+                      v
+              Vacuum/Merge (compact, rebuild index)
+```
 
-**What Raft does NOT control:**
-- Individual point upserts, deletes, and updates
-- Search queries
+Multiple small indexed segments may also be merged into larger ones to reduce the number of segments that must be searched per query.
 
-Point-level writes are forwarded directly from the receiving node to all replicas in the shard's ReplicaSet. The `write_consistency_factor` controls how many replicas must acknowledge before the client gets a response (default 1, configurable up to all replicas). This gives Qdrant much higher write throughput than a system that consensus-replicates every point.
+### Hybrid Search Pipeline
 
-**Shard Transfer Methods:**
-- `stream_records`: Streams point data record by record; the receiving node rebuilds indexes from scratch. Simplest and most robust.
-- `snapshot`: Transfers the entire segment state (data + indexes) as a snapshot. Faster for large shards because the receiving node does not need to rebuild the HNSW index.
-- `wal_delta`: Transfers only the WAL entries that differ between replicas. Fastest for recovering a replica that has been temporarily offline. Falls back to `stream_records` if the WAL gap is too large.
+Qdrant's Query API enables combining multiple search strategies in a single request:
 
-### Performance Characteristics
+1. **Dense search** — Semantic similarity using dense vector embeddings
+2. **Sparse search** — Lexical matching using sparse vectors (BM25, SPLADE)
+3. **Fusion** — Results from multiple searches are combined using Reciprocal Rank Fusion (RRF) or Distribution-Based Score Fusion (DBSF)
+4. **Re-ranking** — Optional re-scoring using a separate model or multivector (ColBERT) scoring
+5. **Return** — Final ranked results with scores and payloads
 
-**Search latency:** Sub-20ms query latency at p50 for billion-scale datasets with quantization enabled, as reported in [Qdrant benchmarks](https://qdrant.tech/qdrant-vector-database/). Latency scales logarithmically with dataset size thanks to HNSW, but linearly with the number of segments searched per query.
+The entire fusion and re-ranking pipeline runs server-side, eliminating multiple round-trips between client and server.
 
-**Indexing throughput:** GPU-accelerated HNSW construction achieves up to 10x faster ingestion compared to CPU-only builds. Incremental HNSW indexing (added in 2025) further reduces overhead for upsert-heavy workloads by updating existing graph structures rather than rebuilding from scratch.
+### Quantized Search
 
-**Memory efficiency:** With binary quantization on 1536-dimensional vectors, memory usage drops from ~6 KB per vector to ~192 bytes -- enabling a billion vectors to fit in approximately 180 GB of RAM (quantized) versus 5.7 TB (uncompressed). The optimal production pattern puts original vectors on disk (`on_disk: true`) and quantized vectors in RAM (`always_ram: true`).
+When quantization is enabled, the search pipeline adds an optimization step:
 
-**Filtered search overhead:** Payload-filtered searches add 10-30% latency compared to unfiltered searches when the filter matches >50% of points. For very restrictive filters (<1% match), the payload-index-only path can be faster than HNSW because it avoids graph traversal entirely.
+1. **Coarse search** — HNSW traversal uses quantized vectors for fast distance approximation. This quickly narrows candidates from millions to a few hundred.
+2. **Rescoring** — Top candidates are rescored using the original full-precision vectors for accurate final ranking.
+3. **Oversampling** — To compensate for quantization error, more candidates than requested are retrieved in the coarse phase. The `oversampling` parameter (e.g., 2.0) controls how many extra candidates are evaluated.
 
-**Write throughput:** Single-node write throughput depends on vector dimensionality and payload size, but typical production deployments sustain 10,000-50,000 points/second for 768-dimensional vectors with moderate payloads.
+This two-phase approach provides most of the memory savings of quantization with minimal accuracy loss.

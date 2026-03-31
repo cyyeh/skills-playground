@@ -3,50 +3,63 @@
 <!-- references:
 - [NemoClaw Architecture Reference](https://docs.nvidia.com/nemoclaw/latest/reference/architecture.html) | official-docs
 - [How NemoClaw Works](https://docs.nvidia.com/nemoclaw/latest/about/how-it-works.html) | official-docs
-- [NemoClaw GitHub Repository](https://github.com/NVIDIA/NemoClaw) | github
+- [NemoClaw GitHub - Repository Structure](https://github.com/NVIDIA/NemoClaw) | github
 -->
 
-### High-Level Design
+NemoClaw is a two-tier system layered atop NVIDIA OpenShell. The architecture follows a deliberate separation of concerns: a lightweight TypeScript plugin handles user interaction and CLI wiring, while a versioned Python blueprint manages all orchestration logic for sandbox creation, policy enforcement, and inference routing.
 
-NemoClaw's architecture is a two-layer system with a clear separation of concerns: a thin TypeScript plugin handles the user-facing CLI and orchestration logic, while a Python blueprint runtime handles the actual provisioning and management of sandboxed environments. Both layers communicate through the [OpenShell](https://docs.nvidia.com/nemoclaw/latest/about/overview.html) runtime, which provides the kernel-level primitives for isolation and network control.
+### High-Level Architecture
 
-The overall design follows a "wrapping" philosophy rather than a "forking" one. Instead of modifying OpenClaw's source code to add security, NemoClaw places an unmodified OpenClaw installation inside a controlled container and governs it from the outside -- like surrounding an existing building with a security perimeter rather than renovating its interior.
+The system consists of four main layers, each with a distinct responsibility:
 
-### Key Components
+**1. CLI Layer (TypeScript Plugin)**
+The plugin (`nemoclaw/src/`) registers commands under `openclaw nemoclaw` using Commander.js. It contains the entry point (`index.ts`), CLI wiring (`cli.ts`), and command modules for launch, connect, status, logs, and slash-command handling. This layer runs in-process with the OpenClaw gateway and is intentionally kept thin — its job is to accept user input, resolve the correct blueprint version, and delegate orchestration to the blueprint subprocess.
 
-**NemoClaw CLI (`bin/nemoclaw.js`)** -- The user's primary interface. It handles onboarding, sandbox lifecycle management (create, connect, destroy, status, logs), and policy operations. This component exists because operators need a single entry point to manage the entire stack without manually orchestrating Docker, OpenShell, and OpenClaw separately.
+**2. Orchestration Layer (Python Blueprint)**
+The blueprint (`nemoclaw-blueprint/`) is a versioned artifact containing the Dockerfile, security policies, network rules, and Python orchestration logic. It follows a five-stage lifecycle: resolve (locate and validate the artifact), verify (check the digest), plan (determine required OpenShell resources), apply (execute the plan via OpenShell CLI), and status (report deployment state). The blueprint is immutable once published — any changes require a new version with a new digest.
 
-**TypeScript Plugin (`nemoclaw/src/`)** -- Runs in-process within the OpenClaw gateway sandbox. It manages blueprint resolution, state tracking, credential stripping, and digest verification. This layer exists because the system needs a trusted component that can operate inside the gateway context while enforcing security invariants that the agent itself cannot bypass.
+**3. Security Layer (OpenShell Runtime)**
+NVIDIA OpenShell provides the foundational security primitives. It creates and manages sandbox containers, enforces Landlock filesystem policies, applies seccomp BPF syscall filters, configures network namespaces for egress control, and hosts the inference routing gateway. OpenShell operates entirely outside the agent's reach — the agent cannot modify, disable, or bypass its controls.
 
-**Python Blueprint (`nemoclaw-blueprint/`)** -- A versioned artifact containing the manifest (`blueprint.yaml`) and policies (`openclaw-sandbox.yaml`). The blueprint is the declarative specification of a deployment. It exists as a separate artifact with its own release stream so that sandbox configurations can be versioned, audited, and rolled back independently of the CLI or plugin code.
+**4. Agent Layer (OpenClaw)**
+The OpenClaw agent runs inside the sandbox container. It sees a standard Linux environment with `/sandbox` and `/tmp` as writable directories, a local inference endpoint at `inference.local`, and network access limited to policy-approved endpoints. From the agent's perspective, it operates normally — the security controls are transparent and cannot be detected or circumvented.
 
-**OpenShell Gateway** -- The NVIDIA-provided runtime that intercepts all traffic between the sandbox and the outside world. It enforces network policies, routes inference requests to configured providers, and provides the TUI for operator monitoring. This is the security backbone -- without it, the sandbox would need to implement its own network interception and policy enforcement from scratch.
+### Component Interactions
 
-**Sandbox Container (`ghcr.io/nvidia/openshell-community/sandboxes/openclaw`)** -- A pre-built Docker image containing OpenClaw and the NemoClaw plugin, hardened with capability drops and least-privilege rules. The container exists to provide a reproducible, tamper-evident environment where the agent operates. Its [Dockerfile](https://github.com/NVIDIA/NemoClaw) follows a security-first design with explicit capability drops.
+The components interact through a clear chain of command:
 
-**Messaging Bridges (`scripts/telegram-bridge.js`)** -- Optional connectors that link external messaging platforms (Telegram, Discord, Slack) to the sandboxed agent. These exist so that always-on assistants can be reached through channels teams already use, without requiring direct access to the sandbox host.
+- **User → Plugin:** The operator runs `nemoclaw onboard`, `nemoclaw connect`, or other CLI commands.
+- **Plugin → Blueprint:** The plugin downloads the blueprint artifact, verifies its digest, and executes it as a subprocess.
+- **Blueprint → OpenShell:** The blueprint calls `openshell sandbox create`, `openshell provider add`, and `openshell policy apply` to configure the runtime.
+- **OpenShell → Sandbox:** OpenShell creates the isolated container, applies security policies, and starts the agent process.
+- **Agent → OpenShell Gateway:** All inference requests from the agent go through `inference.local`, which OpenShell routes to the configured provider.
+- **Agent → Network Policy:** All outbound connections are intercepted by the network namespace. Unapproved destinations are blocked and surfaced to the operator.
 
-### Data Flow
+### Repository Structure
 
-A typical interaction follows this path through the system:
+The codebase is organized into five main directories:
 
-1. **User sends a message** via the OpenClaw TUI, CLI, or a messaging bridge (e.g., Telegram).
-2. **The message enters the sandbox** through the OpenShell gateway, which validates the incoming connection.
-3. **OpenClaw processes the message** inside the sandbox, deciding whether to respond directly or execute a tool (file read, shell command, etc.).
-4. **If the agent needs LLM inference**, it calls `inference.local` -- a local endpoint inside the sandbox that does not hold any real API credentials.
-5. **OpenShell intercepts the inference request** at the sandbox boundary, injects the real API credentials stored on the host, and forwards the request to the configured inference provider (NVIDIA Endpoints, OpenAI, Anthropic, local Ollama, etc.).
-6. **If the agent attempts a network request** to a domain not in the network policy, OpenShell blocks the request and surfaces it in the operator TUI for approval.
-7. **The inference response returns** through the same controlled path: provider to OpenShell gateway to sandbox to agent.
-8. **The agent's response** is delivered back to the user through the same channel that originated the request.
+- `bin/` — CLI entry point (CommonJS wrapper)
+- `nemoclaw/` — TypeScript plugin source (Commander CLI extension)
+- `nemoclaw-blueprint/` — Blueprint YAML, policies, Dockerfile, and Python orchestration
+- `scripts/` — Installation, uninstallation, and automation helpers
+- `test/` — Integration and end-to-end tests
+- `docs/` — Sphinx/MyST documentation source
 
-### Design Decisions
+### Host-Side State
 
-**Wrapping over forking** -- NemoClaw runs an unmodified OpenClaw inside a sandbox rather than maintaining a security-hardened fork. This decision trades some depth of integration for maintainability: NemoClaw can absorb upstream OpenClaw updates without merge conflicts, and the security boundary is enforced externally rather than relying on in-application checks that could be bypassed.
+NemoClaw stores configuration and metadata on the host filesystem:
 
-**Deny-by-default networking** -- Every outbound connection is blocked unless explicitly allowed in the network policy YAML. This is the opposite of most development environments, which default to open. The rationale is that autonomous agents executing arbitrary code present a fundamentally different threat model than human developers -- an agent that autonomously discovers a useful API and starts calling it is exactly the scenario NemoClaw is designed to prevent without human approval.
+- `~/.nemoclaw/credentials.json` — Provider API keys (never copied into the sandbox)
+- `~/.nemoclaw/sandboxes.json` — Sandbox metadata and version tracking
+- `~/.openclaw/openclaw.json` — OpenClaw configuration snapshots
 
-**Host-side credential management** -- API keys never enter the sandbox. The agent sees only `inference.local` as its model endpoint, while OpenShell on the host holds the real credentials and injects them into forwarded requests. This architectural decision means that even a fully compromised sandbox (e.g., through a prompt injection attack that achieves code execution) cannot exfiltrate API keys.
+### Design Principles
 
-**Blueprint versioning with digest verification** -- Blueprints are versioned artifacts whose integrity is checked via content digests before application. This ensures that the sandbox configuration a security team approved is exactly the configuration that gets deployed, with no possibility of silent modification.
+The architecture adheres to five core tenets:
 
-**Two-language split (TypeScript + Python)** -- The CLI and plugin are TypeScript (because they integrate with the Node.js-based OpenClaw ecosystem), while the blueprint runtime is Python (because it interacts with OpenShell's Python-based tooling). This split creates some complexity but avoids forcing either ecosystem to use a non-native language for its integration points.
+1. **Thin plugin, versioned blueprint** — The plugin stays stable; orchestration logic evolves in the blueprint.
+2. **CLI boundary respect** — The `nemoclaw` CLI is the primary management interface; no hidden background processes.
+3. **Supply chain safety** — Blueprint artifacts are immutable, versioned, and digest-verified before execution.
+4. **OpenShell-native** — New installations use `openshell sandbox create` directly, not plugin-driven bootstrapping.
+5. **Reproducible setup** — Re-running setup recreates the sandbox from identical blueprint and policy definitions.

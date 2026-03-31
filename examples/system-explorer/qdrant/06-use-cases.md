@@ -1,42 +1,100 @@
 ## Use Cases & Case Studies
 <!-- level: beginner-intermediate -->
 <!-- references:
-- [Enterprise Search Solutions](https://qdrant.tech/enterprise-solutions/) | official-docs
-- [Nyris & Qdrant: Visual Search Case Study](https://qdrant.tech/blog/case-study-nyris/) | blog
-- [Vector Search in Production](https://qdrant.tech/articles/vector-search-production/) | blog
-- [Qdrant Raises $50M Series B](https://www.businesswire.com/news/home/20260312313902/en/Qdrant-Raises-50-Million-Series-B-to-Define-Composable-Vector-Search-as-Core-Infrastructure-for-Production-AI) | blog
+- [Qdrant Use Cases](https://qdrant.tech/use-cases/) | official
+- [RAG Use Case](https://qdrant.tech/rag/) | official
+- [Recommendation Engines](https://qdrant.tech/recommendations/) | official
+- [Anomaly Detection](https://qdrant.tech/data-analysis-anomaly-detection/) | official
+- [5-Minute RAG with DeepSeek](https://qdrant.tech/documentation/tutorials-build-essentials/rag-deepseek/) | tutorial
 -->
 
-### When to Use It
+### Retrieval-Augmented Generation (RAG)
 
-**Retrieval-Augmented Generation (RAG) pipelines.** When your LLM needs to ground its responses in your organization's documents, knowledge base, or product catalog, Qdrant serves as the retrieval backbone. You embed your documents into vectors, store them with metadata payloads (source, date, access level), and at query time retrieve the most relevant chunks to feed into the LLM context window. Qdrant's filtered search is particularly valuable here -- you can restrict retrieval to specific document categories, date ranges, or access permissions in a single query.
+**The problem:** Large language models have knowledge cutoffs, hallucinate facts, and cannot access private data. RAG solves this by retrieving relevant context from a vector database before generating a response.
 
-**Semantic search and discovery.** When keyword search fails because users describe what they want in different words than what exists in your data. E-commerce product search ("comfortable running shoes for flat feet"), customer support ticket matching, code search across large codebases, and any scenario where meaning matters more than exact keyword matches. Qdrant handles 10,000+ queries per second on a single node for typical embedding dimensions (768-1536).
+**How Qdrant fits:**
+1. Documents are split into chunks and embedded using a model (OpenAI, Cohere, sentence-transformers)
+2. Embeddings are stored in Qdrant with metadata payloads (source, date, author, etc.)
+3. At query time, the user's question is embedded and searched against Qdrant
+4. Top-k results are passed as context to the LLM for answer generation
 
-**Recommendation systems.** When you have user and item embeddings (from collaborative filtering, content-based models, or two-tower architectures) and need real-time nearest-neighbor retrieval for "users who liked X also liked Y" or "items similar to what you viewed." Payload filters let you apply business rules (availability, region, category) alongside similarity search.
+**Why Qdrant excels at RAG:**
+- Payload filtering enables scoping retrieval to specific document sets, date ranges, or access levels
+- Hybrid search (dense + sparse) captures both semantic meaning and exact keyword matches
+- Named vectors allow storing embeddings from multiple models (e.g., a fast small model for initial retrieval, a large model for re-ranking)
+- Low-latency gRPC interface keeps RAG response times snappy
 
-**Multi-modal search.** When your search spans text, images, audio, or video -- all mapped to a shared embedding space by models like CLIP or ImageBind. Qdrant's support for multiple named vectors per point lets you store text and image embeddings on the same record and search by either modality. Hybrid search (dense + sparse vectors with reciprocal rank fusion) further combines semantic and keyword relevance.
+**Real-world example:** Dust, a platform enabling companies to deploy LLM-powered AI assistants across organizations, chose Qdrant for its RAG pipeline due to ease of deployment and high performance at scale.
 
-**Anomaly and fraud detection.** When you need to identify data points that are unusually far from their nearest neighbors. By embedding transaction patterns, sensor readings, or network traffic into vectors, you can detect outliers that deviate from normal behavior. Qdrant's fast nearest-neighbor search and payload filtering enable real-time anomaly scoring against historical baselines.
+### Semantic Search
 
-### When NOT to Use It
+**The problem:** Traditional keyword search misses synonyms, paraphrases, and conceptual connections. Searching for "how to fix a broken pipe" should find plumbing articles, not just documents containing those exact words.
 
-**Simple key-value lookups.** If your primary access pattern is "get the record with ID X" or "get all records where status = active," you do not need a vector database. Redis, PostgreSQL, or DynamoDB will serve point lookups with lower operational complexity and latency. Qdrant adds value only when similarity search is a core requirement.
+**How Qdrant fits:**
+- Text is converted to dense embeddings that capture meaning
+- Search queries find semantically similar content regardless of exact wording
+- Payload filters add business logic (date ranges, categories, access control)
+- Full-text payload indexes enable hybrid keyword + semantic search
 
-**Full-text search with complex linguistic features.** If you need stemming, synonym expansion, faceted search, autocomplete, and relevance tuning based on TF-IDF or BM25, Elasticsearch or Apache Solr remain better choices. Qdrant's sparse vectors and full-text filtering handle basic keyword matching, but they do not replace a mature full-text search engine for complex information retrieval workloads.
+**Use cases:**
+- Enterprise knowledge base search
+- Customer support ticket matching
+- Legal document discovery
+- Academic paper similarity
 
-**Relational data with complex joins.** If your queries involve multi-table joins, aggregations, GROUP BY, or transactions across multiple records, use a relational database. Qdrant's payload filtering is powerful but operates on a single collection -- there is no join capability, foreign keys, or transactional semantics across collections.
+### Recommendation Systems
 
-**Workloads smaller than ~10,000 vectors.** At very small scale, brute-force search (which Qdrant supports internally via plain segments) is fast enough, and the overhead of maintaining HNSW indexes is unnecessary. Libraries like FAISS or even NumPy's cdist can handle in-memory similarity search for small datasets without the operational cost of running a database server.
+**The problem:** Recommending similar or complementary items based on user behavior, item features, or collaborative signals.
 
-**Extremely low-latency requirements (<1ms p99) on individual queries.** While Qdrant is fast (sub-20ms p50 at scale), it is a network service with serialization overhead. If you need sub-millisecond latency for individual vector comparisons and can fit your data in process memory, an in-process library like FAISS, Annoy, or ScaNN avoids the network round-trip entirely.
+**How Qdrant fits:**
+- Items are represented as vectors (from content features, collaborative filtering, or hybrid models)
+- Qdrant's Recommendation API accepts positive and negative example points
+- The "best score" strategy evaluates candidates against multiple vectors to improve relevance
+- Payload filtering limits recommendations to relevant categories, availability, or pricing
 
-### Real-World Examples
+**Use cases:**
+- E-commerce product recommendations
+- Content recommendation (articles, videos, music)
+- Job-candidate matching
+- Dating/social matching platforms
 
-**Tripadvisor -- Semantic Travel Search.** [Tripadvisor](https://www.businesswire.com/news/home/20260312313902/en/Qdrant-Raises-50-Million-Series-B-to-Define-Composable-Vector-Search-as-Core-Infrastructure-for-Production-AI) uses Qdrant to power semantic search across millions of hotels, restaurants, and attractions. Instead of matching on exact keywords ("pet-friendly hotel with pool in Miami"), the system understands the intent behind natural language queries and retrieves relevant listings even when the wording differs from the listing description. Payload filtering ensures results respect business constraints like availability, price range, and geographic region.
+### Anomaly Detection
 
-**Nyris -- Visual Search for Retail and Manufacturing.** [Nyris](https://qdrant.tech/blog/case-study-nyris/) powers visual search on large retail websites and industrial manufacturing platforms where users need to identify spare parts by photograph. Users snap a photo of a component, Nyris generates an image embedding, and Qdrant retrieves the most visually similar products from a catalog of millions of items. The system handles real-time queries with sub-second latency, enabling "point your camera and find it" workflows that replace manual catalog browsing.
+**The problem:** Identifying unusual patterns, outliers, or novel events in data streams.
 
-**Bosch -- Predictive Maintenance in Manufacturing.** [Bosch](https://qdrant.tech/enterprise-solutions/) uses Qdrant for predictive maintenance systems that convert equipment sensor data (vibration, temperature, pressure) into vector representations. By comparing current sensor embeddings against historical patterns of known failure modes, the system detects anomalies before they cause equipment failures. The payload filtering capability allows searching within specific equipment types, time windows, and facility locations, while Qdrant's distributed deployment handles the scale of sensor data across global manufacturing sites.
+**How Qdrant fits:**
+- Normal behavior patterns are stored as vectors
+- Incoming data points are compared against the known distribution
+- Points with high distance from their nearest neighbors are flagged as anomalies
+- Qdrant supports "dissimilarity search" — finding points farthest from a query
 
-**HubSpot -- AI-Powered CRM Features.** [HubSpot](https://www.businesswire.com/news/home/20260312313902/en/Qdrant-Raises-50-Million-Series-B-to-Define-Composable-Vector-Search-as-Core-Infrastructure-for-Production-AI) integrates Qdrant to power AI features in their CRM platform, including semantic search across customer interactions, automated email categorization, and intelligent lead scoring. Customer communication embeddings are stored with rich metadata payloads (account tier, industry, lifecycle stage), enabling similarity-based features that combine semantic understanding with structured business data.
+**Use cases:**
+- Cybersecurity threat detection
+- Financial fraud detection
+- Manufacturing quality control
+- Network intrusion detection
+
+### Image and Multimodal Search
+
+**The problem:** Finding visually or semantically similar images, or searching across modalities (text-to-image, image-to-text).
+
+**How Qdrant fits:**
+- Images are embedded using vision models (CLIP, SigLIP, DINOv2)
+- Named vectors allow storing both text and image embeddings per item
+- Cross-modal search finds images from text queries or similar images from image queries
+
+**Use cases:**
+- E-commerce visual search ("find products that look like this")
+- Content moderation (finding similar flagged content)
+- Digital asset management
+- Medical image retrieval
+
+### When NOT to Use Qdrant
+
+Qdrant is not the right tool for every problem:
+
+- **Exact keyword search only** — If you only need traditional full-text search without semantic understanding, Elasticsearch or Solr are more mature
+- **Relational queries** — Qdrant is not a general-purpose database. Complex joins, transactions, and SQL queries belong in PostgreSQL or similar
+- **Fewer than 10,000 vectors** — At small scale, brute-force search in application memory may be simpler and fast enough
+- **Strict ACID transactions** — Qdrant offers eventual consistency by default in distributed mode; it is not designed for banking-style transactional guarantees
+- **Batch-only analytics** — If you only run periodic batch similarity computations without serving real-time queries, libraries like FAISS or Annoy may suffice

@@ -1,59 +1,113 @@
 ## Trade-offs & Limitations
 <!-- level: intermediate -->
 <!-- references:
-- [Vector Database Comparison 2025](https://tensorblue.com/blog/vector-database-comparison-pinecone-weaviate-qdrant-milvus-2025) | blog
-- [Built for Vector Search](https://qdrant.tech/articles/dedicated-vector-search/) | blog
-- [Qdrant High-Performance Vector Search Engine](https://qdrant.tech/qdrant-vector-database/) | official-docs
-- [Vector Database Comparison: Pinecone vs Weaviate vs Qdrant](https://liquidmetal.ai/casesAndBlogs/vector-comparison/) | blog
+- [Vector Database Comparison 2025-2026](https://www.firecrawl.dev/blog/best-vector-databases) | comparison
+- [Vector DB Comparison: Pinecone vs Weaviate vs Qdrant vs FAISS vs Milvus vs Chroma](https://liquidmetal.ai/casesAndBlogs/vector-comparison/) | comparison
+- [Choosing the Right Vector Database](https://medium.com/@elisheba.t.anderson/choosing-the-right-vector-database-opensearch-vs-pinecone-vs-qdrant-vs-weaviate-vs-milvus-vs-037343926d7e) | comparison
+- [Qdrant Review: A Highly Flexible Option for Vector Search](https://www.infoworld.com/article/3477585/qdrant-review-a-highly-flexible-option-for-vector-search.html) | review
 -->
 
 ### Strengths
 
-**Purpose-built Rust engine with predictable latency.** Qdrant's decision to write everything in Rust with a custom storage engine (Gridstore) pays off in production. No garbage collection pauses, no JVM heap tuning, no Python GIL contention. The result is [sub-20ms p50 query latency](https://qdrant.tech/qdrant-vector-database/) at billion-scale with tight p99 variance. For latency-sensitive applications (real-time recommendations, conversational AI), this predictability matters more than raw throughput numbers.
+1. **Best-in-class filtered search** — Qdrant's filterable HNSW is its crown jewel. While other databases apply filters after vector search (losing accuracy) or before (losing performance), Qdrant integrates filtering into the graph traversal itself. This produces both fast and accurate results for filtered queries.
 
-**Best-in-class filtered vector search.** Qdrant's filterable HNSW implementation -- integrating payload conditions directly into graph traversal with adaptive query planning -- is arguably the strongest differentiator against competitors. Most vector databases either pre-filter (breaking graph connectivity) or post-filter (wasting compute). Qdrant's approach maintains high recall even with restrictive filters, and the query planner automatically switches strategies based on estimated cardinality. For real-world workloads where nearly every search includes metadata filters, this translates to consistently better recall and latency.
+2. **Rust performance with no GC pauses** — As the only major vector DB written entirely in Rust, Qdrant delivers predictable, low-latency performance without garbage collection stops. This matters for p99 latency-sensitive production workloads.
 
-**Full spectrum of quantization options.** Supporting scalar, product, and binary quantization -- plus asymmetric combinations (binary stored / scalar query) and configurable oversampling -- gives operators fine-grained control over the memory/accuracy/speed trade-off. The ability to keep quantized vectors in RAM while offloading originals to disk is a practical production pattern that competitors like Weaviate and Pinecone do not expose with the same granularity.
+3. **Rich vector type support** — Dense, sparse, and multi-dense vectors in a single collection. Named vectors allow multiple embedding spaces per point. This natively supports hybrid search and late-interaction re-ranking without external orchestration.
 
-**Flexible deployment model.** From a single Docker container on a laptop, to a multi-node cluster on Kubernetes, to Qdrant Edge on devices, to a fully managed cloud service -- the same codebase runs everywhere. This is valuable for organizations that start prototyping locally and need to move to production without re-architecting. The Apache 2.0 license and self-hosted option mean no vendor lock-in.
+4. **Flexible quantization** — Three quantization methods (scalar, product, binary) with configurable parameters. Asymmetric quantization (different precision for stored vectors vs. query vectors) further optimizes the speed-accuracy tradeoff.
 
-**Rich payload model with native filtering.** Payloads support nested JSON objects, arrays, geo-points, datetime values, and full-text tokenization -- with indexed filtering on all types. This is closer to a document database's metadata capabilities than what most vector databases offer, reducing the need for a separate metadata store alongside the vector index.
+5. **Production-ready distributed mode** — Horizontal sharding, configurable replication, Raft consensus for metadata, and per-operation consistency levels. Custom sharding enables efficient multi-tenancy.
+
+6. **Strong API design** — Clean REST and gRPC APIs with official SDKs in six languages. The Query API unifies search, recommendation, and hybrid search into a single composable interface.
+
+7. **Active development** — Regular releases (1.15, 1.16, 1.17 in rapid succession) with significant features: Gridstore replacing RocksDB, Qdrant Edge for in-process use, tiered multitenancy, ACORN algorithm.
 
 ### Limitations
 
-**Eventual consistency for point operations.** Because point-level writes bypass Raft consensus and propagate directly to replicas, there is a window where different replicas have different data. Applications that write and immediately read (e.g., "store this vector and immediately search for it") may not find the just-written point unless they use `read_consistency: "all"`, which adds latency. This is a deliberate trade-off for write throughput, but it surprises teams accustomed to strongly-consistent databases.
+1. **Smaller community than Milvus** — Milvus has ~25K GitHub stars vs. Qdrant's ~9K (as of early 2025). This means fewer community-contributed integrations, tutorials, and Stack Overflow answers.
 
-**HNSW index rebuild cost on bulk updates.** Large bulk updates (replacing >10% of vectors in a collection) trigger expensive segment optimization cycles -- the optimizer must rebuild HNSW indexes on newly compacted segments. During this window, freshly inserted points reside in mutable segments with scan-based search, which is slower than HNSW for large segments. Workloads with frequent full re-indexing (e.g., nightly embedding model retraining with complete vector replacement) may experience sustained periods of suboptimal search performance. Incremental HNSW indexing (added in 2025) mitigates this for partial updates but does not eliminate it for full rebuilds.
+2. **No built-in embedding generation** — Unlike Weaviate (which has vectorizer modules), Qdrant does not generate embeddings. You must handle embedding creation separately. This is by design (separation of concerns) but adds integration complexity.
 
-**No cross-collection operations.** Qdrant operates strictly within single collections -- there are no joins, cross-collection queries, or transactions spanning multiple collections. If your application needs to correlate results across different vector spaces (e.g., "find similar images AND similar text descriptions"), you must perform separate queries and merge results in application code. This is a fundamental limitation of the single-collection architecture.
+3. **Immutable shard count** — Once a collection is created, you cannot change its shard_number. If you underestimate growth, you must create a new collection and re-ingest data. This is a common operational pain point.
 
-**Memory pressure at extreme scale without quantization.** Without quantization, Qdrant's memory requirements scale linearly with vector count and dimensionality. A billion 768-dimensional float32 vectors require ~2.9 TB of RAM for vectors alone, plus HNSW graph overhead. Quantization reduces this dramatically (to ~72 GB with scalar, ~9 GB with binary), but organizations that cannot accept any accuracy loss from quantization face steep hardware costs. Competing solutions like Milvus offer disk-based indexing (DiskANN) as an alternative to RAM-based quantization.
+4. **Memory-intensive for full-precision search** — Without quantization or mmap, RAM requirements scale linearly with vector count. 100M vectors at 768 dimensions requires ~460 GB RAM at full precision.
 
-**Operational complexity in distributed mode.** While Qdrant's distributed features are powerful, operating a multi-node cluster requires understanding Raft consensus, shard placement, replica state machines (9 distinct states), transfer methods, and consistency tuning. The learning curve is steeper than fully managed alternatives like Pinecone, where scaling is abstracted away. Debugging shard transfer failures or replica state inconsistencies requires familiarity with the internal state machine.
+5. **No multi-document transactions** — Each point operation is atomic, but there is no way to atomically update multiple points or perform cross-collection operations. This limits some advanced consistency patterns.
 
-### Alternatives Comparison
+6. **Limited analytics capabilities** — Qdrant is focused on similarity search, not analytics. You cannot run aggregations, GROUP BY, or SQL-style queries over payloads. For that, you need to combine Qdrant with an analytical database.
 
-| Feature | Qdrant | Pinecone | Milvus | Weaviate | pgvector |
-|---------|--------|----------|--------|----------|----------|
-| **Language** | Rust | Proprietary (managed) | Go + C++ | Go | C (PG extension) |
-| **Deployment** | Self-hosted / Cloud / Edge | Managed only | Self-hosted / Zilliz Cloud | Self-hosted / Cloud | PostgreSQL extension |
-| **License** | Apache 2.0 | Proprietary | Apache 2.0 | BSD-3-Clause | PostgreSQL License |
-| **Filtered search** | Filterable HNSW (in-traversal) | Post-filter + metadata index | Attribute filtering | Pre-filter + HNSW | WHERE clause + HNSW |
-| **Quantization** | Scalar, Product, Binary | Automatic (not configurable) | Scalar, Product, IVF-SQ8 | Product, Binary | None (HNSW only) |
-| **Sparse vectors** | Native support | No native sparse | Native support | BM25 module | No |
-| **Horizontal scaling** | Built-in sharding + replication | Automatic | Disaggregated compute/storage | Built-in sharding | No native sharding |
-| **GPU acceleration** | Index construction | N/A | Index construction + search | No | No |
+7. **Sparse vector ecosystem is younger** — While dense vector support is mature, sparse vector support (introduced in v1.7) and hybrid search patterns are newer and have fewer production battle scars compared to established full-text search engines.
 
-**[Pinecone](https://www.pinecone.io/)** -- The easiest on-ramp for teams that want zero operational overhead. Pinecone is fully managed and serverless, abstracting away all infrastructure concerns. It is the better choice when your team lacks DevOps capacity to run databases and can accept the higher per-query cost and vendor lock-in of a proprietary service. Qdrant is better when you need self-hosted deployment, fine-grained quantization control, or the cost profile of open-source software at scale.
+### Comparison with Alternatives
 
-**[Milvus](https://milvus.io/) / Zilliz Cloud** -- The strongest competitor for enterprise-scale deployments. Milvus has a more mature disaggregated architecture (separating compute, storage, and coordination), supports DiskANN for disk-based indexing, and has been tested at larger scale (billions of vectors in production at multiple companies). Choose Milvus when you need the most battle-tested distributed architecture and are willing to accept its higher operational complexity (multiple components: etcd, MinIO, Pulsar/Kafka). Choose Qdrant when you prefer a simpler single-binary architecture, need stronger filtered search, or want Rust's performance predictability.
+#### Qdrant vs. Pinecone
 
-**[Weaviate](https://weaviate.io/)** -- Differentiates with built-in vectorization modules (you send text, Weaviate calls the embedding model) and a GraphQL query interface. Choose Weaviate when you want an all-in-one solution that handles embedding generation alongside storage and search, or when your team prefers GraphQL over REST/gRPC. Choose Qdrant when you want to control the embedding pipeline yourself, need finer-grained quantization, or prioritize raw search performance over convenience features.
+| Aspect | Qdrant | Pinecone |
+|--------|--------|----------|
+| **Deployment** | Self-hosted or managed cloud | Fully managed only |
+| **Source code** | Open-source (Apache 2.0) | Proprietary |
+| **Filtering** | Filterable HNSW (during search) | Post-search filtering |
+| **Vector types** | Dense, sparse, multivector | Dense, sparse |
+| **Cost at scale** | Lower (self-hosted option) | Higher (managed pricing) |
+| **Ease of setup** | Moderate (Docker/K8s) | Very easy (SaaS) |
+| **Best for** | Teams needing control + filters | Teams wanting zero-ops |
 
-**[pgvector](https://github.com/pgvector/pgvector)** -- The pragmatic choice when vector search is a secondary feature in a PostgreSQL-centric application. Zero additional infrastructure, full SQL power, and transactional consistency with your relational data. Choose pgvector for workloads under 10M vectors where you do not need advanced features (quantization, hybrid search, horizontal scaling). Choose Qdrant when vector search is a primary workload with dedicated performance and scaling requirements.
+#### Qdrant vs. Weaviate
 
-### The Honest Take
+| Aspect | Qdrant | Weaviate |
+|--------|--------|----------|
+| **Language** | Rust | Go |
+| **Vectorizer modules** | No (bring your own) | Yes (built-in) |
+| **Filtering** | Filterable HNSW | Pre-filter + HNSW |
+| **Hybrid search** | Dense + sparse fusion | BM25 + vector fusion |
+| **GraphQL API** | No | Yes |
+| **Best for** | Performance + filtered search | Hybrid search + built-in ML |
 
-Qdrant is the right choice for teams that need a self-hosted, production-grade vector database with strong filtered search, flexible quantization, and Rust's performance guarantees. It hits a sweet spot between Pinecone's "zero ops" simplicity and Milvus's "enterprise-scale" complexity. If you want full control over your vector infrastructure without running a multi-component distributed system, Qdrant is the best option in the open-source space today.
+#### Qdrant vs. Milvus
 
-It is not the right choice if you need zero-operational-overhead managed service (choose Pinecone), if you need battle-tested billion-scale distributed deployments with disaggregated storage (choose Milvus), or if vector search is a minor feature alongside a transactional SQL workload (choose pgvector). Qdrant's eventual consistency model and HNSW rebuild costs also make it a poor fit for workloads that demand strong consistency or undergo frequent complete re-indexing.
+| Aspect | Qdrant | Milvus |
+|--------|--------|--------|
+| **Language** | Rust | Go + C++ |
+| **Scale** | Millions to low billions | Billions (proven at massive scale) |
+| **Index types** | HNSW (primary) | IVF, HNSW, DiskANN, GPU indexes |
+| **Community** | ~9K stars | ~25K stars |
+| **Operational complexity** | Lower (single binary) | Higher (etcd, MinIO, Pulsar deps) |
+| **Best for** | Mid-scale with rich filtering | Massive scale with varied index needs |
+
+#### Qdrant vs. pgvector
+
+| Aspect | Qdrant | pgvector |
+|--------|--------|----------|
+| **Architecture** | Purpose-built vector DB | PostgreSQL extension |
+| **Performance at scale** | ~40 QPS at 50M vectors (99% recall) | ~470 QPS at 50M vectors (with pgvectorscale) |
+| **Filtering** | Filterable HNSW | SQL WHERE clauses |
+| **Operational overhead** | Separate service | Same PostgreSQL instance |
+| **Max practical scale** | Billions (distributed) | 10-100M (single instance) |
+| **Best for** | Dedicated vector workloads | PostgreSQL-centric stacks <100M vectors |
+
+#### Qdrant vs. Chroma
+
+| Aspect | Qdrant | Chroma |
+|--------|--------|--------|
+| **Target** | Production workloads | Prototyping and small-scale |
+| **Distributed mode** | Yes (sharding + replication) | Limited |
+| **Quantization** | Scalar, product, binary | None |
+| **Maturity** | Production-proven | Rapid development stage |
+| **Best for** | Production at any scale | Quick prototypes and local dev |
+
+### Decision Framework
+
+**Choose Qdrant when:**
+- You need fast filtered vector search in production
+- You want open-source with self-hosting flexibility
+- You need hybrid search (dense + sparse) natively
+- You value predictable latency (Rust, no GC)
+- You need multi-tenancy with custom sharding
+
+**Consider alternatives when:**
+- You want fully managed with zero ops (Pinecone)
+- You need built-in vectorizer modules (Weaviate)
+- You're operating at true billion-scale with diverse indexes (Milvus)
+- You have a PostgreSQL-centric stack with <100M vectors (pgvector)
+- You're just prototyping (Chroma)

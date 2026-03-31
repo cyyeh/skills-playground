@@ -1,44 +1,130 @@
 ## Common Q&A
 <!-- level: all -->
 <!-- references:
-- [Qdrant Documentation](https://qdrant.tech/documentation/) | official-docs
-- [Distributed Deployment Guide](https://qdrant.tech/documentation/operations/distributed_deployment/) | official-docs
-- [Quantization Documentation](https://qdrant.tech/documentation/manage-data/quantization/) | official-docs
-- [Vector Search Resource Optimization](https://qdrant.tech/articles/vector-search-resource-optimization/) | blog
+- [Capacity Planning](https://qdrant.tech/documentation/guides/capacity-planning/) | docs
+- [Database Optimization FAQ](https://qdrant.tech/documentation/faq/database-optimization/) | docs
+- [Minimal RAM for a Million Vectors](https://qdrant.tech/articles/memory-consumption/) | blog
+- [Scaling Qdrant Cloud Clusters](https://qdrant.tech/documentation/cloud/cluster-scaling/) | docs
+- [Large-Scale Data Ingestion](https://qdrant.tech/course/essentials/day-4/large-scale-ingestion/) | course
+- [Distributed Deployment](https://qdrant.tech/documentation/operations/distributed_deployment/) | docs
 -->
 
-### Q: What happens to in-flight writes if a node crashes during replication?
+### Q1: How much memory does Qdrant need for N vectors?
 
-Qdrant's durability model depends on the `write_consistency_factor` setting. With the default factor of 1, a write is acknowledged after a single replica persists it to its WAL -- if that node crashes before propagating to other replicas, the write is lost on the failed node but may or may not have reached others. With a higher factor (e.g., `majority`), the write is acknowledged only after multiple replicas have persisted it, providing stronger durability at the cost of higher write latency. On recovery, the WAL replays uncommitted operations to restore segment state. If a replica falls significantly behind, Qdrant uses `wal_delta` transfer (if available) to catch up with minimal data transfer, or falls back to `stream_records` for a full resync. During the recovery window, the replica transitions through the `Partial` state and is excluded from search queries until it reaches `Active` status.
+**Rule of thumb:** `memory_bytes = num_vectors x vector_dimensions x 4 x 1.5`
 
-### Q: How do I choose the right quantization method for my vectors?
+The factor of 4 accounts for 32-bit floats, and the 1.5 multiplier covers HNSW graph overhead, metadata, and temporary segments during optimization.
 
-The choice depends on your embedding model and accuracy tolerance. **Binary quantization** (32x compression, 40x speedup) works best with high-dimensional embeddings (1024+ dimensions) from models like OpenAI's text-embedding-3-large or Cohere's embed-v3 -- these models produce vectors where the sign of each dimension carries most of the information. For lower-dimensional embeddings (384-768 dimensions), binary quantization loses too much information; use **scalar quantization** (4x compression, ~2x speedup) which preserves most accuracy. **Product quantization** (4-64x compression) is the most aggressive option, suitable when memory is the binding constraint and you can tolerate 5-10% recall loss with oversampling-based re-scoring. Always benchmark with your actual data: create two collections (quantized and unquantized), run your evaluation queries against both, and compare recall@k and latency. Start with scalar quantization as the safe default and move to binary only after validating accuracy.
+**Example:** 10 million vectors at 768 dimensions = 10M x 768 x 4 x 1.5 = ~46 GB RAM.
 
-### Q: How does Qdrant handle the "stale reads" problem in a distributed cluster?
+**To reduce memory:**
+- Use mmap storage (`on_disk=True`) — vectors live on disk, OS caches hot data
+- Enable scalar quantization — reduces to ~12 GB (4x compression)
+- Enable binary quantization — reduces to ~1.4 GB (32x compression), but only suitable for certain embedding models
+- Use product quantization — variable compression (4x-64x)
 
-By default, Qdrant reads from the local replica only, which means reads can return stale data if the local replica has not yet received the latest writes from other replicas. This is intentional -- it provides the lowest latency for the most common case. For applications that need stronger guarantees, configure `read_consistency` per request: `"majority"` reads from more than half of replicas and returns the freshest result, `"quorum"` requires agreement from a majority, and `"all"` reads from every replica. The consistency level can be set globally or per individual query. Note that higher consistency levels increase read latency proportionally to the number of replicas consulted, so use them selectively for operations where freshness matters (e.g., immediately after a write) rather than blanket-applying them to all reads.
+With mmap + scalar quantization (quantized vectors in RAM, originals on disk), you can serve 10M vectors with ~3 GB of RAM for the quantized index plus OS cache for rescoring.
 
-### Q: What are the practical scaling limits of a single Qdrant cluster?
+### Q2: How do I scale Qdrant for growing data?
 
-The primary limits are: (1) **Memory**: each node's RAM constrains the number of vectors it can serve with low latency. With scalar quantization, a single node with 256 GB RAM can serve approximately 1 billion 768-dimensional vectors' quantized representations, though the full-precision originals would need to be on disk for re-ranking. (2) **Shard count**: collections should have at minimum 2 shards per node, with 12+ shards recommended for growth flexibility. The maximum practical shard count per collection is in the low hundreds -- beyond that, the overhead of querying and merging many shards degrades latency. (3) **Cluster size**: Qdrant has been tested with clusters of dozens of nodes. The Raft consensus layer handles topology changes well, but collection creation and shard rebalancing become slower as cluster size grows. (4) **Payload index cardinality**: very high-cardinality payload fields (millions of unique values) increase the payload index memory footprint. For production at billion-scale, plan for multi-tenant sharding with `shard_key` to keep per-shard sizes manageable, and use tiered multitenancy (introduced in v1.16) for heterogeneous tenant workloads.
+**Vertical scaling (single node):**
+- Add more RAM for faster search
+- Use faster NVMe SSDs for mmap-backed storage
+- Increase CPU cores (Qdrant parallelizes search across threads)
 
-### Q: How should I tune HNSW parameters for my workload?
+**Horizontal scaling (cluster):**
+- Start with more shards than current nodes (e.g., 12 shards on 3 nodes)
+- Scale by adding nodes — Qdrant will rebalance shards automatically
+- Increase replication factor for read throughput and fault tolerance
 
-Start with the defaults (`m=16`, `ef_construct=100`) and adjust based on measured recall and latency. The tuning process: (1) Create a test collection with a representative data sample. (2) Run your query set with ground-truth nearest neighbors (from brute-force search). (3) Measure recall@k and p99 latency. (4) If recall is too low: increase `ef_construct` first (try 200, then 400) -- this improves graph quality at build-time cost but does not affect search-time memory. If still insufficient, increase `m` (try 32, then 48) -- this improves both build and search quality but increases memory. (5) At search time, increase `ef` (the search-time parameter, set via `hnsw_ef` in search params) for higher recall at the cost of latency. A rule of thumb: `ef` should be at least `2 * top_k` and typically 64-256 for production workloads. (6) `full_scan_threshold` controls the cutoff below which filtered queries bypass HNSW for brute-force scan. Lower it (from the default 10000) if your filtered queries consistently match small subsets.
+**Scaling tip:** Start with shard_number = 12. This allows scaling from 1 node up to 2, 3, 4, 6, or 12 nodes without resharding. Resharding an existing collection requires creating a new collection and re-ingesting data.
 
-### Q: What is the correct way to handle multi-tenancy -- should I use separate collections or shard keys?
+### Q3: What consistency guarantees does Qdrant provide?
 
-Qdrant offers three multi-tenancy approaches, each with different trade-offs. **Separate collections** provide the strongest isolation (each tenant's data is physically separated) but incur overhead per collection (memory for HNSW graphs, background optimizer threads) and become unmanageable beyond ~100 tenants. **Payload-based filtering** stores all tenants in one collection with a `tenant_id` payload field and filters on every query. This is simple but means every query traverses the entire HNSW graph, filtering out most results. **[Custom shard keys](https://qdrant.tech/documentation/operations/distributed_deployment/)** (recommended for most cases) let you assign a `shard_key` per tenant, so each tenant's data lives in its own shard. Queries specify the shard key and only search that tenant's shard. This provides good isolation without per-collection overhead. For heterogeneous tenants (some with 1M vectors, others with 1K), Qdrant v1.16's tiered multitenancy allows promoting large tenants to their own shards while small tenants share a shard.
+In **single-node mode**, Qdrant provides strong consistency — reads always see the latest writes after the WAL is flushed.
 
-### Q: How do I diagnose and fix high search latency?
+In **distributed mode**, consistency is configurable per operation:
+- `factor: 1` — Write to one replica, fastest but eventual consistency
+- `factor: majority` — Write to majority of replicas before ACK
+- `factor: all` — Write to all replicas, strongest consistency, highest latency
+- `factor: quorum` — Write to quorum of replicas
 
-The diagnostic playbook: (1) **Check segment count** via `GET /collections/{name}` -- if `segments_count` is high (>20), the optimizer may be behind. Many small segments means every query fans out to more indexes. Wait for optimization to complete, or trigger manual optimization. (2) **Check optimizer status** -- if the optimizer is not running, it may be blocked by a concurrent operation (shard transfer, snapshot). (3) **Review quantization** -- if you are running without quantization at scale, search must read full float32 vectors from memory/disk, which is slow. Enable scalar quantization with `always_ram: true` as the first optimization. (4) **Check filter selectivity** -- very restrictive filters (matching <0.1% of points) should use the payload-index path, not HNSW. If latency is high for filtered queries, ensure the filtered fields have payload indexes (`PUT /collections/{name}/index`). (5) **Review `ef` parameter** -- search-time ef that is too high (>512) increases latency linearly. Lower it if your recall requirements allow. (6) **Check resource contention** -- optimizer threads and search threads share CPU. On busy write workloads, set `optimizers_threads` to limit background CPU usage. (7) **Monitor via Prometheus** -- `qdrant_search_latency_seconds` histogram and `post_process_if_slow_request` events capture slow queries with their filter patterns for analysis.
+For reads, you can set `consistency` to control how many replicas must agree. Default is eventual consistency (read from any replica).
 
-### Q: Can I update vectors in place, or do I need to delete and re-insert?
+**Important:** Qdrant does NOT support multi-document ACID transactions. Each point operation is atomic, but there is no way to atomically update multiple points across collections.
 
-Qdrant supports in-place vector updates via the `update_vectors` API endpoint, and full point replacement via `upsert` (which is an upsert -- insert or replace). You do not need to delete before re-inserting. However, it is important to understand what happens internally: the old vector is tombstoned (marked as deleted) in its current segment, and the new vector is written to the active mutable segment. The HNSW index for the old segment is not immediately updated -- the tombstoned vector is excluded from results but its graph links remain until the segment is compacted. This means that after bulk updates, you may want to trigger optimization to rebuild indexes on compacted segments. For payload-only updates, use `set_payload` or `overwrite_payload` -- these modify the payload in place without touching the vector or HNSW index, making them much cheaper than vector updates.
+### Q4: How do I handle multi-tenancy?
 
-### Q: How does Qdrant compare to pgvector for small-to-medium workloads?
+Three approaches, from simplest to most scalable:
 
-For teams already running PostgreSQL, [pgvector](https://github.com/pgvector/pgvector) offers vector search as an extension with zero additional infrastructure. At small scale (<1M vectors), pgvector's HNSW implementation provides competitive recall and latency, and you get the full power of SQL (joins, transactions, complex queries) alongside vector search. The trade-offs emerge at scale: pgvector shares resources with your transactional workload (vector indexing can spike CPU and block other queries), lacks built-in sharding for horizontal scaling, and does not offer quantization or on-disk vector offloading. Qdrant's purpose-built architecture provides lower tail latency (no GC pauses, no WAL contention with transactional workloads), native horizontal scaling, and advanced features like hybrid search, quantization, and filterable HNSW. Choose pgvector when vector search is a secondary feature and operational simplicity matters most. Choose Qdrant when vector search is a primary workload with scale, latency, or feature requirements that outgrow what an extension can provide.
+1. **Payload-based filtering** — Store a `tenant_id` field in each point's payload and filter on it. Simplest to implement, but all tenants share the same HNSW graph, which can reduce search efficiency for narrow tenant filters.
+
+2. **Collection-per-tenant** — Create a separate collection for each tenant. Clean isolation, but many collections create operational overhead and prevent cross-tenant searches.
+
+3. **Custom sharding** — Use Qdrant's custom shard keys with tenant IDs. Each tenant's data goes to a dedicated shard. Searches are routed only to the relevant shard, combining isolation with efficient search. This is the recommended approach for most multi-tenant deployments. Qdrant v1.16 introduced tiered multitenancy to further optimize this pattern.
+
+### Q5: What happens when a node goes down in a cluster?
+
+With `replication_factor >= 2`:
+- Reads continue from surviving replicas with no user-visible impact
+- Writes with `consistency: 1` continue immediately; writes requiring majority/all consistency will wait or fail depending on the number of surviving replicas
+- When the node recovers, Qdrant automatically synchronizes the replica using WAL-based catch-up
+- If the node is permanently lost, a new replica can be created on a different node via the cluster API
+
+Shard transfer during rebalancing uses streaming, and the source shard remains available for reads during the transfer.
+
+### Q6: How do I migrate from another vector database?
+
+**From Pinecone, Weaviate, Milvus, or Chroma:**
+1. Export vectors and metadata from the source database
+2. Transform into Qdrant's point format (ID + vector + payload)
+3. Use batch upsert with the Python client (`upload_points` for <1M, `upload_collection` for >1M)
+4. Create payload indexes for fields you'll filter on
+5. Verify with test queries
+
+**From pgvector:**
+1. Query vectors from PostgreSQL
+2. Stream into Qdrant using batch upsert
+3. Re-create any index/filter logic as payload indexes
+
+**Tips:**
+- Disable indexing during bulk upload by setting a high `indexing_threshold`, then lower it after upload completes
+- Use parallel upload workers (the Python client supports async operations)
+- Monitor the optimizer status — wait for all segments to be indexed before benchmarking
+
+### Q7: How do I tune search accuracy vs. latency?
+
+Three levers to adjust:
+
+1. **HNSW `ef` (query-time)** — Higher values explore more candidates, improving recall but increasing latency. Start with `ef=128`, increase if recall is insufficient.
+
+2. **HNSW `m` (build-time)** — More edges per node improves graph connectivity and recall. Typical range: 16-64. Higher values also increase memory and build time.
+
+3. **Quantization + oversampling** — Enable quantization for speed, then use `oversampling` (e.g., 2.0) to retrieve extra candidates and rescore with full-precision vectors.
+
+**Benchmarking tip:** Use Qdrant's built-in `/collections/{name}/points/search` with `with_vector: false` and measure latency at different `ef` values. Plot the recall-latency curve to find your sweet spot.
+
+### Q8: Can I use GPU acceleration with Qdrant?
+
+Yes. Qdrant supports GPU-accelerated vector search using NVIDIA GPUs. GPU acceleration is most beneficial for:
+- Very large collections (tens of millions of vectors or more)
+- High query throughput requirements
+- Batch search operations
+
+GPU support is available via dedicated Docker images and requires NVIDIA drivers and CUDA toolkit. It accelerates distance calculations during HNSW traversal but does not replace CPU-based index construction.
+
+### Q9: How do I handle vector updates and versioning?
+
+- **Overwrite by ID** — Upserting a point with an existing ID replaces the vector and payload. This is the simplest approach for updates.
+- **Payload-only updates** — Use `set_payload` to update metadata without touching the vector.
+- **Soft deletes** — Add a `version` or `deleted` field to payloads and filter accordingly. The old vectors are eventually removed by the vacuum optimizer.
+- **Collection aliases** — For blue-green deployments, build a new collection, then atomically swap the alias to point to it. Zero downtime.
+
+### Q10: What are the operational gotchas to watch for?
+
+1. **Optimization backlog** — After large bulk uploads, HNSW index building can take significant time and memory. Monitor optimizer status and don't benchmark during active optimization.
+2. **Memory spikes during optimization** — Segment merging temporarily doubles memory usage. Ensure headroom.
+3. **WAL growth** — Under heavy write load, WAL can grow large if the flush worker falls behind. Monitor WAL size.
+4. **Shard count is immutable** — You cannot change shard_number after collection creation. Plan ahead.
+5. **Payload index memory** — Each indexed payload field consumes memory. Only index fields used in filters.
+6. **gRPC version compatibility** — v1.17 changed the gRPC response format for vectors. Ensure client libraries are updated before upgrading.

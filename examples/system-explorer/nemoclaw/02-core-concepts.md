@@ -3,37 +3,55 @@
 <!-- references:
 - [NemoClaw Architecture Reference](https://docs.nvidia.com/nemoclaw/latest/reference/architecture.html) | official-docs
 - [How NemoClaw Works](https://docs.nvidia.com/nemoclaw/latest/about/how-it-works.html) | official-docs
-- [Network Policies Reference](https://docs.nvidia.com/nemoclaw/latest/reference/network-policies.html) | official-docs
+- [Run Autonomous Agents More Safely with NVIDIA OpenShell](https://developer.nvidia.com/blog/run-autonomous-self-evolving-agents-more-safely-with-nvidia-openshell/) | blog
 -->
 
-### Sandbox
+NemoClaw is built on six core concepts. Understanding them gives you the vocabulary to reason about how autonomous AI agents can be run more safely, why NemoClaw separates the control plane from the agent process, and how each security layer reinforces the others.
 
-A **sandbox** is an isolated container environment where the OpenClaw agent runs -- like a sealed clean room in a laboratory. The agent can work freely inside the room, but every entrance and exit is monitored and controlled. NemoClaw sandboxes enforce filesystem boundaries (the agent can only write to `/sandbox` and `/tmp`) and network restrictions using Linux kernel mechanisms including [Landlock](https://docs.kernel.org/security/landlock.html), seccomp, and network namespace isolation. The sandbox denies everything by default and only permits what is explicitly allowed. This matters because autonomous agents executing arbitrary code are inherently risky; the sandbox is the first line of defense against unintended side effects.
+### 1. OpenShell Sandbox
 
-### Blueprint
+**Definition:** An OpenShell sandbox is an isolated Linux container environment where the OpenClaw agent runs. It uses kernel-level isolation primitives — Landlock for filesystem access control, seccomp for syscall filtering, and network namespaces for network isolation — to confine the agent's capabilities.
 
-A **blueprint** is a versioned artifact that defines how a sandbox should be configured -- like an architectural plan for a building that specifies every room, door, and security system before construction begins. Blueprints contain a manifest file (`blueprint.yaml`) and policy definitions (`openclaw-sandbox.yaml`). The [blueprint lifecycle](https://docs.nvidia.com/nemoclaw/latest/reference/architecture.html) follows five stages: resolve version constraints, verify artifact digest, plan required resource changes, apply those changes, and report system state. Blueprints ensure that sandbox deployments are reproducible and tamper-evident.
+**Analogy:** Think of a bank vault with a one-way intercom. The agent can work freely inside the vault (run code, process data), but every request to access something outside — a website, a file, a model — must go through the intercom (OpenShell gateway) where a guard (the operator) decides whether to allow it.
 
-### Network Policy
+**Why it matters:** Autonomous agents can execute arbitrary code, install packages, and reach external services. Without isolation, a compromised or misbehaving agent has the same access as the user who launched it. The sandbox ensures that even if an agent attempts something unauthorized, the kernel-level controls prevent it from succeeding.
 
-A **network policy** is a declarative YAML file that defines exactly which external endpoints the agent is permitted to contact -- like a whitelist for a corporate firewall. NemoClaw operates on a [deny-by-default model](https://docs.nvidia.com/nemoclaw/latest/reference/network-policies.html): if an endpoint is not listed in the policy, the agent cannot reach it. Policies specify allowed domains, ports (all connections enforce TLS on port 443), and even HTTP methods (for example, documentation endpoints may allow only GET requests). This gives operators precise control over what data the agent can send or receive.
+### 2. Blueprint
 
-### Inference Routing
+**Definition:** The blueprint is a versioned Python artifact that contains the complete specification for creating a NemoClaw sandbox — including the Dockerfile, security policies, capability drops, network rules, and inference configuration. It is the reproducible "recipe" for a hardened agent environment.
 
-**Inference routing** is the mechanism that directs the agent's LLM API calls through a controlled path rather than letting the agent contact model providers directly -- like routing all phone calls through a corporate switchboard instead of letting employees dial external numbers from their desks. The agent communicates with a local endpoint (`inference.local`) inside the sandbox, while [OpenShell](https://docs.nvidia.com/nemoclaw/latest/about/overview.html) on the host manages actual credentials and upstream connections. This design keeps API keys out of the sandbox entirely, preventing credential leakage even if the agent is compromised.
+**Analogy:** A blueprint is like an architect's building plan. It specifies exactly how the sandbox should be constructed — which walls go where (filesystem boundaries), which doors exist (network egress rules), and what equipment is installed (inference providers). Re-running the blueprint on a different machine produces an identical sandbox.
 
-### OpenShell
+**Why it matters:** Reproducibility is essential for security. If every sandbox is built from the same immutable, digest-verified blueprint, you can audit exactly what is running and guarantee that no unauthorized modifications have been introduced. The blueprint lifecycle (resolve, verify, plan, apply, status) ensures supply-chain integrity at every step.
 
-**OpenShell** is the NVIDIA runtime that NemoClaw depends on, part of the broader [NVIDIA Agent Toolkit](https://docs.nvidia.com/nemoclaw/latest/about/overview.html) -- like the operating system on which NemoClaw applications run. OpenShell provides the gateway that intercepts and routes inference requests, the kernel-level isolation mechanisms for sandboxing, and the TUI (terminal user interface) for monitoring and approving network requests in real time. NemoClaw is essentially a purpose-built configuration layer on top of OpenShell, specialized for running OpenClaw securely.
+### 3. Inference Routing
 
-### Approval Workflow
+**Definition:** NemoClaw routes all model API calls through the OpenShell gateway. The agent inside the sandbox communicates with a local endpoint (`inference.local`), and OpenShell transparently forwards those requests to the configured provider (NVIDIA Endpoints, OpenAI, Anthropic, Google Gemini, or a local model like Ollama). The agent never sees raw API credentials.
 
-The **approval workflow** is the process by which an operator reviews and permits network requests that the agent attempts to make to unlisted endpoints -- like a security guard checking packages at the loading dock. When the agent tries to reach a host not in the network policy, OpenShell blocks the request and surfaces it in the [TUI](https://docs.nvidia.com/nemoclaw/latest/reference/network-policies.html) for the operator to approve or deny. Approved requests can be added to the session-level policy so the operator does not have to approve the same endpoint repeatedly. This matters because it provides a human-in-the-loop safety net for unexpected agent behavior.
+**Analogy:** Imagine ordering food through a concierge desk at a hotel. You tell the concierge what you want (an inference request), and they call the restaurant (the model provider) using the hotel's account. You get your food, but you never see the hotel's credit card number. If the concierge decides a particular restaurant is off-limits, your order simply does not go through.
 
-### Inference Provider
+**Why it matters:** API keys are high-value secrets. If an agent had direct access to provider credentials, a prompt injection or code execution exploit could exfiltrate them. By keeping credentials on the host and routing inference through the gateway, NemoClaw ensures that compromising the agent does not compromise your API keys.
 
-An **inference provider** is a backend that serves LLM responses to the agent -- like choosing which telephone company handles your calls. NemoClaw supports six categories: [NVIDIA Endpoints](https://build.nvidia.com/nemoclaw) (including Nemotron), OpenAI, Anthropic, Google Gemini, custom OpenAI-compatible proxies, and local self-hosted runtimes (Ollama, NVIDIA NIM, vLLM). The system validates each provider during onboarding and routes requests through the OpenShell gateway, so the agent never sees raw API credentials regardless of which provider is selected.
+### 4. Network Policy Engine
 
-### How They Fit Together
+**Definition:** The network policy engine controls all outbound (egress) connections from the sandbox. A baseline policy file (`openclaw-sandbox.yaml`) denies all traffic by default, then explicitly allows connections to approved endpoints. When the agent attempts to reach an unlisted host, OpenShell blocks the connection and surfaces it in the terminal UI for operator approval.
 
-NemoClaw's concepts form a layered security model. The **blueprint** defines the desired state of a deployment. That blueprint is applied to create a **sandbox** -- an isolated environment where the OpenClaw agent lives. Inside the sandbox, the agent's outbound network traffic is governed by the **network policy**, and any requests to unlisted destinations trigger the **approval workflow** for human review. The agent's model calls are handled by **inference routing**, which channels them through **OpenShell** to the configured **inference provider** without exposing credentials. The result is a system where an autonomous agent can operate continuously while every boundary -- filesystem, network, and credentials -- is explicitly controlled.
+**Analogy:** Think of a corporate firewall with a "deny all" default rule. Every new destination the agent wants to reach triggers a notification to the security team. They can approve it for the current session or add it to the permanent allowlist. The agent cannot bypass this — it lives in a separate network namespace and physically cannot see the host's network interfaces.
+
+**Why it matters:** Autonomous agents interact with external services — fetching web pages, calling APIs, downloading packages. Without egress controls, an agent could exfiltrate data to an attacker-controlled server or connect to malicious endpoints. The network policy engine provides real-time visibility and control over every outbound connection.
+
+### 5. Plugin / Blueprint Separation
+
+**Definition:** NemoClaw is architecturally split into two components: a thin TypeScript plugin that runs in-process with the OpenClaw CLI and handles user interaction, and a versioned Python blueprint that contains all orchestration logic. The plugin remains stable across releases while the blueprint evolves independently.
+
+**Analogy:** The plugin is like a car's steering wheel and dashboard — the interface you interact with. The blueprint is like the engine and drivetrain — the machinery that actually does the work. You can upgrade the engine (blueprint) without redesigning the dashboard (plugin), and the steering wheel always feels the same regardless of what engine is installed.
+
+**Why it matters:** This separation enables independent versioning and safe upgrades. The plugin can validate blueprint versions, verify digests, and enforce compatibility constraints before executing any changes. It also means the surface area of code running in the privileged host context (plugin) is minimal, while the complex orchestration logic (blueprint) runs in a controlled subprocess.
+
+### 6. State Management and Persistence
+
+**Definition:** NemoClaw manages host-side state for credentials, sandbox metadata, and OpenClaw configuration snapshots. It supports secure migration of agent state across machines, with credential stripping and integrity checks to ensure sensitive data does not leak during transfers.
+
+**Analogy:** Think of a diplomat's secure briefcase with a tamper-evident seal. When moving an agent's state from one machine to another, NemoClaw strips out sensitive credentials (like removing classified documents before transit), seals the remaining configuration (integrity hash), and re-provisions credentials on the destination machine.
+
+**Why it matters:** Production agent deployments need to survive machine restarts, hardware migrations, and scaling events. State management ensures that the agent's learned behaviors, session history, and configuration can be reliably transferred without exposing secrets or corrupting the sandbox's security posture.

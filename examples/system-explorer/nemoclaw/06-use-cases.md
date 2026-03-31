@@ -1,39 +1,50 @@
 ## Use Cases & Case Studies
 <!-- level: beginner-intermediate -->
 <!-- references:
-- [NemoClaw Overview](https://docs.nvidia.com/nemoclaw/latest/about/overview.html) | official-docs
-- [NemoClaw Deployment Guide](https://docs.nvidia.com/nemoclaw/latest/deployment/deploy-remote.html) | official-docs
-- [NemoClaw Telegram Bridge](https://docs.nvidia.com/nemoclaw/latest/deployment/telegram-bridge.html) | official-docs
+- [NVIDIA NemoClaw Product Page](https://www.nvidia.com/en-us/ai/nemoclaw/) | official-docs
+- [NemoClaw: NVIDIA's Open Source Stack for Running AI Agents You Can Actually Trust](https://dev.to/arshtechpro/nemoclaw-nvidias-open-source-stack-for-running-ai-agents-you-can-actually-trust-50gl) | blog
+- [OpenClaw Alternatives for Enterprise Security](https://dev.to/sebastian_chedal/openclaw-alternatives-for-enterprise-security-honest-2026-comparison-3oa2) | blog
 -->
 
-### When to Use It
+### When to Use NemoClaw
 
-**Always-on coding assistants in production or staging environments.** If your team wants an AI agent that continuously monitors a codebase, responds to messages on Slack or Telegram, and can execute code -- but you need guarantees that it cannot exfiltrate secrets or make unauthorized network calls -- NemoClaw provides the isolation and policy controls to make this viable. Think of it as the difference between hiring a contractor who works in your office (open network) versus one who works in a controlled facility (sandboxed environment).
+NemoClaw addresses a specific set of deployment scenarios where autonomous AI agents need to operate with reduced risk. Here are the primary use cases:
 
-**Sandboxed agent testing before granting broader permissions.** Before giving an AI agent access to production APIs, you can use NemoClaw to run it in a deny-by-default network environment and observe what endpoints it tries to reach. The approval workflow lets you incrementally grant access as you build trust -- like a probation period for a new employee where each new access request requires manager approval.
+### 1. Enterprise Agent Deployment
 
-**Private inference with sensitive codebases.** When working with proprietary code that cannot leave your infrastructure, NemoClaw's local inference support (Ollama, NVIDIA NIM, vLLM) means model calls never leave your network. Combined with the sandbox's filesystem isolation, this provides a layered privacy guarantee -- like a vault within a vault, where even if someone reaches the outer room, the inner contents remain protected.
+**Scenario:** A company has been running OpenClaw agents internally for developer productivity — answering questions, writing code, managing tickets. Now they want to expand to production use but need security controls that satisfy their InfoSec team.
 
-**Remote GPU deployment for persistent AI assistants.** NemoClaw supports deploying sandboxed agents to remote GPU instances (currently via Brev as an experimental feature). This suits teams that want always-on agents running on dedicated hardware without direct SSH access to the host machine.
+**How NemoClaw helps:** NemoClaw adds network egress controls, filesystem isolation, and managed inference routing without requiring the team to rewrite their existing OpenClaw configuration. The agent's learned skills and session history carry over. The InfoSec team gets audit visibility into every outbound connection and API call the agent makes, with real-time approval workflows for new endpoints.
 
-**Multi-channel AI assistants with unified security.** Through its messaging bridges for Telegram, Discord, and Slack, NemoClaw lets an AI assistant be accessible from multiple channels while maintaining a single security boundary. All messages route through the same sandboxed agent with the same network policies, regardless of which channel they arrived from.
+### 2. Always-On Personal Assistants on Dedicated Hardware
 
-### When NOT to Use It
+**Scenario:** A researcher or power user wants to run an autonomous AI assistant 24/7 on their NVIDIA DGX Spark or DGX Station, handling tasks like monitoring research papers, managing email, and running data analysis pipelines — all while keeping sensitive data local.
 
-**Quick, interactive coding sessions.** If you just want to chat with an AI about code for a few minutes, NemoClaw's setup overhead (onboarding wizard, sandbox image download, container startup) is unnecessary. Plain OpenClaw without NemoClaw is faster for ad-hoc use.
+**How NemoClaw helps:** NemoClaw configures the agent to use local Nemotron models for sensitive queries (data never leaves the machine) while routing non-sensitive queries to cloud models for better capability. The sandbox prevents the agent from accessing files outside its designated workspace, even when running unattended for extended periods.
 
-**Windows or macOS as the primary development platform.** While NemoClaw supports macOS via Colima/Docker Desktop and Windows via WSL, it is fundamentally a Linux-first tool. The kernel-level isolation mechanisms (Landlock, seccomp, network namespaces) are Linux-native, and the experience on other platforms involves additional layers of virtualization that add complexity and reduce performance.
+### 3. Multi-Agent Development Environments
 
-**Production workloads (as of March 2026).** NemoClaw is explicitly labeled as alpha software. APIs, configuration schemas, and runtime behavior may change without notice. Using it for production-critical workflows creates risk of breakage during upgrades.
+**Scenario:** A platform team is building internal tooling where multiple AI agents collaborate on tasks — one agent writes code, another reviews it, a third deploys it. Each agent needs different access levels and should not be able to interfere with the others.
 
-**Environments requiring fine-grained per-file permissions.** NemoClaw's filesystem policy is coarse: the agent can read-write `/sandbox` and `/tmp`, and everything else is read-only. If you need the agent to have write access to some files in a directory but not others, you would need to structure your workspace accordingly rather than relying on NemoClaw's built-in policies.
+**How NemoClaw helps:** Each agent runs in its own sandbox with independent network policies, filesystem boundaries, and inference configurations. One agent can be allowed access to GitHub while another is restricted to internal services only. The blueprint-based approach ensures every sandbox is reproducible and auditable.
 
-**Teams without container infrastructure.** NemoClaw requires Docker (or a compatible container runtime). Teams that have not adopted containers will face the overhead of setting up and maintaining Docker in addition to NemoClaw itself.
+### 4. Compliance-Sensitive Environments
 
-### Real-World Examples
+**Scenario:** A financial services firm wants to use AI agents for internal operations but must demonstrate to regulators that agents cannot exfiltrate customer data or make unauthorized external connections.
 
-**Enterprise code review assistant.** An organization runs a NemoClaw-sandboxed OpenClaw agent connected to their Slack workspace. Developers send code snippets and questions via Slack messages. The agent can access the team's private GitHub repositories (allowed in the network policy) and respond with reviews, but it cannot reach any other external services without operator approval. This provides a persistent, team-accessible AI reviewer with controlled data boundaries.
+**How NemoClaw helps:** The deny-all-by-default network policy, combined with Landlock filesystem restrictions and seccomp syscall filtering, provides a defense-in-depth posture that can be documented for compliance audits. Every blocked connection attempt is logged with full context (host, port, requesting process). The operator approval workflow creates an auditable trail of all policy exceptions.
 
-**Secure research environment.** A research lab working with sensitive data uses NemoClaw with local Ollama inference so that no model calls leave their network. The agent assists researchers with data analysis code, running entirely within the lab's infrastructure. The deny-by-default network policy ensures that even if a researcher asks the agent to "upload results to a cloud service," the request is blocked and flagged for review.
+### 5. Secure Evaluation and Red-Teaming
 
-**DevOps automation with human-in-the-loop.** A platform team runs a NemoClaw agent that monitors infrastructure logs and suggests remediation steps. The agent can read monitoring dashboards (allowed endpoints) but cannot execute infrastructure changes without the operator approving the network requests first. This provides AI-assisted incident response with a mandatory human checkpoint before any action is taken.
+**Scenario:** A security team wants to evaluate the behavior of AI agents under adversarial conditions — testing prompt injection attacks, tool misuse, and privilege escalation attempts — without risking the host system.
+
+**How NemoClaw helps:** The sandbox provides a controlled environment where agents can be tested against attack scenarios. Even if a prompt injection successfully instructs the agent to attempt data exfiltration or privilege escalation, the kernel-level security controls prevent the actions from succeeding. The policy engine logs all blocked attempts, providing detailed telemetry for security analysis.
+
+### When NOT to Use NemoClaw
+
+NemoClaw is not the right choice for every situation:
+
+- **Quick experimentation:** If you are just trying out OpenClaw for the first time, the overhead of sandbox creation and policy management adds friction. Plain OpenClaw is better for exploration and learning.
+- **Cross-platform needs:** NemoClaw's full security stack is Linux-only. macOS and Windows WSL support exists but with reduced security guarantees (no Landlock on macOS, limited namespace isolation on WSL).
+- **Latency-sensitive applications:** The inference routing through the OpenShell gateway adds a small amount of latency compared to direct API calls. For latency-critical real-time applications, this overhead may be unacceptable.
+- **Lightweight chatbots:** If your agent only answers questions and never executes code or accesses external services, the security overhead of NemoClaw provides little benefit over a simpler deployment.
