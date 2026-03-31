@@ -77,10 +77,10 @@ Go beyond training data. Be aggressive about gathering real, current information
 This is NOT optional — when the system has a public GitHub repository, always perform source code research to feed the Implementation Details section's Source Code Walkthrough.
 
 1. Fetch the repository file tree using WebFetch on `https://api.github.com/repos/{org}/{repo}/git/trees/{tag}?recursive=1` to understand the directory structure
-2. From the tree, identify 5-10 key source files that implement core concepts and architectural components discovered in Phase 1. Prioritize: main entry points, core data structures, key algorithms, configuration schemas.
+2. From the tree, identify 8-15 key source files that implement core concepts and architectural components discovered in Phase 1. Prioritize: main entry points, core data structures, key algorithms, configuration schemas.
 3. Fetch the content of those files using WebFetch on raw GitHub URLs: `https://raw.githubusercontent.com/{org}/{repo}/{tag}/{filepath}`
-4. Extract relevant code excerpts (20-60 lines each) with precise line ranges
-5. Map each excerpt to the concept or component it implements (for cross-referencing in the Source Code Walkthrough)
+4. Extract relevant code excerpts (20-60 lines each) with precise line ranges. For complex implementations, extract multiple consecutive excerpts from the same file to support multi-block sequences.
+5. Map each excerpt to the concept or component it implements (for cross-referencing in the Source Code Walkthrough). Flag concepts that will need multi-block sequences or the focus + context pattern.
 
 If the GitHub API rate-limits you, fall back to raw.githubusercontent.com URLs directly. If the system is closed-source, skip this step and note the limitation in the Implementation Details section.
 
@@ -122,7 +122,7 @@ Write the analysis as **multiple files** — one per section — instead of a si
 
 **Source annotations:** When including code blocks that represent actual source code from the system's codebase, annotate them with `// source:`, `// github:`, and `// tag:` metadata lines. See `references/analysis-template.md` for format. The Metadata section's GitHub and Tag fields (from `00-metadata.md`) provide default values.
 
-**Implementation Details — Source Code Walkthrough:** The `05-implementation-details.md` file includes a "Source Code Walkthrough" sub-section. For each core concept (from `02-core-concepts.md`) and architectural component (from `03-architecture.md`), include the actual source code from the system's repository that implements it, with full `// source:` annotations. Use the excerpts gathered during Phase 2's Source Code Research. Aim for 5-8 annotated source blocks. See `references/section-templates/05-implementation-details.md` for the detailed template.
+**Implementation Details — Source Code Walkthrough:** The `05-implementation-details.md` file includes a "Source Code Walkthrough" sub-section. For each core concept (from `02-core-concepts.md`) and architectural component (from `03-architecture.md`), include the actual source code from the system's repository that implements it, with full `// source:` annotations. Use the excerpts gathered during Phase 2's Source Code Research. Aim for 5-12 annotated source blocks. For complex concepts, use multi-block sequences (2-4 blocks chained with bridging commentary) or the focus + context pattern (critical excerpt in full, surrounding code summarized in prose with a GitHub permalink). See `references/section-templates/05-implementation-details.md` for the detailed template.
 
 ### Phase 4: Self-Review & Fix
 
@@ -134,7 +134,7 @@ Before presenting to the user, review the analysis and fix issues. Iterate until
 3. **Analogies** — Does every Core Concepts entry (in `02-core-concepts.md`) have a real-world analogy? If any concept is explained with only abstract definitions, add an analogy.
 4. **Architecture "why"** — Does `03-architecture.md` explain WHY each component exists, not just what it does? If any component is just described without motivation, add the "why."
 5. **Code examples** — Does `05-implementation-details.md` have actual code snippets, config examples, or commands? If it reads like prose, add concrete examples.
-6. **Source code coverage** — Does `05-implementation-details.md` include a Source Code Walkthrough with at least 3 annotated source code blocks from the system's actual repository? Do the `// source:` paths correspond to real files discovered in Phase 2? (Skip this check if the system is closed-source.)
+6. **Source code coverage** — Does `05-implementation-details.md` include a Source Code Walkthrough with at least 5 annotated source code blocks from the system's actual repository? Are multi-block sequences or focus + context patterns used for complex concepts that don't fit in a single 20-60 line block? Do the `// source:` paths correspond to real files discovered in Phase 2? (Skip this check if the system is closed-source.)
 7. **Honest trade-offs** — Does `09-tradeoffs.md` name real limitations and alternatives? If it reads like marketing copy, rewrite with honest assessments.
 8. **Q&A quality** — Are the questions in `08-common-qa.md` ones a senior engineer would actually ask? If any are trivial ("What is X?"), replace with deeper questions.
 9. **Factual accuracy** — Cross-check key claims against your web research. Are version numbers, URLs, and feature claims still current?

@@ -4,20 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Architecture — DuckDB Course</title>
+  <!-- page-context: system:"DuckDB" description:"In-process analytical database with zero external dependencies" page:"Architecture" level:"Intermediate" -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- page-context:
-    system: "DuckDB"
-    description: "an in-process analytical database for fast OLAP workloads"
-    page: "Architecture"
-    level: "Intermediate"
-  -->
   <style>
     :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;--stagger-delay:120ms}
-    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}
-    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
     ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted);text-decoration:none;display:inline}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
+
+    /* Navigation */
     .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}
     .nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}
     .nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}
@@ -28,86 +25,143 @@
     .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}
     .nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}
     .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}
-    .page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
+
+    /* Page header */
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}
+    .page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
     .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
-    .page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}
+    .page-level-badge.intermediate{background:var(--color-accent-light);color:var(--color-accent)}
     .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}
     .copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}
     .copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+
+    /* Content */
     .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}
     .content-section{margin-bottom:var(--space-10)}
     .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}
-    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:0 0 var(--space-3)}
+    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:var(--space-6) 0 var(--space-3)}
     .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
-    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
+
+    /* Pipeline display */
+    .pipeline-display{background:var(--color-bg-code);border-radius:var(--radius-md);padding:var(--space-5) var(--space-6);margin:var(--space-6) 0;overflow-x:auto}
+    .pipeline-chain{display:flex;align-items:center;justify-content:center;gap:var(--space-2);flex-wrap:wrap;font-family:var(--font-mono);font-size:var(--text-sm)}
+    .pipeline-stage{color:#CDD6F4;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap}
+    .pipeline-arrow{color:#6C7086;font-size:var(--text-lg)}
+
     /* Architecture diagram */
     .arch-diagram{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0;overflow-x:auto}
-    .arch-title{font-family:var(--font-display);font-weight:700;margin:0 0 var(--space-5);text-align:center}
+    .arch-title{font-family:var(--font-display);font-weight:700;margin-bottom:var(--space-5);text-align:center}
+    .arch-subtitle{font-size:var(--text-sm);color:var(--color-text-muted);text-align:center;margin-top:var(--space-2);margin-bottom:var(--space-6)}
     .arch-canvas{display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
     .arch-row{display:flex;align-items:center;justify-content:center;gap:var(--space-3);flex-wrap:wrap}
-    .arch-component{border:2px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);min-width:140px;max-width:200px;text-align:center;cursor:pointer;transition:border-color var(--duration-fast),box-shadow var(--duration-fast),transform var(--duration-fast);position:relative}
+    .arch-component{border:2px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);min-width:130px;max-width:180px;text-align:center;cursor:pointer;transition:border-color var(--duration-fast),box-shadow var(--duration-fast),transform var(--duration-fast);position:relative}
     .arch-component:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
     .arch-component.expanded{border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-light)}
-    .arch-component[data-type="compute"]{border-left:4px solid #2A7B9B}
+    .arch-component[data-type="compute"]{border-left:4px solid #D4A843}
     .arch-component[data-type="storage"]{border-left:4px solid #2D8B55}
-    .arch-component[data-type="network"]{border-left:4px solid #D4A843}
-    .arch-component[data-type="optimizer"]{border-left:4px solid #7B6DAA}
-    .arch-component[data-type="execution"]{border-left:4px solid #E06B56}
-    .arch-component-icon{font-size:1.5rem;margin-bottom:var(--space-1)}
-    .arch-component-label{font-family:var(--font-display);font-weight:600;font-size:var(--text-sm)}
-    .arch-component-brief{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-1)}
-    .arch-component-details{max-height:0;overflow:hidden;opacity:0;font-size:var(--text-xs);color:var(--color-text-secondary);line-height:var(--leading-normal);transition:max-height var(--duration-normal),opacity var(--duration-normal),margin var(--duration-normal)}
-    .arch-component.expanded .arch-component-details{max-height:150px;opacity:1;margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--color-border-light)}
-    .arch-arrow-down,.arch-arrow-right{color:var(--color-text-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    /* Optimizer table */
-    .opt-table{width:100%;border-collapse:collapse;margin:var(--space-4) 0;font-size:var(--text-sm)}
-    .opt-table th{font-family:var(--font-display);font-weight:600;text-align:left;padding:var(--space-3) var(--space-4);border-bottom:2px solid var(--color-border);color:var(--color-text)}
-    .opt-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light);color:var(--color-text-secondary)}
-    .opt-table td:first-child{font-weight:600;color:var(--color-text);font-family:var(--font-mono);font-size:var(--text-xs)}
-    /* Callout */
-    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}
-    .callout-insight{background:#F3EFF8;border-color:#7B6DAA}
-    .callout-tip{background:var(--color-success-light);border-color:var(--color-success)}
-    .callout-info{background:var(--color-info-light);border-color:var(--color-info)}
-    .callout-icon{font-size:1.3rem;flex-shrink:0}
-    .callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}
-    .callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px}
-    /* Glossary */
-    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}
-    .glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
+    .arch-component[data-type="scheduler"]{border-left:4px solid #7B6DAA}
+    .arch-component-icon{font-size:1.5rem;margin-bottom:var(--space-2)}
+    .arch-component-label{font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);color:var(--color-text)}
+    .arch-component-brief{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-1)}
+    .arch-component-details{display:none;margin-top:var(--space-3);text-align:left;font-size:var(--text-xs);line-height:1.5;color:var(--color-text-secondary);border-top:1px solid var(--color-border-light);padding-top:var(--space-2)}
+    .arch-component.expanded .arch-component-details{display:block}
+    .arch-arrow-down{color:var(--color-text-muted);text-align:center}
+    .arch-arrow-right{color:var(--color-text-muted)}
+    .arch-legend{display:flex;justify-content:center;gap:var(--space-6);margin-top:var(--space-5);padding-top:var(--space-4);border-top:1px solid var(--color-border-light);flex-wrap:wrap}
+    .arch-legend-item{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);color:var(--color-text-secondary)}
+    .arch-legend-swatch{width:14px;height:14px;border-radius:3px;border:2px solid}
+    .arch-legend-swatch.compute{border-color:#D4A843;background:rgba(212,168,67,0.1)}
+    .arch-legend-swatch.storage{border-color:#2D8B55;background:rgba(45,139,85,0.1)}
+    .arch-legend-swatch.scheduler{border-color:#7B6DAA;background:rgba(123,109,170,0.1)}
+    .arch-hint{font-size:var(--text-sm);color:var(--color-text-muted);text-align:center;margin-top:var(--space-3)}
+
+    /* Component cards */
+    .component-grid{display:flex;flex-direction:column;gap:var(--space-4);margin:var(--space-6) 0}
+    .component-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-5);transition:box-shadow var(--duration-fast)}
+    .component-card:hover{box-shadow:var(--shadow-md)}
+    .component-card-header{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)}
+    .component-card-icon{font-size:1.3rem;flex-shrink:0}
+    .component-card-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg)}
+    .component-card-tag{font-family:var(--font-mono);font-size:var(--text-xs);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);margin-left:auto;flex-shrink:0}
+    .component-card-tag.compute{background:rgba(212,168,67,0.12);color:#B8922F}
+    .component-card-tag.storage{background:rgba(45,139,85,0.12);color:#2D8B55}
+    .component-card-tag.scheduler{background:rgba(123,109,170,0.12);color:#7B6DAA}
+    .component-card p{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.65;margin:0}
+    .component-card ul{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.65;margin:var(--space-3) 0 0;padding-left:var(--space-6)}
+    .component-card ul li{margin-bottom:var(--space-2)}
+    .component-card code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-bg-warm);padding:1px 5px;border-radius:4px;color:var(--color-text)}
+
     /* Flow diagram */
-    .flow-diagram{display:flex;align-items:center;gap:var(--space-2);margin:var(--space-8) 0;overflow-x:auto;padding:var(--space-4) 0}
-    .flow-step{display:flex;gap:var(--space-3);align-items:flex-start;background:var(--color-surface);padding:var(--space-4) var(--space-5);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);min-width:150px;max-width:200px;flex-shrink:0;opacity:0;transform:translateY(12px);transition:opacity var(--duration-normal) var(--ease-out),transform var(--duration-normal) var(--ease-out);transition-delay:calc(var(--step-delay) * 0.15s)}
-    .flow-step.visible{opacity:1;transform:translateY(0)}
-    .flow-step-num{width:28px;height:28px;border-radius:50%;background:var(--color-accent);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);flex-shrink:0}
-    .flow-step-content strong{font-family:var(--font-display);font-size:var(--text-sm);display:block;margin-bottom:var(--space-1)}
-    .flow-step-content p{font-size:var(--text-xs);color:var(--color-text-secondary);margin:0}
-    .flow-arrow{font-size:var(--text-xl);color:var(--color-accent);flex-shrink:0;opacity:0;transition:opacity var(--duration-normal);transition-delay:calc(var(--step-delay) * 0.15s)}.flow-arrow.visible{opacity:1}
+    .flow-diagram{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0}
+    .flow-diagram h3{font-family:var(--font-display);font-weight:700;text-align:center;margin-bottom:var(--space-3)}
+    .flow-query{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-bg-code);color:#CDD6F4;padding:var(--space-3) var(--space-5);border-radius:var(--radius-sm);margin-bottom:var(--space-6);text-align:center;line-height:1.6}
+    .flow-query .kw{color:#CBA6F7}.flow-query .fn{color:#89B4FA}.flow-query .col{color:#A6E3A1}.flow-query .tbl{color:#F9E2AF}.flow-query .num{color:#FAB387}
+    .flow-steps{display:flex;flex-direction:column;align-items:center;gap:var(--space-3)}
+    .flow-step{background:var(--color-surface-warm);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);width:100%;max-width:620px;display:flex;align-items:flex-start;gap:var(--space-3)}
+    .flow-step-num{background:var(--color-accent);color:white;width:28px;height:28px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;flex-shrink:0;margin-top:1px}
+    .flow-step-content{flex:1}
+    .flow-step-label{font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);color:var(--color-accent);margin-bottom:var(--space-1)}
+    .flow-step-text{font-family:var(--font-body);font-size:var(--text-sm);line-height:1.6;color:var(--color-text-secondary)}
+    .flow-step-text code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-bg-warm);padding:1px 5px;border-radius:4px;color:var(--color-text)}
+    .flow-step-text strong{color:var(--color-text)}
+    .flow-arrow-v{color:var(--color-accent-muted);text-align:center;font-size:var(--text-lg)}
+
+    /* Callout boxes */
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-5) 0;display:flex;gap:var(--space-3);border-left:4px solid}
+    .callout-icon{font-size:var(--text-xl);flex-shrink:0;line-height:1.4}
+    .callout-content{flex:1}
+    .callout-content p{margin:0;font-size:var(--text-sm);line-height:1.65}
+    .callout-content strong{color:var(--color-text)}
+    .callout.insight{background:#F3EFF8;border-color:#7B6DAA}
+    .callout.tip{background:var(--color-success-light);border-color:var(--color-success)}
+    .callout.warning{background:var(--color-warning-light);border-color:var(--color-warning)}
+
+    /* Glossary */
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:help;text-decoration:none}
+    .glossary-tooltip{position:fixed;background:var(--color-bg-code);color:#CDD6F4;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:2000;pointer-events:none;opacity:0;transition:opacity var(--duration-fast);line-height:1.5;box-shadow:var(--shadow-lg)}.glossary-tooltip.visible{opacity:1}
+
     /* References */
     .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}
     .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
     .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
     .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}
     .reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
-    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}
     .reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}
     .reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}
-    .reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
-    a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
-    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s ease}.page-nav-footer a:hover{color:var(--color-accent-hover)}
-    .page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);margin-left:var(--space-2)}
+
+    /* Page nav */
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6) var(--space-6) 0;border-top:1px solid var(--color-border-light)}
+    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2)}.page-nav-footer a:hover{text-decoration:underline}
+
+    /* Site footer */
     .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
-    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.arch-row{flex-direction:column}.arch-arrow-right{transform:rotate(90deg)}.flow-diagram{flex-direction:column;align-items:stretch;overflow-x:visible}.flow-step{min-width:auto;max-width:none}.flow-arrow{text-align:center;transform:rotate(90deg)}.nav-page-link{font-size:var(--text-xs);padding:var(--space-1) var(--space-2)}}
-    @media(max-width:480px){:root{--nav-height:52px}.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
-    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}.copy-markdown-btn{padding:var(--space-1) var(--space-2)}}
+
+    /* Animations */
+    .animate-in{opacity:0;transform:translateY(16px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
+
+    /* Responsive */
+    @media(max-width:768px){
+      :root{--text-3xl:1.5rem;--nav-height:56px}
+      .arch-row{flex-direction:column}
+      .arch-arrow-right{transform:rotate(90deg)}
+      .pipeline-chain{flex-direction:column;align-items:center}
+      .pipeline-arrow{transform:rotate(90deg)}
+      .nav-pages{display:none}
+      .nav-pages.mobile-open{display:flex;flex-direction:column;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-bg);border-bottom:1px solid var(--color-border-light);padding:var(--space-4) var(--space-6);box-shadow:var(--shadow-md);z-index:999}
+      .nav-hamburger{display:flex}
+      .flow-step{flex-direction:column}
+    }
+    @media(max-width:640px){
+      .copy-markdown-btn .btn-label{display:none}
+      .copy-markdown-btn{padding:var(--space-1) var(--space-2)}
+      .page-nav-footer{flex-direction:column;gap:var(--space-4)}
+    }
   </style>
 </head>
 <body>
   <nav class="site-nav">
-    <div class="nav-progress-bar" role="progressbar"></div>
+    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
     <div class="nav-inner">
       <a href="index.html" class="nav-brand">DuckDB</a>
       <div class="nav-pages" id="navPages">
@@ -118,7 +172,7 @@
         <a href="implementation.html" class="nav-page-link">Implementation</a>
         <a href="use-cases.html" class="nav-page-link">Use Cases</a>
         <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
-        <a href="faq.html" class="nav-page-link">Q&amp;A</a>
+        <a href="faq.html" class="nav-page-link">FAQ</a>
         <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
       </div>
       <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
@@ -130,20 +184,49 @@
       <span class="page-level-badge intermediate">Intermediate</span>
       <h1>Architecture</h1>
     </div>
-    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button>
+    <button class="copy-markdown-btn" onclick="copyMarkdown()">
+      <span class="btn-icon">&#x1F4CB;</span>
+      <span class="btn-label">Copy as Markdown</span>
+    </button>
   </header>
 
   <main class="content-area">
 
-    <section class="content-section animate-in" data-level="intermediate">
+    <!-- High-Level Design -->
+    <section class="content-section animate-in">
       <h2>High-Level Design</h2>
-      <p>DuckDB follows a classic layered database architecture, but with a key twist: everything runs <span class="glossary-term" data-definition="The entire database engine executes within the host application's memory space. No separate server process, no network calls, no inter-process communication.">in-process</span>. There is no network layer, no wire protocol, and no separate server. The entire system -- from SQL parsing to disk I/O -- executes within the host application's address space.</p>
+      <p>DuckDB follows a classic database architecture organized as a multi-stage query processing pipeline, but with critical design choices optimized for analytical workloads. The system is a single-process, multi-threaded C++ library with zero external dependencies. Every component &mdash; from SQL parsing to storage management &mdash; is compiled into a single library that runs inside the host application's process space.</p>
+      <p>The architecture can be summarized as a pipeline:</p>
+
+      <div class="pipeline-display">
+        <div class="pipeline-chain">
+          <span class="pipeline-stage">SQL String</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-stage">Parser</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-stage">Binder</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-stage">Logical Planner</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-stage">Optimizer</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-stage">Physical Planner</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-stage">Executor</span>
+          <span class="pipeline-arrow">&#x2192;</span>
+          <span class="pipeline-stage">Results</span>
+        </div>
+      </div>
+
+      <p>Data flows through this pipeline for every query, with each stage transforming the representation from human-readable SQL to machine-executable operators working on columnar vectors.</p>
 
       <div class="arch-diagram">
-        <h3 class="arch-title">Query Processing Pipeline</h3>
+        <h3 class="arch-title">DuckDB Query Pipeline Architecture</h3>
+        <p class="arch-subtitle">Click any component to see implementation details</p>
         <div class="arch-canvas">
+          <!-- Row 1: Parser -->
           <div class="arch-row">
-            <div class="arch-component" data-type="network" data-details="Converts raw SQL strings into an abstract syntax tree (AST). Derived from PostgreSQL's parser for battle-tested SQL compatibility. Deliberately unaware of the catalog for fast parsing.">
+            <div class="arch-component" data-type="compute" data-details="Converts SQL text into an abstract syntax tree (AST). Uses a fork of PostgreSQL's battle-tested parser for broad SQL compatibility. Completely catalog-unaware -- produces SQLStatement, QueryNode, TableRef, and ParsedExpression nodes without resolving names or types.">
               <div class="arch-component-icon">&#x1F4DD;</div>
               <div class="arch-component-label">Parser</div>
               <div class="arch-component-brief">SQL to AST</div>
@@ -151,160 +234,376 @@
             </div>
           </div>
           <div class="arch-arrow-down"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0 L12 24 M6 18 L12 28 L18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+
+          <!-- Row 2: Binder + Catalog -->
           <div class="arch-row">
-            <div class="arch-component" data-type="compute" data-details="Resolves every reference against the catalog. Tables become concrete entries, column names become typed references. Performs full type resolution before optimization.">
+            <div class="arch-component" data-type="compute" data-details="Resolves names and types against the catalog. Transforms parsed nodes into bound equivalents (SQLStatement to BoundStatement, ParsedExpression to Expression). Supports CTEs, subqueries, and correlated references through a hierarchical binder chain.">
               <div class="arch-component-icon">&#x1F517;</div>
               <div class="arch-component-label">Binder</div>
               <div class="arch-component-brief">Name &amp; type resolution</div>
               <div class="arch-component-details"></div>
             </div>
+            <div class="arch-arrow-right"><svg width="40" height="24" viewBox="0 0 40 24"><path d="M0 12 L16 12 M32 12 L16 12 M22 6 L16 12 L22 18 M10 6 L16 12 L10 18" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="4 3"/></svg></div>
+            <div class="arch-component" data-type="storage" data-details="Manages all database metadata: schemas, tables, views, functions, types, sequences, and extensions. Supports attaching multiple databases simultaneously, including read-only access to PostgreSQL, MySQL, and SQLite via extensions.">
+              <div class="arch-component-icon">&#x1F4D1;</div>
+              <div class="arch-component-label">Catalog</div>
+              <div class="arch-component-brief">Metadata registry</div>
+              <div class="arch-component-details"></div>
+            </div>
           </div>
           <div class="arch-arrow-down"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0 L12 24 M6 18 L12 28 L18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+
+          <!-- Row 3: Logical Planner -->
           <div class="arch-row">
-            <div class="arch-component" data-type="compute" data-details="Converts bound statements into a tree of LogicalOperator nodes -- abstract representations like Scan, Filter, Join, Aggregate, and Sort. Represents WHAT the query does, not HOW.">
-              <div class="arch-component-icon">&#x1F4CA;</div>
+            <div class="arch-component" data-type="compute" data-details="Produces a tree of LogicalOperator nodes representing the query's intent without specifying how to execute it. Operators include LogicalGet (scan), LogicalFilter, LogicalProjection, LogicalAggregate, LogicalJoin, etc.">
+              <div class="arch-component-icon">&#x1F4D0;</div>
               <div class="arch-component-label">Logical Planner</div>
-              <div class="arch-component-brief">Relational algebra</div>
+              <div class="arch-component-brief">Abstract query plan</div>
               <div class="arch-component-details"></div>
             </div>
           </div>
           <div class="arch-arrow-down"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0 L12 24 M6 18 L12 28 L18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+
+          <!-- Row 4: Optimizer -->
           <div class="arch-row">
-            <div class="arch-component" data-type="optimizer" data-details="Applies 20+ optimization passes including filter pushdown, join order optimization (DPccp), projection pullup, CTE inlining, TopN optimization, and statistics propagation.">
-              <div class="arch-component-icon">&#x2728;</div>
+            <div class="arch-component" data-type="compute" data-details="The heart of query performance. Runs 30+ sequential optimization passes including filter pushdown, join order optimization (DPccp algorithm), column pruning, common subexpression elimination, late materialization, statistics propagation, and TopN optimization. Extensible via custom pre/post passes.">
+              <div class="arch-component-icon">&#x26A1;</div>
               <div class="arch-component-label">Optimizer</div>
-              <div class="arch-component-brief">20+ optimization passes</div>
+              <div class="arch-component-brief">30+ optimization passes</div>
               <div class="arch-component-details"></div>
             </div>
           </div>
           <div class="arch-arrow-down"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0 L12 24 M6 18 L12 28 L18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+
+          <!-- Row 5: Physical Planner -->
           <div class="arch-row">
-            <div class="arch-component" data-type="execution" data-details="Maps logical operators to physical implementations. Abstract 'Join' becomes Hash Join or Merge Join. Abstract 'Scan' becomes Sequential Scan or Index Scan based on data characteristics.">
-              <div class="arch-component-icon">&#x1F3D7;</div>
+            <div class="arch-component" data-type="compute" data-details="Converts the optimized logical plan into PhysicalOperator nodes with concrete execution strategies. A LogicalJoin might become a PhysicalHashJoin or PhysicalMergeJoin based on conditions, data sizes, and indexes. Resolves column bindings to physical vector indices.">
+              <div class="arch-component-icon">&#x1F3D7;&#xFE0F;</div>
               <div class="arch-component-label">Physical Planner</div>
-              <div class="arch-component-brief">Concrete operators</div>
+              <div class="arch-component-brief">Concrete execution plan</div>
               <div class="arch-component-details"></div>
             </div>
           </div>
           <div class="arch-arrow-down"><svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 0 L12 24 M6 18 L12 28 L18 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+
+          <!-- Row 6: Executor + Task Scheduler + Storage -->
           <div class="arch-row">
-            <div class="arch-component" data-type="execution" data-details="Push-based, vectorized, morsel-driven parallel execution. Data flows as DataChunk objects (collections of Vector columns, each holding up to 2048 values) through pipelines.">
+            <div class="arch-component" data-type="compute" data-details="Arranges physical operators into pipelines with a source, intermediate operators, and a sink. Uses push-based, event-driven execution where pipeline completion triggers downstream pipelines. Worker threads each grab a morsel of work and push it through the pipeline independently.">
               <div class="arch-component-icon">&#x1F680;</div>
-              <div class="arch-component-label">Execution Engine</div>
-              <div class="arch-component-brief">Vectorized pipelines</div>
+              <div class="arch-component-label">Executor</div>
+              <div class="arch-component-brief">Push-based pipelines</div>
               <div class="arch-component-details"></div>
             </div>
-            <div class="arch-arrow-right"><svg width="40" height="24" viewBox="0 0 40 24"><path d="M0 12 L32 12 M26 6 L36 12 L26 18" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
-            <div class="arch-component" data-type="storage" data-details="Single-file storage format with row groups, column segments, compression, buffer management, and WAL-based crash recovery. 256 KB blocks with unified buffer pool.">
+            <div class="arch-arrow-right"><svg width="40" height="24" viewBox="0 0 40 24"><path d="M0 12 L16 12 M32 12 L16 12 M22 6 L16 12 L22 18 M10 6 L16 12 L10 18" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="4 3"/></svg></div>
+            <div class="arch-component" data-type="scheduler" data-details="Manages a thread pool executing pipeline tasks. Supports parallel pipelines (multiple threads on different data morsels) and sequential pipelines (when operator semantics require order). Uses an event system for inter-pipeline dependencies.">
+              <div class="arch-component-icon">&#x1F4C5;</div>
+              <div class="arch-component-label">Task Scheduler</div>
+              <div class="arch-component-brief">Thread pool + events</div>
+              <div class="arch-component-details"></div>
+            </div>
+            <div class="arch-arrow-right"><svg width="40" height="24" viewBox="0 0 40 24"><path d="M0 12 L16 12 M32 12 L16 12 M22 6 L16 12 L22 18 M10 6 L16 12 L10 18" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="4 3"/></svg></div>
+            <div class="arch-component" data-type="storage" data-details="Manages persistent and in-memory data in a single-file format. Data organized into row groups (~122,880 rows), each column compressed independently. Includes buffer manager for out-of-core processing, write-ahead log (WAL) for crash recovery, and checkpoint logic.">
               <div class="arch-component-icon">&#x1F4BE;</div>
-              <div class="arch-component-label">Storage Layer</div>
-              <div class="arch-component-brief">Columnar persistence</div>
+              <div class="arch-component-label">Storage Engine</div>
+              <div class="arch-component-brief">Single-file, columnar</div>
               <div class="arch-component-details"></div>
             </div>
           </div>
         </div>
-      </div>
-      <p style="font-size:var(--text-sm);color:var(--color-text-muted);text-align:center;margin-top:calc(-1 * var(--space-4))">Click any component to see details</p>
-    </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>Optimizer Passes</h2>
-      <p>The optimizer applies 20+ passes to transform naive query plans into efficient ones. A query joining three tables might have 6 possible join orderings, and picking the right one can mean the difference between milliseconds and minutes.</p>
-
-      <table class="opt-table">
-        <thead><tr><th>Pass</th><th>Purpose</th></tr></thead>
-        <tbody>
-          <tr><td>Filter Pushdown</td><td>Moves filter predicates closer to data sources to reduce intermediate result sizes early</td></tr>
-          <tr><td>Join Order (DPccp)</td><td>Dynamic programming algorithm to find the optimal join ordering</td></tr>
-          <tr><td>Projection Pullup</td><td>Removes columns that are never used downstream</td></tr>
-          <tr><td>CTE Inlining</td><td>Inlines Common Table Expressions when materialization is wasteful</td></tr>
-          <tr><td>TopN Optimization</td><td>Converts ORDER BY + LIMIT N into a single operator that avoids full sorting</td></tr>
-          <tr><td>Statistics Propagation</td><td>Gathers and propagates column statistics to inform downstream decisions</td></tr>
-          <tr><td>Row Group Pruning</td><td>Eliminates entire storage row groups based on min/max metadata</td></tr>
-          <tr><td>Late Materialization</td><td>Defers reading columns until they are actually needed</td></tr>
-        </tbody>
-      </table>
-
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F52D;</div>
-        <div class="callout-content">
-          <strong>Design insight:</strong> The optimizer runs passes in a carefully ordered sequence. Filter pushdown runs before join ordering so the join optimizer sees reduced cardinalities. Some passes (like CTE inlining and column lifetime analysis) run twice -- once early and once late -- because earlier passes may create new optimization opportunities.
+        <div class="arch-legend">
+          <div class="arch-legend-item"><span class="arch-legend-swatch compute"></span> Processing</div>
+          <div class="arch-legend-item"><span class="arch-legend-swatch storage"></span> Storage</div>
+          <div class="arch-legend-item"><span class="arch-legend-swatch scheduler"></span> Scheduling</div>
         </div>
       </div>
     </section>
 
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>Data Flow Through the System</h2>
-      <p>A typical analytical query flows through the system as follows. Each stage transforms the representation closer to executable code.</p>
+    <!-- Key Components -->
+    <section class="content-section animate-in">
+      <h2>Key Components</h2>
+      <p>Each stage of the pipeline is a distinct component with clear responsibilities. The separation between stages enables clean testing, extensibility, and the ability to inspect the query plan at any point in the transformation.</p>
 
-      <div class="flow-diagram" id="flow-1">
-        <div class="flow-step animate-in" style="--step-delay:0">
-          <div class="flow-step-num">1</div>
-          <div class="flow-step-content"><strong>SQL Input</strong><p>User submits SQL via API</p></div>
+      <div class="component-grid">
+        <div class="component-card">
+          <div class="component-card-header">
+            <span class="component-card-icon">&#x1F4DD;</span>
+            <span class="component-card-name">Parser</span>
+            <span class="component-card-tag compute">compute</span>
+          </div>
+          <p>Converts SQL text into an <span class="glossary-term" data-def="Abstract Syntax Tree -- a tree representation of the syntactic structure of source code (or SQL), where each node represents a construct in the language.">AST</span>. DuckDB uses a fork of PostgreSQL's battle-tested parser, which provides broad SQL compatibility. The parser is completely catalog-unaware &mdash; it produces <code>SQLStatement</code>, <code>QueryNode</code>, <code>TableRef</code>, and <code>ParsedExpression</code> nodes without resolving any names or types. This separation exists because parsing is a syntactic concern; mixing in catalog lookups would create circular dependencies.</p>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay:1">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:2">
-          <div class="flow-step-num">2</div>
-          <div class="flow-step-content"><strong>Parse</strong><p>AST with SelectStatement, GroupByNode</p></div>
+
+        <div class="component-card">
+          <div class="component-card-header">
+            <span class="component-card-icon">&#x1F517;</span>
+            <span class="component-card-name">Binder</span>
+            <span class="component-card-tag compute">compute</span>
+          </div>
+          <p>Resolves names and types against the <span class="glossary-term" data-def="The catalog is a metadata registry that tracks all schemas, tables, views, functions, types, sequences, and extensions in the database.">catalog</span>. Transforms parsed nodes into bound equivalents (<code>SQLStatement</code> &rarr; <code>BoundStatement</code>, <code>ParsedExpression</code> &rarr; <code>Expression</code>) by looking up table names, resolving column references, checking types, and expanding wildcards (<code>SELECT *</code>). Supports CTEs, subqueries, and correlated references through a hierarchical binder chain where child binders inherit parent context.</p>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay:3">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:4">
-          <div class="flow-step-num">3</div>
-          <div class="flow-step-content"><strong>Bind</strong><p>Resolve tables, columns, and types</p></div>
+
+        <div class="component-card">
+          <div class="component-card-header">
+            <span class="component-card-icon">&#x1F4D0;</span>
+            <span class="component-card-name">Logical Planner</span>
+            <span class="component-card-tag compute">compute</span>
+          </div>
+          <p>Produces a tree of <code>LogicalOperator</code> nodes representing the query's intent without specifying how to execute it. Operators include <code>LogicalGet</code> (scan), <code>LogicalFilter</code>, <code>LogicalProjection</code>, <code>LogicalAggregate</code>, <code>LogicalJoin</code>, and more. This abstract representation is what the optimizer works on.</p>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay:5">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:6">
-          <div class="flow-step-num">4</div>
-          <div class="flow-step-content"><strong>Optimize</strong><p>Push filters, order joins, prune columns</p></div>
+
+        <div class="component-card">
+          <div class="component-card-header">
+            <span class="component-card-icon">&#x26A1;</span>
+            <span class="component-card-name">Optimizer</span>
+            <span class="component-card-tag compute">compute</span>
+          </div>
+          <p>The heart of query performance. DuckDB runs <a href="https://duckdb.org/docs/current/internals/overview.html" target="_blank" rel="noopener noreferrer">30+ sequential optimization passes</a> on the logical plan, including:</p>
+          <ul>
+            <li><strong>Filter Pushdown</strong> &mdash; moves predicates close to the data source to reduce I/O</li>
+            <li><strong>Join Order Optimization</strong> &mdash; uses the <span class="glossary-term" data-def="Dynamic Programming connected complement pairs -- an algorithm for optimal join enumeration that considers all possible join orderings in polynomial time for connected join graphs.">DPccp</span> algorithm for dynamic-programming-based join enumeration</li>
+            <li><strong>Column Pruning</strong> &mdash; removes columns never referenced downstream</li>
+            <li><strong>Common Subexpression Elimination</strong> &mdash; deduplicates repeated computation</li>
+            <li><strong>Late Materialization</strong> &mdash; defers column reads until actually needed</li>
+            <li><strong>Statistics Propagation</strong> &mdash; uses cardinality estimates to guide operator selection</li>
+            <li><strong>TopN Optimization</strong> &mdash; converts <code>ORDER BY ... LIMIT N</code> into a single operator</li>
+          </ul>
+          <p style="margin-top:var(--space-3)">The optimizer is extensible &mdash; extensions can inject custom pre- and post-optimization passes.</p>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay:7">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:8">
-          <div class="flow-step-num">5</div>
-          <div class="flow-step-content"><strong>Execute</strong><p>Parallel vectorized pipeline processing</p></div>
+
+        <div class="component-card">
+          <div class="component-card-header">
+            <span class="component-card-icon">&#x1F3D7;&#xFE0F;</span>
+            <span class="component-card-name">Physical Planner</span>
+            <span class="component-card-tag compute">compute</span>
+          </div>
+          <p>Converts the optimized logical plan into a tree of <code>PhysicalOperator</code> nodes that specify concrete execution strategies. For example, a <code>LogicalJoin</code> might become a <code>PhysicalHashJoin</code> or a <code>PhysicalMergeJoin</code> depending on the join condition, data sizes, and available indexes. The physical planner also resolves column bindings from logical column references to physical vector indices.</p>
+        </div>
+
+        <div class="component-card">
+          <div class="component-card-header">
+            <span class="component-card-icon">&#x1F680;</span>
+            <span class="component-card-name">Executor</span>
+            <span class="component-card-tag compute">compute</span>
+          </div>
+          <p>Arranges physical operators into pipelines and schedules them for parallel execution. The executor uses an event-driven model where pipeline completion triggers downstream pipelines. Each pipeline has a source, zero or more intermediate operators, and a sink. Worker threads from the task scheduler each grab a <span class="glossary-term" data-def="A morsel is a fixed-size chunk of tuples (typically a few thousand rows) assigned to a single worker thread. Morsel-driven parallelism avoids centralized scheduling by letting threads independently claim work units.">morsel</span> of work and push it through the pipeline independently.</p>
+        </div>
+
+        <div class="component-card">
+          <div class="component-card-header">
+            <span class="component-card-icon">&#x1F4D1;</span>
+            <span class="component-card-name">Catalog</span>
+            <span class="component-card-tag storage">storage</span>
+          </div>
+          <p>Manages all database metadata: schemas, tables, views, functions, types, sequences, and extensions. DuckDB supports attaching multiple databases simultaneously (including read-only access to external databases like PostgreSQL, MySQL, and SQLite via extensions), and the <span class="glossary-term" data-def="The catalog is a metadata registry that tracks all schemas, tables, views, functions, types, sequences, and extensions in the database.">catalog</span> provides a unified namespace across all attached databases.</p>
+        </div>
+
+        <div class="component-card">
+          <div class="component-card-header">
+            <span class="component-card-icon">&#x1F4BE;</span>
+            <span class="component-card-name">Storage Engine</span>
+            <span class="component-card-tag storage">storage</span>
+          </div>
+          <p>Manages persistent and in-memory data using a single-file format. Data is organized into row groups (~122,880 rows each), with each column in a row group compressed independently. The storage engine includes a buffer manager for out-of-core processing (datasets larger than RAM), a <span class="glossary-term" data-def="Write-Ahead Log -- a sequential log where changes are recorded before being applied to the main database file. Ensures crash recovery by replaying uncommitted changes after a restart.">WAL</span> for crash recovery, and <span class="glossary-term" data-def="A checkpoint compacts the WAL (write-ahead log) into the main database file, reclaiming space and ensuring the database is self-contained in a single file.">checkpoint</span> logic for compacting the WAL into the main database file.</p>
+        </div>
+
+        <div class="component-card">
+          <div class="component-card-header">
+            <span class="component-card-icon">&#x1F4C5;</span>
+            <span class="component-card-name">Task Scheduler</span>
+            <span class="component-card-tag scheduler">scheduler</span>
+          </div>
+          <p>Manages a thread pool that executes pipeline tasks. The scheduler supports both fully parallel pipelines (multiple threads on different data <span class="glossary-term" data-def="A morsel is a fixed-size chunk of tuples (typically a few thousand rows) assigned to a single worker thread. Morsel-driven parallelism avoids centralized scheduling by letting threads independently claim work units.">morsels</span>) and sequential pipelines (when operator semantics require ordered execution). It also handles inter-pipeline dependencies through an event system.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Data Flow -->
+    <section class="content-section animate-in">
+      <h2>Data Flow</h2>
+      <p>To understand how the components interact, let's trace a concrete query through the entire pipeline:</p>
+
+      <div class="flow-diagram">
+        <h3>Query Pipeline Walkthrough</h3>
+        <div class="flow-query"><span class="kw">SELECT</span> <span class="col">region</span>, <span class="fn">SUM</span>(<span class="col">amount</span>) <span class="kw">FROM</span> <span class="tbl">sales</span> <span class="kw">WHERE</span> <span class="col">year</span> = <span class="num">2025</span> <span class="kw">GROUP BY</span> <span class="col">region</span></div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <span class="flow-step-num">1</span>
+            <div class="flow-step-content">
+              <div class="flow-step-label">Parser</div>
+              <div class="flow-step-text">Tokenizes the SQL and produces an <span class="glossary-term" data-def="Abstract Syntax Tree -- a tree representation of the syntactic structure of source code (or SQL), where each node represents a construct in the language.">AST</span> with a <code>SelectStatement</code> containing a <code>TableRef("sales")</code>, a <code>ComparisonExpression(year = 2025)</code>, and a <code>FunctionExpression(SUM(amount))</code>.</div>
+            </div>
+          </div>
+          <div class="flow-arrow-v">&#x2193;</div>
+          <div class="flow-step">
+            <span class="flow-step-num">2</span>
+            <div class="flow-step-content">
+              <div class="flow-step-label">Binder</div>
+              <div class="flow-step-text">Resolves <code>sales</code> to a physical table in the catalog, verifies that <strong>region</strong>, <strong>amount</strong>, and <strong>year</strong> columns exist with compatible types, and produces bound expressions with resolved type information.</div>
+            </div>
+          </div>
+          <div class="flow-arrow-v">&#x2193;</div>
+          <div class="flow-step">
+            <span class="flow-step-num">3</span>
+            <div class="flow-step-content">
+              <div class="flow-step-label">Logical Planner</div>
+              <div class="flow-step-text">Creates: <code>LogicalGet(sales)</code> &rarr; <code>LogicalFilter(year = 2025)</code> &rarr; <code>LogicalAggregate(GROUP BY region, SUM(amount))</code> &rarr; <code>LogicalProjection(region, sum)</code>.</div>
+            </div>
+          </div>
+          <div class="flow-arrow-v">&#x2193;</div>
+          <div class="flow-step">
+            <span class="flow-step-num">4</span>
+            <div class="flow-step-content">
+              <div class="flow-step-label">Optimizer</div>
+              <div class="flow-step-text">Pushes the <code>year = 2025</code> filter down into the scan (eliminating a separate filter operator), prunes unused columns (only <strong>region</strong>, <strong>amount</strong>, <strong>year</strong> are read), and propagates statistics to estimate result cardinalities.</div>
+            </div>
+          </div>
+          <div class="flow-arrow-v">&#x2193;</div>
+          <div class="flow-step">
+            <span class="flow-step-num">5</span>
+            <div class="flow-step-content">
+              <div class="flow-step-label">Physical Planner</div>
+              <div class="flow-step-text">Converts to: <code>PhysicalTableScan(sales, filter: year=2025, columns: [region, amount, year])</code> &rarr; <code>PhysicalHashAggregate(GROUP BY region, SUM(amount))</code>.</div>
+            </div>
+          </div>
+          <div class="flow-arrow-v">&#x2193;</div>
+          <div class="flow-step">
+            <span class="flow-step-num">6</span>
+            <div class="flow-step-content">
+              <div class="flow-step-label">Executor</div>
+              <div class="flow-step-text"><strong>Pipeline 1:</strong> Scan &rarr; Hash Aggregate (build phase). Multiple threads each scan different row groups, checking zone maps to skip groups where <code>year</code> max &lt; 2025 or min &gt; 2025, and push DataChunks into the hash table.<br><strong>Pipeline 2:</strong> Hash Aggregate (probe phase) &rarr; Result. A single thread reads the aggregated hash table and produces the final output.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design Decisions -->
+    <section class="content-section animate-in">
+      <h2>Design Decisions</h2>
+      <p>DuckDB's architecture reflects a series of deliberate trade-offs, each driven by the goal of making analytical queries on local data as fast and frictionless as possible.</p>
+
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content">
+          <p><strong>In-Process over Client-Server.</strong> DuckDB runs inside the application process, eliminating network round-trips and serialization overhead. Analytical queries on local data shouldn't require running a server. The trade-off is that DuckDB isn't designed for concurrent multi-user access (though it supports multiple read-only connections).</p>
         </div>
       </div>
 
-      <div class="callout callout-info">
-        <div class="callout-icon">&#x2139;&#xFE0F;</div>
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F4A1;</span>
         <div class="callout-content">
-          <strong>Example:</strong> <code>SELECT region, SUM(sales) FROM orders GROUP BY region</code> becomes: Parser produces a GroupByNode, Binder verifies <code>orders</code> exists, Planner creates <code>LogicalAggregate -> LogicalGet</code>, Optimizer pushes filters and prunes unused columns, and the Physical Planner creates <code>PhysicalHashAggregate -> PhysicalTableScan</code> for parallel morsel-based execution.
+          <p><strong>PostgreSQL Parser Fork.</strong> Rather than building a SQL parser from scratch, DuckDB forked PostgreSQL's parser. This provides mature SQL dialect support (CTEs, window functions, lateral joins) with decades of battle-testing. DuckDB is developing an experimental PEG-based parser (introduced in v1.5.0) for better error messages and extensibility, but the PostgreSQL parser remains the production default.</p>
+        </div>
+      </div>
+
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content">
+          <p><strong>Push-Based over Pull-Based Execution.</strong> Most databases use pull-based (Volcano) execution where the root operator calls <code>next()</code> on children. DuckDB uses push-based execution where sources push data downstream. This eliminates virtual function call overhead per-tuple and enables more natural <span class="glossary-term" data-def="A morsel is a fixed-size chunk of tuples (typically a few thousand rows) assigned to a single worker thread. Morsel-driven parallelism avoids centralized scheduling by letting threads independently claim work units.">morsel</span>-driven parallelism &mdash; a source can distribute morsels across threads without complex synchronization at every operator boundary.</p>
+        </div>
+      </div>
+
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content">
+          <p><strong>Single-File Storage.</strong> The entire database (data, metadata, indexes) lives in a single file, similar to SQLite. This simplifies deployment, backup, and data sharing. The <span class="glossary-term" data-def="Write-Ahead Log -- a sequential log where changes are recorded before being applied to the main database file. Ensures crash recovery by replaying uncommitted changes after a restart.">WAL</span> is stored as a separate file during operation but is compacted into the main file during <span class="glossary-term" data-def="A checkpoint compacts the WAL (write-ahead log) into the main database file, reclaiming space and ensuring the database is self-contained in a single file.">checkpoints</span>.</p>
+        </div>
+      </div>
+
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content">
+          <p><strong>Zero External Dependencies.</strong> DuckDB compiles with just a C++17 compiler. All dependencies (compression algorithms, parsers, etc.) are vendored. This was a deliberate decision to make embedding trivial &mdash; no package manager conflicts, no shared library version issues, no system library requirements.</p>
         </div>
       </div>
     </section>
 
   </main>
 
-  <section class="references-footer">
+  <!-- References -->
+  <section class="references-footer animate-in">
     <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/current/internals/overview.html" target="_blank" rel="noopener noreferrer">DuckDB Internals Overview</a></span><span class="reference-domain">duckdb.org</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4DC;</span><div class="reference-content"><span class="reference-title"><a href="https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf" target="_blank" rel="noopener noreferrer">CMU Database Systems: DuckDB</a></span><span class="reference-domain">cmu.edu</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://endjin.com/blog/2025/04/duckdb-in-depth-how-it-works-what-makes-it-fast" target="_blank" rel="noopener noreferrer">DuckDB In Depth</a></span><span class="reference-domain">endjin.com</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/2024/07/09/memory-management" target="_blank" rel="noopener noreferrer">DuckDB Memory Management</a></span><span class="reference-domain">duckdb.org</span></div></li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <span class="reference-title"><a href="https://duckdb.org/docs/current/internals/overview.html" target="_blank" rel="noopener noreferrer">DuckDB Internals Overview</a></span>
+        <span class="reference-domain">duckdb.org</span>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4DC;</span>
+        <span class="reference-title"><a href="https://www.vldb.org/pvldb/vol14/p2649-raasveldt.pdf" target="_blank" rel="noopener noreferrer">Push-Based Execution in DuckDB (VLDB 2021)</a></span>
+        <span class="reference-domain">vldb.org</span>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4F0;</span>
+        <span class="reference-title"><a href="https://thinhdanggroup.github.io/duckdb/" target="_blank" rel="noopener noreferrer">DuckDB: An Architectural Deep Dive</a></span>
+        <span class="reference-domain">thinhdanggroup.github.io</span>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4DC;</span>
+        <span class="reference-title"><a href="https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf" target="_blank" rel="noopener noreferrer">CMU 15-721 Lecture: DuckDB System Analysis</a></span>
+        <span class="reference-domain">15721.courses.cs.cmu.edu</span>
+      </li>
     </ul>
   </section>
 
-  <nav class="page-nav-footer">
-    <a href="concepts.html" class="prev">Core Concepts</a>
-    <a href="how-it-works.html" class="next">How It Works</a>
-  </nav>
+  <!-- Prev/Next navigation -->
+  <div class="page-nav-footer">
+    <a href="concepts.html">&#x2190; Concepts</a>
+    <a href="how-it-works.html">How It Works &#x2192;</a>
+  </div>
 
-  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+  <footer class="site-footer"><p>Generated by <strong>System Explorer</strong> &mdash; an interactive course built from system analysis</p></footer>
 
   <script>
+    /* Hamburger menu */
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');
+    hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
+
+    /* Progress bar */
     function updateProgressBar(){var s=window.scrollY,h=document.documentElement.scrollHeight-window.innerHeight,p=h>0?(s/h)*100:0;document.querySelector('.nav-progress-bar').style.width=p+'%'}
     window.addEventListener('scroll',function(){requestAnimationFrame(updateProgressBar)},{passive:true});
-    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
-    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});
+
+    /* Scroll-in animations */
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
     document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
-    // Architecture diagram
-    document.querySelectorAll('.arch-component').forEach(function(comp){comp.addEventListener('click',function(){var details=comp.querySelector('.arch-component-details');var wasExpanded=comp.classList.contains('expanded');document.querySelectorAll('.arch-component.expanded').forEach(function(other){other.classList.remove('expanded');other.querySelector('.arch-component-details').textContent=''});if(!wasExpanded){comp.classList.add('expanded');details.textContent=comp.dataset.details}})});
-    // Flow diagram
-    (function(){var obs=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.querySelectorAll('.animate-in').forEach(function(item){item.classList.add('visible')});obs.unobserve(entry.target)}})},{threshold:0.2});document.querySelectorAll('.flow-diagram').forEach(function(d){obs.observe(d)})})();
-    // Glossary
-    (function(){var tooltip=null;function show(term){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=term.dataset.definition;document.body.appendChild(tooltip);var r=term.getBoundingClientRect();var t=tooltip.getBoundingClientRect();var l=r.left+r.width/2-t.width/2;var tp=r.bottom+8;if(l<8)l=8;if(l+t.width>window.innerWidth-8)l=window.innerWidth-t.width-8;if(tp+t.height>window.innerHeight-8)tp=r.top-t.height-8;tooltip.style.left=l+'px';tooltip.style.top=tp+'px';requestAnimationFrame(function(){tooltip.classList.add('visible')})}function hide(){if(tooltip){tooltip.remove();tooltip=null}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t)});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide()});document.addEventListener('click',function(e){var t=e.target.closest('.glossary-term');if(t){if(tooltip)hide();else show(t)}})})();
-    // Copy as Markdown
-    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var ctxMatch=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(ctxMatch){ctxMatch[1].split('\n').forEach(function(line){var m=line.match(/(\w+):\s*"(.+)"/);if(m)ctx[m[1]]=m[2]})}var md='# '+(ctx.system||'')+': '+(ctx.page||document.title)+'\n';md+='> Source: '+window.location.href+' | Level: '+(ctx.level||'Unknown')+'\n\n';var content=document.querySelector('.content-area');if(content){content.querySelectorAll('.content-section').forEach(function(sec){sec.querySelectorAll('h2,h3,p').forEach(function(el){var tag=el.tagName.toLowerCase();if(tag==='h2')md+='\n## '+el.textContent.trim()+'\n\n';else if(tag==='h3')md+='\n### '+el.textContent.trim()+'\n\n';else md+=el.textContent.trim()+'\n\n'})})}md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');var label=btn.querySelector('.btn-label');var orig=label.textContent;label.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){label.textContent=orig;btn.classList.remove('copied')},2000)})}
+
+    /* Architecture diagram: click to expand */
+    document.querySelectorAll('.arch-component').forEach(function(c){
+      c.addEventListener('click',function(){
+        var wasExpanded=c.classList.contains('expanded');
+        document.querySelectorAll('.arch-component').forEach(function(x){x.classList.remove('expanded');var d=x.querySelector('.arch-component-details');if(d)d.textContent=''});
+        if(!wasExpanded){c.classList.add('expanded');var det=c.querySelector('.arch-component-details');if(det)det.textContent=c.dataset.details}
+      });
+    });
+
+    /* Glossary tooltips */
+    var tooltip=document.createElement('div');tooltip.className='glossary-tooltip';document.body.appendChild(tooltip);
+    document.querySelectorAll('.glossary-term').forEach(function(t){
+      t.addEventListener('mouseenter',function(e){
+        var r=e.target.getBoundingClientRect();
+        tooltip.textContent=e.target.dataset.def;
+        tooltip.classList.add('visible');
+        var l=r.left+r.width/2-150;
+        if(l<8)l=8;if(l+300>window.innerWidth)l=window.innerWidth-308;
+        tooltip.style.left=l+'px';
+        tooltip.style.top=(r.top-tooltip.offsetHeight-8)+'px';
+        if(parseFloat(tooltip.style.top)<0){tooltip.style.top=(r.bottom+8)+'px'}
+      });
+      t.addEventListener('mouseleave',function(){tooltip.classList.remove('visible')});
+    });
+
+    /* Copy as Markdown */
+    function copyMarkdown(){
+      var md="# Architecture - DuckDB\n\nLevel: Intermediate\n\n## High-Level Design\n\nDuckDB follows a classic database architecture organized as a multi-stage query processing pipeline optimized for analytical workloads. Single-process, multi-threaded C++ library with zero external dependencies.\n\nPipeline: SQL String -> Parser -> Binder -> Logical Planner -> Optimizer -> Physical Planner -> Executor -> Results\n\n## Key Components\n\n- **Parser** -- Converts SQL text into an AST using a PostgreSQL parser fork\n- **Binder** -- Resolves names and types against the catalog\n- **Logical Planner** -- Produces a tree of LogicalOperator nodes\n- **Optimizer** -- 30+ sequential optimization passes (filter pushdown, join order, column pruning, etc.)\n- **Physical Planner** -- Converts logical plan to PhysicalOperator nodes with concrete strategies\n- **Executor** -- Push-based, event-driven pipeline execution\n- **Catalog** -- Metadata registry for schemas, tables, views, functions\n- **Storage Engine** -- Single-file columnar storage with row groups (~122,880 rows)\n- **Task Scheduler** -- Thread pool with morsel-driven parallelism\n\n## Data Flow\n\nExample: SELECT region, SUM(amount) FROM sales WHERE year = 2025 GROUP BY region\n\n1. Parser tokenizes SQL into AST\n2. Binder resolves table and column references against catalog\n3. Logical Planner creates LogicalGet -> LogicalFilter -> LogicalAggregate -> LogicalProjection\n4. Optimizer pushes filter into scan, prunes columns, propagates statistics\n5. Physical Planner converts to PhysicalTableScan -> PhysicalHashAggregate\n6. Executor arranges into two pipelines: scan+build and probe+result\n\n## Design Decisions\n\n- In-Process over Client-Server\n- PostgreSQL Parser Fork\n- Push-Based over Pull-Based Execution\n- Single-File Storage\n- Zero External Dependencies\n\n## References\n\n- [DuckDB Internals Overview](https://duckdb.org/docs/current/internals/overview.html)\n- [Push-Based Execution in DuckDB (VLDB 2021)](https://www.vldb.org/pvldb/vol14/p2649-raasveldt.pdf)\n- [DuckDB: An Architectural Deep Dive](https://thinhdanggroup.github.io/duckdb/)\n- [CMU 15-721 Lecture: DuckDB System Analysis](https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf)\n";
+      var btn=document.querySelector('.copy-markdown-btn');
+      navigator.clipboard.writeText(md).then(function(){
+        btn.querySelector('.btn-label').textContent='Copied!';
+        btn.classList.add('copied');
+        setTimeout(function(){btn.querySelector('.btn-label').textContent='Copy as Markdown';btn.classList.remove('copied')},2000);
+      });
+    }
   </script>
 </body>
 </html>

@@ -1,200 +1,106 @@
 ## Common Q&A
-
 <!-- level: all -->
-
 <!-- references:
-- https://duckdb.org/faq
-- https://duckdb.org/docs/stable/connect/concurrency
-- https://duckdb.org/2024/07/09/memory-management
-- https://duckdb.org/docs/stable/extensions/overview
-- https://duckdb.org/docs/stable/operations_manual/limits
+- [DuckDB FAQ](https://duckdb.org/faq) | official-docs
+- [DuckDB Limits](https://duckdb.org/docs/current/sql/data_types/overview.html) | official-docs
 -->
 
-### Q1: How much memory does DuckDB use, and can I control it?
+### Q: How does DuckDB handle datasets larger than available RAM?
 
-**Answer:** By default, DuckDB allocates up to 80% of physical RAM for its buffer pool. This is configurable:
+DuckDB's buffer manager automatically spills intermediate results and hash tables to temporary files on disk when memory is exhausted. This happens transparently — you don't need to configure anything beyond optionally setting `temp_directory`. The system tracks memory usage across all operators and evicts cold buffers using a clock-based replacement policy.
 
-```sql
--- Set a hard memory limit
-SET memory_limit = '4GB';
+However, "out-of-core" doesn't mean "free." Spilling to disk introduces I/O overhead. For optimal performance, size your `memory_limit` to fit the working set of your queries (the hash tables, sort buffers, and intermediate results — not the full dataset). DuckDB's columnar scans are already streaming — it doesn't need to load the entire table into memory to scan it.
 
--- Check current memory usage
-SELECT * FROM duckdb_memory();
+Practical guideline: DuckDB comfortably processes datasets 2–5× larger than RAM for most query patterns. For extreme cases (50× RAM), expect significant performance degradation as spilling dominates.
 
--- Monitor temporary file usage when spilling to disk
-SELECT * FROM duckdb_temporary_files();
-```
+### Q: Can I use DuckDB in a multi-process production environment?
 
-DuckDB's memory is divided between:
-- **Buffer pool:** Caches persistent data pages and holds temporary intermediate results (hash tables, sort buffers)
-- **Overhead:** Internal data structures, catalog metadata, and connection state (not counted toward the memory limit)
+Yes, with constraints. Multiple processes can open the same DuckDB file in `READ_ONLY` mode concurrently — this is the recommended pattern for read-heavy production workloads. For writes, only one process can hold a write lock at a time.
 
-If your query's intermediate results exceed the memory limit, DuckDB spills to the temporary directory on disk. This is automatic but slower than in-memory processing. For purely in-memory workloads, you can set `temp_directory = ''` to disable spilling (queries that exceed memory will fail instead).
+If you need concurrent read-write access from multiple services, consider:
+1. **Single-writer pattern:** One process writes, others read in `READ_ONLY` mode
+2. **MotherDuck:** Cloud-hosted DuckDB with proper concurrency management
+3. **Export to Parquet:** Write results as Parquet files, query them from multiple processes without locking
 
----
+DuckDB is not designed to be a shared multi-tenant database server. It's an embedded engine — think "one DuckDB per application instance."
 
-### Q2: Can multiple processes write to the same DuckDB file concurrently?
+### Q: What's the actual performance difference between DuckDB and pandas for analytical operations?
 
-**Answer:** No. DuckDB uses a **single-writer** model for file-backed databases:
+For aggregation-heavy workloads, DuckDB is typically 5–50× faster than pandas, depending on the operation. Key reasons:
+- DuckDB processes data in compiled vectorized C++ code; pandas uses Python-level dispatch with NumPy
+- DuckDB's columnar engine handles string operations more efficiently (FSST compression, dictionary encoding)
+- DuckDB automatically parallelizes across all cores; pandas is largely single-threaded
+- DuckDB can query files directly without loading the entire dataset into memory
 
-- **Multiple readers:** Multiple processes can open the same `.duckdb` file in read-only mode simultaneously.
-- **Single writer:** Only one process can open a database file in read-write mode at a time. A second process attempting to open the file for writing will block or fail, depending on timeout settings.
-- **Within a single process:** Multiple threads can read and write concurrently. DuckDB uses [MVCC (Multi-Version Concurrency Control)](https://en.wikipedia.org/wiki/Multiversion_concurrency_control) with optimistic concurrency control to manage intra-process parallelism.
+The gap is largest for operations like GROUP BY with many groups, string-heavy aggregations, and multi-table joins. For simple numeric operations on small datasets (< 100K rows), pandas is competitive because the overhead of query parsing and planning dominates.
 
-This design choice exists because DuckDB caches data, function pointers, and catalog metadata in RAM for fast analytical queries. Sharing this state across processes would require complex inter-process coordination that would degrade performance.
+DuckDB can also query pandas DataFrames directly via Arrow with zero copy, so you don't have to choose — use DuckDB for the heavy SQL operations and pandas for the rest.
 
-**Workarounds for multi-process writes:**
-- Use a cross-process mutex lock, with each process opening and closing the database for its write operation
-- Use [MotherDuck](https://motherduck.com) for multi-user cloud-based access
-- Design your application with a single writer process and multiple reader processes
-- Use separate DuckDB files per writer and merge periodically
+### Q: How does DuckDB's storage format compare to Parquet, and when should I use each?
 
----
+DuckDB's native `.duckdb` format and Parquet are both columnar, but serve different purposes:
 
-### Q3: What is the difference between in-memory and persistent mode?
+**DuckDB native format** is a read-write database file with ACID transactions, indexes, metadata, and a WAL. Use it when you need: mutable data (INSERT/UPDATE/DELETE), transactional guarantees, or a self-contained database file.
 
-**Answer:**
+**Parquet** is a read-only file format optimized for interoperability. Use it when you need: data exchange between tools (Spark, Snowflake, Polars), archival storage, or immutable datasets.
 
-| Aspect | In-Memory Mode | Persistent Mode |
-|--------|---------------|-----------------|
-| **Creation** | `duckdb.connect()` or `duckdb.connect(':memory:')` | `duckdb.connect('my_db.duckdb')` |
-| **Data survival** | Lost when process exits | Survives process restarts |
-| **Performance** | Fastest (no disk I/O for data) | Slightly slower (WAL writes, checkpointing) |
-| **Storage format** | Same columnar format, but only in RAM | Single `.duckdb` file on disk |
-| **Crash recovery** | No recovery (data is lost) | WAL-based recovery on next startup |
-| **File size** | N/A | Typically 30-50% of raw data size due to compression |
-| **Use case** | Temporary analysis, testing, ETL intermediates | Long-lived databases, reproducible analysis |
+In practice, many DuckDB users never use the native format — they query Parquet files directly. DuckDB pushes predicates and column selections into the Parquet reader, so performance is close to native format for read-only workloads. The native format wins when you need write operations or when repeated queries benefit from DuckDB's own compression and metadata.
 
-You can also attach multiple databases (including both in-memory and persistent) to a single connection:
+### Q: What happens during a checkpoint, and how does non-blocking checkpointing (v1.5.0+) work?
 
-```sql
-ATTACH 'analytics.duckdb' AS analytics;
-ATTACH ':memory:' AS scratch;
+A checkpoint compacts the write-ahead log (WAL) into the main database file. Before v1.5.0, checkpoints blocked all reads and writes. Since v1.5.0, checkpointing is non-blocking:
 
--- Query across both
-SELECT * FROM analytics.sales
-JOIN scratch.temp_lookup USING (id);
-```
+1. The checkpoint process reads the WAL entries and writes them to new blocks in the database file
+2. Concurrent reads continue to use the existing data blocks (MVCC ensures they see a consistent snapshot)
+3. Concurrent writes continue to append to the WAL
+4. Once the checkpoint writes are complete, the system atomically switches to the new blocks
+5. The old WAL entries are discarded
 
----
+This yields ~17% throughput improvement on mixed read-write workloads (measured on TPC-H).
 
-### Q4: How does DuckDB handle queries on data larger than available memory?
+Auto-checkpoint triggers when the WAL exceeds `wal_autocheckpoint` (default: 16MB). You can also manually checkpoint with `CHECKPOINT` or `FORCE CHECKPOINT`.
 
-**Answer:** DuckDB uses three mechanisms to process larger-than-memory datasets:
+### Q: How do I debug slow queries in DuckDB?
 
-1. **Streaming execution:** Data sources (CSV, Parquet, tables) are never fully loaded into memory. DuckDB reads and processes data one chunk at a time, discarding processed chunks before reading the next.
-
-2. **Intermediate spilling:** When operators like hash aggregation, hash joins, or sorting produce intermediate results that exceed the memory budget, they partition and spill excess data to temporary files on disk. Processing continues in multiple passes over the spilled partitions.
-
-3. **Buffer eviction:** The buffer manager evicts cached data pages from the buffer pool using an LRU-like policy when memory pressure arises.
-
-**Configuration for larger-than-memory workloads:**
+DuckDB provides multiple profiling tools:
 
 ```sql
-SET memory_limit = '4GB';                  -- Hard limit
-SET temp_directory = '/fast-ssd/duckdb_tmp'; -- Use fast storage for spills
-SET max_temp_directory_size = '200GB';       -- Limit disk usage
+-- Visual query plan (no execution)
+EXPLAIN SELECT ...;
+
+-- Actual execution with timing and row counts
+EXPLAIN ANALYZE SELECT ...;
+
+-- Enable detailed profiling
+PRAGMA enable_profiling;
+PRAGMA enable_progress_bar;
+PRAGMA profiling_output = '/tmp/profile.json';
 ```
 
-**Important caveats:**
-- Not all operators support spilling. Some operations may still fail with out-of-memory errors on extremely large datasets.
-- Spilling is significantly slower than in-memory processing (10--100x for I/O-bound operations).
-- DuckDB's larger-than-memory support targets occasional overflows, not routine processing of datasets far exceeding RAM.
+Common causes of slow queries:
+1. **No predicate pushdown** — Check if filters are pushed into the scan (visible in EXPLAIN). If not, the optimizer may not be able to push the filter (e.g., filter on a computed column).
+2. **Spill to disk** — Check `SELECT * FROM duckdb_temporary_files()`. If data is spilling, increase `memory_limit` or simplify the query.
+3. **String-heavy operations** — String comparisons are slower than numeric. Consider dictionary encoding or using ENUM types for low-cardinality strings.
+4. **Cross joins** — Accidental cross products from missing join conditions. Check row counts with EXPLAIN ANALYZE.
 
----
+### Q: How does DuckDB compare to ClickHouse for analytical workloads?
 
-### Q5: Are DuckDB extensions safe? Can they access my filesystem or network?
+DuckDB and ClickHouse occupy different niches:
 
-**Answer:** Extensions run as native code in the same process as DuckDB and have full access to the host system's resources, including the filesystem and network. There is no sandboxing.
+**DuckDB** is embedded (in-process), single-node, zero-configuration, and excels at interactive ad-hoc analytics on datasets up to ~100GB. No server, no deployment, just `import duckdb`. Ideal for data science, local pipelines, and embedded applications.
 
-**Security considerations:**
-- **Signed extensions:** DuckDB core extensions are cryptographically signed by the DuckDB team. By default, DuckDB only loads signed extensions.
-- **Unsigned extensions:** Community extensions require explicit opt-in: `SET allow_unsigned_extensions = true`. Only enable this for extensions you trust.
-- **Extension sources:** Extensions are downloaded from the official DuckDB extension repository by default. You can configure custom repositories, but this should be done with caution.
-- **Filesystem access:** Extensions like `httpfs` can read from remote URLs, and `postgres_scanner` can connect to external databases. Be aware of what network access your extensions might perform.
+**ClickHouse** is a client-server distributed database designed for high-throughput ingestion and sub-second queries on petabytes of data. It requires server deployment, cluster management, and operational expertise. Ideal for production analytics platforms, log analytics, and real-time dashboards at scale.
 
-**Best practice:** In production environments, pin extension versions, only use signed extensions, and audit community extensions before enabling them.
+Choose DuckDB when: single-user, local data, simplicity matters, data fits on one machine.
+Choose ClickHouse when: multi-user, continuous ingestion, high-concurrency queries, data spans multiple TB.
 
----
+They're complementary — many teams use DuckDB for exploration and development, then ClickHouse for production serving.
 
-### Q6: How does DuckDB compare to Pandas for data analysis?
+### Q: What are the practical limits of DuckDB's single-node architecture?
 
-**Answer:**
-
-| Aspect | DuckDB | Pandas |
-|--------|--------|--------|
-| **Query language** | SQL | Python DataFrame API |
-| **Performance (large data)** | 10--100x faster for aggregations on GB+ datasets | Slow; single-threaded, loads entire dataset into memory |
-| **Memory efficiency** | Columnar, compressed, streaming | Row-oriented, uncompressed, eager loading |
-| **Parallelism** | Automatic multi-core | Single-threaded (manual parallelism via multiprocessing) |
-| **Max practical data size** | 10--100+ GB (with spilling) | ~1-5 GB (limited by RAM) |
-| **Ease of use** | SQL (familiar to most analysts) | Python (flexible but verbose for complex joins/windows) |
-| **Integration** | Zero-copy with Pandas, Polars, Arrow | Native Python ecosystem |
-
-DuckDB and Pandas are complementary. A common pattern is using DuckDB for heavy lifting (joins, aggregations, filtering) and Pandas for final-mile operations (plotting, ML model input):
-
-```python
-import duckdb
-# Heavy computation in DuckDB (fast, parallel, memory-efficient)
-result = duckdb.sql("""
-    SELECT customer_id, SUM(amount), COUNT(*)
-    FROM 'large_dataset.parquet'
-    GROUP BY customer_id
-    HAVING COUNT(*) > 10
-""").fetchdf()  # Returns Pandas DataFrame
-
-# Visualization in Pandas/Matplotlib (works on the small result)
-result.plot(kind='bar', x='customer_id', y='sum(amount)')
-```
-
----
-
-### Q7: Can I use DuckDB in a web application backend?
-
-**Answer:** Yes, with caveats. DuckDB works well as an embedded analytics engine in web backends:
-
-**Good patterns:**
-- Read-only analytics endpoints where DuckDB queries pre-loaded Parquet/database files
-- Single-writer architectures where one background process ingests data and API servers open the database read-only
-- Per-request in-memory databases for stateless query processing
-
-**Anti-patterns to avoid:**
-- Using DuckDB as the primary transactional database for the web app (use PostgreSQL/MySQL instead)
-- Multiple API server processes writing to the same `.duckdb` file concurrently
-- Expecting high-concurrency transactional performance (DuckDB is optimized for fewer, heavier queries)
-
-**Example architecture:**
-
-```
-Data Ingestion Service (single writer)
-       |
-       | Writes to analytics.duckdb
-       v
-  analytics.duckdb (on shared filesystem)
-       |
-       | Read-only connections
-       v
-API Server 1  API Server 2  API Server 3
-(read-only)   (read-only)   (read-only)
-```
-
----
-
-### Q8: What are the hard limits of DuckDB?
-
-**Answer:**
-
-| Resource | Limit |
-|----------|-------|
-| **Maximum database size** | Limited by available disk space (single-file format) |
-| **Maximum in-memory data** | Limited by `memory_limit` setting (default 80% RAM) |
-| **Maximum columns per table** | ~100,000 columns (practical limit; no hard cap) |
-| **Maximum row group size** | ~122,880 rows per row group |
-| **Maximum string length** | ~4 GB per value (stored as BLOB internally) |
-| **Maximum query complexity** | Limited by `max_expression_depth` (default 1000) |
-| **Concurrent writers** | 1 per database file (per process) |
-| **Concurrent readers** | Unlimited (within practical resource limits) |
-| **Supported platforms** | Linux, macOS, Windows (x86_64, ARM64), WebAssembly |
-| **Extension count** | ~24 core + 100+ community (as of 2025) |
-
-In practice, DuckDB performs best on datasets that fit in memory (up to ~100-200 GB on modern machines). It can handle larger datasets via spilling, but performance degrades for workloads that are significantly larger than available RAM.
+Based on production deployments and benchmarks:
+- **Data size:** Comfortably handles up to ~100GB with good performance. Works up to ~500GB with adequate RAM and SSD. Beyond 1TB, consider distributed alternatives.
+- **Concurrent queries:** Handles 10–50 concurrent read queries well. Write concurrency is limited to one writer at a time.
+- **Query complexity:** The optimizer handles joins of up to ~20 tables efficiently (DPccp algorithm). Beyond that, it falls back to heuristic ordering.
+- **Column count:** No hard limit, but tables with 1000+ columns see diminished optimization effectiveness.
+- **String operations:** FSST compression helps, but heavy regex or LIKE operations on large string columns can be CPU-bound.

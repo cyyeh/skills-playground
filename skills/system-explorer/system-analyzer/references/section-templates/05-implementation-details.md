@@ -39,11 +39,56 @@ Self-contained template for the Implementation Details section. Level: **advance
      // source: path/to/file.ext:start-end
      // github: org/repo
      // tag: vX.Y.Z
-     [actual source code excerpt, 20-60 lines]
+     [actual source code excerpt, 20-60 lines per block]
      ```
 
+     For complex concepts that span more code, use MULTI-BLOCK SEQUENCES —
+     chain 2-4 blocks for a single concept with bridging commentary:
+
+     #### [Concept Name] — Phase 1: [Phase Description]
+     Explain what this phase does and what to look for...
+
+     ```language
+     // source: path/to/file.ext:start-end
+     // github: org/repo
+     // tag: vX.Y.Z
+     [excerpt 1, 20-60 lines]
+     ```
+
+     #### [Concept Name] — Phase 2: [Phase Description]
+     How this connects to Phase 1...
+
+     ```language
+     // source: path/to/file.ext:start-end
+     // github: org/repo
+     // tag: vX.Y.Z
+     [excerpt 2, 20-60 lines]
+     ```
+
+     For large implementations where even multi-block sequences can't cover
+     everything, use the FOCUS + CONTEXT pattern — show the critical excerpt
+     in full and summarize the surrounding code in prose:
+
+     The full `ClassName.method()` is ~200 lines (file.ext:340-540).
+     The core logic is in the following section:
+
+     ```language
+     // source: path/to/file.ext:410-455
+     // github: org/repo
+     // tag: vX.Y.Z
+     [key excerpt, 20-60 lines]
+     ```
+
+     Lines 340-409 handle [brief summary of preceding code].
+     Lines 456-540 handle [brief summary of following code].
+
+     > Full implementation: [file.ext:340-540](https://github.com/org/repo/blob/tag/path/to/file.ext#L340-L540)
+
      Guidelines:
-     - Aim for 5-8 annotated source blocks covering the most important concepts
+     - Aim for 5-12 annotated source blocks covering the most important concepts
+     - Keep each individual block at 20-60 lines for readability (one screenful)
+     - Use multi-block sequences (2-4 blocks) for concepts that span more code
+     - Use the focus + context pattern for very large implementations (100+ lines)
      - Each block MUST have // source:, // github:, and // tag: annotations
      - Prefer code that reveals design decisions over boilerplate
      - Include brief commentary before each block explaining what to look for

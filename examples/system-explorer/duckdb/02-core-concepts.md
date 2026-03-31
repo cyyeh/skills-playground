@@ -1,67 +1,59 @@
 ## Core Concepts
-
 <!-- level: beginner -->
-
 <!-- references:
-- https://duckdb.org/docs/stable/internals/vector
-- https://duckdb.org/docs/stable/internals/overview
-- https://duckdb.org/why_duckdb
-- https://duckdb.org/docs/stable/extensions/overview
-- https://endjin.com/blog/2025/04/duckdb-in-depth-how-it-works-what-makes-it-fast
+- [DuckDB Internals Overview](https://duckdb.org/docs/current/internals/overview.html) | official-docs
+- [DuckDB In Depth: How It Works and What Makes It Fast](https://endjin.com/blog/2025/04/duckdb-in-depth-how-it-works-what-makes-it-fast) | blog
+- [Morsel-Driven Parallelism Paper](https://db.in.tum.de/~leis/papers/morsels.pdf) | paper
 -->
 
-### 1. Columnar Storage
+### Columnar Storage
 
-[Columnar storage](https://en.wikipedia.org/wiki/Column-oriented_DBMS) means data is organized by column rather than by row. When a query asks "what is the average salary?", DuckDB reads only the salary column and skips everything else.
+**Definition:** DuckDB stores data by column rather than by row. Instead of keeping each row's fields together on disk, it groups all values of a single column contiguously.
 
-**Analogy:** Think of a library. A row-based database is like a library where each book contains one person's entire life story -- to find everyone's birthday, you'd need to open every single book. A columnar database is like having separate filing cabinets for "birthdays," "addresses," and "names" -- to find all birthdays, you open just one cabinet and scan through it. This is dramatically faster when you only need a few fields from millions of records.
+**Analogy:** Imagine a library that organizes books not by title on shelves, but by chapter number — all Chapter 1s together, all Chapter 2s together. If you only need to read Chapter 3 from every book, you go straight to one section instead of pulling every book off the shelf. That's what columnar storage does for analytical queries that only touch a few columns out of many.
 
-**Why it matters:** Analytical queries typically scan many rows but only a few columns (e.g., `SELECT AVG(price) FROM sales`). Columnar layout means DuckDB reads orders of magnitude less data from disk and memory, and the contiguous column data compresses extremely well.
+**Why it matters:** Analytical queries typically scan millions of rows but only access a handful of columns (`SELECT AVG(price) FROM sales`). Columnar storage means DuckDB reads only the columns you need, skipping everything else. It also compresses dramatically better because similar values (all integers, all dates) are stored together.
 
-### 2. Vectorized Execution
+### Vectorized Execution
 
-[Vectorized execution](https://duckdb.org/docs/stable/internals/vector) processes data in batches (called "vectors") of up to 2048 values at a time, rather than one row at a time. Each operator in the query plan works on an entire vector before passing results to the next operator.
+**Definition:** Instead of processing data one row at a time (like traditional databases) or one entire column at a time, DuckDB processes data in small batches called "vectors" — typically [2048 values](https://duckdb.org/docs/current/internals/vector.html) at once.
 
-**Analogy:** Imagine a factory assembly line. Row-at-a-time processing is like a worker picking up one widget, carrying it through every station, and then going back for the next one. Vectorized execution is like loading a tray of 2048 widgets and running the entire tray through each station at once. The tray is sized to fit perfectly on the workbench (CPU L1 cache), so the worker never has to leave their station to fetch parts.
+**Analogy:** Think of a factory assembly line. Processing one widget at a time (row-by-row) wastes time switching between stations. Processing all widgets at once (full column) overwhelms the workbench. DuckDB processes a tray of 2048 widgets at a time — small enough to fit on the workbench (CPU cache), large enough to keep the assembly line humming.
 
-**Why it matters:** Vectorized processing keeps data in CPU caches (the L1 cache is typically 32--128 KB), reduces per-row function call overhead by ~2000x, and enables the compiler to automatically generate [SIMD](https://en.wikipedia.org/wiki/SIMD) instructions that process multiple values in a single CPU cycle.
+**Why it matters:** Modern CPUs have small, ultra-fast memory caches (L1/L2). A vector of 2048 values fits neatly in these caches, so the CPU can process the entire batch without waiting for slower main memory. The compiler can also auto-vectorize these tight loops into SIMD instructions, processing multiple values in a single CPU cycle.
 
-### 3. In-Process Architecture
+### DataChunk
 
-DuckDB runs as a library embedded directly in your application process. There is no separate database server, no network communication, and no client-server protocol. You link DuckDB into your Python, R, Java, or C++ program and call it like a function.
+**Definition:** A `DataChunk` is DuckDB's fundamental unit of data in the execution engine — a collection of vectors (one per column) that all have the same number of rows. It's the "tray" that moves through the query pipeline.
 
-**Analogy:** Traditional database servers are like a restaurant -- you (the client) sit at a table, send orders (queries) to the kitchen (server) over a waiter (network), and wait for food (results) to come back. DuckDB is like having a professional chef living in your house -- you speak directly to them, there is no waiter, no wait time, and no restaurant overhead. The tradeoff is that only people in your house (your process) can eat.
+**Analogy:** If the execution engine is a kitchen, a DataChunk is a serving tray carrying multiple dishes (columns) with the same number of portions (rows). Operators in the pipeline take a tray in, transform the dishes, and pass the tray along.
 
-**Why it matters:** Eliminating the network layer removes serialization/deserialization overhead and enables zero-copy data sharing with host applications. A Python program can pass a Pandas DataFrame to DuckDB and get results back without any data copying.
+**Why it matters:** The DataChunk is the interface between every operator in the query pipeline. Every scan, filter, join, and aggregation works by receiving DataChunks, transforming them, and passing them forward. This uniform interface keeps the engine modular and cache-friendly.
 
-### 4. Catalog
+### Pipeline (Push-Based Execution)
 
-The [catalog](https://duckdb.org/docs/stable/sql/information_schema) is DuckDB's metadata registry. It tracks schemas, tables, views, functions, types, and extensions. When you write `SELECT * FROM sales`, the catalog resolves "sales" to a specific table with known columns and types.
+**Definition:** DuckDB uses a [push-based execution model](https://duckdb.org/docs/current/internals/overview.html) where data flows from source operators through intermediate operators to sink operators. A source pushes DataChunks downstream rather than a sink pulling them.
 
-**Analogy:** The catalog is like a library's card catalog or index system. Before you can find a book (table), you look it up in the catalog to discover where it is, what it contains, and how it is organized. Without the catalog, the database would not know what tables exist or what types their columns have.
+**Analogy:** Picture a series of conveyor belts in a factory. The raw material station (source) pushes parts onto the belt. Each station along the belt (filter, transform) modifies the parts as they pass by. At the end, the packaging station (sink) collects the finished products. The belts keep moving — no station needs to ask for work.
 
-**Why it matters:** The binder stage of query processing consults the catalog to resolve table names, verify column existence, determine data types, and check permissions. The catalog also manages extensions and user-defined functions.
+**Why it matters:** Push-based execution enables morsel-driven parallelism. Multiple worker threads can each take a "morsel" (a chunk of input data) from the source and push it through the pipeline independently. This scales linearly with CPU cores without requiring explicit parallel programming.
 
-### 5. SQL Dialect
+### Zone Maps (Min-Max Indexes)
 
-DuckDB implements a rich, PostgreSQL-compatible [SQL dialect](https://duckdb.org/docs/stable/sql/introduction) with modern extensions. It supports standard SQL features like window functions, CTEs (WITH clauses), UNNEST, PIVOT/UNPIVOT, recursive queries, and advanced aggregation (GROUPING SETS, CUBE, ROLLUP). It also includes convenience features like `SELECT * EXCLUDE (column)`, `COLUMNS(regex)` expressions, and friendly syntax for common operations.
+**Definition:** For every column in every row group, DuckDB automatically tracks the minimum and maximum values. These metadata statistics are called zone maps.
 
-**Analogy:** If SQL dialects were spoken languages, PostgreSQL SQL would be like formal English, MySQL would be like American English with some slang, and DuckDB would be like a polyglot who speaks formal English fluently but also knows useful shortcuts from other languages. You can write standard SQL and it works, but DuckDB also understands convenient shorthand that saves you typing.
+**Analogy:** Imagine each box in a warehouse has a label saying "contains items priced $5–$20." If you're looking for items over $50, you can skip that entire box without opening it. Zone maps let DuckDB skip entire row groups that can't possibly contain matching data.
 
-**Why it matters:** DuckDB's parser is derived from PostgreSQL's parser, giving it robust SQL compatibility. The friendly extensions (like `FROM table_name` without SELECT, or auto-completing column names) make interactive data exploration faster and less error-prone.
+**Why it matters:** Zone maps provide free query acceleration for filtered scans. A query like `WHERE date > '2025-01-01'` on a time-ordered dataset can skip most row groups by just checking the min/max metadata — potentially eliminating 99% of I/O before reading a single data value.
 
-### 6. Extensions
+### Row Groups
 
-[Extensions](https://duckdb.org/docs/stable/extensions/overview) are loadable modules that add new functionality to DuckDB without bloating the core binary. They can add new data types, file formats (Parquet, JSON, Excel), network protocols (HTTP, S3), functions, or entire storage backends (Iceberg, Delta Lake).
+**Definition:** DuckDB organizes table data into row groups — horizontal partitions of roughly 122,880 rows each. Each row group stores its columns independently with separate compression, statistics, and zone maps.
 
-**Analogy:** Extensions are like apps on a smartphone. The phone (DuckDB core) comes with essential capabilities out of the box, but you can install apps (extensions) to add new abilities -- a map app (spatial extension), a translator (ICU for Unicode collation), or a cloud storage app (httpfs for reading from S3). You only install what you need, keeping the base installation lean.
+**Analogy:** Think of a filing cabinet where each drawer (row group) holds about 120K records. Each drawer has its own index card on the front (zone maps) telling you the date range inside. You only open drawers that might have what you need, and within each drawer, you only pull the specific file folders (columns) you care about.
 
-**Why it matters:** DuckDB ships with ~24 core extensions and has over 100 community extensions as of 2025. Key extensions include `parquet` (columnar file format), `httpfs` (remote file access), `json` (JSON processing), `spatial` (GIS operations), `iceberg` (Apache Iceberg table support), and `postgres_scanner` (reading from live PostgreSQL databases).
+**Why it matters:** Row groups are the unit of parallelism and I/O. Different threads can process different row groups concurrently. The size is chosen to balance between parallelism granularity and metadata overhead — large enough to amortize per-group costs, small enough to enable effective pruning and parallel scanning.
 
-### 7. Parallel Execution
+### How They Fit Together
 
-DuckDB uses [morsel-driven parallelism](https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf) to distribute work across all available CPU cores. Data is divided into "morsels" (chunks), and multiple threads process different morsels through the same pipeline simultaneously. Operators like hash joins and aggregations are designed to be parallelism-aware with thread-local state that gets merged at the end.
-
-**Analogy:** Imagine a team sorting a mountain of mail. Instead of one person sorting all letters sequentially, you divide the mail into piles (morsels) and give each team member (thread) their own pile. Each person sorts independently using their own sorting bins (thread-local state). At the end, you merge everyone's sorted bins into the final result. The key insight is that each person works independently without waiting for others, maximizing throughput.
-
-**Why it matters:** Modern machines have many CPU cores. DuckDB's parallelism model scales nearly linearly with core count for most analytical queries, turning a 10-second single-threaded query into a 1-second query on a 10-core machine. The morsel-driven approach avoids the overhead of traditional exchange-based parallelism used by server databases.
+When you execute a SQL query, DuckDB's parser converts it to an abstract syntax tree, which the binder resolves against the catalog. The optimizer transforms the logical plan through 30+ optimization passes (including filter pushdown and join reordering). The physical planner then arranges operators into pipelines. During execution, the source operator scans row groups, checking zone maps to skip irrelevant data. It pushes DataChunks (vectors of 2048 values per column) through intermediate operators. Multiple threads run the same pipeline on different row groups simultaneously (morsel-driven parallelism), and the sink operator collects and combines results. The columnar layout ensures only needed columns are read, vectorized execution keeps data in CPU cache, and the push-based pipeline model distributes work across all available cores.

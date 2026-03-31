@@ -1,40 +1,23 @@
 ## Overview
-
 <!-- level: beginner -->
-
 <!-- references:
-- https://duckdb.org/why_duckdb
-- https://duckdb.org/docs/stable/internals/overview
-- https://github.com/duckdb/duckdb
-- https://www.cidrdb.org/cidr2024/papers/p46-atwal.pdf
+- [DuckDB Official Documentation](https://duckdb.org/docs/) | official-docs
+- [DuckDB: An In-Process OLAP Database (SIGMOD 2019)](https://ir.cwi.nl/pub/28549) | paper
+- [What Is DuckDB? Introduction, Use Cases & Architecture](https://motherduck.com/duckdb-book-summary-chapter1/) | blog
 -->
 
-### What Is DuckDB?
+DuckDB is an in-process analytical database management system designed to make running complex analytical queries on local data as simple as importing a library. Think of it as "SQLite for analytics" — where SQLite excels at transactional workloads (reading and writing individual records), DuckDB is purpose-built for analytical workloads (scanning and aggregating large volumes of data).
 
-[DuckDB](https://duckdb.org) is an in-process analytical database management system (DBMS) designed for fast Online Analytical Processing ([OLAP](https://en.wikipedia.org/wiki/Online_analytical_processing)) workloads. It runs embedded inside your application -- no separate server process, no network configuration, no database administrator needed. You can think of it as **"SQLite for analytics"**: just as [SQLite](https://sqlite.org) made transactional databases effortlessly embeddable, DuckDB does the same for analytical queries over large datasets.
+Created at [CWI Amsterdam](https://www.cwi.nl/) by Mark Raasveldt and Hannes Mühleisen, DuckDB was born from the frustration of researchers who needed to run analytical queries on datasets without the overhead of setting up and maintaining a database server. The result is a database that runs inside your application's process — no server, no configuration, no dependencies — yet delivers performance that rivals dedicated analytical database servers.
 
-**One-sentence pitch:** DuckDB lets you run complex analytical SQL queries on gigabytes of data from CSV, Parquet, or JSON files directly from your Python script, R notebook, or command line -- with zero infrastructure setup and performance that rivals dedicated data warehouses.
+### What It Is
 
-### Real-World Analogy
+DuckDB is an embedded columnar database engine — like having a personal data warehouse that lives inside your Python script, R session, or application binary. You `pip install duckdb`, write a SQL query against a Parquet file, and get results in seconds — no server, no ETL pipeline, no cloud account required.
 
-Imagine you need to analyze sales data. The traditional approach is like renting a commercial kitchen (setting up a database server like PostgreSQL or deploying a cloud data warehouse) -- powerful but expensive and complex. SQLite is like a toaster oven -- great for small, simple meals (transactions) but struggles with a banquet (analytics). DuckDB is like a high-end home kitchen appliance -- it sits on your countertop (runs in your process), requires no installation crew (no server), and can handle a full dinner party (millions to billions of rows) with professional-grade performance.
+### Who It's For
 
-### Who Is DuckDB For?
+DuckDB is built for data analysts, data scientists, and data engineers who work with datasets ranging from megabytes to hundreds of gigabytes. It's ideal for anyone who currently loads CSV files into pandas, runs SQL against SQLite for analytics, or spins up a database server just to crunch numbers. It's also increasingly used in production for embedded analytics, data pipelines, and browser-based data applications via WebAssembly.
 
-- **Data scientists and analysts** who want to query large local datasets with SQL without spinning up infrastructure
-- **Data engineers** who need a fast, lightweight engine for ETL pipelines, data transformation, and testing
-- **Application developers** who want to embed analytical query capabilities directly into their applications
-- **Researchers** who need reproducible, portable data analysis without cloud dependencies
-- **Anyone** who works with CSV, Parquet, JSON, or other data files and wants to use SQL on them immediately
+### The One-Sentence Pitch
 
-### Key Characteristics
-
-| Characteristic | Description |
-|---|---|
-| **In-Process** | Runs within your application process -- no client/server protocol overhead |
-| **Columnar Storage** | Stores data by column rather than by row, optimized for analytical queries that touch few columns but many rows |
-| **Vectorized Execution** | Processes data in batches of ~2048 values at a time, maximizing CPU cache efficiency |
-| **Zero Dependencies** | Single binary or library with no external dependencies |
-| **Feature-Rich SQL** | Supports window functions, CTEs, complex joins, nested types, and a rich set of SQL extensions |
-| **Multi-Format Ingestion** | Reads CSV, Parquet, JSON, Arrow, Excel, and more -- directly, without importing first |
-| **Free and Open Source** | MIT licensed, fully open source at [github.com/duckdb/duckdb](https://github.com/duckdb/duckdb) |
+DuckDB gives you the analytical power of a columnar data warehouse in a zero-dependency embeddable library that runs anywhere — from a Jupyter notebook to a web browser.

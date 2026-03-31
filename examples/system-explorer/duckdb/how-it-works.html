@@ -7,202 +7,555 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- page-context:
-    system: "DuckDB"
-    description: "an in-process analytical database for fast OLAP workloads"
-    page: "How It Works"
-    level: "Intermediate"
-  -->
+  <!-- page-context: system:"DuckDB" page:"How It Works" level:"Intermediate" -->
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;--stagger-delay:120ms}
-    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}
-    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--stagger-delay:120ms}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
     ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent-hover);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
+    code{font-family:var(--font-mono);font-size:var(--text-sm);background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px}
+
+    /* Nav */
     .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}
     .nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}
     .nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}
     .nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}
     .nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}
-    .nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}
-    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}
-    .page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
+    .nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}
+    .nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent-hover);background:var(--color-accent-light);font-weight:600}
+    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}
+    .nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+    /* Page Header */
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}
+    .page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
     .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
-    .page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}
-    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
-    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}
+    .page-level-badge.intermediate{background:var(--color-accent-light);color:var(--color-accent-hover)}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}
+    .copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}
+    .copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+
+    /* Content */
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}
+    .content-section{margin-bottom:var(--space-10)}
     .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}
-    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:0 0 var(--space-3)}
+    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:var(--space-6) 0 var(--space-3)}
     .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
-    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
-    /* Vector format table */
-    .fmt-table{width:100%;border-collapse:collapse;margin:var(--space-4) 0;font-size:var(--text-sm)}
-    .fmt-table th{font-family:var(--font-display);font-weight:600;text-align:left;padding:var(--space-3) var(--space-4);border-bottom:2px solid var(--color-border);color:var(--color-text)}
-    .fmt-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light);color:var(--color-text-secondary)}
-    .fmt-table td:first-child{font-weight:600;color:var(--color-text);font-family:var(--font-mono);font-size:var(--text-xs)}
-    /* Compression table */
-    .comp-table{width:100%;border-collapse:collapse;margin:var(--space-4) 0;font-size:var(--text-sm)}
-    .comp-table th{font-family:var(--font-display);font-weight:600;text-align:left;padding:var(--space-3) var(--space-4);border-bottom:2px solid var(--color-border)}
-    .comp-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light);color:var(--color-text-secondary)}
-    .comp-table td:first-child{font-weight:600;color:var(--color-text);font-family:var(--font-mono);font-size:var(--text-xs)}
-    /* Perf gauges */
-    .perf-gauges{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0}
-    .perf-title{font-family:var(--font-display);font-weight:700;margin:0 0 var(--space-5)}
-    .perf-gauge{margin-bottom:var(--space-4)}
-    .perf-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--space-1)}
-    .perf-name{font-family:var(--font-display);font-weight:600;font-size:var(--text-sm)}
-    .perf-value{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
-    .perf-bar{height:10px;background:var(--color-border-light);border-radius:var(--radius-full);overflow:hidden}
-    .perf-fill{height:100%;border-radius:var(--radius-full);width:0;transition:width 1s var(--ease-out)}
-    .perf-green{background:var(--color-success)}.perf-yellow{background:var(--color-warning)}.perf-red{background:var(--color-error)}
-    .perf-note{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-1);display:block}
-    /* Code block */
-    .code-block{background:var(--color-bg-code);border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md)}
-    .code-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244}
-    .code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:0.05em}
-    .code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1}
-    .code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4}
-    .code-keyword{color:#CBA6F7}.code-string{color:#F9E2AF}.code-comment{color:#6C7086;font-style:italic}.code-function{color:#A6E3A1}.code-number{color:#FAB387}.code-variable{color:#89B4FA}
+    .content-section ul,.content-section ol{font-family:var(--font-body);font-size:var(--text-base);line-height:1.7;color:var(--color-text);padding-left:var(--space-6);margin:0 0 var(--space-4)}
+    .content-section li{margin-bottom:var(--space-2)}
+
+    /* Flow Diagram */
+    .flow-diagram{margin:var(--space-8) 0;padding:var(--space-6);background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+    .flow-diagram-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);margin-bottom:var(--space-5);color:var(--color-text)}
+    .pipeline-group{margin-bottom:var(--space-5);padding:var(--space-4);background:var(--color-surface-warm);border-radius:var(--radius-md);border-left:3px solid var(--pipeline-color,var(--color-accent))}
+    .pipeline-group:last-child{margin-bottom:0}
+    .pipeline-label{font-family:var(--font-display);font-weight:600;font-size:var(--text-sm);color:var(--pipeline-color,var(--color-accent));margin-bottom:var(--space-3);text-transform:uppercase;letter-spacing:0.04em}
+    .pipeline-steps{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap}
+    .pipeline-node{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:var(--text-sm);font-weight:500;white-space:nowrap;opacity:0;transform:translateX(-8px);transition:opacity var(--duration-normal) var(--ease-out),transform var(--duration-normal) var(--ease-out)}
+    .pipeline-node.visible{opacity:1;transform:translateX(0)}
+    .pipeline-node.source{background:#E4F2F7;color:#2A7B9B;border:1px solid #B3D9E8}
+    .pipeline-node.operator{background:var(--color-accent-light);color:var(--color-accent-hover);border:1px solid var(--color-accent-muted)}
+    .pipeline-node.sink{background:#E8F5EE;color:#2D8B55;border:1px solid #A3D4B5}
+    .pipeline-arrow{color:var(--color-text-muted);font-size:var(--text-lg);flex-shrink:0;opacity:0;transition:opacity var(--duration-normal)}
+    .pipeline-arrow.visible{opacity:1}
+    .pipeline-note{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2);font-style:italic}
+
+    /* Concept Cards */
+    .concept-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:var(--space-4);margin:var(--space-6) 0}
+    .concept-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-top:3px solid var(--card-color,var(--color-accent));box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
+    .concept-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .card-icon{font-size:1.5rem;margin-bottom:var(--space-2)}
+    .card-title{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-2);color:var(--color-text)}
+    .card-desc{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal)}
+
     /* Callout */
     .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}
-    .callout-insight{background:#F3EFF8;border-color:#7B6DAA}.callout-tip{background:var(--color-success-light);border-color:var(--color-success)}.callout-info{background:var(--color-info-light);border-color:var(--color-info)}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}
-    .callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}.callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px}
+    .callout-insight{background:#F3EFF8;border-color:#7B6DAA}
+    .callout-tip{background:var(--color-success-light);border-color:var(--color-success)}
+    .callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}
+    .callout-info{background:var(--color-info-light);border-color:var(--color-info)}
+    .callout-icon{font-size:1.3rem;flex-shrink:0}
+    .callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}
+    .callout-content strong{color:var(--color-text)}
+
+    /* Glossary */
     .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}
-    .glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
+    .glossary-tooltip{position:fixed;background:var(--color-bg-code);color:#CDD6F4;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
+
+    /* Perf Gauges */
+    .perf-gauges{display:grid;grid-template-columns:1fr;gap:var(--space-4);margin:var(--space-6) 0}
+    .perf-gauge{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);box-shadow:var(--shadow-sm)}
+    .perf-gauge-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--space-2)}
+    .perf-gauge-label{font-family:var(--font-display);font-size:var(--text-sm);font-weight:600;color:var(--color-text)}
+    .perf-gauge-rating{font-family:var(--font-mono);font-size:var(--text-xs);font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+    .perf-gauge-bar{height:10px;background:var(--color-border-light);border-radius:var(--radius-full);overflow:hidden;margin-bottom:var(--space-1)}
+    .perf-gauge-fill{height:100%;border-radius:var(--radius-full);width:0;transition:width 1s var(--ease-out)}
+    .perf-gauge-note{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.5}
+
+    /* Vector type list */
+    .vector-types{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-3);margin:var(--space-4) 0}
+    .vector-type{background:var(--color-surface);border-radius:var(--radius-sm);padding:var(--space-3) var(--space-4);border-left:3px solid var(--vt-color,var(--color-accent));box-shadow:var(--shadow-sm)}
+    .vector-type strong{font-family:var(--font-display);font-size:var(--text-sm);display:block;margin-bottom:var(--space-1)}
+    .vector-type span{font-size:var(--text-xs);color:var(--color-text-secondary);line-height:1.5}
+
+    /* References */
     .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}
     .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
     .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
-    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
-    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
-    a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
+    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}
+    .reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
+    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}
+    .reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}
+    .reference-title a{color:var(--color-accent-hover);text-decoration:none}.reference-title a:hover{text-decoration:underline}
+    .reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+
+    /* Page Nav Footer */
     .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
-    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s ease}.page-nav-footer a:hover{color:var(--color-accent-hover)}
+    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent-hover);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s}
+    .page-nav-footer a:hover{color:var(--color-accent)}
     .page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+
+    /* Site Footer */
     .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+
+    /* Animations */
     .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
-    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.nav-page-link{font-size:var(--text-xs);padding:var(--space-1) var(--space-2)}.fmt-table,.comp-table{font-size:var(--text-xs)}}
-    @media(max-width:480px){:root{--nav-height:52px}.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+
+    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.concept-cards{grid-template-columns:1fr}.vector-types{grid-template-columns:1fr}.pipeline-steps{flex-direction:column;align-items:flex-start}.pipeline-arrow{transform:rotate(90deg);margin:var(--space-1) 0 var(--space-1) var(--space-4)}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.page-header h1{font-size:var(--text-2xl)}}
     @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}}
   </style>
 </head>
 <body>
-  <nav class="site-nav"><div class="nav-progress-bar" role="progressbar"></div><div class="nav-inner"><a href="index.html" class="nav-brand">DuckDB</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link active">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">Q&amp;A</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+  <nav class="site-nav">
+    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">DuckDB</a>
+      <div class="nav-pages" id="navPages">
+        <a href="index.html" class="nav-page-link">Home</a>
+        <a href="concepts.html" class="nav-page-link">Concepts</a>
+        <a href="architecture.html" class="nav-page-link">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link active">How It Works</a>
+        <a href="implementation.html" class="nav-page-link">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link">FAQ</a>
+        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
 
-  <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge intermediate">Intermediate</span><h1>How It Works</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+  <header class="page-header animate-in">
+    <div class="page-header-content">
+      <span class="page-level-badge intermediate">Intermediate</span>
+      <h1>How It Works</h1>
+    </div>
+    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()">
+      <span class="btn-icon">&#x1F4CB;</span>
+      <span class="btn-label">Copy as Markdown</span>
+    </button>
+  </header>
 
   <main class="content-area">
+
+    <!-- Section 1: Vectorized Query Processing -->
     <section class="content-section animate-in" data-level="intermediate">
-      <h2>Vectorized Execution Engine</h2>
-      <p>Unlike traditional row-at-a-time engines (the <span class="glossary-term" data-definition="The Volcano model (or iterator model) is a query processing approach where each operator implements a GetNext() method that returns one row at a time. Used by PostgreSQL, MySQL, and most traditional databases. Simple but slow due to per-row function call overhead.">Volcano/iterator model</span>), DuckDB processes data in vectors -- arrays of up to 2048 values per column.</p>
-      <p>A <span class="glossary-term" data-definition="A typed array holding values for a single column. The fundamental unit of data in DuckDB's execution engine. Multiple Vectors form a DataChunk.">Vector</span> is a typed array for a single column. A <span class="glossary-term" data-definition="A collection of Vectors representing multiple columns -- essentially a small columnar table of up to 2048 rows. The unit of data passed between operators in the execution pipeline.">DataChunk</span> is a collection of Vectors -- essentially a small columnar table of up to 2048 rows.</p>
-
-      <h3>Vector Formats</h3>
-      <p>DuckDB supports multiple physical representations for the same logical data, enabling "compressed execution" -- operations performed directly on compressed data.</p>
-      <table class="fmt-table">
-        <thead><tr><th>Format</th><th>Description</th><th>Use Case</th></tr></thead>
-        <tbody>
-          <tr><td>FLAT</td><td>Standard contiguous array</td><td>Default general-purpose format</td></tr>
-          <tr><td>CONSTANT</td><td>Single value for all elements</td><td>Literal values, broadcast operations</td></tr>
-          <tr><td>DICTIONARY</td><td>Index array + dictionary</td><td>Low-cardinality string columns</td></tr>
-          <tr><td>SEQUENCE</td><td>Start + increment (no array)</td><td>Row IDs, generated sequences</td></tr>
-          <tr><td>FSST</td><td>Fast Static Symbol Table compressed</td><td>Compressed string data</td></tr>
-        </tbody>
-      </table>
-
-      <div class="perf-gauges" id="perf-1">
-        <h3 class="perf-title">Vectorized Execution Performance</h3>
-        <div class="perf-gauge"><div class="perf-label"><span class="perf-name">Throughput per Core</span><span class="perf-value">1-10 GB/s</span></div><div class="perf-bar"><div class="perf-fill perf-green" data-width="90"></div></div><span class="perf-note">On modern hardware for analytical queries</span></div>
-        <div class="perf-gauge"><div class="perf-label"><span class="perf-name">Vector Processing Overhead</span><span class="perf-value">~0.5 ns/value</span></div><div class="perf-bar"><div class="perf-fill perf-green" data-width="95"></div></div><span class="perf-note">vs ~50 ns for row-at-a-time (100x improvement)</span></div>
-        <div class="perf-gauge"><div class="perf-label"><span class="perf-name">L1 Cache Hit Rate</span><span class="perf-value">&gt;95%</span></div><div class="perf-bar"><div class="perf-fill perf-green" data-width="95"></div></div><span class="perf-note">vs ~60-70% for row-based engines on analytical queries</span></div>
-        <div class="perf-gauge"><div class="perf-label"><span class="perf-name">Function Call Reduction</span><span class="perf-value">~2000x</span></div><div class="perf-bar"><div class="perf-fill perf-green" data-width="98"></div></div><span class="perf-note">2048 values per call vs 1 value per call</span></div>
-      </div>
-    </section>
-
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>Morsel-Driven Parallelism</h2>
-      <p>DuckDB parallelizes query execution using <span class="glossary-term" data-definition="A parallelism technique where each operator is made parallelism-aware (maintaining thread-local state) rather than using generic exchange/partition operators. Work is distributed as morsels (data chunks) to threads dynamically.">morsel-driven parallelism</span>. The physical plan is split into pipelines at pipeline breaker points, and data chunks (morsels) are distributed to worker threads dynamically.</p>
+      <h2>Vectorized Query Processing</h2>
+      <p>DuckDB's execution engine processes data in vectors of <code>STANDARD_VECTOR_SIZE</code> (2048) values. Every operator in the pipeline receives a <strong>DataChunk</strong> &mdash; a collection of <code>Vector</code> objects, one per column &mdash; and produces a transformed DataChunk as output.</p>
+      <p>Each Vector stores its data in a flat array optimized for CPU cache access. When the engine executes a filter like <code>WHERE price &gt; 100</code>, it doesn't check one row at a time. Instead, it runs a tight loop comparing 2048 price values against 100 in a single batch. Modern compilers auto-vectorize these loops into <span class="glossary-term" data-definition="Single Instruction, Multiple Data. CPU instructions that perform the same operation on multiple data points simultaneously (e.g., SSE processes 4 floats, AVX processes 8 floats per cycle).">SIMD</span> instructions (SSE, AVX), processing 4&ndash;8 comparisons per CPU cycle.</p>
 
       <div class="callout callout-insight">
         <div class="callout-icon">&#x1F52D;</div>
         <div class="callout-content">
-          <strong>Why not exchange-based parallelism?</strong> Traditional databases use exchange operators that partition data between workers at fixed points. This leads to skewed workloads, adds overhead even for non-parallel plans, and makes it difficult to adapt parallelism dynamically. Morsel-driven parallelism avoids these issues by distributing work like a work-stealing scheduler.
+          <strong>Why 2048 values?</strong> 2048 values of 8 bytes each = 16KB, which fits comfortably in <span class="glossary-term" data-definition="Level 1 cache. The smallest and fastest CPU cache, typically 32-64KB per core. Data in L1 is accessed in ~1 nanosecond, compared to ~100ns for main memory.">L1 cache</span> (typically 32&ndash;64KB per core). This means the CPU processes the entire vector without cache misses, achieving near-theoretical throughput.
+        </div>
+      </div>
+
+      <h3>Vector Representations</h3>
+      <p>DuckDB uses multiple vector representations to avoid unnecessary data copying:</p>
+      <div class="vector-types">
+        <div class="vector-type" style="--vt-color:#2A7B9B">
+          <strong>Flat Vectors</strong>
+          <span>Contiguous arrays &mdash; the most common and fastest format for computation</span>
+        </div>
+        <div class="vector-type" style="--vt-color:#D4A843">
+          <strong>Constant Vectors</strong>
+          <span>A single value repeated for all rows (e.g., the literal <code>100</code> in <code>price &gt; 100</code>)</span>
+        </div>
+        <div class="vector-type" style="--vt-color:#2D8B55">
+          <strong>Dictionary Vectors</strong>
+          <span>Indices into a dictionary of unique values, used for compressed string data</span>
+        </div>
+        <div class="vector-type" style="--vt-color:#7B6DAA">
+          <strong>Sequence Vectors</strong>
+          <span>Arithmetically generated sequences (e.g., <code>rowid</code>) without materializing values</span>
         </div>
       </div>
     </section>
 
+    <!-- Section 2: Push-Based Pipeline Execution -->
     <section class="content-section animate-in" data-level="intermediate">
-      <h2>Buffer Manager</h2>
-      <p>The <span class="glossary-term" data-definition="The component responsible for all memory management in DuckDB. Maintains a unified pool for both persistent data pages and temporary intermediate results (hash tables, sort buffers).">buffer manager</span> maintains a unified pool of memory for both persistent data pages and temporary data. Default memory limit: 80% of physical RAM.</p>
+      <h2>Push-Based Pipeline Execution</h2>
+      <p>DuckDB's executor arranges physical operators into <strong>pipelines</strong> &mdash; chains of operators that process data without materializing intermediate results. Each pipeline has:</p>
+      <ul>
+        <li>A <strong>source</strong> that produces DataChunks (e.g., a table scan)</li>
+        <li>Zero or more <strong>intermediate operators</strong> that transform DataChunks in-place (e.g., filter, projection)</li>
+        <li>A <strong>sink</strong> that consumes DataChunks and builds state (e.g., hash table for aggregation, sort buffer for ORDER BY)</li>
+      </ul>
+      <p>Pipeline <strong>breaks</strong> occur at operators that must see all input before producing output &mdash; hash joins (build side), aggregations, sorts, and window functions. These operators become the sink of one pipeline and the source of the next.</p>
 
-      <h3>Larger-Than-Memory Processing</h3>
-      <p>DuckDB handles datasets larger than available memory through three mechanisms:</p>
-      <div class="code-block">
-        <div class="code-header"><span class="code-lang">SQL</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-comment">-- Configure for larger-than-memory workloads</span>
-<span class="code-keyword">SET</span> memory_limit = <span class="code-string">'4GB'</span>;
-<span class="code-keyword">SET</span> temp_directory = <span class="code-string">'/tmp/duckdb_swap'</span>;
-<span class="code-keyword">SET</span> max_temp_directory_size = <span class="code-string">'100GB'</span>;</code></pre>
-      </div>
-      <div class="callout callout-warning">
-        <div class="callout-icon">&#x26A0;&#xFE0F;</div>
-        <div class="callout-content">
-          <strong>Warning:</strong> Spilling to disk is 10-100x slower than in-memory processing. DuckDB's larger-than-memory support targets occasional overflows, not routine processing of datasets far exceeding RAM.
+      <div class="flow-diagram animate-in" id="pipelineDiagram">
+        <div class="flow-diagram-title">Example: <code>SELECT region, SUM(amount) FROM sales WHERE year = 2025 GROUP BY region ORDER BY SUM(amount)</code></div>
+
+        <div class="pipeline-group" style="--pipeline-color:#2A7B9B">
+          <div class="pipeline-label">Pipeline 1 &mdash; Parallel Scan &amp; Aggregate</div>
+          <div class="pipeline-steps">
+            <span class="pipeline-node source" style="transition-delay:0.1s">TableScan</span>
+            <span class="pipeline-arrow" style="transition-delay:0.2s">&rarr;</span>
+            <span class="pipeline-node operator" style="transition-delay:0.3s">Filter (year=2025)</span>
+            <span class="pipeline-arrow" style="transition-delay:0.4s">&rarr;</span>
+            <span class="pipeline-node sink" style="transition-delay:0.5s">HashAggregate (build)</span>
+          </div>
+          <div class="pipeline-note">Each thread scans different row groups in parallel</div>
+        </div>
+
+        <div class="pipeline-group" style="--pipeline-color:#D4A843">
+          <div class="pipeline-label">Pipeline 2 &mdash; Sort Aggregated Results</div>
+          <div class="pipeline-steps">
+            <span class="pipeline-node source" style="transition-delay:0.6s">HashAggregate (scan)</span>
+            <span class="pipeline-arrow" style="transition-delay:0.7s">&rarr;</span>
+            <span class="pipeline-node sink" style="transition-delay:0.8s">Sort (build)</span>
+          </div>
+          <div class="pipeline-note">Reads aggregated results and sorts them by SUM(amount)</div>
+        </div>
+
+        <div class="pipeline-group" style="--pipeline-color:#2D8B55">
+          <div class="pipeline-label">Pipeline 3 &mdash; Output</div>
+          <div class="pipeline-steps">
+            <span class="pipeline-node source" style="transition-delay:0.9s">Sort (scan)</span>
+            <span class="pipeline-arrow" style="transition-delay:1.0s">&rarr;</span>
+            <span class="pipeline-node sink" style="transition-delay:1.1s">ResultCollector</span>
+          </div>
+          <div class="pipeline-note">Produces final ordered output to the client</div>
         </div>
       </div>
     </section>
 
+    <!-- Section 3: Morsel-Driven Parallelism -->
     <section class="content-section animate-in" data-level="intermediate">
-      <h2>Storage Format</h2>
-      <p>DuckDB uses a custom single-file storage format. Data is organized hierarchically into <span class="glossary-term" data-definition="A collection of column segments, typically containing ~122,880 rows. Row groups are the fundamental unit of parallel scanning -- each thread processes different row groups independently.">row groups</span> (default ~122K rows), with each column stored as compressed segments.</p>
-
-      <h3>Compression Algorithms</h3>
-      <p>Each column segment is compressed independently using the best algorithm for its data distribution. DuckDB achieves typical compression ratios of 3-10x.</p>
-      <table class="comp-table">
-        <thead><tr><th>Algorithm</th><th>Best For</th></tr></thead>
-        <tbody>
-          <tr><td>Constant</td><td>Columns where all values are the same</td></tr>
-          <tr><td>RLE</td><td>Sorted or clustered data with repeated runs</td></tr>
-          <tr><td>BitPacking</td><td>Integer columns with small value ranges</td></tr>
-          <tr><td>Dictionary</td><td>Low-cardinality string columns</td></tr>
-          <tr><td>FSST</td><td>High-cardinality string columns</td></tr>
-          <tr><td>ALP</td><td>Double-precision floating-point data</td></tr>
-        </tbody>
-      </table>
+      <h2>Morsel-Driven Parallelism</h2>
+      <p>DuckDB parallelizes query execution using the <a href="https://db.in.tum.de/~leis/papers/morsels.pdf" target="_blank" rel="noopener noreferrer">morsel-driven model</a> (SIGMOD 2014). Instead of partitioning data upfront or using exchange operators (like Spark), DuckDB uses a dynamic work-stealing approach:</p>
+      <ol>
+        <li>The source operator divides its input into <strong><span class="glossary-term" data-definition="A morsel is a chunk of row groups assigned to a worker thread. Morsels enable fine-grained dynamic work distribution without upfront data partitioning.">morsels</span></strong> (chunks of row groups)</li>
+        <li>Worker threads from the task scheduler each grab a morsel</li>
+        <li>Each thread pushes its morsel through the entire pipeline independently</li>
+        <li>Threads share the same sink state (e.g., a concurrent hash table) using thread-local partitions that are merged at the end</li>
+      </ol>
 
       <div class="callout callout-tip">
         <div class="callout-icon">&#x1F4A1;</div>
         <div class="callout-content">
-          <strong>Tip:</strong> DuckDB automatically selects the best compression algorithm per segment during checkpointing. You do not need to configure compression manually. The database file is typically 30-50% the size of raw data.
+          <strong>Why this scales linearly:</strong> No synchronization between threads during pipeline execution (each thread has its own pipeline executor state). Work is dynamically distributed &mdash; fast threads grab more morsels, naturally load-balancing. The task scheduler limits concurrency to available hardware threads, avoiding over-subscription.
+        </div>
+      </div>
+
+      <p>The <code>Pipeline::ScheduleParallel()</code> method checks that all operators in the chain support parallelism before enabling multi-threaded execution. If any operator requires ordered processing, the pipeline falls back to sequential execution.</p>
+    </section>
+
+    <!-- Section 4: Storage Engine -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Storage Engine</h2>
+      <p>DuckDB uses a custom single-file storage format designed for analytical access patterns.</p>
+
+      <h3>Block-Based I/O</h3>
+      <p>The fundamental I/O unit is a <strong>256KB block</strong>. This size balances sequential read performance (large enough for SSDs/HDDs to read efficiently) with memory management granularity (small enough to manage in a buffer pool).</p>
+
+      <h3>Row Groups</h3>
+      <p>Tables are horizontally partitioned into <strong>row groups of ~122,880 rows</strong> (60 &times; STANDARD_VECTOR_SIZE). Each row group stores columns independently with per-column compression, per-column zone maps (min/max statistics) for predicate pushdown, and per-column null bitmasks.</p>
+
+      <h3>Buffer Manager</h3>
+      <p>DuckDB includes a unified buffer manager that enables out-of-core processing. When available memory is exhausted, the buffer manager transparently spills data to disk using temporary files. This means DuckDB can process datasets significantly larger than RAM &mdash; the system handles the spilling automatically with no user configuration.</p>
+
+      <h3>Write-Ahead Log</h3>
+      <p>For persistent databases, DuckDB uses a <span class="glossary-term" data-definition="Write-Ahead Log. A file where all database modifications are recorded before being applied to the main database. Used for crash recovery: if DuckDB crashes, it replays the WAL on restart to restore committed transactions.">WAL</span> for crash recovery. Writes go to the WAL first, and periodic checkpoints compact the WAL into the main database file. Since v1.5.0, checkpointing is non-blocking &mdash; reads and writes can proceed concurrently during checkpoint operations using <span class="glossary-term" data-definition="Multi-Version Concurrency Control. A concurrency control method where each transaction sees a snapshot of the database at a particular point in time, allowing readers and writers to proceed without blocking each other.">MVCC</span>.</p>
+
+      <div class="callout callout-info">
+        <div class="callout-icon">&#x1F4CA;</div>
+        <div class="callout-content">
+          <strong>Non-blocking checkpoints yield ~17% throughput improvement</strong> on mixed read-write workloads compared to the previous blocking checkpoint model. This was introduced in DuckDB v1.5.0.
+        </div>
+      </div>
+
+      <h3>Compression Codecs</h3>
+      <p>DuckDB automatically selects the best compression codec per column segment based on data characteristics:</p>
+
+      <div class="concept-cards">
+        <div class="concept-card" style="--card-color:#D4A843">
+          <div class="card-icon">&#x1F4CC;</div>
+          <h4 class="card-title">Constant</h4>
+          <p class="card-desc">All identical values in the segment. Stores a single value regardless of row count &mdash; maximum compression.</p>
+        </div>
+        <div class="concept-card" style="--card-color:#BF9738">
+          <div class="card-icon">&#x1F501;</div>
+          <h4 class="card-title">RLE</h4>
+          <p class="card-desc">Run-Length Encoding for consecutive repeated values. Stores (value, count) pairs instead of individual entries.</p>
+        </div>
+        <div class="concept-card" style="--card-color:#2A7B9B">
+          <div class="card-icon">&#x1F4D6;</div>
+          <h4 class="card-title">Dictionary</h4>
+          <p class="card-desc">Low-cardinality columns. Stores a dictionary of unique values plus compact indices into that dictionary.</p>
+        </div>
+        <div class="concept-card" style="--card-color:#2D8B55">
+          <div class="card-icon">&#x1F9E9;</div>
+          <h4 class="card-title">Bitpacking</h4>
+          <p class="card-desc">Integers with limited range. Uses the minimal number of bits per value (e.g., 3 bits for values 0&ndash;7).</p>
+        </div>
+        <div class="concept-card" style="--card-color:#7B6DAA">
+          <div class="card-icon">&#x1F524;</div>
+          <h4 class="card-title"><span class="glossary-term" data-definition="Fast Static Symbol Table. A string compression algorithm that builds a symbol table of frequent byte sequences, then replaces them with shorter codes. Achieves 2-5x compression on typical string columns.">FSST</span></h4>
+          <p class="card-desc">Fast Static Symbol Table for string compression. Replaces frequent byte sequences with short codes, achieving 2&ndash;5&times; compression.</p>
+        </div>
+        <div class="concept-card" style="--card-color:#C93B3B">
+          <div class="card-icon">&#x1F4C8;</div>
+          <h4 class="card-title">Chimp/Patas</h4>
+          <p class="card-desc">Floating-point compression for time-series data. Exploits the fact that consecutive float values often share many bits.</p>
+        </div>
+        <div class="concept-card" style="--card-color:#8B6914">
+          <div class="card-icon">&#x1F3AF;</div>
+          <h4 class="card-title"><span class="glossary-term" data-definition="Adaptive Lossless floating-Point compression. An algorithm for double-precision floats that encodes values as integer linear combinations, achieving better compression than Chimp/Gorilla for real-world datasets.">ALP</span></h4>
+          <p class="card-desc">Adaptive Lossless floating-Point compression for doubles. Encodes values as integer linear combinations for superior compression.</p>
         </div>
       </div>
     </section>
+
+    <!-- Section 5: Query Optimizer Internals -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Query Optimizer Internals</h2>
+      <p>The optimizer runs 30+ passes sequentially on the logical plan. Key passes include:</p>
+
+      <h3>Filter Pushdown</h3>
+      <p>Pushes predicates as close to the data source as possible. For a query joining two tables with a filter on one, the optimizer moves the filter below the join so it's applied during the scan &mdash; reducing the number of rows that enter the join.</p>
+
+      <h3>Join Order Optimization</h3>
+      <p>Uses the <span class="glossary-term" data-definition="Dynamic Programming connected complement pair. An algorithm that efficiently enumerates all valid join orderings by decomposing the join graph into connected complement pairs. Optimal for up to ~20 tables; falls back to heuristics for larger queries.">DPccp</span> (Dynamic Programming connected complement pair) algorithm, which efficiently enumerates all valid join orderings for up to ~20 tables. For larger joins, it falls back to heuristics. The optimizer also converts cross products into joins when possible and determines the build/probe sides for hash joins based on estimated cardinalities.</p>
+
+      <h3>Late Materialization</h3>
+      <p>Defers reading column data until it's actually needed. When a scan has a selective filter, DuckDB first scans only the filtered column, determines which rows pass, and then reads the remaining columns for only those rows. This can dramatically reduce I/O for queries with selective predicates on wide tables.</p>
+
+      <h3>Statistics Propagation</h3>
+      <p>Maintains cardinality estimates as the plan transforms. Each optimizer pass updates these estimates, which downstream passes use to make better decisions (e.g., which side of a join to use as the build side for a hash join).</p>
+
+      <div class="callout callout-insight">
+        <div class="callout-icon">&#x1F52D;</div>
+        <div class="callout-content">
+          <strong>Zone maps at work:</strong> Each column segment stores min/max statistics (<span class="glossary-term" data-definition="Zone maps (also called min/max indexes) store the minimum and maximum values for each row group's column segment. The query engine uses these to skip entire row groups that cannot contain matching rows, avoiding unnecessary I/O.">zone maps</span>). During a scan with <code>WHERE year = 2025</code>, DuckDB checks each row group's zone map for the <code>year</code> column and skips entire row groups where <code>max &lt; 2025</code> or <code>min &gt; 2025</code> &mdash; without reading any data.
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Performance Characteristics -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Performance Characteristics</h2>
+
+      <h3>Where DuckDB Excels</h3>
+      <div class="perf-gauges">
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Analytical Scans &amp; Aggregation</span>
+            <span class="perf-gauge-rating" style="color:var(--color-success)">Excellent</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="95" style="background:var(--color-success)"></div></div>
+          <div class="perf-gauge-note">Columnar storage + vectorized execution + automatic parallelism. Competes with ClickHouse and Hyper on TPC-H benchmarks.</div>
+        </div>
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Parquet/CSV File Queries</span>
+            <span class="perf-gauge-rating" style="color:var(--color-success)">Excellent</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="90" style="background:var(--color-success)"></div></div>
+          <div class="perf-gauge-note">Queries Parquet directly with column pruning and predicate pushdown. A 2GB CSV with 50M rows aggregates in under 3 seconds.</div>
+        </div>
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Joins (Moderate Data)</span>
+            <span class="perf-gauge-rating" style="color:var(--color-success)">Excellent</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="85" style="background:var(--color-success)"></div></div>
+          <div class="perf-gauge-note">Highly optimized hash join with partitioned build/probe and vectorized probing.</div>
+        </div>
+      </div>
+
+      <h3>Where DuckDB Is Slower</h3>
+      <div class="perf-gauges">
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Point Lookups by Primary Key</span>
+            <span class="perf-gauge-rating" style="color:var(--color-error)">Poor</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="20" style="background:var(--color-error)"></div></div>
+          <div class="perf-gauge-note">No B-tree indexes for OLTP-style lookups. SQLite is ~4x faster for single-record retrieval.</div>
+        </div>
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Concurrent OLTP Workloads</span>
+            <span class="perf-gauge-rating" style="color:var(--color-error)">Poor</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="15" style="background:var(--color-error)"></div></div>
+          <div class="perf-gauge-note">Uses MVCC for transactions but not optimized for hundreds of concurrent read-write transactions.</div>
+        </div>
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Very Large Datasets (Multi-TB)</span>
+            <span class="perf-gauge-rating" style="color:var(--color-warning)">Limited</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="35" style="background:var(--color-warning)"></div></div>
+          <div class="perf-gauge-note">Handles out-of-core processing, but truly massive datasets benefit from distributed systems like Spark or ClickHouse.</div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <section class="references-footer">
+  <section class="references-footer animate-in">
     <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/internals/vector" target="_blank" rel="noopener noreferrer">DuckDB Vector Internals</a></span><span class="reference-domain">duckdb.org</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/2024/07/09/memory-management" target="_blank" rel="noopener noreferrer">DuckDB Memory Management</a></span><span class="reference-domain">duckdb.org</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/2024/03/29/external-aggregation" target="_blank" rel="noopener noreferrer">External Aggregation in DuckDB</a></span><span class="reference-domain">duckdb.org</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4DC;</span><div class="reference-content"><span class="reference-title"><a href="https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf" target="_blank" rel="noopener noreferrer">CMU Database Systems: DuckDB</a></span><span class="reference-domain">cmu.edu</span></div></li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://duckdb.org/docs/current/internals/overview.html" target="_blank" rel="noopener noreferrer">DuckDB Internals Overview</a></span>
+          <span class="reference-domain">duckdb.org</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4C4;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://db.in.tum.de/~leis/papers/morsels.pdf" target="_blank" rel="noopener noreferrer">Morsel-Driven Parallelism (SIGMOD 2014)</a></span>
+          <span class="reference-domain">db.in.tum.de</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4F0;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://endjin.com/blog/2025/04/duckdb-in-depth-how-it-works-what-makes-it-fast" target="_blank" rel="noopener noreferrer">DuckDB In Depth: How It Works</a></span>
+          <span class="reference-domain">endjin.com</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://duckdb.org/docs/current/internals/storage.html" target="_blank" rel="noopener noreferrer">DuckDB Storage &amp; Compression</a></span>
+          <span class="reference-domain">duckdb.org</span>
+        </div>
+      </li>
     </ul>
   </section>
 
-  <nav class="page-nav-footer"><a href="architecture.html" class="prev">Architecture</a><a href="implementation.html" class="next">Implementation Details</a></nav>
-  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+  <div class="page-nav-footer">
+    <a href="architecture.html" class="prev">Architecture</a>
+    <a href="implementation.html" class="next">Implementation Details</a>
+  </div>
+
+  <footer class="site-footer">
+    <p>Generated by <strong>System Explorer</strong> &mdash; an interactive course built from system analysis</p>
+  </footer>
 
   <script>
-    function updateProgressBar(){var s=window.scrollY,h=document.documentElement.scrollHeight-window.innerHeight,p=h>0?(s/h)*100:0;document.querySelector('.nav-progress-bar').style.width=p+'%'}window.addEventListener('scroll',function(){requestAnimationFrame(updateProgressBar)},{passive:true});
-    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
-    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
-    // Perf gauges
-    (function(){var obs=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.querySelectorAll('.perf-fill').forEach(function(fill,i){setTimeout(function(){fill.style.width=fill.dataset.width+'%'},i*150)});obs.unobserve(entry.target)}})},{threshold:0.3});document.querySelectorAll('.perf-gauges').forEach(function(g){obs.observe(g)})})();
-    // Copy code
-    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},2000)})}
-    // Glossary
-    (function(){var tooltip=null;function show(t){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=t.dataset.definition;document.body.appendChild(tooltip);var r=t.getBoundingClientRect(),tr=tooltip.getBoundingClientRect(),l=r.left+r.width/2-tr.width/2,tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;tooltip.style.left=l+'px';tooltip.style.top=tp+'px';requestAnimationFrame(function(){tooltip.classList.add('visible')})}function hide(){if(tooltip){tooltip.remove();tooltip=null}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t)});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide()})})();
-    // Copy as Markdown
-    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var m=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(m){m[1].split('\n').forEach(function(l){var x=l.match(/(\w+):\s*"(.+)"/);if(x)ctx[x[1]]=x[2]})}var md='# '+(ctx.system||'')+': '+(ctx.page||document.title)+'\n> Source: '+window.location.href+' | Level: '+(ctx.level||'Unknown')+'\n\n';var c=document.querySelector('.content-area');if(c){c.querySelectorAll('.content-section').forEach(function(s){s.querySelectorAll('h2,h3,p').forEach(function(el){var t=el.tagName.toLowerCase();if(t==='h2')md+='\n## '+el.textContent.trim()+'\n\n';else if(t==='h3')md+='\n### '+el.textContent.trim()+'\n\n';else md+=el.textContent.trim()+'\n\n'})})}md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn'),lb=btn.querySelector('.btn-label'),o=lb.textContent;lb.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){lb.textContent=o;btn.classList.remove('copied')},2000)})}
+    /* Hamburger toggle */
+    document.getElementById('navHamburger').addEventListener('click', function() {
+      this.classList.toggle('open');
+      document.getElementById('navPages').classList.toggle('mobile-open');
+    });
+
+    /* Scroll progress bar */
+    function updateProgress() {
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      var p = h > 0 ? (window.scrollY / h * 100) : 0;
+      document.querySelector('.nav-progress-bar').style.width = p + '%';
+    }
+    window.addEventListener('scroll', function() { requestAnimationFrame(updateProgress); }, { passive: true });
+
+    /* Intersection observer for animations + perf gauge fills */
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          /* Animate perf gauge fills */
+          var fills = e.target.querySelectorAll('.perf-gauge-fill[data-width]');
+          fills.forEach(function(f) { f.style.width = f.dataset.width + '%'; });
+          /* Animate pipeline nodes and arrows */
+          var nodes = e.target.querySelectorAll('.pipeline-node, .pipeline-arrow');
+          nodes.forEach(function(n) { n.classList.add('visible'); });
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.animate-in').forEach(function(el) { observer.observe(el); });
+
+    /* Glossary tooltips */
+    (function() {
+      var tt = document.createElement('div');
+      tt.className = 'glossary-tooltip';
+      document.body.appendChild(tt);
+
+      document.querySelectorAll('.glossary-term').forEach(function(term) {
+        term.addEventListener('mouseenter', function(e) {
+          var r = e.target.getBoundingClientRect();
+          tt.textContent = e.target.dataset.definition;
+          tt.classList.add('visible');
+          tt.style.left = Math.max(8, Math.min(r.left + r.width / 2 - 150, window.innerWidth - 308)) + 'px';
+          tt.style.top = (r.top - tt.offsetHeight - 8) + 'px';
+          /* If tooltip would go above viewport, show below */
+          if (r.top - tt.offsetHeight - 8 < 8) {
+            tt.style.top = (r.bottom + 8) + 'px';
+          }
+        });
+        term.addEventListener('mouseleave', function() {
+          tt.classList.remove('visible');
+        });
+      });
+    })();
+
+    /* Copy as Markdown */
+    function copyPageAsMarkdown() {
+      var md = '# DuckDB - How It Works\n\n'
+        + '## Vectorized Query Processing\n'
+        + '- Processes data in vectors of 2048 values (STANDARD_VECTOR_SIZE)\n'
+        + '- DataChunk = collection of Vector objects, one per column\n'
+        + '- Tight loops auto-vectorize into SIMD instructions (4-8 comparisons/cycle)\n'
+        + '- 2048 x 8 bytes = 16KB fits in L1 cache\n'
+        + '- Vector representations: Flat, Constant, Dictionary, Sequence\n\n'
+        + '## Push-Based Pipeline Execution\n'
+        + '- Pipelines: Source -> Operators -> Sink (no intermediate materialization)\n'
+        + '- Pipeline breaks at: hash joins, aggregations, sorts, window functions\n'
+        + '- Example: TableScan->Filter->HashAggregate | HashAggregate->Sort | Sort->Result\n\n'
+        + '## Morsel-Driven Parallelism\n'
+        + '- Dynamic work-stealing: threads grab morsels from source\n'
+        + '- Thread-local partitions merged at end\n'
+        + '- Linear scaling with CPU cores\n'
+        + '- Pipeline::ScheduleParallel() checks operator compatibility\n\n'
+        + '## Storage Engine\n'
+        + '- 256KB blocks, row groups of ~122,880 rows\n'
+        + '- Buffer manager for out-of-core processing\n'
+        + '- WAL for crash recovery, non-blocking checkpoints (~17% throughput gain)\n'
+        + '- Compression: Constant, RLE, Dictionary, Bitpacking, FSST, Chimp/Patas, ALP\n\n'
+        + '## Query Optimizer Internals\n'
+        + '- 30+ sequential passes on logical plan\n'
+        + '- Filter Pushdown, Join Order (DPccp), Late Materialization, Statistics Propagation\n\n'
+        + '## Performance\n'
+        + '- Fast: analytical scans, Parquet/CSV queries, moderate joins\n'
+        + '- Slow: point lookups, concurrent OLTP, multi-TB datasets\n';
+
+      var btn = document.querySelector('.copy-markdown-btn');
+      navigator.clipboard.writeText(md).then(function() {
+        btn.querySelector('.btn-label').textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.querySelector('.btn-label').textContent = 'Copy as Markdown';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
   </script>
 </body>
 </html>

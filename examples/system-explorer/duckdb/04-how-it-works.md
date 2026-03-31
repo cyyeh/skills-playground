@@ -1,189 +1,101 @@
 ## How It Works
-
 <!-- level: intermediate -->
-
 <!-- references:
-- https://duckdb.org/docs/stable/internals/vector
-- https://duckdb.org/2024/07/09/memory-management
-- https://duckdb.org/2024/03/29/external-aggregation
-- https://15721.courses.cs.cmu.edu/spring2024/notes/20-duckdb.pdf
-- https://endjin.com/blog/2025/04/duckdb-in-depth-how-it-works-what-makes-it-fast
+- [DuckDB Internals Overview](https://duckdb.org/docs/current/internals/overview.html) | official-docs
+- [Morsel-Driven Parallelism (SIGMOD 2014)](https://db.in.tum.de/~leis/papers/morsels.pdf) | paper
+- [DuckDB In Depth: How It Works](https://endjin.com/blog/2025/04/duckdb-in-depth-how-it-works-what-makes-it-fast) | blog
+- [DuckDB Storage & Compression](https://duckdb.org/docs/current/internals/storage.html) | official-docs
 -->
 
-### Vectorized Execution Engine
+### Vectorized Query Processing
 
-DuckDB's execution engine is the heart of its performance. Unlike traditional row-at-a-time engines (the Volcano/iterator model used by PostgreSQL and MySQL), DuckDB processes data in **vectors** -- arrays of up to 2048 values per column.
+DuckDB's execution engine processes data in vectors of `STANDARD_VECTOR_SIZE` (2048) values. Every operator in the pipeline receives a `DataChunk` — a collection of `Vector` objects, one per column — and produces a transformed `DataChunk` as output.
 
-#### How Vectors Work
+Each `Vector` stores its data in a flat array optimized for CPU cache access. When the engine executes a filter like `WHERE price > 100`, it doesn't check one row at a time. Instead, it runs a tight loop comparing 2048 price values against 100 in a single batch. Modern compilers auto-vectorize these loops into SIMD instructions (SSE, AVX), processing 4–8 comparisons per CPU cycle.
 
-A [Vector](https://duckdb.org/docs/stable/internals/vector) is a typed array holding values for a single column. A `DataChunk` is a collection of Vectors representing multiple columns -- essentially a small columnar table of up to 2048 rows.
+The key insight is the size choice: 2048 values of 8 bytes each = 16KB, which fits comfortably in L1 cache (typically 32–64KB per core). This means the CPU processes the entire vector without cache misses, achieving near-theoretical throughput.
 
-```
-DataChunk (e.g., from scanning "orders" table):
-+-------------------+-------------------+-------------------+
-| Vector: order_id  | Vector: region    | Vector: amount    |
-| [1, 2, 3, ... ]   | ["US", "EU", ...] | [99.5, 42.0, ...] |
-| (up to 2048 vals) | (up to 2048 vals) | (up to 2048 vals) |
-+-------------------+-------------------+-------------------+
-```
+DuckDB uses multiple vector representations to avoid unnecessary data copying:
+- **Flat vectors** — contiguous arrays, the most common and fastest format
+- **Constant vectors** — a single value repeated for all rows (e.g., the literal `100` in `price > 100`)
+- **Dictionary vectors** — indices into a dictionary of unique values, used for compressed string data
+- **Sequence vectors** — arithmetically generated sequences (e.g., `rowid`)
 
-The vector size of 2048 is deliberately chosen to fit within the CPU's L1 cache (typically 32--128 KB per core). This means that when an operator processes a vector, the data stays in the fastest level of the CPU's memory hierarchy, avoiding expensive L2/L3 cache misses and RAM accesses.
+### Push-Based Pipeline Execution
 
-#### Push-Based Processing
+DuckDB's executor arranges physical operators into **pipelines** — chains of operators that process data without materializing intermediate results. Each pipeline has:
 
-DuckDB uses a **push-based** model rather than the traditional pull-based (Volcano) model:
+- A **source** that produces DataChunks (e.g., a table scan)
+- Zero or more **intermediate operators** that transform DataChunks in-place (e.g., filter, projection)
+- A **sink** that consumes DataChunks and builds state (e.g., hash table for aggregation, sort buffer for ORDER BY)
 
-- **Pull-based (Volcano):** Each operator calls `GetNext()` on its child to request one row/batch. Control flow bounces up and down the operator tree with virtual function calls at every level.
-- **Push-based (DuckDB):** Source operators produce `DataChunk`s and push them through a pipeline of operators. Each pipeline is compiled into a tight loop with no virtual dispatch overhead between operators.
+Pipeline **breaks** occur at operators that must see all input before producing output — hash joins (build side), aggregations, sorts, and window functions. These operators become the sink of one pipeline and the source of the next.
 
-The push-based approach eliminates per-batch virtual function call overhead and enables better compiler optimizations, since the tight processing loop has predictable control flow.
-
-#### Vector Formats
-
-DuckDB supports multiple physical representations for the same logical data:
-
-| Format | Description | Use Case |
-|--------|-------------|----------|
-| **FLAT** | Standard contiguous array | Default general-purpose format |
-| **CONSTANT** | Single value representing all elements | Literal values, broadcast operations |
-| **DICTIONARY** | Index array + dictionary of unique values | Low-cardinality string columns |
-| **SEQUENCE** | Start + increment (no array stored) | Row IDs, generated sequences |
-| **FSST** | Fast Static Symbol Table compressed | Compressed string data |
-
-These formats allow "compressed execution" -- operations can be performed directly on the compressed representation without decompressing first. For example, filtering a DICTIONARY vector only needs to check the dictionary entries, not every individual value.
-
-#### Performance Characteristics
-
-- **Throughput:** DuckDB processes analytical queries at rates of 1--10 GB/s per core on modern hardware, depending on query complexity
-- **Vector processing overhead:** ~0.5 nanoseconds per value per operator (vs ~50 ns for row-at-a-time)
-- **Function call reduction:** Processing 2048 values per call reduces function call overhead by ~2000x compared to row-at-a-time
-- **Cache efficiency:** L1 cache hit rate exceeds 95% for typical vector operations, compared to ~60-70% for row-based engines on analytical queries
+For the query `SELECT region, SUM(amount) FROM sales WHERE year = 2025 GROUP BY region ORDER BY SUM(amount)`:
+- **Pipeline 1:** TableScan → Filter → HashAggregate (build) — parallel, each thread scans different row groups
+- **Pipeline 2:** HashAggregate (scan) → Sort (build) — reads aggregated results, sorts them
+- **Pipeline 3:** Sort (scan) → ResultCollector — produces final ordered output
 
 ### Morsel-Driven Parallelism
 
-DuckDB parallelizes query execution using [morsel-driven parallelism](https://15721.courses.cs.cmu.edu/spring2023/slides/22-duckdb.pdf), a technique where operators are made parallelism-aware rather than using generic exchange/partition operators.
+DuckDB parallelizes query execution using the [morsel-driven model](https://db.in.tum.de/~leis/papers/morsels.pdf). Instead of partitioning data upfront or using exchange operators (like Spark), DuckDB uses a dynamic work-stealing approach:
 
-#### How It Works
+1. The source operator divides its input into **morsels** (chunks of row groups)
+2. Worker threads from the task scheduler each grab a morsel
+3. Each thread pushes its morsel through the entire pipeline independently
+4. Threads share the same sink state (e.g., a concurrent hash table) using thread-local partitions that are merged at the end
 
-1. **Pipeline decomposition:** The physical plan is split into pipelines at "pipeline breaker" points -- operators that must consume all input before producing output (e.g., hash table build side of a join, sort operator, aggregate with GROUP BY)
+This design scales linearly with CPU cores because:
+- No synchronization between threads during pipeline execution (each thread has its own pipeline executor state)
+- Work is dynamically distributed — fast threads grab more morsels, naturally load-balancing
+- The task scheduler limits concurrency to available hardware threads, avoiding over-subscription
 
-2. **Morsel distribution:** The source of each pipeline divides its data into morsels (chunks). A central coordinator distributes morsels to worker threads on demand.
+The `Pipeline::ScheduleParallel()` method checks that all operators in the chain support parallelism before enabling multi-threaded execution. If any operator requires ordered processing, the pipeline falls back to sequential execution.
 
-3. **Thread-local processing:** Each thread processes its morsel through the pipeline independently, maintaining thread-local state (e.g., thread-local hash tables for aggregation).
+### Storage Engine
 
-4. **Global merge:** After all morsels are processed, thread-local states are merged into a single global result.
+DuckDB uses a custom single-file storage format designed for analytical access patterns:
 
-```
-Pipeline Example: SELECT region, SUM(amount) FROM orders WHERE amount > 100 GROUP BY region
+**Block-Based I/O:** The fundamental I/O unit is a 256KB block. This size balances sequential read performance (large enough for SSDs/HDDs to read efficiently) with memory management granularity (small enough to manage in a buffer pool).
 
-Source (TableScan)
-    |
-    | morsel 1 -> Thread 1: Filter -> Aggregate (local HT)
-    | morsel 2 -> Thread 2: Filter -> Aggregate (local HT)
-    | morsel 3 -> Thread 3: Filter -> Aggregate (local HT)
-    | morsel 4 -> Thread 1: Filter -> Aggregate (local HT)  (thread 1 picks up more work)
-    |
-    v
-Merge thread-local hash tables -> Final Result
-```
+**Row Groups:** Tables are horizontally partitioned into row groups of ~122,880 rows (60 × STANDARD_VECTOR_SIZE). Each row group stores columns independently with:
+- Per-column compression (lightweight codecs: constant, RLE, dictionary, bitpacking, FSST for strings, Chimp/Patas for floats, ALP for doubles)
+- Per-column zone maps (min/max statistics) for predicate pushdown
+- Per-column null bitmasks
 
-#### Why Not Exchange-Based Parallelism?
+**Buffer Manager:** DuckDB includes a unified buffer manager that enables out-of-core processing. When available memory is exhausted, the buffer manager transparently spills data to disk using temporary files. This means DuckDB can process datasets significantly larger than RAM — the system handles the spilling automatically with no user configuration.
 
-Traditional databases (like PostgreSQL) use exchange operators that partition data between parallel workers at fixed points in the plan. This approach has drawbacks:
-- Fixed partitioning can lead to skewed workloads
-- Exchange operators add overhead even for non-parallel plans
-- Difficult to adapt parallelism degree dynamically
+**Write-Ahead Log (WAL):** For persistent databases, DuckDB uses a WAL for crash recovery. Writes go to the WAL first, and periodic checkpoints compact the WAL into the main database file. Since v1.5.0, checkpointing is non-blocking — reads and writes can proceed concurrently during checkpoint operations, improving throughput by ~17% on mixed workloads.
 
-Morsel-driven parallelism avoids these issues by distributing work dynamically (like a work-stealing scheduler) and keeping operators themselves parallelism-aware, which eliminates exchange overhead.
+**Compression:** DuckDB automatically selects the best compression codec per column segment based on data characteristics:
+- **Constant** — all identical values (stores one value)
+- **RLE (Run-Length Encoding)** — consecutive repeated values
+- **Dictionary** — low-cardinality columns (stores unique values + indices)
+- **Bitpacking** — integers with limited range (uses minimal bits per value)
+- **FSST (Fast Static Symbol Table)** — string compression achieving 2–5× compression
+- **Chimp/Patas** — floating-point compression for time-series data
+- **ALP (Adaptive Lossless floating-Point)** — double-precision compression
 
-### Buffer Manager
+### Query Optimizer Internals
 
-The [buffer manager](https://duckdb.org/2024/07/09/memory-management) is responsible for all memory management in DuckDB. It maintains a unified pool of memory for both persistent data pages (cached from disk) and temporary data (intermediate results during query execution).
+The optimizer runs 30+ passes sequentially on the logical plan. Key passes include:
 
-#### Memory Architecture
+**Filter Pushdown** pushes predicates as close to the data source as possible. For a query joining two tables with a filter on one, the optimizer moves the filter below the join so it's applied during the scan — reducing the number of rows that enter the join.
 
-```
-+-----------------------------------------+
-|           Buffer Manager                |
-|  +-----------------------------------+ |
-|  |         Buffer Pool               | |
-|  |  +-----------+ +-----------+      | |
-|  |  | Persistent| | Temporary |      | |
-|  |  | Pages     | | Pages     |      | |
-|  |  | (cached   | | (hash     |      | |
-|  |  |  table    | |  tables,  |      | |
-|  |  |  data)    | |  sorts)   |      | |
-|  |  +-----------+ +-----------+      | |
-|  +-----------------------------------+ |
-|                                         |
-|  Eviction Queue (LRU-based)             |
-|  Spill-to-Disk (temporary directory)    |
-+-----------------------------------------+
-```
+**Join Order Optimization** uses the DPccp (Dynamic Programming connected complement pair) algorithm, which efficiently enumerates all valid join orderings for up to ~20 tables. For larger joins, it falls back to heuristics. The optimizer also converts cross products into joins when possible and determines the build/probe sides for hash joins based on estimated cardinalities.
 
-#### Key Characteristics
+**Late Materialization** defers reading column data until it's actually needed. When a scan has a selective filter, DuckDB first scans only the filtered column, determines which rows pass, and then reads the remaining columns for only those rows. This can dramatically reduce I/O for queries with selective predicates on wide tables.
 
-- **Default memory limit:** 80% of physical RAM (configurable via `SET memory_limit = '4GB'`)
-- **Block size:** 256 KB -- a compromise between sequential read efficiency and memory granularity
-- **Unified pool:** Persistent and temporary data share the same pool, allowing DuckDB to adapt dynamically. A read-heavy workload gets more cache; a computation-heavy workload gets more temporary space.
-- **Pin/unpin model:** When an operator needs a block, it pins it (preventing eviction). When done, it unpins the block, making it available for eviction if memory pressure arises.
-- **Spilling:** When memory is exhausted, the buffer manager evicts unpinned pages to the temporary directory on disk. This enables larger-than-memory queries at the cost of I/O.
+**Statistics Propagation** maintains cardinality estimates as the plan transforms. Each optimizer pass updates these estimates, which downstream passes use to make better decisions (e.g., which side of a join to use as the build side for a hash join).
 
-#### Larger-Than-Memory Processing
+### Performance Characteristics
 
-DuckDB handles datasets larger than available memory through three mechanisms:
+**Where it's fast:**
+- Full table scans with aggregation — columnar storage + vectorized execution + automatic parallelism make DuckDB extremely fast for analytical queries. On TPC-H benchmarks, DuckDB competes with dedicated analytical databases like ClickHouse and Hyper.
+- Parquet/CSV file queries — DuckDB can query Parquet files directly without loading, using column pruning and predicate pushdown into the file format. Processing a 2GB CSV with 50M rows takes under 3 seconds for aggregation queries.
+- Joins on moderate-sized datasets — the hash join implementation is highly optimized with partitioned build/probe and vectorized probing.
 
-1. **Streaming execution:** Data sources are never fully materialized. Scan operators read one morsel at a time, process it, and discard it before reading the next.
-2. **Intermediate spilling:** When operators like hash aggregation or sorting exceed their memory budget, they spill partitions to temporary files on disk and process them in passes.
-3. **Buffer eviction:** The buffer manager can evict cached persistent data pages to make room for active computation.
-
-Configuration for larger-than-memory:
-```sql
-SET memory_limit = '4GB';
-SET temp_directory = '/tmp/duckdb_swap';
-SET max_temp_directory_size = '100GB';
-```
-
-### Storage Format
-
-DuckDB uses a custom single-file storage format designed for analytical workloads.
-
-#### Physical Layout
-
-Data is organized hierarchically:
-
-```
-Database File
-  +-- Header (metadata, version info)
-  +-- Row Group 1 (default: ~122K rows)
-  |     +-- Column Segment: col_A (compressed)
-  |     +-- Column Segment: col_B (compressed)
-  |     +-- Column Segment: col_C (compressed)
-  |     +-- Min/Max Statistics per segment
-  +-- Row Group 2
-  |     +-- ...
-  +-- Catalog (schemas, tables, views)
-  +-- Write-Ahead Log (WAL)
-```
-
-#### Compression
-
-Each column segment is compressed independently using the best algorithm for its data distribution:
-
-| Algorithm | Best For |
-|-----------|----------|
-| **Constant** | Columns where all values are the same |
-| **RLE (Run-Length Encoding)** | Sorted or clustered data with repeated runs |
-| **BitPacking** | Integer columns with small value ranges |
-| **Dictionary** | Low-cardinality string columns |
-| **FSST (Fast Static Symbol Table)** | High-cardinality string columns |
-| **Chimp/Patas** | Floating-point columns |
-| **ALP (Adaptive Lossless floating-Point)** | Double-precision floating-point data |
-
-DuckDB automatically selects the best compression algorithm per segment based on data analysis during checkpointing, achieving typical compression ratios of 3--10x on real-world data.
-
-#### Persistence Model
-
-- **In-memory mode:** No file on disk. Data lives only in the process's memory. Fastest but non-persistent.
-- **Persistent mode:** Data is written to a single `.duckdb` (or `.db`) file. A Write-Ahead Log (WAL) ensures crash recovery.
-- **Checkpoint:** Periodically, DuckDB writes the WAL contents into the main database file and truncates the WAL. Checkpoints happen automatically when the WAL grows beyond a threshold, or can be triggered manually with `CHECKPOINT`.
+**Where it's slower:**
+- Point lookups by primary key — DuckDB doesn't have B-tree indexes for OLTP-style lookups. SQLite is ~4× faster for single-record retrieval.
+- High-concurrency OLTP workloads — DuckDB uses MVCC for transactions but is not optimized for hundreds of concurrent read-write transactions.
+- Very large datasets (multi-TB) — while DuckDB handles out-of-core processing, truly massive datasets benefit from distributed systems like Spark or ClickHouse that spread data across multiple machines.

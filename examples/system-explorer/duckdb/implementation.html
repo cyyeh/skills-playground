@@ -4,301 +4,1154 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Implementation Details — DuckDB Course</title>
+  <!-- page-context: system:"DuckDB" page:"Implementation Details" level:"Advanced" -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- page-context:
-    system: "DuckDB"
-    description: "an in-process analytical database for fast OLAP workloads"
-    page: "Implementation Details"
-    level: "Advanced"
-  -->
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;--stagger-delay:120ms}
-    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}
-    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
-    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
-    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}
-    .nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}
-    .nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}
-    .nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}
-    .nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}
-    .nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}
-    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}
-    .page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
-    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
-    .page-level-badge.advanced{background:var(--color-warning-light);color:var(--color-warning)}
-    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
-    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}
-    .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}
-    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:0 0 var(--space-3)}
-    .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
-    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
-    .code-block{background:var(--color-bg-code);border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md)}
-    .code-header{display:flex;justify-content:flex-start;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244;gap:var(--space-3)}
-    .code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:0.05em}
-    .code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast);margin-left:auto}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1}
-    .code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4}
-    .code-keyword{color:#CBA6F7}.code-string{color:#F9E2AF}.code-comment{color:#6C7086;font-style:italic}.code-function{color:#A6E3A1}.code-number{color:#FAB387}.code-variable{color:#89B4FA}.code-type{color:#89DCEB}
-    .code-source-path{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .code-source-link{font-family:var(--font-mono);font-size:var(--text-xs);color:#6C7086;text-decoration:none;padding:2px var(--space-2);border:1px solid #45475A;border-radius:var(--radius-sm);white-space:nowrap;transition:all var(--duration-fast);display:flex;align-items:center;gap:var(--space-1)}.code-source-link:hover{color:#CDD6F4;border-color:#CDD6F4}
-    /* Source map */
-    .source-map{max-width:var(--content-width);margin:var(--space-6) auto;border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden}
-    .source-map-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);background:var(--color-surface);cursor:pointer;user-select:none;transition:background var(--duration-fast)}.source-map-header:hover{background:var(--color-bg-warm)}
-    .source-map-header h3{font-family:var(--font-display);font-size:var(--text-base);font-weight:600;margin:0;display:flex;align-items:center;gap:var(--space-2)}
-    .source-map-toggle{font-size:var(--text-sm);color:var(--color-text-muted);transition:transform var(--duration-fast)}.source-map.open .source-map-toggle{transform:rotate(180deg)}
-    .source-map-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}.source-map.open .source-map-body{max-height:500px}
-    .source-map-list{list-style:none;padding:var(--space-3) var(--space-4);margin:0;border-top:1px solid var(--color-border-light)}
-    .source-map-item{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) 0;font-family:var(--font-mono);font-size:var(--text-xs)}.source-map-item a{color:var(--color-accent);text-decoration:none}.source-map-item a:hover{text-decoration:underline}.source-map-item .line-range{color:var(--color-text-muted)}
-    .source-map-repo{padding:var(--space-2) var(--space-4) var(--space-3);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);border-top:1px solid var(--color-border-light)}.source-map-repo a{color:var(--color-accent);text-decoration:none}
-    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}
-    .callout-insight{background:#F3EFF8;border-color:#7B6DAA}.callout-tip{background:var(--color-success-light);border-color:var(--color-success)}.callout-info{background:var(--color-info-light);border-color:var(--color-info)}
-    .callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}.callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px}
-    /* Config table */
-    .cfg-table{width:100%;border-collapse:collapse;margin:var(--space-4) 0;font-size:var(--text-sm)}
-    .cfg-table th{font-family:var(--font-display);font-weight:600;text-align:left;padding:var(--space-3) var(--space-4);border-bottom:2px solid var(--color-border)}
-    .cfg-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light);color:var(--color-text-secondary)}
-    .cfg-table td:first-child{font-weight:600;color:var(--color-text);font-family:var(--font-mono);font-size:var(--text-xs)}
-    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}
-    .glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
-    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}
-    .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
-    .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
-    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
-    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
-    a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
-    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s ease}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
-    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
-    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.nav-page-link{font-size:var(--text-xs);padding:var(--space-1) var(--space-2)}.cfg-table{font-size:var(--text-xs)}}
-    @media(max-width:480px){:root{--nav-height:52px}.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
-    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}}
+    :root {
+      --color-bg: #FAF7F2; --color-bg-warm: #F5F0E8; --color-bg-code: #1E1E2E;
+      --color-text: #2C2A28; --color-text-secondary: #6B6560; --color-text-muted: #9E9790;
+      --color-border: #E5DFD6; --color-border-light: #EEEBE5;
+      --color-surface: #FFFFFF; --color-surface-warm: #FDF9F3;
+      --color-accent: #D4A843; --color-accent-hover: #BF9738;
+      --color-accent-light: #FDF6E4; --color-accent-muted: #E0C06A;
+      --color-success: #2D8B55; --color-success-light: #E8F5EE;
+      --color-info: #2A7B9B; --color-info-light: #E4F2F7;
+      --color-warning: #D4A843; --color-warning-light: #FDF6E4;
+      --color-level-beginner: #2D8B55; --color-level-intermediate: #D4A843; --color-level-advanced: #C93B3B;
+      --font-display: 'Bricolage Grotesque', Georgia, serif;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+      --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem; --text-4xl: 2.25rem;
+      --leading-tight: 1.15; --leading-snug: 1.3; --leading-normal: 1.6;
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem;
+      --content-width: 800px; --content-width-wide: 1000px; --nav-height: 60px;
+      --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05); --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
+      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
+      --duration-fast: 150ms; --duration-normal: 250ms; --duration-slow: 500ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--color-bg);
+      background-image: radial-gradient(ellipse at 20% 50%, rgba(212,168,67,0.04) 0%, transparent 50%);
+      font-family: var(--font-body); color: var(--color-text);
+      line-height: var(--leading-normal); margin: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+
+    /* --- Navigation --- */
+    .site-nav {
+      position: sticky; top: 0; z-index: 1000; height: var(--nav-height);
+      background: rgba(250,247,242,0.92); backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-border-light);
+    }
+    .nav-progress-bar {
+      position: absolute; top: 0; left: 0; height: 3px; width: 0%;
+      background: var(--color-accent); transition: width 100ms linear; z-index: 1;
+    }
+    .nav-inner {
+      max-width: var(--content-width-wide); margin: 0 auto; height: 100%;
+      display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-6);
+    }
+    .nav-brand {
+      font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg);
+      color: var(--color-text); text-decoration: none; white-space: nowrap; flex-shrink: 0;
+    }
+    .nav-brand:hover { color: var(--color-accent); }
+    .nav-pages {
+      display: flex; align-items: center; gap: var(--space-1); flex: 1;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .nav-pages::-webkit-scrollbar { display: none; }
+    .nav-page-link {
+      font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500;
+      color: var(--color-text-secondary); text-decoration: none;
+      padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+      white-space: nowrap; transition: color var(--duration-fast), background var(--duration-fast);
+    }
+    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light); }
+    .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600; }
+    .nav-hamburger {
+      display: none; flex-direction: column; justify-content: center; gap: 4px;
+      width: 36px; height: 36px; padding: var(--space-2);
+      background: none; border: none; cursor: pointer; flex-shrink: 0;
+    }
+    .nav-hamburger span {
+      display: block; width: 20px; height: 2px; background: var(--color-text);
+      border-radius: 1px; transition: transform var(--duration-fast), opacity var(--duration-fast);
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* --- Page Header --- */
+    .page-header {
+      max-width: var(--content-width); margin: var(--space-12) auto var(--space-8);
+      padding: 0 var(--space-6); display: flex; flex-wrap: wrap;
+      align-items: flex-start; justify-content: space-between; gap: var(--space-3);
+    }
+    .page-header-content { flex: 1; min-width: 0; }
+    .page-header h1 {
+      font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 800;
+      color: var(--color-text); margin: 0 0 var(--space-3); line-height: var(--leading-tight);
+    }
+    .page-level-badge {
+      display: inline-block; font-family: var(--font-body); font-size: var(--text-sm);
+      font-weight: 600; padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: var(--space-3);
+    }
+    .page-level-badge.advanced { background: #FDE8E8; color: var(--color-level-advanced); }
+    .copy-markdown-btn {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500;
+      color: var(--color-text-secondary); background: var(--color-surface);
+      border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+      padding: var(--space-1) var(--space-3); cursor: pointer;
+      transition: all var(--duration-fast); white-space: nowrap;
+    }
+    .copy-markdown-btn:hover { color: var(--color-accent); border-color: var(--color-accent); background: var(--color-accent-light); }
+    .copy-markdown-btn.copied { color: var(--color-success); border-color: var(--color-success); background: var(--color-success-light); }
+
+    /* --- Content Area --- */
+    .content-area { max-width: var(--content-width); margin: 0 auto; padding: 0 var(--space-6); }
+    .content-section { margin-bottom: var(--space-10); }
+    .content-section h2 {
+      font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700;
+      color: var(--color-text); margin: 0 0 var(--space-4);
+    }
+    .content-section h3 {
+      font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600;
+      color: var(--color-text); margin: var(--space-6) 0 var(--space-3);
+    }
+    .content-section p {
+      font-family: var(--font-body); font-size: var(--text-base); color: var(--color-text);
+      line-height: 1.7; margin: 0 0 var(--space-4);
+    }
+    .content-section p code, .content-section li code {
+      font-family: var(--font-mono); font-size: var(--text-xs);
+      background: var(--color-surface-warm); border: 1px solid var(--color-border-light);
+      padding: 1px 5px; border-radius: 4px;
+    }
+    .content-section strong { color: var(--color-text); }
+
+    /* --- Code Blocks --- */
+    .code-block {
+      position: relative; background: var(--color-bg-code);
+      border-radius: var(--radius-md); margin: var(--space-6) 0;
+      overflow: hidden; box-shadow: var(--shadow-md);
+    }
+    .code-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: var(--space-2) var(--space-4); background: #181825;
+      border-bottom: 1px solid #313244; gap: var(--space-2); flex-wrap: wrap;
+    }
+    .code-lang {
+      font-family: var(--font-mono); font-size: var(--text-xs); color: #CDD6F4;
+      background: #313244; padding: 2px var(--space-2); border-radius: var(--radius-sm);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .code-source-path {
+      font-family: var(--font-mono); font-size: var(--text-xs); color: #A6ADC8;
+      flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .code-source-link {
+      font-family: var(--font-mono); font-size: var(--text-xs); color: #89B4FA;
+      text-decoration: none; white-space: nowrap; padding: 2px var(--space-2);
+      border: 1px solid #45475A; border-radius: var(--radius-sm);
+      display: inline-flex; align-items: center; gap: var(--space-1);
+      transition: all var(--duration-fast);
+    }
+    .code-source-link:hover { color: #CDD6F4; border-color: #CDD6F4; text-decoration: none; }
+    .code-copy {
+      font-family: var(--font-mono); font-size: var(--text-xs); color: #A6ADC8;
+      background: none; border: 1px solid #45475A; border-radius: var(--radius-sm);
+      padding: 2px var(--space-3); cursor: pointer; transition: all var(--duration-fast);
+    }
+    .code-copy:hover { color: #CDD6F4; border-color: #CDD6F4; }
+    .code-copy.copied { color: #A6E3A1; border-color: #A6E3A1; }
+    .code-pre {
+      padding: var(--space-4) var(--space-5); margin: 0; overflow-x: auto;
+      font-family: var(--font-mono); font-size: var(--text-sm);
+      line-height: 1.7; color: #CDD6F4; -webkit-overflow-scrolling: touch;
+    }
+    .code-keyword { color: #CBA6F7; }
+    .code-string { color: #F9E2AF; }
+    .code-comment { color: #6C7086; font-style: italic; }
+    .code-function { color: #A6E3A1; }
+    .code-number { color: #FAB387; }
+    .code-variable { color: #89B4FA; }
+    .code-type { color: #89DCEB; }
+    .code-operator { color: #94E2D5; }
+
+    /* --- Source Map --- */
+    .source-map {
+      max-width: var(--content-width); margin: 0 auto var(--space-6);
+      border: 1px solid var(--color-border-light); border-radius: var(--radius-md);
+      overflow: hidden; padding: 0;
+    }
+    .source-map-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: var(--space-3) var(--space-4); background: var(--color-surface);
+      cursor: pointer; user-select: none; transition: background var(--duration-fast);
+    }
+    .source-map-header:hover { background: var(--color-bg-warm); }
+    .source-map-header h3 {
+      font-family: var(--font-display); font-size: var(--text-base); font-weight: 600;
+      margin: 0; display: flex; align-items: center; gap: var(--space-2);
+    }
+    .source-map-toggle {
+      font-size: var(--text-sm); color: var(--color-text-muted);
+      transition: transform var(--duration-fast);
+    }
+    .source-map.open .source-map-toggle { transform: rotate(180deg); }
+    .source-map-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height var(--duration-normal) var(--ease-out);
+    }
+    .source-map.open .source-map-body { max-height: 500px; }
+    .source-map-list {
+      list-style: none; padding: var(--space-3) var(--space-4); margin: 0;
+      border-top: 1px solid var(--color-border-light);
+    }
+    .source-map-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: var(--space-2) 0; font-family: var(--font-mono); font-size: var(--text-xs);
+    }
+    .source-map-item a { color: var(--color-accent); text-decoration: none; }
+    .source-map-item a:hover { text-decoration: underline; }
+    .source-map-item .line-range { color: var(--color-text-muted); }
+    .source-map-repo {
+      padding: var(--space-2) var(--space-4) var(--space-3);
+      font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted);
+      border-top: 1px solid var(--color-border-light);
+    }
+    .source-map-repo a { color: var(--color-accent); text-decoration: none; }
+    .source-map-repo a:hover { text-decoration: underline; }
+
+    /* --- Config Table --- */
+    .config-table {
+      width: 100%; border-collapse: collapse; margin: var(--space-6) 0;
+      font-size: var(--text-sm);
+    }
+    .config-table thead { position: sticky; top: var(--nav-height); }
+    .config-table th {
+      background: var(--color-bg-warm); font-family: var(--font-display); font-weight: 600;
+      text-align: left; padding: var(--space-3) var(--space-4);
+      border-bottom: 2px solid var(--color-border);
+    }
+    .config-table td {
+      padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-light);
+      vertical-align: top;
+    }
+    .config-table code {
+      font-family: var(--font-mono); font-size: var(--text-xs);
+      background: var(--color-surface-warm); padding: 1px 4px; border-radius: 3px;
+    }
+    .config-table tr:hover td { background: var(--color-accent-light); }
+    .config-table-wrapper { overflow-x: auto; margin: var(--space-6) 0; }
+
+    /* --- Callouts --- */
+    .callout {
+      border-radius: var(--radius-md); padding: var(--space-4) var(--space-5);
+      margin: var(--space-6) 0; display: flex; gap: var(--space-3);
+      border-left: 4px solid;
+    }
+    .callout-icon { font-size: var(--text-xl); flex-shrink: 0; line-height: 1.4; }
+    .callout-content { flex: 1; }
+    .callout-content p { margin: 0; font-size: var(--text-sm); }
+    .callout-content code {
+      font-family: var(--font-mono); font-size: var(--text-xs);
+      background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 3px;
+    }
+    .callout.tip { background: var(--color-success-light); border-color: var(--color-success); }
+    .callout.insight { background: var(--color-info-light); border-color: var(--color-info); }
+    .callout.warning { background: var(--color-warning-light); border-color: var(--color-warning); }
+
+    /* --- Glossary Tooltips --- */
+    .glossary-term {
+      border-bottom: 1px dashed var(--color-accent-muted); cursor: help;
+      text-decoration: none; color: inherit;
+    }
+    .glossary-tooltip {
+      position: fixed; background: var(--color-bg-code); color: #CDD6F4;
+      padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm);
+      font-size: var(--text-sm); max-width: 320px; z-index: 2000;
+      pointer-events: none; opacity: 0; transition: opacity var(--duration-fast);
+      line-height: 1.5; box-shadow: var(--shadow-lg);
+    }
+    .glossary-tooltip.visible { opacity: 1; }
+
+    /* --- External Links --- */
+    a[target="_blank"] {
+      color: var(--color-accent); text-decoration: underline;
+      text-decoration-color: var(--color-accent-light); text-underline-offset: 2px;
+    }
+    a[target="_blank"]:hover { text-decoration-color: var(--color-accent); }
+
+    /* --- References --- */
+    .references-footer {
+      max-width: var(--content-width); margin: var(--space-10) auto var(--space-4);
+      padding: var(--space-6); background: var(--color-bg-warm);
+      border-left: 3px solid var(--color-accent); border-radius: var(--radius-md);
+    }
+    .references-footer h3 {
+      font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700;
+      margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2);
+    }
+    .references-list {
+      list-style: none; padding: 0; margin: 0; display: flex;
+      flex-direction: column; gap: var(--space-3);
+    }
+    .reference-item { display: flex; align-items: baseline; gap: var(--space-3); }
+    .reference-type-icon { font-size: var(--text-base); flex-shrink: 0; width: 1.5em; text-align: center; }
+    .reference-title { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; }
+    .reference-title a { color: var(--color-accent); text-decoration: none; }
+    .reference-title a:hover { text-decoration: underline; }
+    .reference-domain { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); margin-left: var(--space-2); }
+
+    /* --- Page Nav Footer --- */
+    .page-nav-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      max-width: var(--content-width); margin: var(--space-12) auto var(--space-6);
+      padding: var(--space-6); border-top: 1px solid var(--color-border-light);
+    }
+    .page-nav-footer a {
+      font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600;
+      color: var(--color-accent); text-decoration: none; display: flex;
+      align-items: center; gap: var(--space-2); transition: color var(--duration-fast);
+    }
+    .page-nav-footer a:hover { color: var(--color-accent-hover); }
+
+    /* --- Site Footer --- */
+    .site-footer {
+      text-align: center; padding: var(--space-8) var(--space-6);
+      font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text-muted);
+      border-top: 1px solid var(--color-border-light); margin-top: var(--space-4);
+    }
+
+    /* --- Animations --- */
+    .animate-in {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity var(--duration-slow) var(--ease-out), transform var(--duration-slow) var(--ease-out);
+    }
+    .animate-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      :root { --text-3xl: 1.5rem; --nav-height: 56px; }
+      .config-table { font-size: var(--text-xs); }
+      .config-table th, .config-table td { padding: var(--space-2) var(--space-3); }
+    }
+    @media (max-width: 480px) {
+      .nav-hamburger { display: flex; }
+      .nav-pages {
+        display: none; position: absolute; top: var(--nav-height); left: 0; right: 0;
+        background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+        box-shadow: var(--shadow-md); padding: var(--space-4);
+      }
+      .nav-pages.mobile-open { display: flex; flex-direction: column; gap: var(--space-1); }
+      .page-nav-footer { flex-direction: column; gap: var(--space-4); }
+      .page-header { flex-direction: column; }
+      .copy-markdown-btn .btn-label { display: none; }
+    }
   </style>
 </head>
 <body>
-  <nav class="site-nav"><div class="nav-progress-bar" role="progressbar"></div><div class="nav-inner"><a href="index.html" class="nav-brand">DuckDB</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link active">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">Q&amp;A</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
 
-  <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge advanced">Advanced</span><h1>Implementation Details</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+  <!-- Navigation -->
+  <nav class="site-nav">
+    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">DuckDB</a>
+      <div class="nav-pages" id="navPages">
+        <a href="index.html" class="nav-page-link">Home</a>
+        <a href="concepts.html" class="nav-page-link">Concepts</a>
+        <a href="architecture.html" class="nav-page-link">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
+        <a href="implementation.html" class="nav-page-link active">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link">Q&amp;A</a>
+        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
 
-  <div class="source-map" id="source-map">
-    <div class="source-map-header" onclick="this.parentElement.classList.toggle('open')">
-      <h3>&#x1F5C2; Source Map</h3>
+  <!-- Page Header -->
+  <header class="page-header animate-in">
+    <div class="page-header-content">
+      <span class="page-level-badge advanced">Advanced</span>
+      <h1>Implementation Details</h1>
+    </div>
+    <button class="copy-markdown-btn" onclick="copyMarkdown()">
+      <span class="btn-icon">&#x1F4CB;</span>
+      <span class="btn-label">Copy as Markdown</span>
+    </button>
+  </header>
+
+  <!-- Source Map -->
+  <div class="source-map animate-in" id="sourceMap">
+    <div class="source-map-header" onclick="document.getElementById('sourceMap').classList.toggle('open')">
+      <h3>&#x1F5C2; Source Map (6 files)</h3>
       <span class="source-map-toggle">&#x25BC;</span>
     </div>
     <div class="source-map-body">
       <ul class="source-map-list">
-        <li class="source-map-item"><a href="#source-parser">src/parser/parser.cpp</a><span class="line-range">Parser entry point</span></li>
-        <li class="source-map-item"><a href="#source-database">src/main/database.cpp</a><span class="line-range">Database initialization</span></li>
-        <li class="source-map-item"><a href="#source-vecops">src/include/.../vector_operations.hpp</a><span class="line-range">Vector operations</span></li>
-        <li class="source-map-item"><a href="#source-optimizer">src/optimizer/optimizer.cpp</a><span class="line-range">Optimizer pipeline</span></li>
-        <li class="source-map-item"><a href="#source-physplan">src/execution/physical_plan_generator.cpp</a><span class="line-range">Physical plan generator</span></li>
+        <li class="source-map-item">
+          <a href="#source-datachunk">src/include/duckdb/common/types/data_chunk.hpp</a>
+          <span class="line-range">:43-77</span>
+        </li>
+        <li class="source-map-item">
+          <a href="#source-dbconfig">src/main/database.cpp</a>
+          <span class="line-range">:46-59</span>
+        </li>
+        <li class="source-map-item">
+          <a href="#source-pipeline-task">src/parallel/pipeline.cpp</a>
+          <span class="line-range">:33-66</span>
+        </li>
+        <li class="source-map-item">
+          <a href="#source-schedule-parallel">src/parallel/pipeline.cpp</a>
+          <span class="line-range">:100-138</span>
+        </li>
+        <li class="source-map-item">
+          <a href="#source-physical-plan">src/execution/physical_plan_generator.cpp</a>
+          <span class="line-range">:78-119</span>
+        </li>
+        <li class="source-map-item">
+          <a href="#source-binder">src/planner/binder.cpp</a>
+          <span class="line-range">:21-36</span>
+        </li>
       </ul>
       <div class="source-map-repo">Repository: <a href="https://github.com/duckdb/duckdb" target="_blank" rel="noopener noreferrer">duckdb/duckdb</a> @ v1.5.1</div>
     </div>
   </div>
 
   <main class="content-area">
-    <section class="content-section animate-in" data-level="beginner">
+
+    <!-- Getting Started -->
+    <section class="content-section animate-in">
       <h2>Getting Started</h2>
+
+      <h3>Python (most common)</h3>
       <div class="code-block">
-        <div class="code-header"><span class="code-lang">Bash</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-comment"># Python (most popular)</span>
-pip install duckdb
-
-<span class="code-comment"># R</span>
-install.packages(<span class="code-string">"duckdb"</span>)
-
-<span class="code-comment"># Node.js</span>
-npm install duckdb
-
-<span class="code-comment"># Homebrew (macOS/Linux CLI)</span>
-brew install duckdb</code></pre>
-      </div>
-    </section>
-
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>Configuration Essentials</h2>
-      <table class="cfg-table">
-        <thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td>memory_limit</td><td>80% of RAM</td><td>Maximum memory for the buffer pool</td></tr>
-          <tr><td>threads</td><td># of CPU cores</td><td>Worker threads for parallel execution</td></tr>
-          <tr><td>temp_directory</td><td>&lt;db&gt;.tmp</td><td>Directory for spilling intermediate results</td></tr>
-          <tr><td>max_temp_directory_size</td><td>90% of disk</td><td>Max size of temporary spill files</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section class="content-section animate-in" data-level="intermediate">
-      <h2>Code Patterns</h2>
-      <h3>Zero-Copy DataFrame Integration</h3>
-      <div class="code-block">
-        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-keyword">import</span> <span class="code-variable">duckdb</span>
-<span class="code-keyword">import</span> <span class="code-variable">pandas</span> <span class="code-keyword">as</span> <span class="code-variable">pd</span>
-
-<span class="code-variable">df</span> = <span class="code-variable">pd</span>.<span class="code-function">DataFrame</span>({
-    <span class="code-string">'name'</span>: [<span class="code-string">'Alice'</span>, <span class="code-string">'Bob'</span>, <span class="code-string">'Charlie'</span>],
-    <span class="code-string">'department'</span>: [<span class="code-string">'Eng'</span>, <span class="code-string">'Sales'</span>, <span class="code-string">'Eng'</span>],
-    <span class="code-string">'salary'</span>: [<span class="code-number">120000</span>, <span class="code-number">95000</span>, <span class="code-number">110000</span>]
-})
-
-<span class="code-comment"># Query the DataFrame directly with SQL -- zero-copy!</span>
-<span class="code-variable">result</span> = <span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"""
-    SELECT department, AVG(salary) as avg_salary
-    FROM df
-    GROUP BY department
-"""</span>).<span class="code-function">fetchdf</span>()</code></pre>
-      </div>
-
-      <h3>Advanced SQL Features</h3>
-      <div class="code-block">
-        <div class="code-header"><span class="code-lang">SQL</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-comment">-- PIVOT: Transform rows to columns</span>
-<span class="code-keyword">PIVOT</span> monthly_sales <span class="code-keyword">ON</span> month
-<span class="code-keyword">USING</span> <span class="code-function">SUM</span>(revenue) <span class="code-keyword">GROUP BY</span> region;
-
-<span class="code-comment">-- COLUMNS expression: Apply operations to matching columns</span>
-<span class="code-keyword">SELECT</span> <span class="code-function">MIN</span>(<span class="code-function">COLUMNS</span>(<span class="code-string">'.*_price'</span>)) <span class="code-keyword">FROM</span> products;
-
-<span class="code-comment">-- FROM-first syntax (no SELECT needed)</span>
-<span class="code-keyword">FROM</span> orders <span class="code-keyword">WHERE</span> amount > <span class="code-number">1000</span> <span class="code-keyword">LIMIT</span> <span class="code-number">10</span>;</code></pre>
-      </div>
-    </section>
-
-    <section class="content-section animate-in" data-level="advanced">
-      <h2>Source Code Walkthrough</h2>
-
-      <h3>1. SQL Parser Entry Point</h3>
-      <p>The parser wraps PostgreSQL's parser and transforms parse trees into DuckDB's internal representation.</p>
-      <div class="code-block code-block-sourced" id="source-parser">
         <div class="code-header">
-          <span class="code-lang">C++</span>
-          <span class="code-source-path">src/parser/parser.cpp</span>
-          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/parser/parser.cpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <span class="code-lang">Bash</span>
           <button class="code-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre class="code-pre"><code><span class="code-keyword">void</span> <span class="code-type">Parser</span>::<span class="code-function">ParseQuery</span>(<span class="code-keyword">const</span> <span class="code-type">string</span> &amp;<span class="code-variable">query</span>) {
-    <span class="code-type">Transformer</span> <span class="code-variable">transformer</span>(<span class="code-variable">options</span>);
-    <span class="code-type">PostgresParser</span> <span class="code-variable">parser</span>;
-    <span class="code-variable">parser</span>.<span class="code-function">Parse</span>(<span class="code-variable">query</span>);
-    <span class="code-keyword">if</span> (<span class="code-variable">parser</span>.<span class="code-variable">success</span>) {
-        <span class="code-variable">transformer</span>.<span class="code-function">TransformParseTree</span>(
-            <span class="code-variable">parser</span>.<span class="code-variable">parse_tree</span>, <span class="code-variable">statements</span>);
+        <pre class="code-pre"><code>pip install duckdb</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">import</span> <span class="code-variable">duckdb</span>
+
+<span class="code-comment"># Query a CSV file directly -- no loading step</span>
+<span class="code-variable">result</span> = <span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT region, SUM(amount) FROM 'sales.csv' GROUP BY region"</span>)
+<span class="code-variable">result</span>.<span class="code-function">show</span>()
+
+<span class="code-comment"># Query a Parquet file from S3</span>
+<span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT * FROM read_parquet('s3://bucket/data/*.parquet') WHERE year = 2025"</span>)
+
+<span class="code-comment"># Create a persistent database</span>
+<span class="code-variable">con</span> = <span class="code-variable">duckdb</span>.<span class="code-function">connect</span>(<span class="code-string">'my_data.duckdb'</span>)
+<span class="code-variable">con</span>.<span class="code-function">sql</span>(<span class="code-string">"CREATE TABLE users AS SELECT * FROM read_csv('users.csv')"</span>)</code></pre>
+      </div>
+
+      <h3>CLI</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Bash</span>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-comment"># Install via pip (since v1.5.0)</span>
+pip install duckdb-cli
+
+<span class="code-comment"># Or via Homebrew</span>
+brew install duckdb
+
+<span class="code-comment"># Start interactive shell</span>
+duckdb my_database.duckdb</code></pre>
+      </div>
+
+      <p><strong>Other languages:</strong> DuckDB has official bindings for C/C++, Java, Node.js, Rust, Go, R, Swift, and WASM (browser). All use the same underlying C API.</p>
+    </section>
+
+    <!-- Configuration Essentials -->
+    <section class="content-section animate-in">
+      <h2>Configuration Essentials</h2>
+
+      <div class="config-table-wrapper">
+        <table class="config-table">
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Default</th>
+              <th>What It Controls</th>
+              <th>When to Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>memory_limit</code></td>
+              <td>80% of RAM</td>
+              <td>Maximum memory for query processing</td>
+              <td>Running on shared machines or containers</td>
+            </tr>
+            <tr>
+              <td><code>threads</code></td>
+              <td>All cores</td>
+              <td>Number of worker threads</td>
+              <td>Limiting CPU usage on shared systems</td>
+            </tr>
+            <tr>
+              <td><code>temp_directory</code></td>
+              <td>Auto</td>
+              <td>Location for spill-to-disk files</td>
+              <td>Custom temp storage location</td>
+            </tr>
+            <tr>
+              <td><code>access_mode</code></td>
+              <td><code>automatic</code></td>
+              <td>Read-only vs read-write</td>
+              <td>Concurrent readers on same file</td>
+            </tr>
+            <tr>
+              <td><code>default_order</code></td>
+              <td><code>asc</code></td>
+              <td>Default sort order</td>
+              <td>Preference</td>
+            </tr>
+            <tr>
+              <td><code>preserve_insertion_order</code></td>
+              <td><code>true</code></td>
+              <td>Whether scans return rows in insert order</td>
+              <td>Set <code>false</code> for ~10% scan speedup</td>
+            </tr>
+            <tr>
+              <td><code>enable_progress_bar</code></td>
+              <td><code>true</code></td>
+              <td>Show progress for long queries</td>
+              <td>Disable in production/scripts</td>
+            </tr>
+            <tr>
+              <td><code>max_memory</code></td>
+              <td>Same as memory_limit</td>
+              <td>Alias for <code>memory_limit</code></td>
+              <td>--</td>
+            </tr>
+            <tr>
+              <td><code>wal_autocheckpoint</code></td>
+              <td><code>16MB</code></td>
+              <td><span class="glossary-term" data-def="Write-Ahead Log -- a sequential log of all writes. DuckDB writes changes to the WAL first, then periodically checkpoints (flushes) them to the main database file for crash recovery.">WAL</span> size before auto-checkpoint</td>
+              <td>Larger = fewer checkpoints, more recovery time</td>
+            </tr>
+            <tr>
+              <td><code>enable_object_cache</code></td>
+              <td><code>false</code></td>
+              <td>Cache Parquet metadata across queries</td>
+              <td>Enable when querying same Parquet files repeatedly</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">SQL</span>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-comment">-- Set configuration</span>
+<span class="code-keyword">SET</span> <span class="code-variable">memory_limit</span> = <span class="code-string">'4GB'</span>;
+<span class="code-keyword">SET</span> <span class="code-variable">threads</span> = <span class="code-number">4</span>;
+<span class="code-keyword">SET</span> <span class="code-variable">temp_directory</span> = <span class="code-string">'/tmp/duckdb_spill'</span>;
+
+<span class="code-comment">-- Check current settings</span>
+<span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> <span class="code-function">duckdb_settings</span>();</code></pre>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content">
+          <p><strong>Configuration tip:</strong> For container deployments, always set <code>memory_limit</code> explicitly. DuckDB detects total host RAM, not the container's cgroup limit, so the default 80% can cause OOM kills. Set it to 60-70% of your container's memory allocation.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Code Patterns -->
+    <section class="content-section animate-in">
+      <h2>Code Patterns</h2>
+
+      <h3>Querying Files Directly (Zero-Copy Scanning)</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">import</span> <span class="code-variable">duckdb</span>
+
+<span class="code-comment"># CSV, Parquet, JSON -- with glob patterns</span>
+<span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT * FROM read_parquet('data/**/*.parquet')"</span>)
+<span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT * FROM read_csv('logs/*.csv', auto_detect=true)"</span>)
+<span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT * FROM read_json('events.jsonl')"</span>)
+
+<span class="code-comment"># Query pandas DataFrames directly -- zero copy via Arrow</span>
+<span class="code-keyword">import</span> <span class="code-variable">pandas</span> <span class="code-keyword">as</span> <span class="code-variable">pd</span>
+<span class="code-variable">df</span> = <span class="code-variable">pd</span>.<span class="code-function">DataFrame</span>({<span class="code-string">'x'</span>: [<span class="code-number">1</span>, <span class="code-number">2</span>, <span class="code-number">3</span>], <span class="code-string">'y'</span>: [<span class="code-string">'a'</span>, <span class="code-string">'b'</span>, <span class="code-string">'c'</span>]})
+<span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT * FROM df WHERE x &gt; 1"</span>)</code></pre>
+      </div>
+
+      <h3>Replacement Scans and the Relational API</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">import</span> <span class="code-variable">duckdb</span>
+
+<span class="code-comment"># Chain operations with the relational API</span>
+<span class="code-variable">rel</span> = (<span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT * FROM 'sales.parquet'"</span>)
+       .<span class="code-function">filter</span>(<span class="code-string">"year = 2025"</span>)
+       .<span class="code-function">aggregate</span>(<span class="code-string">"region, SUM(amount) AS total"</span>)
+       .<span class="code-function">order</span>(<span class="code-string">"total DESC"</span>)
+       .<span class="code-function">limit</span>(<span class="code-number">10</span>))
+
+<span class="code-comment"># Convert to pandas, Arrow, or Polars</span>
+<span class="code-variable">df</span> = <span class="code-variable">rel</span>.<span class="code-function">fetchdf</span>()       <span class="code-comment"># pandas DataFrame</span>
+<span class="code-variable">tbl</span> = <span class="code-variable">rel</span>.<span class="code-function">fetch_arrow</span>()  <span class="code-comment"># Arrow Table</span></code></pre>
+      </div>
+
+      <h3>Persistent Database with ACID Transactions</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">Python</span>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-variable">con</span> = <span class="code-variable">duckdb</span>.<span class="code-function">connect</span>(<span class="code-string">'analytics.duckdb'</span>)
+
+<span class="code-variable">con</span>.<span class="code-function">execute</span>(<span class="code-string">"BEGIN TRANSACTION"</span>)
+<span class="code-variable">con</span>.<span class="code-function">execute</span>(<span class="code-string">"CREATE TABLE IF NOT EXISTS events (id INT, type VARCHAR, ts TIMESTAMP)"</span>)
+<span class="code-variable">con</span>.<span class="code-function">execute</span>(<span class="code-string">"INSERT INTO events SELECT * FROM read_parquet('new_events.parquet')"</span>)
+<span class="code-variable">con</span>.<span class="code-function">execute</span>(<span class="code-string">"COMMIT"</span>)</code></pre>
+      </div>
+
+      <h3>Exporting Data</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">SQL</span>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-comment">-- Export to Parquet (with partitioning)</span>
+<span class="code-keyword">COPY</span> (<span class="code-keyword">SELECT</span> * <span class="code-keyword">FROM</span> <span class="code-variable">sales</span>) <span class="code-keyword">TO</span> <span class="code-string">'output/'</span> (<span class="code-variable">FORMAT</span> <span class="code-variable">PARQUET</span>, <span class="code-variable">PARTITION_BY</span> (<span class="code-variable">year</span>, <span class="code-variable">region</span>));
+
+<span class="code-comment">-- Export to CSV</span>
+<span class="code-keyword">COPY</span> <span class="code-variable">sales</span> <span class="code-keyword">TO</span> <span class="code-string">'sales.csv'</span> (<span class="code-variable">HEADER</span>, <span class="code-variable">DELIMITER</span> <span class="code-string">','</span>);</code></pre>
+      </div>
+    </section>
+
+    <!-- Source Code Walkthrough -->
+    <section class="content-section animate-in">
+      <h2>Source Code Walkthrough</h2>
+      <p>Key source files from DuckDB's C++ codebase that implement the core execution engine, planner, and parallelism subsystems.</p>
+
+      <!-- 1. DataChunk -->
+      <h3><span class="glossary-term" data-def="The fundamental columnar data container in DuckDB's execution engine. Each DataChunk holds a vector of column Vectors, all the same length (up to STANDARD_VECTOR_SIZE = 2048 rows). Every operator receives and produces DataChunks.">DataChunk</span> -- The Execution Engine's Core Data Unit</h3>
+      <p>The <code>DataChunk</code> is the most fundamental class in DuckDB's execution engine. Every operator receives and produces DataChunks. The class holds a vector of <code>Vector</code> objects (one per column) and tracks the current row count. The design enforces that all vectors in a chunk have the same length, maintaining the columnar invariant.</p>
+
+      <div class="code-block code-block-sourced" id="source-datachunk">
+        <div class="code-header">
+          <span class="code-lang">C++</span>
+          <span class="code-source-path">src/include/duckdb/common/types/data_chunk.hpp:43-77</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/include/duckdb/common/types/data_chunk.hpp#L43-L77" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">class</span> <span class="code-type">DataChunk</span> {
+<span class="code-keyword">public</span>:
+    DUCKDB_API <span class="code-function">DataChunk</span>();
+    DUCKDB_API ~<span class="code-function">DataChunk</span>();
+
+    <span class="code-comment">//! The vectors owned by the DataChunk.</span>
+    <span class="code-type">vector</span>&lt;<span class="code-type">Vector</span>&gt; <span class="code-variable">data</span>;
+
+<span class="code-keyword">public</span>:
+    <span class="code-keyword">inline</span> <span class="code-type">idx_t</span> <span class="code-function">size</span>() <span class="code-keyword">const</span> {
+        <span class="code-keyword">return</span> <span class="code-variable">count</span>;
+    }
+    <span class="code-keyword">inline</span> <span class="code-type">idx_t</span> <span class="code-function">ColumnCount</span>() <span class="code-keyword">const</span> {
+        <span class="code-keyword">return</span> <span class="code-variable">data</span>.<span class="code-function">size</span>();
+    }
+    <span class="code-keyword">inline</span> <span class="code-keyword">void</span> <span class="code-function">SetCardinality</span>(<span class="code-type">idx_t</span> <span class="code-variable">count_p</span>) {
+        <span class="code-function">D_ASSERT</span>(<span class="code-variable">count_p</span> &lt;= <span class="code-variable">capacity</span>);
+        <span class="code-keyword">this</span>-&gt;<span class="code-variable">count</span> = <span class="code-variable">count_p</span>;
+    }
+    <span class="code-keyword">inline</span> <span class="code-type">idx_t</span> <span class="code-function">GetCapacity</span>() <span class="code-keyword">const</span> {
+        <span class="code-keyword">return</span> <span class="code-variable">capacity</span>;
+    }
+
+    DUCKDB_API <span class="code-type">Value</span> <span class="code-function">GetValue</span>(<span class="code-type">idx_t</span> <span class="code-variable">col_idx</span>, <span class="code-type">idx_t</span> <span class="code-variable">index</span>) <span class="code-keyword">const</span>;
+    DUCKDB_API <span class="code-keyword">void</span> <span class="code-function">SetValue</span>(<span class="code-type">idx_t</span> <span class="code-variable">col_idx</span>, <span class="code-type">idx_t</span> <span class="code-variable">index</span>, <span class="code-keyword">const</span> <span class="code-type">Value</span> &amp;<span class="code-variable">val</span>);
+
+    <span class="code-comment">//! Set the DataChunk to reference another data chunk</span>
+    DUCKDB_API <span class="code-keyword">void</span> <span class="code-function">Reference</span>(<span class="code-type">DataChunk</span> &amp;<span class="code-variable">chunk</span>);
+    <span class="code-comment">//! Set the DataChunk to own the data of data chunk, destroying the other chunk</span>
+    DUCKDB_API <span class="code-keyword">void</span> <span class="code-function">Move</span>(<span class="code-type">DataChunk</span> &amp;<span class="code-variable">chunk</span>);
+
+    DUCKDB_API <span class="code-keyword">void</span> <span class="code-function">Initialize</span>(<span class="code-type">Allocator</span> &amp;<span class="code-variable">allocator</span>, <span class="code-keyword">const</span> <span class="code-type">vector</span>&lt;<span class="code-type">LogicalType</span>&gt; &amp;<span class="code-variable">types</span>,
+                               <span class="code-type">idx_t</span> <span class="code-variable">capacity</span> = <span class="code-variable">STANDARD_VECTOR_SIZE</span>);
+};</code></pre>
+      </div>
+
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F50D;</span>
+        <div class="callout-content">
+          <p><strong>Source insight:</strong> Note the <span class="glossary-term" data-def="The default batch size in DuckDB's vectorized execution engine, set to 2048. This value is chosen so that a vector of 64-bit values (2048 x 8 bytes = 16 KB) fits comfortably in the L1 CPU cache, maximizing cache locality during operator processing.">STANDARD_VECTOR_SIZE</span> default capacity -- this is the 2048-value batch size that keeps data in L1 cache. The <code>Reference()</code> method enables zero-copy data passing between operators (e.g., a filter operator can reference the source chunk and just add a selection vector).</p>
+        </div>
+      </div>
+
+      <!-- 2. DBConfig -->
+      <h3>Database Initialization -- Wiring Components Together</h3>
+      <p>The <code>DBConfig</code> constructor reveals every subsystem DuckDB initializes at startup. Each component is created as an independent module -- compression, encoding, type management, Arrow interop, collation, indexing, error handling, secrets, HTTP, and extension callbacks.</p>
+
+      <div class="code-block code-block-sourced" id="source-dbconfig">
+        <div class="code-header">
+          <span class="code-lang">C++</span>
+          <span class="code-source-path">src/main/database.cpp:46-59</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/main/database.cpp#L46-L59" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-type">DBConfig</span>::<span class="code-function">DBConfig</span>() {
+    <span class="code-variable">compression_functions</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">CompressionFunctionSet</span>&gt;();
+    <span class="code-variable">encoding_functions</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">EncodingFunctionSet</span>&gt;();
+    <span class="code-variable">encoding_functions</span>-&gt;<span class="code-function">Initialize</span>(*<span class="code-keyword">this</span>);
+    <span class="code-variable">arrow_extensions</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">ArrowTypeExtensionSet</span>&gt;();
+    <span class="code-variable">arrow_extensions</span>-&gt;<span class="code-function">Initialize</span>(*<span class="code-keyword">this</span>);
+    <span class="code-variable">type_manager</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">TypeManager</span>&gt;(*<span class="code-keyword">this</span>);
+    <span class="code-variable">collation_bindings</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">CollationBinding</span>&gt;();
+    <span class="code-variable">index_types</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">IndexTypeSet</span>&gt;();
+    <span class="code-variable">error_manager</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">ErrorManager</span>&gt;();
+    <span class="code-variable">secret_manager</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">SecretManager</span>&gt;();
+    <span class="code-variable">http_util</span> = <span class="code-function">make_shared_ptr</span>&lt;<span class="code-type">HTTPUtil</span>&gt;();
+    <span class="code-variable">callback_manager</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">ExtensionCallbackManager</span>&gt;();
+}</code></pre>
+      </div>
+
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F50D;</span>
+        <div class="callout-content">
+          <p><strong>Source insight:</strong> The <code>DatabaseInstance</code> destructor (lines 79-103) shows the careful teardown order: attached databases first, then connections, object cache, scheduler, database manager, logger, file cache, result sets, and finally the buffer manager. This ordering prevents use-after-free by ensuring consumers are destroyed before the resources they depend on.</p>
+        </div>
+      </div>
+
+      <!-- 3. PipelineTask::ExecuteTask -->
+      <h3>Pipeline Task Execution -- The Push-Based Model in Action</h3>
+      <p>This is where data actually flows. Each <code>PipelineTask</code> creates a <code>PipelineExecutor</code> and calls <code>Execute()</code>, which pushes <span class="glossary-term" data-def="The fundamental columnar data container in DuckDB's execution engine. Each DataChunk holds a vector of column Vectors, all the same length (up to STANDARD_VECTOR_SIZE = 2048 rows). Every operator receives and produces DataChunks.">DataChunks</span> from the source through operators to the sink. The <code>PROCESS_PARTIAL</code> mode allows cooperative scheduling -- a task processes a few chunks then yields, letting other tasks (and pipelines) share CPU time.</p>
+
+      <div class="code-block code-block-sourced" id="source-pipeline-task">
+        <div class="code-header">
+          <span class="code-lang">C++</span>
+          <span class="code-source-path">src/parallel/pipeline.cpp:33-66</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/parallel/pipeline.cpp#L33-L66" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-type">TaskExecutionResult</span> <span class="code-type">PipelineTask</span>::<span class="code-function">ExecuteTask</span>(<span class="code-type">TaskExecutionMode</span> <span class="code-variable">mode</span>) {
+    <span class="code-keyword">if</span> (!<span class="code-variable">pipeline_executor</span>) {
+        <span class="code-variable">pipeline_executor</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">PipelineExecutor</span>&gt;(<span class="code-variable">pipeline</span>.<span class="code-function">GetClientContext</span>(), <span class="code-variable">pipeline</span>);
+    }
+
+    <span class="code-variable">pipeline_executor</span>-&gt;<span class="code-function">SetTaskForInterrupts</span>(<span class="code-function">shared_from_this</span>());
+
+    <span class="code-keyword">if</span> (<span class="code-variable">mode</span> == <span class="code-type">TaskExecutionMode</span>::<span class="code-variable">PROCESS_PARTIAL</span>) {
+        <span class="code-keyword">auto</span> <span class="code-variable">res</span> = <span class="code-variable">pipeline_executor</span>-&gt;<span class="code-function">Execute</span>(<span class="code-variable">PARTIAL_CHUNK_COUNT</span>);
+
+        <span class="code-keyword">switch</span> (<span class="code-variable">res</span>) {
+        <span class="code-keyword">case</span> <span class="code-type">PipelineExecuteResult</span>::<span class="code-variable">NOT_FINISHED</span>:
+            <span class="code-keyword">return</span> <span class="code-type">TaskExecutionResult</span>::<span class="code-variable">TASK_NOT_FINISHED</span>;
+        <span class="code-keyword">case</span> <span class="code-type">PipelineExecuteResult</span>::<span class="code-variable">INTERRUPTED</span>:
+            <span class="code-keyword">return</span> <span class="code-type">TaskExecutionResult</span>::<span class="code-variable">TASK_BLOCKED</span>;
+        <span class="code-keyword">case</span> <span class="code-type">PipelineExecuteResult</span>::<span class="code-variable">FINISHED</span>:
+            <span class="code-keyword">break</span>;
+        }
+    } <span class="code-keyword">else</span> {
+        <span class="code-keyword">auto</span> <span class="code-variable">res</span> = <span class="code-variable">pipeline_executor</span>-&gt;<span class="code-function">Execute</span>();
+        <span class="code-keyword">switch</span> (<span class="code-variable">res</span>) {
+        <span class="code-keyword">case</span> <span class="code-type">PipelineExecuteResult</span>::<span class="code-variable">NOT_FINISHED</span>:
+            <span class="code-keyword">throw</span> <span class="code-function">InternalException</span>(<span class="code-string">"Execute without limit should not return NOT_FINISHED"</span>);
+        <span class="code-keyword">case</span> <span class="code-type">PipelineExecuteResult</span>::<span class="code-variable">INTERRUPTED</span>:
+            <span class="code-keyword">return</span> <span class="code-type">TaskExecutionResult</span>::<span class="code-variable">TASK_BLOCKED</span>;
+        <span class="code-keyword">case</span> <span class="code-type">PipelineExecuteResult</span>::<span class="code-variable">FINISHED</span>:
+            <span class="code-keyword">break</span>;
+        }
+    }
+
+    <span class="code-variable">event</span>-&gt;<span class="code-function">FinishTask</span>();
+    <span class="code-variable">pipeline_executor</span>.<span class="code-function">reset</span>();
+    <span class="code-keyword">return</span> <span class="code-type">TaskExecutionResult</span>::<span class="code-variable">TASK_FINISHED</span>;
+}</code></pre>
+      </div>
+
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F50D;</span>
+        <div class="callout-content">
+          <p><strong>Source insight:</strong> Note the three execution states: <code>NOT_FINISHED</code> (more work to do), <code>INTERRUPTED</code> (blocked on I/O or downstream), and <code>FINISHED</code>. This state machine allows the task scheduler to manage hundreds of concurrent pipeline tasks efficiently.</p>
+        </div>
+      </div>
+
+      <!-- 4. Pipeline::ScheduleParallel -->
+      <h3>Parallel Pipeline Scheduling -- <span class="glossary-term" data-def="A morsel is a fixed-size horizontal partition of a table (typically 2048-10240 rows). DuckDB's morsel-driven parallelism assigns morsels to worker threads dynamically, enabling fine-grained load balancing without static data partitioning.">Morsel</span> Distribution</h3>
+      <p>The <code>ScheduleParallel</code> method shows how DuckDB decides whether and how to parallelize a pipeline. It checks every operator in the chain for parallel support, queries the source for maximum thread count, and respects the sink's partitioning requirements (e.g., ordered output requires batch indexing).</p>
+
+      <div class="code-block code-block-sourced" id="source-schedule-parallel">
+        <div class="code-header">
+          <span class="code-lang">C++</span>
+          <span class="code-source-path">src/parallel/pipeline.cpp:100-138</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/parallel/pipeline.cpp#L100-L138" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-type">bool</span> <span class="code-type">Pipeline</span>::<span class="code-function">ScheduleParallel</span>(<span class="code-type">shared_ptr</span>&lt;<span class="code-type">Event</span>&gt; &amp;<span class="code-variable">event</span>) {
+    <span class="code-comment">// check if the sink, source and all intermediate operators support parallelism</span>
+    <span class="code-keyword">if</span> (!<span class="code-variable">sink</span>-&gt;<span class="code-function">ParallelSink</span>()) {
+        <span class="code-keyword">return</span> <span class="code-keyword">false</span>;
+    }
+    <span class="code-keyword">if</span> (!<span class="code-variable">source</span>-&gt;<span class="code-function">ParallelSource</span>()) {
+        <span class="code-keyword">return</span> <span class="code-keyword">false</span>;
+    }
+    <span class="code-keyword">auto</span> <span class="code-variable">max_threads</span> = <span class="code-variable">source_state</span>-&gt;<span class="code-function">MaxThreads</span>();
+
+    <span class="code-keyword">for</span> (<span class="code-keyword">auto</span> &amp;<span class="code-variable">op_ref</span> : <span class="code-variable">operators</span>) {
+        <span class="code-keyword">auto</span> &amp;<span class="code-variable">op</span> = <span class="code-variable">op_ref</span>.<span class="code-function">get</span>();
+        <span class="code-keyword">if</span> (!<span class="code-variable">op</span>.<span class="code-function">ParallelOperator</span>()) {
+            <span class="code-keyword">return</span> <span class="code-keyword">false</span>;
+        }
+        <span class="code-variable">max_threads</span> = <span class="code-function">MinValue</span>&lt;<span class="code-type">idx_t</span>&gt;(<span class="code-variable">max_threads</span>, <span class="code-variable">op</span>.<span class="code-variable">op_state</span>-&gt;<span class="code-function">MaxThreads</span>(<span class="code-variable">max_threads</span>));
+    }
+
+    <span class="code-keyword">auto</span> <span class="code-variable">partition_info</span> = <span class="code-variable">sink</span>-&gt;<span class="code-function">RequiredPartitionInfo</span>();
+    <span class="code-keyword">if</span> (<span class="code-variable">partition_info</span>.<span class="code-variable">batch_index</span>) {
+        <span class="code-keyword">if</span> (!<span class="code-variable">source</span>-&gt;<span class="code-function">SupportsPartitioning</span>(<span class="code-type">OperatorPartitionInfo</span>::<span class="code-function">BatchIndex</span>())) {
+            <span class="code-keyword">throw</span> <span class="code-function">InternalException</span>(
+                <span class="code-string">"Attempting to schedule a pipeline where the sink requires batch index "</span>
+                <span class="code-string">"but source does not support it"</span>);
+        }
+    }
+
+    <span class="code-keyword">auto</span> &amp;<span class="code-variable">scheduler</span> = <span class="code-type">TaskScheduler</span>::<span class="code-function">GetScheduler</span>(<span class="code-variable">executor</span>.<span class="code-variable">context</span>);
+    <span class="code-keyword">auto</span> <span class="code-variable">active_threads</span> = <span class="code-function">NumericCast</span>&lt;<span class="code-type">idx_t</span>&gt;(<span class="code-variable">scheduler</span>.<span class="code-function">NumberOfThreads</span>());
+    <span class="code-keyword">if</span> (<span class="code-variable">max_threads</span> &gt; <span class="code-variable">active_threads</span>) {
+        <span class="code-variable">max_threads</span> = <span class="code-variable">active_threads</span>;
+    }
+    <span class="code-keyword">return</span> <span class="code-function">LaunchScanTasks</span>(<span class="code-variable">event</span>, <span class="code-variable">max_threads</span>);
+}</code></pre>
+      </div>
+
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F50D;</span>
+        <div class="callout-content">
+          <p><strong>Source insight:</strong> The key design: parallelism is opt-in per operator. Each operator declares whether it supports parallel execution via <code>ParallelSink()</code>, <code>ParallelSource()</code>, and <code>ParallelOperator()</code>. The minimum thread count across all operators becomes the actual parallelism level -- a single sequential operator forces the entire pipeline to be sequential.</p>
+        </div>
+      </div>
+
+      <!-- 5. PhysicalPlanGenerator::CreatePlan -->
+      <h3>Physical Plan Generation -- Logical to Physical Translation</h3>
+      <p>The <code>CreatePlan</code> dispatcher shows how DuckDB translates abstract logical operations into concrete physical execution strategies. Each logical operator type maps to a specialized physical operator through a switch statement. This is where decisions like "use hash join vs. merge join" are made.</p>
+
+      <div class="code-block code-block-sourced" id="source-physical-plan">
+        <div class="code-header">
+          <span class="code-lang">C++</span>
+          <span class="code-source-path">src/execution/physical_plan_generator.cpp:78-119</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/execution/physical_plan_generator.cpp#L78-L119" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-type">PhysicalOperator</span> &amp;<span class="code-type">PhysicalPlanGenerator</span>::<span class="code-function">CreatePlan</span>(<span class="code-type">LogicalOperator</span> &amp;<span class="code-variable">op</span>) {
+    <span class="code-keyword">switch</span> (<span class="code-variable">op</span>.<span class="code-variable">type</span>) {
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_GET</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalGet</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_PROJECTION</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalProjection</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_FILTER</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalFilter</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_AGGREGATE_AND_GROUP_BY</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalAggregate</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_WINDOW</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalWindow</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_LIMIT</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalLimit</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_ORDER_BY</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalOrder</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_TOP_N</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalTopN</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_ANY_JOIN</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalAnyJoin</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_ASOF_JOIN</span>:
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_DELIM_JOIN</span>:
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_COMPARISON_JOIN</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalComparisonJoin</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_CROSS_PRODUCT</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalCrossProduct</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_INSERT</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalInsert</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_DELETE</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalDelete</span>&gt;());
+    <span class="code-keyword">case</span> <span class="code-type">LogicalOperatorType</span>::<span class="code-variable">LOGICAL_UPDATE</span>:
+        <span class="code-keyword">return</span> <span class="code-function">CreatePlan</span>(<span class="code-variable">op</span>.<span class="code-function">Cast</span>&lt;<span class="code-type">LogicalUpdate</span>&gt;());
+    <span class="code-comment">// ... 20+ more operator types</span>
     }
 }</code></pre>
       </div>
 
-      <h3>2. Database Instance Initialization</h3>
-      <p>The initialization sequence reveals the dependency order: file system first, then buffer manager, then catalog, and finally task scheduler.</p>
-      <div class="code-block code-block-sourced" id="source-database">
-        <div class="code-header">
-          <span class="code-lang">C++</span>
-          <span class="code-source-path">src/main/database.cpp</span>
-          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/main/database.cpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
-          <button class="code-copy" onclick="copyCode(this)">Copy</button>
-        </div>
-        <pre class="code-pre"><code><span class="code-keyword">void</span> <span class="code-type">DatabaseInstance</span>::<span class="code-function">Initialize</span>(...) {
-    <span class="code-function">Configure</span>(*<span class="code-variable">config_ptr</span>, <span class="code-variable">database_path</span>);
-    <span class="code-variable">db_file_system</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">DatabaseFileSystem</span>&gt;(*<span class="code-keyword">this</span>);
-    <span class="code-variable">db_manager</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">DatabaseManager</span>&gt;(*<span class="code-keyword">this</span>);
-    <span class="code-variable">buffer_manager</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">StandardBufferManager</span>&gt;(
-        *<span class="code-keyword">this</span>, <span class="code-variable">config</span>.<span class="code-variable">options</span>.<span class="code-variable">temporary_directory</span>);
-    <span class="code-variable">db_manager</span>-&gt;<span class="code-function">InitializeSystemCatalog</span>();
-}</code></pre>
-      </div>
-
-      <h3>3. Vectorized Operations Interface</h3>
-      <div class="code-block code-block-sourced" id="source-vecops">
-        <div class="code-header">
-          <span class="code-lang">C++</span>
-          <span class="code-source-path">src/include/duckdb/common/vector_operations/vector_operations.hpp</span>
-          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/include/duckdb/common/vector_operations/vector_operations.hpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
-          <button class="code-copy" onclick="copyCode(this)">Copy</button>
-        </div>
-        <pre class="code-pre"><code><span class="code-keyword">struct</span> <span class="code-type">VectorOperations</span> {
-    <span class="code-keyword">static</span> <span class="code-keyword">void</span> <span class="code-function">IsNotNull</span>(<span class="code-type">Vector</span> &amp;<span class="code-variable">arg</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">result</span>, <span class="code-type">idx_t</span> <span class="code-variable">count</span>);
-    <span class="code-keyword">static</span> <span class="code-keyword">void</span> <span class="code-function">And</span>(<span class="code-type">Vector</span> &amp;<span class="code-variable">left</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">right</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">result</span>, <span class="code-type">idx_t</span> <span class="code-variable">count</span>);
-    <span class="code-keyword">static</span> <span class="code-type">idx_t</span> <span class="code-function">GreaterThan</span>(<span class="code-type">Vector</span> &amp;<span class="code-variable">left</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">right</span>,
-        <span class="code-type">optional_ptr</span>&lt;<span class="code-keyword">const</span> <span class="code-type">SelectionVector</span>&gt; <span class="code-variable">sel</span>,
-        <span class="code-type">idx_t</span> <span class="code-variable">count</span>,
-        <span class="code-type">optional_ptr</span>&lt;<span class="code-type">SelectionVector</span>&gt; <span class="code-variable">true_sel</span>,
-        <span class="code-type">optional_ptr</span>&lt;<span class="code-type">SelectionVector</span>&gt; <span class="code-variable">false_sel</span>);
-    <span class="code-keyword">static</span> <span class="code-keyword">void</span> <span class="code-function">Hash</span>(<span class="code-type">Vector</span> &amp;<span class="code-variable">input</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">hashes</span>, <span class="code-type">idx_t</span> <span class="code-variable">count</span>);
-};</code></pre>
-      </div>
-
-      <div class="callout callout-insight">
-        <div class="callout-icon">&#x1F52D;</div>
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F50D;</span>
         <div class="callout-content">
-          <strong>Design insight:</strong> Every operation accepts an <code>idx_t count</code> parameter, enabling batch processing. The selection-vector variants allow filter operations to produce selection vectors rather than copying data -- a key optimization that avoids unnecessary data movement.
+          <p><strong>Source insight:</strong> Each typed <code>CreatePlan</code> overload (not shown) makes implementation-specific decisions. For example, <code>CreatePlan(LogicalComparisonJoin)</code> chooses between hash join, merge join, nested-loop join, or index join based on join conditions, estimated cardinalities, and available indexes. The optimizer uses <span class="glossary-term" data-def="Dynamic Programming connected subgraph Complement Pairs -- an advanced join ordering algorithm that finds the optimal join order by enumerating connected subgraph complement pairs. More efficient than exhaustive search for complex multi-table joins.">DPccp</span> to determine join ordering before this stage.</p>
         </div>
       </div>
 
-      <h3>4. Optimizer Pipeline</h3>
-      <div class="code-block code-block-sourced" id="source-optimizer">
-        <div class="code-header">
-          <span class="code-lang">C++</span>
-          <span class="code-source-path">src/optimizer/optimizer.cpp</span>
-          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/optimizer/optimizer.cpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
-          <button class="code-copy" onclick="copyCode(this)">Copy</button>
-        </div>
-        <pre class="code-pre"><code><span class="code-comment">// Key optimization passes (in execution order):</span>
-<span class="code-comment">// 1. Expression Rewriter      - Constant folding</span>
-<span class="code-comment">// 2. Filter Pushdown          - Push filters to sources</span>
-<span class="code-comment">// 3. Join Order (DPccp)       - Optimal join ordering</span>
-<span class="code-comment">// 4. CTE Inlining             - Inline when wasteful</span>
-<span class="code-comment">// 5. Unused Columns Removal   - Drop dead columns</span>
-<span class="code-comment">// 6. Statistics Propagation    - Gather stats</span>
-<span class="code-comment">// 7. TopN Optimization         - ORDER BY + LIMIT</span>
-<span class="code-comment">// 8. Row Group Pruning         - Eliminate via min/max</span>
-<span class="code-comment">// 9. Late Materialization      - Defer column reads</span>
-<span class="code-comment">// 10. Column Lifetime Analysis - Final cleanup</span></code></pre>
-      </div>
+      <!-- 6. Binder -->
+      <h3>Binder -- Name Resolution Against the Catalog</h3>
+      <p>The Binder constructor shows the hierarchical binder chain that enables subquery and CTE resolution. Each binder inherits its parent's context (catalog entries, macro bindings, lambda bindings), enabling correlated subqueries to reference columns from outer scopes.</p>
 
-      <h3>5. Physical Plan Generator</h3>
-      <div class="code-block code-block-sourced" id="source-physplan">
+      <div class="code-block code-block-sourced" id="source-binder">
         <div class="code-header">
           <span class="code-lang">C++</span>
-          <span class="code-source-path">src/execution/physical_plan_generator.cpp</span>
-          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/execution/physical_plan_generator.cpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <span class="code-source-path">src/planner/binder.cpp:21-36</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/planner/binder.cpp#L21-L36" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
           <button class="code-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre class="code-pre"><code><span class="code-type">PhysicalOperator</span> &amp;<span class="code-type">PhysicalPlanGenerator</span>::<span class="code-function">ResolveAndPlan</span>(...) {
-    <span class="code-comment">// Step 1: Resolve output types</span>
-    <span class="code-variable">op</span>-&gt;<span class="code-function">ResolveOperatorTypes</span>();
-    <span class="code-comment">// Step 2: Convert bindings to physical indices</span>
-    <span class="code-type">ColumnBindingResolver</span> <span class="code-variable">resolver</span>;
-    <span class="code-variable">resolver</span>.<span class="code-function">VisitOperator</span>(*<span class="code-variable">op</span>);
-    <span class="code-comment">// Step 3: Create the physical plan</span>
-    <span class="code-variable">physical_plan</span> = <span class="code-function">PlanInternal</span>(*<span class="code-variable">op</span>);
-    <span class="code-keyword">return</span> <span class="code-variable">physical_plan</span>-&gt;<span class="code-function">Root</span>();
+        <pre class="code-pre"><code><span class="code-type">Binder</span>::<span class="code-function">Binder</span>(<span class="code-type">ClientContext</span> &amp;<span class="code-variable">context</span>, <span class="code-type">shared_ptr</span>&lt;<span class="code-type">Binder</span>&gt; <span class="code-variable">parent_p</span>,
+    <span class="code-type">BinderType</span> <span class="code-variable">binder_type</span>)
+    : <span class="code-variable">context</span>(<span class="code-variable">context</span>), <span class="code-variable">bind_context</span>(*<span class="code-keyword">this</span>), <span class="code-variable">parent</span>(<span class="code-function">std::move</span>(<span class="code-variable">parent_p</span>)),
+      <span class="code-variable">binder_type</span>(<span class="code-variable">binder_type</span>),
+      <span class="code-variable">global_binder_state</span>(<span class="code-variable">parent</span> ? <span class="code-variable">parent</span>-&gt;<span class="code-variable">global_binder_state</span> :
+          <span class="code-function">make_shared_ptr</span>&lt;<span class="code-type">GlobalBinderState</span>&gt;()),
+      <span class="code-variable">query_binder_state</span>(<span class="code-variable">parent</span> &amp;&amp; <span class="code-variable">binder_type</span> == <span class="code-type">BinderType</span>::<span class="code-variable">REGULAR_BINDER</span> ?
+          <span class="code-variable">parent</span>-&gt;<span class="code-variable">query_binder_state</span> : <span class="code-function">make_shared_ptr</span>&lt;<span class="code-type">QueryBinderState</span>&gt;()),
+      <span class="code-variable">entry_retriever</span>(<span class="code-variable">context</span>), <span class="code-variable">depth</span>(<span class="code-variable">parent</span> ? <span class="code-variable">parent</span>-&gt;<span class="code-function">GetBinderDepth</span>() : <span class="code-number">1</span>) {
+    <span class="code-function">IncreaseDepth</span>();
+    <span class="code-keyword">if</span> (<span class="code-variable">parent</span>) {
+        <span class="code-variable">entry_retriever</span>.<span class="code-function">Inherit</span>(<span class="code-variable">parent</span>-&gt;<span class="code-variable">entry_retriever</span>);
+        <span class="code-variable">macro_binding</span> = <span class="code-variable">parent</span>-&gt;<span class="code-variable">macro_binding</span>;
+        <span class="code-variable">lambda_bindings</span> = <span class="code-variable">parent</span>-&gt;<span class="code-variable">lambda_bindings</span>;
+    }
 }</code></pre>
+      </div>
+
+      <div class="callout insight">
+        <span class="callout-icon">&#x1F50D;</span>
+        <div class="callout-content">
+          <p><strong>Source insight:</strong> Note the <code>depth</code> tracking with <code>IncreaseDepth()</code> -- this guards against stack overflow from deeply nested subqueries by enforcing a maximum expression depth limit (configurable via <code>max_expression_depth</code>). The <span class="glossary-term" data-def="Multi-Version Concurrency Control -- a technique where each transaction sees a consistent snapshot of the database. Writers create new versions of data rather than overwriting, so readers are never blocked. DuckDB uses MVCC with a WAL for ACID transactions.">MVCC</span> system ensures the binder sees a consistent catalog snapshot even if another connection is modifying schema concurrently.</p>
+        </div>
       </div>
     </section>
+
+    <!-- Deployment Considerations -->
+    <section class="content-section animate-in">
+      <h2>Deployment Considerations</h2>
+
+      <h3>Sizing</h3>
+      <p>DuckDB works well with datasets up to ~100GB on a single machine. Set <code>memory_limit</code> to 60-80% of available RAM to leave room for the OS and other processes. The buffer manager handles spill-to-disk automatically when memory is exceeded.</p>
+
+      <h3>Monitoring</h3>
+      <p>Use <code>PRAGMA enable_profiling</code> and <code>EXPLAIN ANALYZE</code> to profile query execution. DuckDB's profiler shows per-operator timing, row counts, and memory usage. The <code>duckdb_temporary_files()</code> function reveals spill-to-disk activity.</p>
+
+      <h3>Backup</h3>
+      <p>The database is a single file -- copy it. For zero-downtime backup, use <code>EXPORT DATABASE</code> which produces a portable set of CSV + SQL files, or <code>CHECKPOINT</code> to ensure the <span class="glossary-term" data-def="Write-Ahead Log -- a sequential log of all writes. DuckDB writes changes to the WAL first, then periodically checkpoints (flushes) them to the main database file for crash recovery.">WAL</span> is flushed before copying the <code>.duckdb</code> file.</p>
+
+      <h3>Upgrades</h3>
+      <p>DuckDB's storage format is forward-compatible within the same major version (1.x). When upgrading across major versions, use <code>EXPORT DATABASE</code> before upgrading and <code>IMPORT DATABASE</code> after. The v1.4.x LTS line provides long-term stability for production deployments.</p>
+
+      <h3>Concurrency</h3>
+      <p>DuckDB supports multiple concurrent readers but only one writer at a time. For read-heavy production workloads, open the database in <code>READ_ONLY</code> mode from multiple processes. For write workloads, funnel writes through a single connection.</p>
+
+      <div class="callout tip">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content">
+          <p><strong>Production tip:</strong> For best performance with repeated Parquet queries, enable <code>enable_object_cache</code> to cache file metadata. Set <code>preserve_insertion_order</code> to <code>false</code> for scan-heavy workloads and increase <code>wal_autocheckpoint</code> to <code>64MB</code> or higher if you batch large writes to reduce checkpoint frequency.</p>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <section class="references-footer">
+  <!-- References -->
+  <section class="references-footer animate-in">
     <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4BB;</span><div class="reference-content"><span class="reference-title"><a href="https://github.com/duckdb/duckdb" target="_blank" rel="noopener noreferrer">DuckDB Source Code</a></span><span class="reference-domain">github.com</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/api/python/overview" target="_blank" rel="noopener noreferrer">DuckDB Python API</a></span><span class="reference-domain">duckdb.org</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/internals/vector" target="_blank" rel="noopener noreferrer">DuckDB Vector Internals</a></span><span class="reference-domain">duckdb.org</span></div></li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <span class="reference-title"><a href="https://duckdb.org/docs/current/installation/" target="_blank" rel="noopener noreferrer">DuckDB Getting Started</a></span>
+        <span class="reference-domain">duckdb.org</span>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <span class="reference-title"><a href="https://duckdb.org/docs/current/clients/python/overview.html" target="_blank" rel="noopener noreferrer">DuckDB Python API</a></span>
+        <span class="reference-domain">duckdb.org</span>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <span class="reference-title"><a href="https://duckdb.org/docs/current/configuration/overview.html" target="_blank" rel="noopener noreferrer">DuckDB Configuration</a></span>
+        <span class="reference-domain">duckdb.org</span>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4BB;</span>
+        <span class="reference-title"><a href="https://github.com/duckdb/duckdb" target="_blank" rel="noopener noreferrer">DuckDB Source Code</a></span>
+        <span class="reference-domain">github.com</span>
+      </li>
     </ul>
   </section>
 
-  <nav class="page-nav-footer"><a href="how-it-works.html" class="prev">How It Works</a><a href="use-cases.html" class="next">Use Cases</a></nav>
-  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+  <!-- Prev / Next -->
+  <div class="page-nav-footer">
+    <a href="how-it-works.html">&#x2190; How It Works</a>
+    <a href="use-cases.html">Use Cases &#x2192;</a>
+  </div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <p>Generated by <strong>System Explorer</strong> -- an interactive course built from system analysis</p>
+  </footer>
 
   <script>
-    function updateProgressBar(){var s=window.scrollY,h=document.documentElement.scrollHeight-window.innerHeight,p=h>0?(s/h)*100:0;document.querySelector('.nav-progress-bar').style.width=p+'%'}window.addEventListener('scroll',function(){requestAnimationFrame(updateProgressBar)},{passive:true});
-    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
-    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
-    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},2000)})}
-    (function(){var tooltip=null;function show(t){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=t.dataset.definition;document.body.appendChild(tooltip);var r=t.getBoundingClientRect(),tr=tooltip.getBoundingClientRect(),l=r.left+r.width/2-tr.width/2,tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;tooltip.style.left=l+'px';tooltip.style.top=tp+'px';requestAnimationFrame(function(){tooltip.classList.add('visible')})}function hide(){if(tooltip){tooltip.remove();tooltip=null}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t)});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide()})})();
-    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var m=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(m){m[1].split('\n').forEach(function(l){var x=l.match(/(\w+):\s*"(.+)"/);if(x)ctx[x[1]]=x[2]})}var md='# '+(ctx.system||'')+': '+(ctx.page||document.title)+'\n> Source: '+window.location.href+' | Level: '+(ctx.level||'Unknown')+'\n\n';var c=document.querySelector('.content-area');if(c){c.querySelectorAll('h2,h3,p').forEach(function(el){var t=el.tagName.toLowerCase();if(t==='h2')md+='\n## '+el.textContent.trim()+'\n\n';else if(t==='h3')md+='\n### '+el.textContent.trim()+'\n\n';else if(t==='p')md+=el.textContent.trim()+'\n\n'})}md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn'),lb=btn.querySelector('.btn-label'),o=lb.textContent;lb.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){lb.textContent=o;btn.classList.remove('copied')},2000)})}
+    /* --- Mobile Nav --- */
+    var hamburger = document.getElementById('navHamburger');
+    var navPages = document.getElementById('navPages');
+    hamburger.addEventListener('click', function() {
+      hamburger.classList.toggle('open');
+      navPages.classList.toggle('mobile-open');
+    });
+
+    /* --- Progress Bar --- */
+    function updateProgressBar() {
+      var scrollY = window.scrollY;
+      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = docH > 0 ? (scrollY / docH) * 100 : 0;
+      document.querySelector('.nav-progress-bar').style.width = pct + '%';
+    }
+    window.addEventListener('scroll', function() {
+      requestAnimationFrame(updateProgressBar);
+    }, { passive: true });
+
+    /* --- Scroll Animations --- */
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.animate-in').forEach(function(el) {
+      observer.observe(el);
+    });
+
+    /* --- Copy Code --- */
+    function copyCode(btn) {
+      var pre = btn.closest('.code-block').querySelector('.code-pre');
+      navigator.clipboard.writeText(pre.textContent).then(function() {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    /* --- Glossary Tooltips --- */
+    var tooltip = document.createElement('div');
+    tooltip.className = 'glossary-tooltip';
+    document.body.appendChild(tooltip);
+
+    document.querySelectorAll('.glossary-term').forEach(function(term) {
+      term.addEventListener('mouseenter', function(e) {
+        var rect = e.target.getBoundingClientRect();
+        tooltip.textContent = e.target.dataset.def;
+        tooltip.classList.add('visible');
+        tooltip.style.visibility = 'hidden';
+        tooltip.style.display = 'block';
+        var ttW = tooltip.offsetWidth;
+        var ttH = tooltip.offsetHeight;
+        tooltip.style.visibility = '';
+        var left = rect.left + rect.width / 2 - ttW / 2;
+        if (left < 8) left = 8;
+        if (left + ttW > window.innerWidth - 8) left = window.innerWidth - ttW - 8;
+        var top = rect.top - ttH - 8;
+        if (top < 8) top = rect.bottom + 8;
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+      });
+      term.addEventListener('mouseleave', function() {
+        tooltip.classList.remove('visible');
+      });
+    });
+
+    /* --- Copy as Markdown --- */
+    function copyMarkdown() {
+      var md = [
+        '# DuckDB - Implementation Details',
+        '',
+        '## Getting Started',
+        '```bash',
+        'pip install duckdb',
+        '```',
+        '',
+        '```python',
+        'import duckdb',
+        'result = duckdb.sql("SELECT region, SUM(amount) FROM \'sales.csv\' GROUP BY region")',
+        'result.show()',
+        '```',
+        '',
+        '## Configuration Essentials',
+        '| Setting | Default | What it controls |',
+        '|---------|---------|------------------|',
+        '| memory_limit | 80% of RAM | Maximum memory for query processing |',
+        '| threads | All cores | Number of worker threads |',
+        '| temp_directory | Auto | Location for spill-to-disk files |',
+        '| access_mode | automatic | Read-only vs read-write |',
+        '| preserve_insertion_order | true | Row scan order |',
+        '| wal_autocheckpoint | 16MB | WAL size before checkpoint |',
+        '| enable_object_cache | false | Cache Parquet metadata |',
+        '',
+        '## Source Code Walkthrough',
+        '1. DataChunk (data_chunk.hpp:43-77) - Core columnar data container',
+        '2. DBConfig (database.cpp:46-59) - Subsystem initialization',
+        '3. PipelineTask::ExecuteTask (pipeline.cpp:33-66) - Push-based execution',
+        '4. Pipeline::ScheduleParallel (pipeline.cpp:100-138) - Morsel distribution',
+        '5. PhysicalPlanGenerator::CreatePlan (physical_plan_generator.cpp:78-119) - Plan translation',
+        '6. Binder (binder.cpp:21-36) - Name resolution',
+        '',
+        '## Deployment',
+        '- Sizing: Up to ~100GB per machine, set memory_limit to 60-80% RAM',
+        '- Monitoring: PRAGMA enable_profiling, EXPLAIN ANALYZE',
+        '- Backup: Single file copy or EXPORT DATABASE',
+        '- Concurrency: Multiple readers, single writer',
+        '',
+        'Source: https://github.com/duckdb/duckdb (v1.5.1)'
+      ].join('\n');
+      var btn = document.querySelector('.copy-markdown-btn');
+      navigator.clipboard.writeText(md).then(function() {
+        btn.querySelector('.btn-label').textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.querySelector('.btn-label').textContent = 'Copy as Markdown';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
   </script>
 </body>
 </html>

@@ -1,176 +1,60 @@
 ## Ecosystem & Integrations
-
 <!-- level: intermediate -->
-
 <!-- references:
-- https://duckdb.org/docs/stable/extensions/overview
-- https://motherduck.com/blog/duckdb-ecosystem-newsletter-december-2025/
-- https://github.com/duckdb/dbt-duckdb
-- https://motherduck.com
-- https://duckdb.org/docs/stable/api/overview
+- [DuckDB Community Extensions](https://duckdb.org/2024/07/05/community-extensions) | official-docs
+- [DuckDB Ecosystem Newsletter — March 2026](https://motherduck.com/blog/duckdb-ecosystem-newsletter-march-2026/) | community
+- [MotherDuck: DuckDB in the Cloud](https://motherduck.com/) | official-docs
 -->
 
-### Official Extensions
+### Official Tools & Extensions
 
-DuckDB ships with ~24 core extensions maintained by the DuckDB team. These are automatically installable via `INSTALL extension_name; LOAD extension_name;`:
+**Core Extensions (bundled or auto-installable):**
+- **`httpfs`** — Read/write files from HTTP, S3, GCS, and Azure Blob Storage. Enables `SELECT * FROM read_parquet('s3://bucket/data.parquet')` directly.
+- **`json`** — Native JSON reading with automatic schema inference. Handles JSONL, nested JSON, and mixed-type arrays.
+- **`parquet`** — Advanced Parquet support including predicate pushdown, column pruning, and partitioned writes.
+- **`postgres_scanner`** — Attach and query PostgreSQL databases directly from DuckDB. Supports filter pushdown to the remote server.
+- **`mysql_scanner`** — Same as above for MySQL databases.
+- **`sqlite_scanner`** — Attach SQLite databases and query them via DuckDB's analytical engine.
+- **`spatial`** — Geospatial functions (ST_Distance, ST_Contains, etc.) with the new built-in GEOMETRY type (v1.5.0+).
+- **`iceberg`** — Read Apache Iceberg tables, enabling DuckDB as a lakehouse query engine.
+- **`delta`** — Read Delta Lake tables with full support for time travel and schema evolution.
+- **`fts`** — Full-text search with BM25 scoring, enabling `WHERE fts_match(content, 'search query')`.
+- **`excel`** — Read and write Excel files (.xlsx).
 
-| Extension | Purpose | Key Capability |
-|-----------|---------|----------------|
-| **parquet** | [Apache Parquet](https://parquet.apache.org/) support | Read/write Parquet files with predicate pushdown and column pruning |
-| **json** | JSON processing | Query JSON files directly, JSON extraction functions, JSON type support |
-| **httpfs** | Remote file access | Read files from HTTP/HTTPS URLs, S3, GCS, and Azure Blob Storage |
-| **icu** | Unicode collation | Locale-aware string comparison, timezone support via [ICU library](https://icu.unicode.org/) |
-| **spatial** | Geospatial operations | ST_Point, ST_Distance, R-tree indexes, GeoJSON/WKT support (58x faster spatial joins via R-tree in 2025) |
-| **postgres_scanner** | PostgreSQL integration | Query live PostgreSQL databases directly from DuckDB |
-| **mysql_scanner** | MySQL integration | Query live MySQL databases directly from DuckDB |
-| **sqlite_scanner** | SQLite integration | Query SQLite database files directly |
-| **excel** | Excel file support | Read `.xlsx` files as tables |
-| **fts** | Full-text search | Create full-text indexes and perform text search queries |
-| **tpch** / **tpcds** | Benchmarking | Generate TPC-H and TPC-DS benchmark data for performance testing |
-| **iceberg** | Apache Iceberg support | Read and write [Apache Iceberg](https://iceberg.apache.org/) tables, including metadata management |
-| **delta** | Delta Lake support | Read [Delta Lake](https://delta.io/) tables |
-| **aws** | AWS credential management | Automatic AWS credential chain resolution for S3 access |
-| **azure** | Azure integration | Azure Blob Storage access and credential management |
-| **inet** | Network types | IP address and CIDR types with operations |
-| **autocomplete** | SQL autocompletion | Tab completion support for the CLI |
-| **jemalloc** | Memory allocator | Use [jemalloc](https://jemalloc.net/) for improved memory allocation performance on Linux |
-| **substrait** | Query plan exchange | Import/export query plans in [Substrait](https://substrait.io/) format |
-| **vss** | Vector similarity search | HNSW indexes for approximate nearest neighbor search |
+**DuckDB CLI (v1.5.0+):** The command-line client received a major overhaul with syntax highlighting, dynamic prompts showing current database/schema, a built-in pager, the `_` operator to reference previous results, and `.tables` / `DESCRIBE` for schema exploration.
 
-### Community Extensions
+**DuckDB WASM:** The full DuckDB engine compiled to WebAssembly for browser environments. Powers interactive data applications, notebook environments, and serverless analytics.
 
-As of late 2025, the DuckDB community has built over 100 extensions. Notable community extensions include:
+### Community Ecosystem
 
-| Extension | Author/Project | Purpose |
-|-----------|----------------|---------|
-| **quackstore** | Community | Block-based caching for remote files (1 MB blocks with LRU eviction) |
-| **osmextract** | Community | Extract OpenStreetMap PBF data into GeoParquet using DuckDB spatial |
-| **lance** | LanceDB | Read [Lance](https://lancedb.com/) columnar format for ML data |
-| **chsql** | Community | ClickHouse-compatible SQL syntax |
-| **prql** | PRQL | [PRQL](https://prql-lang.org/) language support as an alternative to SQL |
-| **scrooge** | Community | Financial data types and functions |
-| **crypto** | Community | Cryptographic hash functions (SHA-256, etc.) |
+With [127+ community extensions](https://duckdb.org/community_extensions/development), DuckDB's ecosystem is growing rapidly:
 
-Extensions can be authored in C++, Rust, Python, or even Shell scripts, demonstrating the flexibility of DuckDB's extension API.
+- **`mssql`** — Native TDS protocol communication with Microsoft SQL Server (zero dependencies, TLS/SSL, connection pooling)
+- **`snowflake`** — Query Snowflake tables directly from DuckDB via ADBC
+- **`mongo`** — SQL queries against MongoDB collections with automatic schema inference and filter pushdown
+- **`infera`** — Run ONNX ML models inside SQL queries
+- **`onager`** — Graph analytics (centrality, community detection) implemented in Rust
+- **`dns`** — DNS lookup and reverse DNS as SQL functions
+- **`gaggle`** — Query Kaggle datasets directly via SQL
 
-### Key Ecosystem Tools
+**ExtensionKit (.NET):** [DuckDB.ExtensionKit](https://duckdb.org/2026/03/20/duckdb-extensionkit-csharp) enables building DuckDB extensions in C# using .NET Native AOT compilation, broadening the extension developer community beyond C/C++.
 
-#### MotherDuck -- Cloud-Native DuckDB
+### Common Integration Patterns
 
-[MotherDuck](https://motherduck.com) is the commercial cloud service built around DuckDB. It provides:
+**DuckDB + dbt:** Use dbt-duckdb to run dbt transformations locally with DuckDB. Ideal for development and testing of data models before deploying to a production warehouse. The NSW Department of Education uses this pattern for their data portal.
 
-- **Hybrid execution:** Queries can execute partially on local DuckDB and partially in the cloud, with data automatically routed to the optimal location
-- **Shared databases:** Multiple users can access the same datasets with proper access control
-- **Persistent cloud storage:** Data stored durably in the cloud, accessible from any DuckDB client
-- **Collaboration:** Share queries, results, and databases with team members
-- **MotherDuck token authentication:** Simple `md:` connection string prefix for seamless integration
+**DuckDB + Pandas/Polars:** DuckDB queries pandas DataFrames and Polars LazyFrames directly without copying data (via Apache Arrow). Use DuckDB for complex SQL operations, then hand results back to Python for visualization or ML.
 
 ```python
-import duckdb
-# Connect to MotherDuck cloud
-con = duckdb.connect("md:my_database?motherduck_token=<token>")
-con.sql("SELECT * FROM cloud_table LIMIT 10").show()
+import duckdb, pandas as pd
+df = pd.read_csv('large_file.csv')
+result = duckdb.sql("SELECT category, AVG(value) FROM df GROUP BY category").fetchdf()
 ```
 
-#### dbt-duckdb -- Data Build Tool Integration
+**DuckDB + MotherDuck (Cloud):** [MotherDuck](https://motherduck.com/) extends DuckDB to the cloud with hybrid query processing — queries execute partly on the client and partly in the cloud, with the optimizer choosing the most efficient split. Databases are shared via URLs, enabling collaboration without data export/import.
 
-[dbt-duckdb](https://github.com/duckdb/dbt-duckdb) is the official [dbt](https://www.getdbt.com/) adapter for DuckDB. It enables:
+**DuckDB + Lakehouse (Iceberg/Delta):** Use DuckDB as a lightweight query engine for data lakehouses. Read Iceberg or Delta tables from S3/GCS, benefiting from DuckDB's vectorized execution without spinning up Spark clusters. Effective for ad-hoc exploration of lakehouse data.
 
-- Running dbt models against local DuckDB databases or MotherDuck
-- Full dbt feature support: models, tests, snapshots, seeds, documentation
-- CI/CD pipeline testing without a cloud warehouse
-- Local development with instant feedback (no waiting for cloud query compilation)
+**DuckDB + Evidence/Rill/Hex (BI tools):** Multiple business intelligence tools embed DuckDB as their analytical engine. Evidence uses it as a universal SQL backend, Rill powers interactive dashboards, and Hex accelerates notebook analytics. The pattern is consistent: embed DuckDB for fast, local-first analytics with optional cloud scaling via MotherDuck.
 
-```yaml
-# profiles.yml for dbt-duckdb
-my_project:
-  target: dev
-  outputs:
-    dev:
-      type: duckdb
-      path: 'dev.duckdb'
-      threads: 4
-    prod:
-      type: duckdb
-      path: 'md:my_production_db'  # MotherDuck
-```
-
-#### Evidence.dev -- BI as Code
-
-[Evidence](https://evidence.dev) is a code-first business intelligence tool that uses DuckDB as its local query engine. Analysts write SQL in Markdown files, and Evidence renders them as interactive dashboards. DuckDB's speed makes the development feedback loop nearly instant.
-
-#### pg_duckdb -- OLAP Analytics in PostgreSQL
-
-[pg_duckdb](https://github.com/duckdb/pg_duckdb) embeds DuckDB inside PostgreSQL as an extension. When PostgreSQL detects an analytical query, it can route it to DuckDB's execution engine for dramatically faster performance while keeping transactional queries on PostgreSQL's engine. Version 1.0 released in 2025.
-
-#### Ibis -- Universal DataFrame API
-
-[Ibis](https://ibis-project.org) provides a Python DataFrame API that can target multiple backends, including DuckDB. Users write Ibis expressions, and the framework compiles them to DuckDB SQL for local execution or to other backends (BigQuery, Snowflake, Spark) for remote execution.
-
-### Language Client Libraries
-
-DuckDB provides official client libraries for many languages:
-
-| Language | Package | Notes |
-|----------|---------|-------|
-| **Python** | `pip install duckdb` | Most popular. Zero-copy integration with Pandas, Polars, Arrow |
-| **R** | `install.packages("duckdb")` | DBI-compatible interface, works with dbplyr and dplyr |
-| **Node.js** | `npm install duckdb` | Native bindings, async API |
-| **Java/Kotlin** | JDBC driver | Standard JDBC interface for JVM applications |
-| **Rust** | `cargo add duckdb` | Native Rust bindings with Arrow integration |
-| **Go** | `go-duckdb` | CGo-based bindings |
-| **C/C++** | Header-only or shared library | Core API, most direct access |
-| **Swift** | Swift package | macOS and iOS support |
-| **C#/.NET** | NuGet package | ADO.NET compatible provider |
-| **WebAssembly** | `@duckdb/duckdb-wasm` | Run DuckDB in the browser via WASM |
-| **CLI** | Binary download | Interactive SQL shell with auto-completion |
-
-### Integration Patterns
-
-#### Pattern 1: DuckDB as a Local Analytics Cache
-
-```
-Cloud Data Warehouse (BigQuery/Snowflake)
-           |
-           | Export to Parquet (nightly)
-           v
-     Local Parquet Files
-           |
-           | Query via DuckDB
-           v
-   Application / Dashboard
-```
-
-Use DuckDB to query exported snapshots locally, reducing cloud costs and latency for frequently-accessed data.
-
-#### Pattern 2: DuckDB as an ETL Engine
-
-```
-Raw Data Sources (CSV, JSON, APIs)
-           |
-           | DuckDB SQL transformations
-           v
-   Cleaned Parquet / Iceberg Tables
-           |
-           | Upload to cloud or serve locally
-           v
-   Data Warehouse or Data Lake
-```
-
-Use DuckDB to clean, transform, and aggregate raw data before loading into production systems.
-
-#### Pattern 3: DuckDB in the Browser
-
-```
-Static Parquet Files (hosted on CDN)
-           |
-           | Fetched by duckdb-wasm
-           v
-   Browser-based DuckDB (WASM)
-           |
-           | Interactive SQL queries
-           v
-   Client-side Dashboard (React/Vue)
-```
-
-Use duckdb-wasm to build serverless analytics dashboards where all computation happens in the user's browser.
+**DuckDB + Arrow Flight:** Share DuckDB query results across processes or languages using Apache Arrow Flight. DuckDB's native Arrow support means zero-copy data exchange with any Arrow-compatible tool.
