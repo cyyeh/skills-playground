@@ -1,0 +1,1 @@
+../../skills/system-explorer/system-to-course/SKILL.md

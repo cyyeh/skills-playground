@@ -1,0 +1,23 @@
+{
+  "skill_name": "system-explorer",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Explore Apache Kafka",
+      "expected_output": "Should recognize 'Apache Kafka' as a specific system and skip the finder phase. Confirms with the user: offers to start deep-dive analysis directly or see alternatives first. If the user confirms, proceeds to system-analyzer to produce analysis.md, then to system-to-course to generate the multi-page HTML course in dist/kafka/. Does NOT run system-finder unless the user explicitly requests alternatives.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "I need to understand message queue systems",
+      "expected_output": "Should run the full pipeline. Phase 1: recognizes 'message queue systems' as a category query (no clarification needed). Phase 2: invokes system-finder to research and present a comparison table of 3-7 message queue systems (e.g., Kafka, RabbitMQ, Amazon SQS, NATS, Pulsar). Checkpoint: asks the user which system to analyze. Phase 3: invokes system-analyzer on the selected system, writes analysis.md. Checkpoint: presents summary and asks to proceed. Phase 4: invokes system-to-course, generates HTML site in dist/[selected-system]/.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Help me find and learn about a database for time-series data",
+      "expected_output": "Should run the full pipeline with possible clarification. Phase 1: may ask one clarifying question about scale, cloud vs self-hosted, or specific use case (IoT, financial, observability), OR may proceed directly since 'time-series database' is specific enough. Phase 2: invokes system-finder to discover and compare time-series databases (e.g., InfluxDB, TimescaleDB, QuestDB, Prometheus, Apache Druid). Presents comparison table. Checkpoint: user picks a system. Phase 3: invokes system-analyzer on the selected system, writes analysis.md. Checkpoint: summary and confirmation. Phase 4: invokes system-to-course, generates HTML site in dist/[selected-system]/.",
+      "files": []
+    }
+  ]
+}
