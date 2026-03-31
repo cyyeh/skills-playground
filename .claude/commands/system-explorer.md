@@ -1,1 +1,0 @@
-../../skills/system-explorer/system-explorer/SKILL.md

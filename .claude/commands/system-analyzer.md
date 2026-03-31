@@ -1,1 +1,0 @@
-../../skills/system-explorer/system-analyzer/SKILL.md
