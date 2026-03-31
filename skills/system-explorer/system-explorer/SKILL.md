@@ -47,7 +47,7 @@ User query
            v  Checkpoint
 +---------------------+
 |  4. system-analyzer  |  Deep-dive research
-|     -> analysis.md   |  User reviews findings
+|     -> analysis files|  User reviews findings
 +----------+----------+
            v  Checkpoint
 +---------------------+
@@ -64,7 +64,7 @@ Skip phases when they are not needed:
 
 - **Specific system named** ("explore Kafka") -- Skip finder and go directly to analyzer. Confirm with user: "You want to explore Apache Kafka. Shall I start the deep-dive analysis, or would you prefer to see alternatives first?"
 - **Existing finder-report.md** -- If `[output-dir]/finder-report.md` exists, offer to skip finder: "I found an existing finder report. Want to use it, or start fresh?"
-- **Existing analysis.md** -- If `[output-dir]/analysis.md` exists, offer to skip to course generation: "There's already an analysis on file. Jump to course generation, or redo the analysis?"
+- **Existing analysis** -- If `[output-dir]/analysis.json` or `[output-dir]/analysis.md` exists, offer to skip to course generation: "There's already an analysis on file. Jump to course generation, or redo the analysis?"
 - **Multiple systems** -- If the user wants to compare multiple systems, run analyzer for each (potentially in parallel using the Agent tool), then generate a combined or separate course site per system.
 
 ## Phase 1: Clarify Target
@@ -105,11 +105,11 @@ Wait for user selection before proceeding.
 
 Invoke the system-analyzer skill process, passing `[output-dir]` as the output directory:
 
-1. Layered research: Claude knowledge, then WebSearch, then WebFetch for primary sources
-2. Write structured `analysis.md` with level tags (beginner / intermediate / advanced)
-3. Write `analysis.md` to `[output-dir]`
+1. Layered research: Claude knowledge, then WebSearch, then WebFetch for primary sources (including source code research for GitHub-hosted systems)
+2. Write structured analysis as multiple section files with level tags (beginner / intermediate / advanced)
+3. Write `analysis.json` manifest + section files to `[output-dir]`
 
-**Checkpoint:** Present a summary of what was found -- list the sections and their depth levels. Ask: "Analysis complete. Here's what I covered: [section list]. Ready to generate the interactive course, or want to adjust anything?"
+**Checkpoint:** Present a summary of what was found -- list the section files and their depth levels. Ask: "Analysis complete. Here's what I covered: [section file list]. Ready to generate the interactive course, or want to adjust anything?"
 
 Wait for user confirmation before proceeding.
 
@@ -117,7 +117,7 @@ Wait for user confirmation before proceeding.
 
 Invoke the system-to-course skill process, passing `[output-dir]` as the output directory:
 
-1. Read `analysis.md` from `[output-dir]`
+1. Read analysis files from `[output-dir]` (auto-detects multi-file `analysis.json` or legacy `analysis.md`)
 2. Generate multi-page HTML with level selector (Beginner / Intermediate / Advanced)
 3. Write all HTML files to `[output-dir]`
 4. Open `index.html` in the browser for review
@@ -129,8 +129,8 @@ Invoke the system-to-course skill process, passing `[output-dir]` as the output 
 After the course is generated, perform a final end-to-end review of the complete output. This reviews the overall pipeline result, not just individual phases.
 
 **Review checklist:**
-1. **Finder → Analyzer consistency** — Does the analysis match what the finder report said? If the finder highlighted specific strengths/trade-offs, are they reflected in the analysis?
-2. **Analyzer → Course consistency** — Does the HTML course cover all sections from analysis.md? Are any sections missing or empty in the HTML?
+1. **Finder → Analyzer consistency** — Does the analysis match what the finder report said? If the finder highlighted specific strengths/trade-offs, are they reflected in the analysis section files?
+2. **Analyzer → Course consistency** — Does the HTML course cover all sections from the analysis files? Are any sections missing or empty in the HTML?
 3. **Level selector** — Do all pages have proper `data-level` tags? Does toggling levels actually hide/show content?
 4. **Navigation** — Do all cross-page links work? Is the current page highlighted in the nav?
 5. **Content quality** — Read through each page in the browser. Are there walls of text that should be interactive elements? Missing analogies? Generic filler?
@@ -145,7 +145,7 @@ The final output is a multi-page static HTML site in the user-chosen `[output-di
 - `index.html` -- Landing page with navigation
 - Individual content pages (`concepts.html`, `architecture.html`, etc.)
 - Level-based content filtering (Beginner / Intermediate / Advanced)
-- `analysis.md` -- Source reference from Phase 4
+- `analysis.json` + section files (`00-metadata.md` through `09-tradeoffs.md`) -- Source reference from Phase 4
 - `finder-report.md` -- Discovery report from Phase 3 (if finder was run)
 
 ## Error Handling

@@ -9,80 +9,78 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <!-- page-context:
     system: "DuckDB"
-    description: "an embedded analytical (OLAP) database management system"
+    description: "an in-process analytical database for fast OLAP workloads"
     page: "Implementation Details"
     level: "Advanced"
   -->
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;}
-    *,*::before,*::after{box-sizing:border-box;}html{scroll-behavior:smooth;}
-    ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full);}
-    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased;}
-    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap;}
-    .nav-brand{text-decoration:none;display:flex;flex-direction:column;}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2;}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);}
-    .nav-links{display:flex;align-items:center;}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0;}.nav-page-list li a{padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background 0.15s,color 0.15s;display:block;}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text);}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600;}
-    .nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2);}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;}
-    @media(max-width:768px){.nav-hamburger{display:flex;}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3);}.nav-links.open{display:flex;}.nav-page-list{flex-direction:column;width:100%;}}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3);}.page-header-content{flex:1;min-width:0;}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin-bottom:var(--space-3);line-height:1.15;}
-    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;}.page-level-badge.advanced{background:var(--color-warning-light);color:var(--color-warning);}
-    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6);}.content-section{margin-bottom:var(--space-10);}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin-bottom:var(--space-4);}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;margin-bottom:var(--space-3);}.content-section p{font-size:var(--text-base);line-height:1.7;margin-bottom:var(--space-4);}
-    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg);}
-
-    /* Code blocks */
-    .code-block{background:#1E1E2E;border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md);}
-    .code-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244;}
-    .code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:0.05em;}
-    .code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast);}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4;}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1;}
-    .code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4;-webkit-overflow-scrolling:touch;}
-    .code-keyword{color:#CBA6F7;}.code-string{color:#F9E2AF;}.code-comment{color:#6C7086;font-style:italic;}.code-function{color:#A6E3A1;}.code-number{color:#FAB387;}.code-variable{color:#89B4FA;}.code-type{color:#89DCEB;}.code-operator{color:#94E2D5;}
-
-    /* Source-annotated code */
-    .code-block-sourced .code-header{justify-content:flex-start;gap:var(--space-3);}
-    .code-source-path{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    .code-source-link{font-family:var(--font-mono);font-size:var(--text-xs);color:#6C7086;text-decoration:none;padding:2px var(--space-2);border:1px solid #45475A;border-radius:var(--radius-sm);white-space:nowrap;transition:all var(--duration-fast);display:flex;align-items:center;gap:var(--space-1);}.code-source-link:hover{color:#CDD6F4;border-color:#CDD6F4;}
-
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#D4A843;--color-accent-hover:#BF9738;--color-accent-light:#FDF6E4;--color-accent-muted:#E0C06A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;--stagger-delay:120ms}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}
+    .nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}
+    .nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}
+    .nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}
+    .nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}
+    .nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}
+    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}
+    .page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
+    .page-level-badge.advanced{background:var(--color-warning-light);color:var(--color-warning)}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}
+    .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}
+    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:0 0 var(--space-3)}
+    .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
+    .code-block{background:var(--color-bg-code);border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md)}
+    .code-header{display:flex;justify-content:flex-start;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244;gap:var(--space-3)}
+    .code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:0.05em}
+    .code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast);margin-left:auto}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1}
+    .code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4}
+    .code-keyword{color:#CBA6F7}.code-string{color:#F9E2AF}.code-comment{color:#6C7086;font-style:italic}.code-function{color:#A6E3A1}.code-number{color:#FAB387}.code-variable{color:#89B4FA}.code-type{color:#89DCEB}
+    .code-source-path{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .code-source-link{font-family:var(--font-mono);font-size:var(--text-xs);color:#6C7086;text-decoration:none;padding:2px var(--space-2);border:1px solid #45475A;border-radius:var(--radius-sm);white-space:nowrap;transition:all var(--duration-fast);display:flex;align-items:center;gap:var(--space-1)}.code-source-link:hover{color:#CDD6F4;border-color:#CDD6F4}
     /* Source map */
-    .source-map{max-width:var(--content-width);margin:var(--space-6) auto;border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden;}
-    .source-map-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);background:var(--color-surface);cursor:pointer;user-select:none;}.source-map-header:hover{background:var(--color-bg-warm);}.source-map-header h3{font-family:var(--font-display);font-size:var(--text-base);font-weight:600;margin:0;display:flex;align-items:center;gap:var(--space-2);}.source-map-toggle{font-size:var(--text-sm);color:var(--color-text-muted);transition:transform var(--duration-fast);}.source-map.open .source-map-toggle{transform:rotate(180deg);}
-    .source-map-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out);}.source-map.open .source-map-body{max-height:500px;}
-    .source-map-list{list-style:none;padding:var(--space-3) var(--space-4);margin:0;border-top:1px solid var(--color-border-light);}.source-map-item{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) 0;font-family:var(--font-mono);font-size:var(--text-xs);}.source-map-item a{color:var(--color-accent);text-decoration:none;}.source-map-item a:hover{text-decoration:underline;}.source-map-item .line-range{color:var(--color-text-muted);}
-    .source-map-repo{padding:var(--space-2) var(--space-4) var(--space-3);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);}.source-map-repo a{color:var(--color-accent);text-decoration:none;}
-
-    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid;}
-    .callout-tip{background:var(--color-success-light);border-color:var(--color-success);}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning);}.callout-info{background:var(--color-info-light);border-color:var(--color-info);}.callout-insight{background:#F3EFF8;border-color:#7B6DAA;}
-    .callout-icon{font-size:1.3rem;flex-shrink:0;}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal);}.callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px;}
-
-    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer;}
-    .glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast);}.glossary-tooltip.visible{opacity:1;}
-
-    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap;}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light);}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light);}
-    .copy-markdown-btn .btn-icon{font-size:var(--text-base);line-height:1;}.copy-markdown-btn .btn-label{display:inline;}@media(max-width:640px){.copy-markdown-btn .btn-label{display:none;}}
-
-    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted);display:inline;}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px;}
-
-    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md);}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);display:flex;align-items:center;gap:var(--space-2);}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3);}.reference-item{display:flex;align-items:baseline;gap:var(--space-3);}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center;}.reference-content{display:flex;flex-direction:column;gap:var(--space-1);}.reference-title{font-size:var(--text-sm);font-weight:600;}.reference-title a{color:var(--color-accent);text-decoration:none;}.reference-title a:hover{text-decoration:underline;}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);}
-
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light);}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;}.page-nav-footer .prev::before{content:"\2190\00a0";}.page-nav-footer .next::after{content:"\00a0\2192";}
-    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4);}
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out);}.animate-in.visible{opacity:1;transform:translateY(0);}
-    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl);}.page-nav-footer{flex-direction:column;gap:var(--space-4);}}
+    .source-map{max-width:var(--content-width);margin:var(--space-6) auto;border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden}
+    .source-map-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);background:var(--color-surface);cursor:pointer;user-select:none;transition:background var(--duration-fast)}.source-map-header:hover{background:var(--color-bg-warm)}
+    .source-map-header h3{font-family:var(--font-display);font-size:var(--text-base);font-weight:600;margin:0;display:flex;align-items:center;gap:var(--space-2)}
+    .source-map-toggle{font-size:var(--text-sm);color:var(--color-text-muted);transition:transform var(--duration-fast)}.source-map.open .source-map-toggle{transform:rotate(180deg)}
+    .source-map-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}.source-map.open .source-map-body{max-height:500px}
+    .source-map-list{list-style:none;padding:var(--space-3) var(--space-4);margin:0;border-top:1px solid var(--color-border-light)}
+    .source-map-item{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) 0;font-family:var(--font-mono);font-size:var(--text-xs)}.source-map-item a{color:var(--color-accent);text-decoration:none}.source-map-item a:hover{text-decoration:underline}.source-map-item .line-range{color:var(--color-text-muted)}
+    .source-map-repo{padding:var(--space-2) var(--space-4) var(--space-3);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);border-top:1px solid var(--color-border-light)}.source-map-repo a{color:var(--color-accent);text-decoration:none}
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}
+    .callout-insight{background:#F3EFF8;border-color:#7B6DAA}.callout-tip{background:var(--color-success-light);border-color:var(--color-success)}.callout-info{background:var(--color-info-light);border-color:var(--color-info)}
+    .callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}.callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px}
+    /* Config table */
+    .cfg-table{width:100%;border-collapse:collapse;margin:var(--space-4) 0;font-size:var(--text-sm)}
+    .cfg-table th{font-family:var(--font-display);font-weight:600;text-align:left;padding:var(--space-3) var(--space-4);border-bottom:2px solid var(--color-border)}
+    .cfg-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light);color:var(--color-text-secondary)}
+    .cfg-table td:first-child{font-weight:600;color:var(--color-text);font-family:var(--font-mono);font-size:var(--text-xs)}
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}
+    .glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}
+    .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
+    .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
+    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
+    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+    a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
+    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s ease}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.nav-page-link{font-size:var(--text-xs);padding:var(--space-1) var(--space-2)}.cfg-table{font-size:var(--text-xs)}}
+    @media(max-width:480px){:root{--nav-height:52px}.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}}
   </style>
 </head>
 <body>
-  <nav class="site-nav" role="navigation" aria-label="Course navigation">
-    <a href="index.html" class="nav-brand"><span class="nav-brand-name">DuckDB</span><span class="nav-brand-label">Interactive Course</span></a>
-    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button>
-    <div class="nav-links" id="nav-links"><ul class="nav-page-list">
-      <li><a href="index.html">Home</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="architecture.html">Architecture</a></li><li><a href="how-it-works.html">How It Works</a></li>
-      <li class="active"><a href="implementation.html">Implementation</a></li>
-      <li><a href="use-cases.html">Use Cases</a></li><li><a href="ecosystem.html">Ecosystem</a></li><li><a href="faq.html">FAQ</a></li><li><a href="tradeoffs.html">Trade-offs</a></li>
-    </ul></div>
-  </nav>
+  <nav class="site-nav"><div class="nav-progress-bar" role="progressbar"></div><div class="nav-inner"><a href="index.html" class="nav-brand">DuckDB</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link active">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">Q&amp;A</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
 
-  <header class="page-header animate-in">
-    <div class="page-header-content"><span class="page-level-badge advanced">Advanced</span><h1>Implementation Details</h1></div>
-    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button>
-  </header>
+  <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge advanced">Advanced</span><h1>Implementation Details</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
 
   <div class="source-map" id="source-map">
     <div class="source-map-header" onclick="this.parentElement.classList.toggle('open')">
@@ -91,185 +89,203 @@
     </div>
     <div class="source-map-body">
       <ul class="source-map-list">
-        <li class="source-map-item"><a href="#source-vector-hpp">src/include/duckdb/common/types/vector.hpp</a><span class="line-range">Vector class</span></li>
-        <li class="source-map-item"><a href="#source-optimizer-cpp">src/optimizer/optimizer.cpp</a><span class="line-range">Optimizer pipeline</span></li>
+        <li class="source-map-item"><a href="#source-parser">src/parser/parser.cpp</a><span class="line-range">Parser entry point</span></li>
+        <li class="source-map-item"><a href="#source-database">src/main/database.cpp</a><span class="line-range">Database initialization</span></li>
+        <li class="source-map-item"><a href="#source-vecops">src/include/.../vector_operations.hpp</a><span class="line-range">Vector operations</span></li>
+        <li class="source-map-item"><a href="#source-optimizer">src/optimizer/optimizer.cpp</a><span class="line-range">Optimizer pipeline</span></li>
+        <li class="source-map-item"><a href="#source-physplan">src/execution/physical_plan_generator.cpp</a><span class="line-range">Physical plan generator</span></li>
       </ul>
       <div class="source-map-repo">Repository: <a href="https://github.com/duckdb/duckdb" target="_blank" rel="noopener noreferrer">duckdb/duckdb</a> @ v1.5.1</div>
     </div>
   </div>
 
   <main class="content-area">
-
-    <section class="content-section animate-in" data-level="advanced">
+    <section class="content-section animate-in" data-level="beginner">
       <h2>Getting Started</h2>
       <div class="code-block">
         <div class="code-header"><span class="code-lang">Bash</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-comment"># Install via pip</span>
+        <pre class="code-pre"><code><span class="code-comment"># Python (most popular)</span>
 pip install duckdb
-<span class="code-comment"># Or via conda</span>
-conda install python-duckdb -c conda-forge
-<span class="code-comment"># CLI tool (new in 1.5.0)</span>
-pip install duckdb-cli</code></pre>
-      </div>
 
-      <div class="code-block">
-        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-keyword">import</span> <span class="code-variable">duckdb</span>
+<span class="code-comment"># R</span>
+install.packages(<span class="code-string">"duckdb"</span>)
 
-<span class="code-comment"># Minimal in-memory query</span>
-<span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT 42 AS answer"</span>).<span class="code-function">show</span>()
+<span class="code-comment"># Node.js</span>
+npm install duckdb
 
-<span class="code-comment"># Query files directly -- no CREATE TABLE needed</span>
-<span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT * FROM 'sales_2025.parquet' WHERE region = 'APAC' LIMIT 10"</span>).<span class="code-function">show</span>()
-
-<span class="code-comment"># Persistent database with context manager</span>
-<span class="code-keyword">with</span> <span class="code-variable">duckdb</span>.<span class="code-function">connect</span>(<span class="code-string">"analytics.db"</span>) <span class="code-keyword">as</span> <span class="code-variable">con</span>:
-    <span class="code-variable">con</span>.<span class="code-function">sql</span>(<span class="code-string">"CREATE TABLE events (ts TIMESTAMP, user_id INT, action VARCHAR)"</span>)
-    <span class="code-variable">con</span>.<span class="code-function">sql</span>(<span class="code-string">"SELECT action, COUNT(*) FROM events GROUP BY action"</span>).<span class="code-function">show</span>()</code></pre>
+<span class="code-comment"># Homebrew (macOS/Linux CLI)</span>
+brew install duckdb</code></pre>
       </div>
     </section>
 
-    <section class="content-section animate-in" data-level="advanced">
+    <section class="content-section animate-in" data-level="intermediate">
       <h2>Configuration Essentials</h2>
-      <div class="code-block">
-        <div class="code-header"><span class="code-lang">SQL</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-comment">-- Memory management</span>
-<span class="code-keyword">SET</span> <span class="code-variable">memory_limit</span> <span class="code-operator">=</span> <span class="code-string">'8GB'</span>;
-<span class="code-keyword">SET</span> <span class="code-variable">temp_directory</span> <span class="code-operator">=</span> <span class="code-string">'/tmp/duckdb'</span>;
-<span class="code-keyword">SET</span> <span class="code-variable">max_temp_directory_size</span> <span class="code-operator">=</span> <span class="code-string">'50GB'</span>;
-
-<span class="code-comment">-- Parallelism</span>
-<span class="code-keyword">SET</span> <span class="code-variable">threads</span> <span class="code-keyword">TO</span> <span class="code-number">4</span>;
-
-<span class="code-comment">-- Profiling and debugging</span>
-<span class="code-keyword">SET</span> <span class="code-variable">enable_profiling</span> <span class="code-operator">=</span> <span class="code-string">'json'</span>;
-<span class="code-keyword">SET</span> <span class="code-variable">enable_progress_bar</span> <span class="code-operator">=</span> <span class="code-keyword">true</span>;</code></pre>
-      </div>
-
-      <div class="callout callout-tip">
-        <div class="callout-icon">&#x1F4A1;</div>
-        <div class="callout-content">
-          <strong>Memory sizing:</strong> Set <code>memory_limit</code> to 60-80% of available RAM. DuckDB will spill to disk via <code>temp_directory</code> when exceeded, but spilling degrades performance significantly for large joins and sorts.
-        </div>
-      </div>
+      <table class="cfg-table">
+        <thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>memory_limit</td><td>80% of RAM</td><td>Maximum memory for the buffer pool</td></tr>
+          <tr><td>threads</td><td># of CPU cores</td><td>Worker threads for parallel execution</td></tr>
+          <tr><td>temp_directory</td><td>&lt;db&gt;.tmp</td><td>Directory for spilling intermediate results</td></tr>
+          <tr><td>max_temp_directory_size</td><td>90% of disk</td><td>Max size of temporary spill files</td></tr>
+        </tbody>
+      </table>
     </section>
 
-    <section class="content-section animate-in" data-level="advanced">
+    <section class="content-section animate-in" data-level="intermediate">
       <h2>Code Patterns</h2>
-      <h3>ETL Pipeline with Parquet Partitioning</h3>
+      <h3>Zero-Copy DataFrame Integration</h3>
       <div class="code-block">
         <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
         <pre class="code-pre"><code><span class="code-keyword">import</span> <span class="code-variable">duckdb</span>
+<span class="code-keyword">import</span> <span class="code-variable">pandas</span> <span class="code-keyword">as</span> <span class="code-variable">pd</span>
 
-<span class="code-variable">con</span> <span class="code-operator">=</span> <span class="code-variable">duckdb</span>.<span class="code-function">connect</span>(<span class="code-string">"warehouse.db"</span>)
+<span class="code-variable">df</span> = <span class="code-variable">pd</span>.<span class="code-function">DataFrame</span>({
+    <span class="code-string">'name'</span>: [<span class="code-string">'Alice'</span>, <span class="code-string">'Bob'</span>, <span class="code-string">'Charlie'</span>],
+    <span class="code-string">'department'</span>: [<span class="code-string">'Eng'</span>, <span class="code-string">'Sales'</span>, <span class="code-string">'Eng'</span>],
+    <span class="code-string">'salary'</span>: [<span class="code-number">120000</span>, <span class="code-number">95000</span>, <span class="code-number">110000</span>]
+})
 
-<span class="code-comment"># Ingest raw CSV data</span>
-<span class="code-variable">con</span>.<span class="code-function">sql</span>(<span class="code-string">"""
-    CREATE TABLE raw_events AS
-    SELECT * FROM read_csv('events_*.csv', auto_detect=true, header=true)
-"""</span>)
-
-<span class="code-comment"># Transform and export as partitioned Parquet</span>
-<span class="code-variable">con</span>.<span class="code-function">sql</span>(<span class="code-string">"""
-    COPY (
-        SELECT date_trunc('month', event_time) AS month,
-               event_type, COUNT(*) AS event_count
-        FROM raw_events GROUP BY ALL
-    ) TO 'output' (FORMAT PARQUET, PARTITION_BY (month), COMPRESSION ZSTD)
-"""</span>)</code></pre>
+<span class="code-comment"># Query the DataFrame directly with SQL -- zero-copy!</span>
+<span class="code-variable">result</span> = <span class="code-variable">duckdb</span>.<span class="code-function">sql</span>(<span class="code-string">"""
+    SELECT department, AVG(salary) as avg_salary
+    FROM df
+    GROUP BY department
+"""</span>).<span class="code-function">fetchdf</span>()</code></pre>
       </div>
 
-      <h3>Multi-Source Analytics</h3>
+      <h3>Advanced SQL Features</h3>
       <div class="code-block">
         <div class="code-header"><span class="code-lang">SQL</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
-        <pre class="code-pre"><code><span class="code-comment">-- Attach a Postgres database</span>
-<span class="code-keyword">INSTALL</span> <span class="code-variable">postgres</span>;
-<span class="code-keyword">LOAD</span> <span class="code-variable">postgres</span>;
-<span class="code-keyword">ATTACH</span> <span class="code-string">'dbname=production host=db.example.com'</span> <span class="code-keyword">AS</span> <span class="code-variable">pg</span> (<span class="code-keyword">TYPE</span> <span class="code-variable">POSTGRES</span>, <span class="code-variable">READ_ONLY</span>);
+        <pre class="code-pre"><code><span class="code-comment">-- PIVOT: Transform rows to columns</span>
+<span class="code-keyword">PIVOT</span> monthly_sales <span class="code-keyword">ON</span> month
+<span class="code-keyword">USING</span> <span class="code-function">SUM</span>(revenue) <span class="code-keyword">GROUP BY</span> region;
 
-<span class="code-comment">-- Cross-database analytical query</span>
-<span class="code-keyword">SELECT</span> <span class="code-variable">pg</span>.<span class="code-variable">customers</span>.<span class="code-variable">name</span>,
-       <span class="code-function">COUNT</span>(<span class="code-variable">legacy</span>.<span class="code-variable">orders</span>.<span class="code-variable">id</span>) <span class="code-keyword">AS</span> <span class="code-variable">order_count</span>
-<span class="code-keyword">FROM</span> <span class="code-variable">pg</span>.<span class="code-variable">customers</span>
-<span class="code-keyword">JOIN</span> <span class="code-variable">legacy</span>.<span class="code-variable">orders</span> <span class="code-keyword">ON</span> <span class="code-variable">pg</span>.<span class="code-variable">customers</span>.<span class="code-variable">id</span> <span class="code-operator">=</span> <span class="code-variable">legacy</span>.<span class="code-variable">orders</span>.<span class="code-variable">customer_id</span>
-<span class="code-keyword">GROUP BY</span> <span class="code-variable">pg</span>.<span class="code-variable">customers</span>.<span class="code-variable">name</span>;</code></pre>
+<span class="code-comment">-- COLUMNS expression: Apply operations to matching columns</span>
+<span class="code-keyword">SELECT</span> <span class="code-function">MIN</span>(<span class="code-function">COLUMNS</span>(<span class="code-string">'.*_price'</span>)) <span class="code-keyword">FROM</span> products;
+
+<span class="code-comment">-- FROM-first syntax (no SELECT needed)</span>
+<span class="code-keyword">FROM</span> orders <span class="code-keyword">WHERE</span> amount > <span class="code-number">1000</span> <span class="code-keyword">LIMIT</span> <span class="code-number">10</span>;</code></pre>
       </div>
     </section>
 
     <section class="content-section animate-in" data-level="advanced">
-      <h2>Source Code: Vector Representation</h2>
-      <div class="code-block code-block-sourced" id="source-vector-hpp">
+      <h2>Source Code Walkthrough</h2>
+
+      <h3>1. SQL Parser Entry Point</h3>
+      <p>The parser wraps PostgreSQL's parser and transforms parse trees into DuckDB's internal representation.</p>
+      <div class="code-block code-block-sourced" id="source-parser">
         <div class="code-header">
           <span class="code-lang">C++</span>
-          <span class="code-source-path">src/include/duckdb/common/types/vector.hpp</span>
-          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/include/duckdb/common/types/vector.hpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <span class="code-source-path">src/parser/parser.cpp</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/parser/parser.cpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
           <button class="code-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre class="code-pre"><code><span class="code-comment">//! The vector size used in the execution engine</span>
-<span class="code-keyword">#ifndef</span> <span class="code-variable">STANDARD_VECTOR_SIZE</span>
-<span class="code-keyword">#define</span> <span class="code-variable">STANDARD_VECTOR_SIZE</span> <span class="code-number">2048</span>
-<span class="code-keyword">#endif</span>
+        <pre class="code-pre"><code><span class="code-keyword">void</span> <span class="code-type">Parser</span>::<span class="code-function">ParseQuery</span>(<span class="code-keyword">const</span> <span class="code-type">string</span> &amp;<span class="code-variable">query</span>) {
+    <span class="code-type">Transformer</span> <span class="code-variable">transformer</span>(<span class="code-variable">options</span>);
+    <span class="code-type">PostgresParser</span> <span class="code-variable">parser</span>;
+    <span class="code-variable">parser</span>.<span class="code-function">Parse</span>(<span class="code-variable">query</span>);
+    <span class="code-keyword">if</span> (<span class="code-variable">parser</span>.<span class="code-variable">success</span>) {
+        <span class="code-variable">transformer</span>.<span class="code-function">TransformParseTree</span>(
+            <span class="code-variable">parser</span>.<span class="code-variable">parse_tree</span>, <span class="code-variable">statements</span>);
+    }
+}</code></pre>
+      </div>
 
-<span class="code-keyword">class</span> <span class="code-type">Vector</span> {
-<span class="code-keyword">public</span>:
-    <span class="code-comment">//! The vector type specifies how data is physically stored</span>
-    <span class="code-type">VectorType</span> <span class="code-variable">vector_type</span>;
-    <span class="code-comment">//! The type of elements stored in the vector</span>
-    <span class="code-type">LogicalType</span> <span class="code-variable">type</span>;
-    <span class="code-comment">//! A pointer to the data</span>
-    <span class="code-type">data_ptr_t</span> <span class="code-variable">data</span>;
-    <span class="code-comment">//! The validity mask of the vector</span>
-    <span class="code-type">ValidityMask</span> <span class="code-variable">validity</span>;
-    <span class="code-comment">//! Auxiliary data (e.g., string heap, child vectors)</span>
-    <span class="code-type">shared_ptr</span><span class="code-operator">&lt;</span><span class="code-type">VectorBuffer</span><span class="code-operator">&gt;</span> <span class="code-variable">buffer</span>;
-    <span class="code-type">shared_ptr</span><span class="code-operator">&lt;</span><span class="code-type">VectorBuffer</span><span class="code-operator">&gt;</span> <span class="code-variable">auxiliary</span>;
+      <h3>2. Database Instance Initialization</h3>
+      <p>The initialization sequence reveals the dependency order: file system first, then buffer manager, then catalog, and finally task scheduler.</p>
+      <div class="code-block code-block-sourced" id="source-database">
+        <div class="code-header">
+          <span class="code-lang">C++</span>
+          <span class="code-source-path">src/main/database.cpp</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/main/database.cpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">void</span> <span class="code-type">DatabaseInstance</span>::<span class="code-function">Initialize</span>(...) {
+    <span class="code-function">Configure</span>(*<span class="code-variable">config_ptr</span>, <span class="code-variable">database_path</span>);
+    <span class="code-variable">db_file_system</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">DatabaseFileSystem</span>&gt;(*<span class="code-keyword">this</span>);
+    <span class="code-variable">db_manager</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">DatabaseManager</span>&gt;(*<span class="code-keyword">this</span>);
+    <span class="code-variable">buffer_manager</span> = <span class="code-function">make_uniq</span>&lt;<span class="code-type">StandardBufferManager</span>&gt;(
+        *<span class="code-keyword">this</span>, <span class="code-variable">config</span>.<span class="code-variable">options</span>.<span class="code-variable">temporary_directory</span>);
+    <span class="code-variable">db_manager</span>-&gt;<span class="code-function">InitializeSystemCatalog</span>();
+}</code></pre>
+      </div>
+
+      <h3>3. Vectorized Operations Interface</h3>
+      <div class="code-block code-block-sourced" id="source-vecops">
+        <div class="code-header">
+          <span class="code-lang">C++</span>
+          <span class="code-source-path">src/include/duckdb/common/vector_operations/vector_operations.hpp</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/include/duckdb/common/vector_operations/vector_operations.hpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">struct</span> <span class="code-type">VectorOperations</span> {
+    <span class="code-keyword">static</span> <span class="code-keyword">void</span> <span class="code-function">IsNotNull</span>(<span class="code-type">Vector</span> &amp;<span class="code-variable">arg</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">result</span>, <span class="code-type">idx_t</span> <span class="code-variable">count</span>);
+    <span class="code-keyword">static</span> <span class="code-keyword">void</span> <span class="code-function">And</span>(<span class="code-type">Vector</span> &amp;<span class="code-variable">left</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">right</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">result</span>, <span class="code-type">idx_t</span> <span class="code-variable">count</span>);
+    <span class="code-keyword">static</span> <span class="code-type">idx_t</span> <span class="code-function">GreaterThan</span>(<span class="code-type">Vector</span> &amp;<span class="code-variable">left</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">right</span>,
+        <span class="code-type">optional_ptr</span>&lt;<span class="code-keyword">const</span> <span class="code-type">SelectionVector</span>&gt; <span class="code-variable">sel</span>,
+        <span class="code-type">idx_t</span> <span class="code-variable">count</span>,
+        <span class="code-type">optional_ptr</span>&lt;<span class="code-type">SelectionVector</span>&gt; <span class="code-variable">true_sel</span>,
+        <span class="code-type">optional_ptr</span>&lt;<span class="code-type">SelectionVector</span>&gt; <span class="code-variable">false_sel</span>);
+    <span class="code-keyword">static</span> <span class="code-keyword">void</span> <span class="code-function">Hash</span>(<span class="code-type">Vector</span> &amp;<span class="code-variable">input</span>, <span class="code-type">Vector</span> &amp;<span class="code-variable">hashes</span>, <span class="code-type">idx_t</span> <span class="code-variable">count</span>);
 };</code></pre>
       </div>
 
-      <h2>Source Code: Optimizer Pipeline</h2>
-      <div class="code-block code-block-sourced" id="source-optimizer-cpp">
+      <div class="callout callout-insight">
+        <div class="callout-icon">&#x1F52D;</div>
+        <div class="callout-content">
+          <strong>Design insight:</strong> Every operation accepts an <code>idx_t count</code> parameter, enabling batch processing. The selection-vector variants allow filter operations to produce selection vectors rather than copying data -- a key optimization that avoids unnecessary data movement.
+        </div>
+      </div>
+
+      <h3>4. Optimizer Pipeline</h3>
+      <div class="code-block code-block-sourced" id="source-optimizer">
         <div class="code-header">
           <span class="code-lang">C++</span>
           <span class="code-source-path">src/optimizer/optimizer.cpp</span>
           <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/optimizer/optimizer.cpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
           <button class="code-copy" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre class="code-pre"><code><span class="code-comment">// The optimizer runs multiple passes over the logical plan:</span>
-<span class="code-comment">// 1. Expression rewriting (constant folding, simplification)</span>
-<span class="code-comment">// 2. Filter pushdown</span>
-<span class="code-comment">// 3. Join order optimization (DPccp algorithm)</span>
-<span class="code-comment">// 4. Common subexpression elimination</span>
-<span class="code-comment">// 5. Column lifetime analysis</span>
-<span class="code-comment">// 6. Physical plan generation</span></code></pre>
+        <pre class="code-pre"><code><span class="code-comment">// Key optimization passes (in execution order):</span>
+<span class="code-comment">// 1. Expression Rewriter      - Constant folding</span>
+<span class="code-comment">// 2. Filter Pushdown          - Push filters to sources</span>
+<span class="code-comment">// 3. Join Order (DPccp)       - Optimal join ordering</span>
+<span class="code-comment">// 4. CTE Inlining             - Inline when wasteful</span>
+<span class="code-comment">// 5. Unused Columns Removal   - Drop dead columns</span>
+<span class="code-comment">// 6. Statistics Propagation    - Gather stats</span>
+<span class="code-comment">// 7. TopN Optimization         - ORDER BY + LIMIT</span>
+<span class="code-comment">// 8. Row Group Pruning         - Eliminate via min/max</span>
+<span class="code-comment">// 9. Late Materialization      - Defer column reads</span>
+<span class="code-comment">// 10. Column Lifetime Analysis - Final cleanup</span></code></pre>
       </div>
-    </section>
 
-    <section class="content-section animate-in" data-level="advanced">
-      <h2>Deployment Considerations</h2>
-      <ul style="font-size:var(--text-base);line-height:1.8;padding-left:var(--space-6);">
-        <li><strong>Thread tuning:</strong> DuckDB defaults to all cores. In shared environments, set <code>threads</code> explicitly to avoid contention.</li>
-        <li><strong>Concurrency:</strong> Single-writer-per-file constraint. Use a single process with connection pooling for web apps.</li>
-        <li><strong>Storage versioning:</strong> Major versions may increment the storage format. Use <code>EXPORT DATABASE</code> / <code>IMPORT DATABASE</code> to migrate.</li>
-        <li><strong>Security:</strong> Set <code>enable_external_access = false</code> in untrusted environments. AES-256 encryption available since v1.4.0 LTS.</li>
-      </ul>
-
-      <div class="callout callout-warning">
-        <div class="callout-icon">&#x26A0;&#xFE0F;</div>
-        <div class="callout-content">
-          <strong>Production tip:</strong> Pin to <span class="glossary-term" data-definition="Long-Term Support release. DuckDB v1.4.x is the current LTS release, supported until September 2026. LTS releases receive security and bug fixes without storage format changes.">LTS</span> releases (currently v1.4.x, supported until September 2026) and plan for migration effort during major version upgrades.
+      <h3>5. Physical Plan Generator</h3>
+      <div class="code-block code-block-sourced" id="source-physplan">
+        <div class="code-header">
+          <span class="code-lang">C++</span>
+          <span class="code-source-path">src/execution/physical_plan_generator.cpp</span>
+          <a class="code-source-link" href="https://github.com/duckdb/duckdb/blob/v1.5.1/src/execution/physical_plan_generator.cpp" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
         </div>
+        <pre class="code-pre"><code><span class="code-type">PhysicalOperator</span> &amp;<span class="code-type">PhysicalPlanGenerator</span>::<span class="code-function">ResolveAndPlan</span>(...) {
+    <span class="code-comment">// Step 1: Resolve output types</span>
+    <span class="code-variable">op</span>-&gt;<span class="code-function">ResolveOperatorTypes</span>();
+    <span class="code-comment">// Step 2: Convert bindings to physical indices</span>
+    <span class="code-type">ColumnBindingResolver</span> <span class="code-variable">resolver</span>;
+    <span class="code-variable">resolver</span>.<span class="code-function">VisitOperator</span>(*<span class="code-variable">op</span>);
+    <span class="code-comment">// Step 3: Create the physical plan</span>
+    <span class="code-variable">physical_plan</span> = <span class="code-function">PlanInternal</span>(*<span class="code-variable">op</span>);
+    <span class="code-keyword">return</span> <span class="code-variable">physical_plan</span>-&gt;<span class="code-function">Root</span>();
+}</code></pre>
       </div>
     </section>
-
   </main>
 
   <section class="references-footer">
     <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/clients/python/overview" target="_blank" rel="noopener noreferrer">DuckDB Python Client</a></span><span class="reference-domain">duckdb.org</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/configuration/overview" target="_blank" rel="noopener noreferrer">Configuration Overview</a></span><span class="reference-domain">duckdb.org</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4BB;</span><div class="reference-content"><span class="reference-title"><a href="https://github.com/duckdb/duckdb" target="_blank" rel="noopener noreferrer">DuckDB GitHub Repository</a></span><span class="reference-domain">github.com</span></div></li>
-      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/connect/concurrency" target="_blank" rel="noopener noreferrer">Concurrency Documentation</a></span><span class="reference-domain">duckdb.org</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4BB;</span><div class="reference-content"><span class="reference-title"><a href="https://github.com/duckdb/duckdb" target="_blank" rel="noopener noreferrer">DuckDB Source Code</a></span><span class="reference-domain">github.com</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/api/python/overview" target="_blank" rel="noopener noreferrer">DuckDB Python API</a></span><span class="reference-domain">duckdb.org</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://duckdb.org/docs/stable/internals/vector" target="_blank" rel="noopener noreferrer">DuckDB Vector Internals</a></span><span class="reference-domain">duckdb.org</span></div></li>
     </ul>
   </section>
 
@@ -277,11 +293,12 @@ pip install duckdb-cli</code></pre>
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
   <script>
-    (function(){'use strict';document.addEventListener('DOMContentLoaded',function(){var b=document.querySelector('.nav-hamburger'),l=document.getElementById('nav-links');if(!b||!l)return;b.addEventListener('click',function(){var o=l.classList.toggle('open');b.setAttribute('aria-expanded',o?'true':'false');});l.addEventListener('click',function(e){if(e.target.closest('a')){l.classList.remove('open');b.setAttribute('aria-expanded','false');}});});})();
-    var observer=new IntersectionObserver(function(e){e.forEach(function(en){if(en.isIntersecting){en.target.classList.add('visible');observer.unobserve(en.target);}});},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el);});
-    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied');},2000);});}
-    (function(){var t=null;function s(term){if(t)t.remove();t=document.createElement('div');t.className='glossary-tooltip';t.textContent=term.dataset.definition;document.body.appendChild(t);var r=term.getBoundingClientRect(),tr=t.getBoundingClientRect(),l=r.left+r.width/2-tr.width/2,tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;t.style.left=l+'px';t.style.top=tp+'px';requestAnimationFrame(function(){t.classList.add('visible');});}function h(){if(t){t.remove();t=null;}}document.addEventListener('mouseover',function(e){var tm=e.target.closest('.glossary-term');if(tm)s(tm);});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))h();});document.addEventListener('click',function(e){var tm=e.target.closest('.glossary-term');if(tm){e.preventDefault();s(tm);}else h();});})();
-    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var m=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(m){m[1].split('\n').forEach(function(l){var x=l.match(/(\w+):\s*"(.+)"/);if(x)ctx[x[1]]=x[2];});}var md='# '+(ctx.system||'')+': '+(ctx.page||document.title)+'\n> Level: '+(ctx.level||'')+'\n\n';var c=document.querySelector('.content-area');if(c)c.querySelectorAll('h2,h3,p,ul,ol,.code-block').forEach(function(n){var tag=n.tagName?n.tagName.toLowerCase():'';if(tag==='h2')md+='\n## '+n.textContent.trim()+'\n\n';else if(tag==='h3')md+='\n### '+n.textContent.trim()+'\n\n';else if(tag==='p')md+=n.textContent.trim()+'\n\n';else if(tag==='ul'||tag==='ol')n.querySelectorAll(':scope>li').forEach(function(li,i){md+=(tag==='ol'?(i+1)+'. ':'- ')+li.textContent.trim()+'\n';});else if(n.classList&&n.classList.contains('code-block')){var lang=n.querySelector('.code-lang');var pre=n.querySelector('.code-pre');md+='```'+(lang?lang.textContent.trim().toLowerCase():'')+'\n'+(pre?pre.textContent.trim():'')+'\n```\n\n';}});md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn'),lbl=btn.querySelector('.btn-label'),orig=lbl.textContent;lbl.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){lbl.textContent=orig;btn.classList.remove('copied');},2000);});}
+    function updateProgressBar(){var s=window.scrollY,h=document.documentElement.scrollHeight-window.innerHeight,p=h>0?(s/h)*100:0;document.querySelector('.nav-progress-bar').style.width=p+'%'}window.addEventListener('scroll',function(){requestAnimationFrame(updateProgressBar)},{passive:true});
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
+    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},2000)})}
+    (function(){var tooltip=null;function show(t){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=t.dataset.definition;document.body.appendChild(tooltip);var r=t.getBoundingClientRect(),tr=tooltip.getBoundingClientRect(),l=r.left+r.width/2-tr.width/2,tp=r.bottom+8;if(l<8)l=8;if(l+tr.width>window.innerWidth-8)l=window.innerWidth-tr.width-8;if(tp+tr.height>window.innerHeight-8)tp=r.top-tr.height-8;tooltip.style.left=l+'px';tooltip.style.top=tp+'px';requestAnimationFrame(function(){tooltip.classList.add('visible')})}function hide(){if(tooltip){tooltip.remove();tooltip=null}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t)});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide()})})();
+    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var m=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(m){m[1].split('\n').forEach(function(l){var x=l.match(/(\w+):\s*"(.+)"/);if(x)ctx[x[1]]=x[2]})}var md='# '+(ctx.system||'')+': '+(ctx.page||document.title)+'\n> Source: '+window.location.href+' | Level: '+(ctx.level||'Unknown')+'\n\n';var c=document.querySelector('.content-area');if(c){c.querySelectorAll('h2,h3,p').forEach(function(el){var t=el.tagName.toLowerCase();if(t==='h2')md+='\n## '+el.textContent.trim()+'\n\n';else if(t==='h3')md+='\n### '+el.textContent.trim()+'\n\n';else if(t==='p')md+=el.textContent.trim()+'\n\n'})}md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn'),lb=btn.querySelector('.btn-label'),o=lb.textContent;lb.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){lb.textContent=o;btn.classList.remove('copied')},2000)})}
   </script>
 </body>
 </html>

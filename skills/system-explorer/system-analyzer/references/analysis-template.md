@@ -1,6 +1,8 @@
 # Analysis Template Reference
 
-Definitive template for `analysis.md` output. Sections are optional based on complexity, but order, level tags, and sub-section structure must be preserved.
+> **Note:** Per-section templates are now available in `references/section-templates/`. When generating multi-file analysis output, use those individual templates instead of this monolithic reference. This file is preserved as a complete structural reference showing the full analysis format.
+
+Definitive template for analysis output. Sections are optional based on complexity, but order, level tags, and sub-section structure must be preserved.
 
 ```markdown
 # System Analysis: [System Name]
@@ -92,7 +94,7 @@ Definitive template for `analysis.md` output. Sections are optional based on com
 
 ## Implementation Details
 <!-- level: advanced -->
-<!-- Hands-on: code snippets, config files, deployment patterns. -->
+<!-- Hands-on: code snippets, config files, deployment patterns, and source code walkthrough. -->
 
 ### Getting Started
 <!-- Fastest path from zero to "hello world." Docker/brew/equivalent. -->
@@ -101,7 +103,36 @@ Definitive template for `analysis.md` output. Sections are optional based on com
 <!-- 5-10 most important config knobs. What each controls, default, when to change. -->
 
 ### Code Patterns
-<!-- Common usage patterns with short code snippets (10-20 lines). -->
+<!-- Common usage patterns with short code snippets (10-20 lines).
+     These are USER-WRITTEN code examples (not source code from the system's repo). -->
+
+### Source Code Walkthrough
+<!-- For each core concept and architectural component, include the actual source code
+     from the system's repository that implements it. Group by concept.
+
+     Structure:
+
+     #### [Concept/Component Name] — Implementation
+     Brief explanation of what this code does, how it relates to the concept defined
+     in Core Concepts or the component described in Architecture, and why this
+     particular code is interesting or revealing.
+
+     ```language
+     // source: path/to/file.ext:start-end
+     // github: org/repo
+     // tag: vX.Y.Z
+     [actual source code excerpt, 20-60 lines]
+     ```
+
+     Guidelines:
+     - Aim for 5-8 annotated source blocks covering the most important concepts
+     - Each block MUST have // source:, // github:, and // tag: annotations
+     - Prefer code that reveals design decisions over boilerplate
+     - Include brief commentary before each block explaining what to look for
+     - Cross-reference concept names from Core Concepts and component names
+       from Architecture
+     - If source code is unavailable (closed-source system), note this and provide
+       behavioral analysis instead -->
 
 ### Deployment Considerations
 <!-- Production checklist: sizing, monitoring, backup, upgrade path. -->

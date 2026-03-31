@@ -72,77 +72,94 @@ Go beyond training data. Be aggressive about gathering real, current information
 - Getting-started guides and quickstart documentation
 - API documentation and reference pages
 
-**Optional (if user wants implementation depth):**
-- GitHub README and repository structure
-- Key source files and docs/ directory
-- Configuration reference
+**Source Code Research (when GitHub repo is available):**
 
-Do NOT rely solely on training data. The web research phase is what makes the analysis current and trustworthy.
+This is NOT optional — when the system has a public GitHub repository, always perform source code research to feed the Implementation Details section's Source Code Walkthrough.
+
+1. Fetch the repository file tree using WebFetch on `https://api.github.com/repos/{org}/{repo}/git/trees/{tag}?recursive=1` to understand the directory structure
+2. From the tree, identify 5-10 key source files that implement core concepts and architectural components discovered in Phase 1. Prioritize: main entry points, core data structures, key algorithms, configuration schemas.
+3. Fetch the content of those files using WebFetch on raw GitHub URLs: `https://raw.githubusercontent.com/{org}/{repo}/{tag}/{filepath}`
+4. Extract relevant code excerpts (20-60 lines each) with precise line ranges
+5. Map each excerpt to the concept or component it implements (for cross-referencing in the Source Code Walkthrough)
+
+If the GitHub API rate-limits you, fall back to raw.githubusercontent.com URLs directly. If the system is closed-source, skip this step and note the limitation in the Implementation Details section.
+
+Do NOT rely solely on training data. The web research and source code research phases are what make the analysis current and trustworthy.
 
 ### Phase 3: Structured Analysis
 
-Write `analysis.md` following the template in `references/analysis-template.md`. The skill decides which sections to include based on system complexity — a simple CLI tool might get 4-5 sections, a complex distributed system might get all 9.
+Write the analysis as **multiple files** — one per section — instead of a single monolithic `analysis.md`. This allows each section to use the full context budget for depth and detail.
 
-**Available sections:**
+**Step 1: Write the manifest.** Create `analysis.json` in `[output-dir]` following the format in `references/section-templates/manifest-template.json`. List only the sections you plan to include.
 
-| Section | Content | Level Tag |
-|---------|---------|-----------|
-| Overview | What it is, who it's for, core value proposition | beginner |
-| Core Concepts | Key abstractions, mental models, terminology with analogies | beginner |
-| Architecture | System design, components, data flow, design decisions | intermediate |
-| How It Works | Internal mechanisms, algorithms, protocols | intermediate |
-| Implementation Details | Getting started, configuration, code patterns, deployment | advanced |
-| Use Cases & Case Studies | When to use, when NOT to use, real-world examples | beginner-intermediate |
-| Ecosystem & Integrations | Related tools, plugins, complementary systems | intermediate |
-| Common Q&A | Frequently asked questions with detailed answers | all |
-| Trade-offs & Limitations | Strengths, limitations, alternatives comparison | intermediate |
+**Step 2: Write each section file.** For each section in the manifest, write a separate numbered markdown file to `[output-dir]` using the corresponding template from `references/section-templates/`. The skill decides which sections to include based on system complexity — a simple CLI tool might get 4-5 sections, a complex distributed system might get all 9. Omitted sections skip their number.
 
-**Critical:** Every section MUST have a level comment tag. The HTML course generator depends on these tags to structure content by difficulty. Use exactly these formats:
+**Available sections and their files:**
+
+| File | Section | Content | Level Tag |
+|------|---------|---------|-----------|
+| `00-metadata.md` | Metadata | System name, URLs, license, GitHub, tag | — |
+| `01-overview.md` | Overview | What it is, who it's for, core value proposition | beginner |
+| `02-core-concepts.md` | Core Concepts | Key abstractions, mental models, terminology with analogies | beginner |
+| `03-architecture.md` | Architecture | System design, components, data flow, design decisions | intermediate |
+| `04-how-it-works.md` | How It Works | Internal mechanisms, algorithms, protocols | intermediate |
+| `05-implementation-details.md` | Implementation Details | Getting started, configuration, code patterns, source code walkthrough, deployment | advanced |
+| `06-use-cases.md` | Use Cases & Case Studies | When to use, when NOT to use, real-world examples | beginner-intermediate |
+| `07-ecosystem.md` | Ecosystem & Integrations | Related tools, plugins, complementary systems | intermediate |
+| `08-common-qa.md` | Common Q&A | Frequently asked questions with detailed answers | all |
+| `09-tradeoffs.md` | Trade-offs & Limitations | Strengths, limitations, alternatives comparison | intermediate |
+
+**Critical:** Every section file MUST have a level comment tag. The HTML course generator depends on these tags to structure content by difficulty. Use exactly these formats:
 - `<!-- level: beginner -->`
 - `<!-- level: intermediate -->`
 - `<!-- level: advanced -->`
 - `<!-- level: beginner-intermediate -->`
 - `<!-- level: all -->`
 
-**References:** Each section should include a `<!-- references: ... -->` block after the level tag, listing 2-5 authoritative sources relevant to that section. See `references/analysis-template.md` for format and reference types.
+**References:** Each section file should include a `<!-- references: ... -->` block after the level tag, listing 2-5 authoritative sources relevant to that section. See `references/analysis-template.md` for format and reference types.
 
 **Inline links:** Include standard markdown links within the content body on first mention of concepts with authoritative external sources. Link claims that benefit from a primary source (benchmarks, architectural decisions, papers).
 
-**Source annotations:** When including code blocks that represent actual source code from the system's codebase, annotate them with `// source:`, `// github:`, and `// tag:` metadata lines. See `references/analysis-template.md` for format. The Metadata section's GitHub and Tag fields provide default values.
+**Source annotations:** When including code blocks that represent actual source code from the system's codebase, annotate them with `// source:`, `// github:`, and `// tag:` metadata lines. See `references/analysis-template.md` for format. The Metadata section's GitHub and Tag fields (from `00-metadata.md`) provide default values.
+
+**Implementation Details — Source Code Walkthrough:** The `05-implementation-details.md` file includes a "Source Code Walkthrough" sub-section. For each core concept (from `02-core-concepts.md`) and architectural component (from `03-architecture.md`), include the actual source code from the system's repository that implements it, with full `// source:` annotations. Use the excerpts gathered during Phase 2's Source Code Research. Aim for 5-8 annotated source blocks. See `references/section-templates/05-implementation-details.md` for the detailed template.
 
 ### Phase 4: Self-Review & Fix
 
 Before presenting to the user, review the analysis and fix issues. Iterate until the review passes.
 
 **Review checklist:**
-1. **Level tags** — Does EVERY section have a `<!-- level: ... -->` comment? Missing tags break the HTML generator. Scan every `##` heading.
-2. **Analogies** — Does every Core Concepts entry have a real-world analogy? If any concept is explained with only abstract definitions, add an analogy.
-3. **Architecture "why"** — Does the Architecture section explain WHY each component exists, not just what it does? If any component is just described without motivation, add the "why."
-4. **Code examples** — Does the Implementation Details section have actual code snippets, config examples, or commands? If it reads like prose, add concrete examples.
-5. **Honest trade-offs** — Does the Trade-offs section name real limitations and alternatives? If it reads like marketing copy, rewrite with honest assessments.
-6. **Q&A quality** — Are the Common Q&A questions ones a senior engineer would actually ask? If any are trivial ("What is X?"), replace with deeper questions.
-7. **Factual accuracy** — Cross-check key claims against your web research. Are version numbers, URLs, and feature claims still current?
-8. **Section depth** — Is each section substantive enough to justify its inclusion? If a section has only 1-2 sentences, either expand it or remove it.
-9. **References** — Does each section with substantial content have a `<!-- references: ... -->` block with 2-5 relevant sources? Are the URLs valid and the types correct?
-10. **Source annotations** — Do code blocks showing actual source code have `// source:` annotations with valid file paths? Do the `// github:` and `// tag:` values match the Metadata section or override correctly?
-11. **Inline links** — Are key concepts and claims linked to authoritative sources on first mention? Are there 2-4 inline links per section (not over-linked)?
+1. **Manifest completeness** — Does `analysis.json` list all generated section files? Do the `file`, `title`, `level`, and `order` fields match the actual files?
+2. **Level tags** — Does EVERY section file have a `<!-- level: ... -->` comment? Missing tags break the HTML generator. Scan every `##` heading in each file.
+3. **Analogies** — Does every Core Concepts entry (in `02-core-concepts.md`) have a real-world analogy? If any concept is explained with only abstract definitions, add an analogy.
+4. **Architecture "why"** — Does `03-architecture.md` explain WHY each component exists, not just what it does? If any component is just described without motivation, add the "why."
+5. **Code examples** — Does `05-implementation-details.md` have actual code snippets, config examples, or commands? If it reads like prose, add concrete examples.
+6. **Source code coverage** — Does `05-implementation-details.md` include a Source Code Walkthrough with at least 3 annotated source code blocks from the system's actual repository? Do the `// source:` paths correspond to real files discovered in Phase 2? (Skip this check if the system is closed-source.)
+7. **Honest trade-offs** — Does `09-tradeoffs.md` name real limitations and alternatives? If it reads like marketing copy, rewrite with honest assessments.
+8. **Q&A quality** — Are the questions in `08-common-qa.md` ones a senior engineer would actually ask? If any are trivial ("What is X?"), replace with deeper questions.
+9. **Factual accuracy** — Cross-check key claims against your web research. Are version numbers, URLs, and feature claims still current?
+10. **Section depth** — Is each section file substantive enough to justify its inclusion? If a section has only 1-2 sentences, either expand it or remove the file (and its manifest entry).
+11. **References** — Does each section file with substantial content have a `<!-- references: ... -->` block with 2-5 relevant sources? Are the URLs valid and the types correct?
+12. **Source annotations** — Do code blocks showing actual source code have `// source:` annotations with valid file paths? Do the `// github:` and `// tag:` values match `00-metadata.md` or override correctly?
+13. **Inline links** — Are key concepts and claims linked to authoritative sources on first mention? Are there 2-4 inline links per section file (not over-linked)?
 
-**Fix loop:** If any check fails, fix the issue and re-run the checklist. Only proceed once all checks pass.
+**Fix loop:** If any check fails, fix the issue in the relevant file and re-run the checklist. Only proceed once all checks pass.
 
 ### Phase 5: Checkpoint
 
 Before finalizing, present a summary to the user:
-- List which sections were generated and their estimated depth (shallow / moderate / deep)
+- List which section files were generated and their estimated depth (shallow / moderate / deep)
 - Highlight any areas where web research found especially good or surprising information
 - Note any sections that were omitted and why
+- For the Source Code Walkthrough, list how many annotated source blocks were included and which concepts they cover
 
 Let the user request changes:
-- **More depth** in specific areas
-- **Additional sections** that were omitted
-- **Removal** of sections that aren't relevant
-- **Corrections** to any inaccuracies
+- **More depth** in specific areas (re-generate individual section files)
+- **Additional sections** that were omitted (add new section files and update `analysis.json`)
+- **Removal** of sections that aren't relevant (delete section files and update `analysis.json`)
+- **Corrections** to any inaccuracies (edit the specific section file)
 
-Apply changes, then write the final `analysis.md` to `[output-dir]/analysis.md`.
+Apply changes to the relevant section files, update `analysis.json` if the section list changed, then confirm completion.
 
 ## Content Philosophy
 
@@ -163,60 +180,28 @@ Don't be a cheerleader. Name real limitations and when alternatives are better. 
 
 ## Output Format
 
-The analysis.md follows the template in `references/analysis-template.md`. The structure starts with:
+The analysis is written as multiple files in `[output-dir]`, with a JSON manifest as the entry point:
 
-```markdown
-# System Analysis: [System Name]
-
-## Metadata
-- **Name:** [System Name]
-- **Category:** [e.g., Message Queue, Database, Container Orchestrator]
-- **Official URL:** [link]
-- **GitHub:** [org/repo, e.g., duckdb/duckdb]
-- **Tag:** [latest stable tag, e.g., v1.5.1]
-- **License:** [license type]
-- **Latest Version:** [version if found]
-
-## Overview
-<!-- level: beginner -->
-...
-
-## Core Concepts
-<!-- level: beginner -->
-...
-
-## Architecture
-<!-- level: intermediate -->
-...
-
-## How It Works
-<!-- level: intermediate -->
-...
-
-## Implementation Details
-<!-- level: advanced -->
-...
-
-## Use Cases & Case Studies
-<!-- level: beginner-intermediate -->
-...
-
-## Ecosystem & Integrations
-<!-- level: intermediate -->
-...
-
-## Common Q&A
-<!-- level: all -->
-...
-
-## Trade-offs & Limitations
-<!-- level: intermediate -->
-...
+```
+[output-dir]/
+  analysis.json              # manifest — entry point for downstream consumers
+  00-metadata.md             # system name, URLs, license, GitHub, tag
+  01-overview.md             # what it is, who it's for (beginner)
+  02-core-concepts.md        # key abstractions with analogies (beginner)
+  03-architecture.md         # components, data flow, design decisions (intermediate)
+  04-how-it-works.md         # algorithms, protocols, internals (intermediate)
+  05-implementation-details.md  # getting started, code patterns, source walkthrough (advanced)
+  06-use-cases.md            # when to use, when not to, real-world examples (beginner-intermediate)
+  07-ecosystem.md            # tools, integrations, community (intermediate)
+  08-common-qa.md            # senior-engineer Q&A (all)
+  09-tradeoffs.md            # strengths, limitations, alternatives (intermediate)
 ```
 
-See `references/analysis-template.md` for full sub-section structure and content guidance.
+Not all section files are required. The manifest (`analysis.json`) lists only the sections that were generated. Omitted sections skip their number. See `references/section-templates/manifest-template.json` for the manifest format and `references/section-templates/` for per-section templates.
+
+Each section file is self-contained with its own `## Heading`, `<!-- level: ... -->` tag, `<!-- references: ... -->` block, and sub-sections. See `references/analysis-template.md` for the full structural reference.
 
 ## Integration
 
-- **Standalone:** Write `analysis.md` to `[output-dir]/analysis.md` and suggest running system-to-course next to generate the HTML course.
-- **Orchestrated by system-explorer:** Use the output directory provided by the orchestrator (do not re-ask the user). Return the analysis file path (`[output-dir]/analysis.md`) so the orchestrator can pass it to the next phase.
+- **Standalone:** Write analysis files to `[output-dir]/` (manifest + section files) and suggest running system-to-course next to generate the HTML course.
+- **Orchestrated by system-explorer:** Use the output directory provided by the orchestrator (do not re-ask the user). Return the output directory path so the orchestrator can pass it to the next phase. The downstream system-to-course skill detects the multi-file format via `analysis.json`.
