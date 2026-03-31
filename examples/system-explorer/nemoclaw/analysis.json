@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "system": "NemoClaw",
+  "github": "NVIDIA/NemoClaw",
+  "tag": "v0.0.1",
+  "generated": "2026-03-31",
+  "sections": [
+    { "file": "00-metadata.md", "title": "Metadata", "level": null, "order": 0 },
+    { "file": "01-overview.md", "title": "Overview", "level": "beginner", "order": 1 },
+    { "file": "02-core-concepts.md", "title": "Core Concepts", "level": "beginner", "order": 2 },
+    { "file": "03-architecture.md", "title": "Architecture", "level": "intermediate", "order": 3 },
+    { "file": "04-how-it-works.md", "title": "How It Works", "level": "intermediate", "order": 4 },
+    { "file": "05-implementation-details.md", "title": "Implementation Details", "level": "advanced", "order": 5 },
+    { "file": "06-use-cases.md", "title": "Use Cases & Case Studies", "level": "beginner-intermediate", "order": 6 },
+    { "file": "07-ecosystem.md", "title": "Ecosystem & Integrations", "level": "intermediate", "order": 7 },
+    { "file": "08-common-qa.md", "title": "Common Q&A", "level": "all", "order": 8 },
+    { "file": "09-tradeoffs.md", "title": "Trade-offs & Limitations", "level": "intermediate", "order": 9 }
+  ]
+}

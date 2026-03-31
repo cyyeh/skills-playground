@@ -8,164 +8,88 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2A7B9B;--color-accent-hover:#236A86;--color-accent-light:#E4F2F7;--color-accent-muted:#5A9DB5;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms}
-    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(42,123,155,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
-    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
-    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap}.nav-brand{text-decoration:none;display:flex;flex-direction:column}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted)}.nav-links{display:flex;align-items:center;gap:var(--space-4)}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0}.nav-page-list li a{display:flex;align-items:center;padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background .15s,color .15s}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text)}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2)}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px}
-    @media(max-width:768px){.nav-hamburger{display:flex}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3)}.nav-links.open{display:flex}.nav-page-list{flex-direction:column;width:100%}}
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms}
+    *,*::before,*::after{box-sizing:border-box}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}html{scroll-behavior:smooth}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
     a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted);display:inline}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
-    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin-bottom:var(--space-3);line-height:1.15;margin-top:var(--space-2)}
-    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.all-levels{background:var(--color-info-light);color:var(--color-info)}
-    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
-    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}}
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap}.nav-brand{text-decoration:none;display:flex;flex-direction:column}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted)}.nav-links{display:flex;align-items:center;gap:var(--space-4)}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0}.nav-page-list li a{display:flex;align-items:center;padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background .15s,color .15s}.nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text)}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2)}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px}@media(max-width:768px){.nav-hamburger{display:flex}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3)}.nav-links.open{display:flex}.nav-page-list{flex-direction:column;width:100%}}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.all{background:var(--color-accent-light);color:var(--color-accent)}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}@media(max-width:640px){.copy-markdown-btn .btn-label{display:none}}
     .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4)}.content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4)}
 
     /* Accordion */
-    .accordion{margin:var(--space-6) 0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden}.accordion-item{border-bottom:1px solid var(--color-border-light)}.accordion-item:last-child{border-bottom:none}.accordion-header{width:100%;display:flex;justify-content:space-between;align-items:center;padding:var(--space-4) var(--space-5);background:var(--color-surface);border:none;cursor:pointer;font-family:var(--font-display);font-size:var(--text-base);font-weight:600;color:var(--color-text);text-align:left;transition:background var(--duration-fast)}.accordion-header:hover{background:var(--color-surface-warm)}.accordion-header.active{background:var(--color-surface-warm)}.accordion-icon{font-size:var(--text-xl);font-weight:300;color:var(--color-accent);transition:transform var(--duration-fast);flex-shrink:0;margin-left:var(--space-3)}.accordion-header.active .accordion-icon{transform:rotate(45deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}.accordion-body p{padding:0 var(--space-5) var(--space-5);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal)}.accordion-body code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-border-light);padding:1px var(--space-1);border-radius:3px}
+    .accordion{margin:var(--space-6) 0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden}.accordion-item{border-bottom:1px solid var(--color-border-light)}.accordion-item:last-child{border-bottom:none}.accordion-header{width:100%;display:flex;justify-content:space-between;align-items:center;padding:var(--space-4) var(--space-5);background:var(--color-surface);border:none;cursor:pointer;font-family:var(--font-display);font-size:var(--text-base);font-weight:600;color:var(--color-text);text-align:left;transition:background var(--duration-fast)}.accordion-header:hover{background:var(--color-surface-warm)}.accordion-header.active{background:var(--color-surface-warm)}.accordion-icon{font-size:var(--text-xl);font-weight:300;color:var(--color-accent);transition:transform var(--duration-fast);flex-shrink:0;margin-left:var(--space-3)}.accordion-header.active .accordion-icon{transform:rotate(45deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}.accordion-body p,.accordion-body ul{padding:0 var(--space-5) var(--space-5);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal)}.accordion-body code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-border-light);padding:1px var(--space-1);border-radius:3px}
 
     .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}.callout-info{background:var(--color-info-light);border-color:var(--color-info)}.callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}
-    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);display:flex;align-items:center;gap:var(--space-2)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-content{display:flex;flex-direction:column;gap:var(--space-1)}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;transition:color .15s}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
     .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
     .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
     @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
   </style>
-  <!-- page-context:
-    system: "NemoClaw"
-    description: "an open-source security and orchestration runtime for AI agents"
-    page: "Common Q&A"
-    level: "All Levels"
-  -->
+  <!-- page-context: system: "NemoClaw" description: "an open-source AI agent security and orchestration platform by NVIDIA" page: "Common Q&A" level: "All Levels" -->
 </head>
 <body>
-  <nav class="site-nav" role="navigation" aria-label="Course navigation">
-    <a href="index.html" class="nav-brand"><span class="nav-brand-name">NemoClaw</span><span class="nav-brand-label">Interactive Course</span></a>
-    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button>
-    <div class="nav-links" id="nav-links">
-      <ul class="nav-page-list">
-        <li><a href="concepts.html">Concepts</a></li>
-        <li><a href="architecture.html">Architecture</a></li>
-        <li><a href="how-it-works.html">How It Works</a></li>
-        <li><a href="implementation.html">Implementation</a></li>
-        <li><a href="use-cases.html">Use Cases</a></li>
-        <li><a href="ecosystem.html">Ecosystem</a></li>
-        <li class="active"><a href="faq.html">FAQ</a></li>
-        <li><a href="tradeoffs.html">Trade-offs</a></li>
-      </ul>
-    </div>
-  </nav>
+  <nav class="site-nav" role="navigation"><a href="index.html" class="nav-brand"><span class="nav-brand-name">NemoClaw</span><span class="nav-brand-label">Interactive Course</span></a><button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button><div class="nav-links" id="nav-links"><ul class="nav-page-list"><li><a href="index.html">Home</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="architecture.html">Architecture</a></li><li><a href="how-it-works.html">How It Works</a></li><li><a href="implementation.html">Implementation</a></li><li><a href="use-cases.html">Use Cases</a></li><li><a href="ecosystem.html">Ecosystem</a></li><li class="active"><a href="faq.html">FAQ</a></li><li><a href="tradeoffs.html">Trade-offs</a></li></ul></div></nav>
 
-  <header class="page-header animate-in">
-    <div class="page-header-content">
-      <span class="page-level-badge all-levels">All Levels</span>
-      <h1>Common Q&amp;A</h1>
-    </div>
-    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button>
-  </header>
+  <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge all">All Levels</span><h1>Common Q&amp;A</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
 
   <main class="content-area">
-
     <section class="content-section animate-in" data-level="beginner intermediate advanced">
       <h2>Frequently Asked Questions</h2>
-      <p>Click any question to reveal the answer.</p>
+      <p>Click any question to expand the answer.</p>
 
-      <div class="accordion" id="faq-accordion">
+      <div class="accordion" id="acc-faq">
         <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>How does NemoClaw differ from just running OpenClaw in a Docker container?</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <p>Docker provides basic process and filesystem isolation, but it is not agent-aware. NemoClaw adds four critical layers on top: (1) deny-by-default network policies with operator approval workflows, (2) inference routing that keeps API credentials outside the container, (3) policy-aware request evaluation at the binary/destination/method/path level, and (4) cryptographically verified blueprints preventing supply-chain attacks. A Docker container does not know the difference between an HTTP request to download a package and one exfiltrating stolen credentials -- NemoClaw's policy engine does.</p>
-          </div>
+          <button class="accordion-header" onclick="toggleAccordion(this)"><span>What happens if the agent is compromised via prompt injection -- can it escape the sandbox?</span><span class="accordion-icon">+</span></button>
+          <div class="accordion-body"><p>The sandbox is designed to contain even a worst-case scenario where an attacker achieves arbitrary code execution inside the container. The three-layer isolation (Landlock for filesystem, seccomp for syscalls, network namespaces for networking) is enforced at the Linux kernel level, not by the application. A compromised agent cannot mount new filesystems, trace other processes, or bypass network restrictions. Most importantly: API keys are stored on the host and injected by the OpenShell gateway, so even full sandbox compromise cannot exfiltrate credentials. That said, container escapes via kernel vulnerabilities are not theoretically impossible -- which is why defense in depth matters.</p></div>
         </div>
         <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>Can I use NemoClaw with agent frameworks other than OpenClaw?</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <p>Not directly. NemoClaw is tightly integrated with the OpenClaw CLI and plugin system. However, the underlying OpenShell runtime is more general-purpose. If your framework can run inside a container and communicate through a gateway, you could theoretically use OpenShell directly, but you would lose the one-command setup, blueprint lifecycle, and OpenClaw-specific integrations.</p>
-          </div>
+          <button class="accordion-header" onclick="toggleAccordion(this)"><span>How does NemoClaw compare to just running OpenClaw in a Docker container?</span><span class="accordion-icon">+</span></button>
+          <div class="accordion-body"><p>A plain Docker container with <code>--network=none</code> plus a reverse proxy could approximate some functionality, but you would reimplement: inference routing that keeps API keys host-side, the per-domain/per-method network policy engine, the real-time approval workflow for blocked requests, blueprint versioning with digest verification, and the onboarding wizard that validates inference providers. NemoClaw packages these into a coherent stack. The trade-off is complexity: NemoClaw adds OpenShell as a dependency.</p></div>
         </div>
         <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>What happens if the agent needs access to a new endpoint not in the policy?</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <p>The request is intercepted by the network namespace, blocked, and surfaced to the operator in the <code>openshell term</code> TUI. The operator can approve or deny the request in real time. Approved endpoints persist for the current session but do not modify the baseline policy. To permanently add an endpoint, edit <code>openclaw-sandbox.yaml</code> and re-run <code>nemoclaw onboard</code>.</p>
-          </div>
+          <button class="accordion-header" onclick="toggleAccordion(this)"><span>Can I run multiple sandboxed agents simultaneously?</span><span class="accordion-icon">+</span></button>
+          <div class="accordion-body"><p>Yes. Each sandbox is an independent container instance with its own name (RFC 1123 format), network namespace, and policy configuration. Run <code>nemoclaw onboard</code> multiple times to create different sandboxes with different inference providers or network policies. The <code>nemoclaw list</code> command shows all registered sandboxes. The practical limit is host resources.</p></div>
         </div>
         <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>How does the privacy router decide what goes to local vs. cloud inference?</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <p>The privacy router inspects query content and classifies data sensitivity. Queries containing PII, proprietary code, financial data, or other sensitive categories are routed to local Nemotron models. Non-sensitive queries can be routed to cheaper/faster cloud providers. The classification rules are configurable through policy.</p>
-          </div>
+          <button class="accordion-header" onclick="toggleAccordion(this)"><span>What is the latency overhead of inference routing through OpenShell?</span><span class="accordion-icon">+</span></button>
+          <div class="accordion-body"><p>The routing adds one extra network hop (sandbox to gateway to provider). For cloud providers, this overhead is negligible compared to LLM inference time (hundreds of milliseconds to seconds). For local inference (Ollama, NIM), the hop is entirely local with sub-millisecond latency. The network policy check is a local table lookup. The most noticeable delay is during initial sandbox setup (~2.4 GB container image download).</p></div>
         </div>
         <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>What is the performance overhead of the sandbox and gateway?</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <p>Sandbox startup adds 30-60 seconds on first creation (image pull + resource provisioning); subsequent starts are faster. Gateway inference routing adds single-digit milliseconds of latency per request. The main overhead is resource consumption: the sandbox image is 2.4 GB compressed, and local inference models require their own VRAM allocation. For most use cases, the latency overhead is negligible compared to model inference time.</p>
-          </div>
+          <button class="accordion-header" onclick="toggleAccordion(this)"><span>How do I grant the agent access to a new API without restarting the sandbox?</span><span class="accordion-icon">+</span></button>
+          <div class="accordion-body"><p>Two approaches: (1) For immediate, session-scoped access: wait for the agent to attempt the request, then approve it in the OpenShell TUI (<code>openshell term</code>). (2) For persistent access: use <code>openshell policy set &lt;policy-file&gt;</code> with an updated YAML file. For changes surviving sandbox recreation, edit the policy YAML in the blueprint and re-onboard.</p></div>
         </div>
         <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>Can an agent inside the sandbox escalate privileges or escape isolation?</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <p>NemoClaw uses kernel-level enforcement (Landlock LSM for filesystem, seccomp for syscalls, network namespaces for networking). The gateway and agent run as distinct OS users. Config files are root-owned with SHA256 hash verification. Privilege escalation via <code>sudo</code>/<code>su</code> is blocked by seccomp profiles. This is fundamentally stronger than application-level sandboxing because the kernel enforces the rules regardless of what the application does. However, kernel exploits (while rare) would theoretically bypass these protections.</p>
-          </div>
+          <button class="accordion-header" onclick="toggleAccordion(this)"><span>Is NemoClaw locked into NVIDIA hardware?</span><span class="accordion-icon">+</span></button>
+          <div class="accordion-body"><p>No. NemoClaw is hardware-agnostic at the agent layer. The sandbox runs on any Linux machine with Docker, regardless of GPU vendor. NVIDIA-specific optimizations are in the inference layer: Nemotron models and NIM run best on NVIDIA GPUs. But you can use non-NVIDIA providers (OpenAI, Anthropic, Ollama with CPU-only models) on AMD or Intel hardware. Landlock, seccomp, and namespaces are Linux kernel features, not NVIDIA-specific.</p></div>
         </div>
         <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>How do I handle the operational burden of approving network requests?</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <p>This is a real concern. Repetitive approval prompts can create "approval fatigue." Best practices: (1) start with generous preset policies for known integrations (Slack, Jira, PyPI, etc.), (2) monitor the first few sessions to identify commonly needed endpoints, (3) add those endpoints to the baseline policy, (4) use dynamic policy updates for temporary access needs. Over time, the approval frequency should decrease significantly.</p>
-          </div>
+          <button class="accordion-header" onclick="toggleAccordion(this)"><span>What happens to agent state if the host machine reboots?</span><span class="accordion-icon">+</span></button>
+          <div class="accordion-body"><p>The sandbox container persists across reboots if Docker is configured to restart containers automatically. Agent state inside <code>/sandbox</code> is preserved. However, session-level policy approvals (granted via the TUI) are not persisted -- only static policy changes (in the YAML file) survive restarts. NemoClaw includes backup and restore procedures for the <code>/sandbox</code> directory.</p></div>
         </div>
         <div class="accordion-item">
-          <button class="accordion-header" onclick="toggleAccordion(this)">
-            <span>Is NemoClaw production-ready?</span>
-            <span class="accordion-icon">+</span>
-          </button>
-          <div class="accordion-body">
-            <p>No. NemoClaw is alpha software released on March 16, 2026. The project explicitly states: "This software is not production-ready. Interfaces, APIs, and behavior may change without notice." Use it for evaluation, development, and testing. Wait for a stable release before deploying in production.</p>
-          </div>
+          <button class="accordion-header" onclick="toggleAccordion(this)"><span>Can I use NemoClaw with a model provider not in the supported list?</span><span class="accordion-icon">+</span></button>
+          <div class="accordion-body"><p>Yes, through the "Custom OpenAI-compatible" or "Custom Anthropic-compatible" options during onboarding. Any endpoint speaking the OpenAI <code>/chat/completions</code> or Anthropic <code>/v1/messages</code> protocol can be configured. NemoClaw validates custom endpoints by sending a real inference request rather than checking a <code>/models</code> endpoint.</p></div>
         </div>
-      </div>
-
-      <div class="callout callout-info">
-        <div class="callout-icon">&#x2139;&#xFE0F;</div>
-        <div class="callout-content">
-          <strong>Note:</strong> For more technical details on any of these topics, see the <a href="architecture.html">Architecture</a> and <a href="how-it-works.html">How It Works</a> pages.
+        <div class="accordion-item">
+          <button class="accordion-header" onclick="toggleAccordion(this)"><span>How mature is NemoClaw for production use?</span><span class="accordion-icon">+</span></button>
+          <div class="accordion-body"><p>As of March 2026, NemoClaw is explicitly alpha software. Released on March 16, 2026, it has not yet had a production-ready release. APIs, configuration schemas, and runtime behavior may change without notice. The project has 17,800+ GitHub stars, but stars measure interest, not stability. For production environments, treat it as an evaluation tool and plan for re-onboarding during upgrades.</p></div>
         </div>
       </div>
     </section>
-
   </main>
 
-  <nav class="page-nav-footer">
-    <a href="ecosystem.html" class="prev">Ecosystem</a>
-    <a href="tradeoffs.html" class="next">Trade-offs</a>
-  </nav>
+  <section class="references-footer"><h3>&#x1F4DA; References &amp; Resources</h3><ul class="references-list"><li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/reference/troubleshooting.html" target="_blank" rel="noopener noreferrer">NemoClaw Troubleshooting</a></span><span class="reference-domain">docs.nvidia.com</span></div></li><li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/reference/architecture.html" target="_blank" rel="noopener noreferrer">NemoClaw Architecture</a></span><span class="reference-domain">docs.nvidia.com</span></div></li><li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/reference/network-policies.html" target="_blank" rel="noopener noreferrer">Network Policies Reference</a></span><span class="reference-domain">docs.nvidia.com</span></div></li></ul></section>
+
+  <nav class="page-nav-footer"><a href="ecosystem.html" class="prev">Ecosystem</a><a href="tradeoffs.html" class="next">Trade-offs</a></nav>
   <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
 
   <script>
-    (function(){var btn=document.querySelector('.nav-hamburger'),links=document.getElementById('nav-links');if(!btn||!links)return;btn.addEventListener('click',function(){var o=links.classList.toggle('open');btn.setAttribute('aria-expanded',o?'true':'false')});links.addEventListener('click',function(e){if(e.target.closest('a')){links.classList.remove('open');btn.setAttribute('aria-expanded','false')}})})();
-    var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
-
     function toggleAccordion(header){var item=header.parentElement;var body=item.querySelector('.accordion-body');var isActive=header.classList.contains('active');var accordion=item.closest('.accordion');accordion.querySelectorAll('.accordion-header.active').forEach(function(other){if(other!==header){other.classList.remove('active');other.parentElement.querySelector('.accordion-body').style.maxHeight=null}});if(isActive){header.classList.remove('active');body.style.maxHeight=null}else{header.classList.add('active');body.style.maxHeight=body.scrollHeight+'px'}}
-
-    function copyPageAsMarkdown(){var md='# NemoClaw: Common Q&A\n> Source: '+window.location.href+'\n\n';document.querySelectorAll('.accordion-item').forEach(function(item){var q=item.querySelector('.accordion-header span:first-child');var a=item.querySelector('.accordion-body p');md+='**Q: '+(q?q.textContent.trim():'')+'**\n\n'+(a?a.textContent.trim():'')+'\n\n'});md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');var label=btn.querySelector('.btn-label');var orig=label.textContent;label.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){label.textContent=orig;btn.classList.remove('copied')},2000)})}
+    (function(){document.addEventListener('DOMContentLoaded',function(){var btn=document.querySelector('.nav-hamburger'),links=document.getElementById('nav-links');if(!btn||!links)return;btn.addEventListener('click',function(){var o=links.classList.toggle('open');btn.setAttribute('aria-expanded',o?'true':'false')});links.addEventListener('click',function(e){if(e.target.closest('a')){links.classList.remove('open');btn.setAttribute('aria-expanded','false')}})})})();
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
+    function copyPageAsMarkdown(){var md='# NemoClaw: Common Q&A\n> Source: '+window.location.href+'\n\n';document.querySelectorAll('.accordion-item').forEach(function(item){var h=item.querySelector('.accordion-header span:first-child');var b=item.querySelector('.accordion-body');md+='**Q: '+h.textContent.trim()+'**\n\n';md+=b.textContent.trim()+'\n\n'});md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var b=document.querySelector('.copy-markdown-btn'),l=b.querySelector('.btn-label');l.textContent='Copied!';b.classList.add('copied');setTimeout(function(){l.textContent='Copy as Markdown';b.classList.remove('copied')},2000)})}
   </script>
 </body>
 </html>

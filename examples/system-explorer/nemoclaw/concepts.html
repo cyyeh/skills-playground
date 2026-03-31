@@ -10,120 +10,129 @@
   <style>
     :root {
       --color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;
-      --color-accent:#2A7B9B;--color-accent-hover:#236A86;--color-accent-light:#E4F2F7;--color-accent-muted:#5A9DB5;
+      --color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;
       --color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;
       --color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;
       --font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;
       --text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;
       --leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;
-      --space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;
+      --space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;
       --content-width:800px;--content-width-wide:1000px;--nav-height:60px;
       --radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;
       --shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);
       --ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;--stagger-delay:120ms;
+      --color-concept-1:#2D8B55;--color-concept-2:#2A7B9B;--color-concept-3:#D4A843;--color-concept-4:#7B6DAA;--color-concept-5:#E06B56;--color-concept-6:#C93B3B;--color-concept-7:#2A7B9B;
     }
-    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}
-    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(42,123,155,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    *,*::before,*::after{box-sizing:border-box}
+    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.03) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    html{scroll-behavior:smooth}
     ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
-
-    /* NAV */
-    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap}
-    .nav-brand{text-decoration:none;display:flex;flex-direction:column}.nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2}.nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted)}
-    .nav-links{display:flex;align-items:center;gap:var(--space-4)}.nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0}
-    .nav-page-list li a{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background .15s,color .15s}
-    .nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text)}.nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600}
-    .nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2)}.hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;transition:transform .2s,opacity .2s}
-    @media(max-width:768px){.nav-hamburger{display:flex}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3)}.nav-links.open{display:flex}.nav-page-list{flex-direction:column;width:100%}.nav-page-list li a{padding:var(--space-2) var(--space-3)}}
-
-    /* External links */
     a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted);text-decoration:none;display:inline}
-    a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px;transition:text-decoration-color var(--duration-fast)}
+    a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px;transition:text-decoration-color var(--duration-fast) var(--ease-out)}
     a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
 
-    /* PAGE HEADER */
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) var(--space-6);background:var(--color-surface);border-bottom:1px solid var(--color-border-light);position:sticky;top:0;z-index:100;flex-wrap:wrap}
+    .nav-brand{text-decoration:none;display:flex;flex-direction:column;gap:0}
+    .nav-brand-name{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);line-height:1.2}
+    .nav-brand-label{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .nav-links{display:flex;align-items:center;gap:var(--space-4)}
+    .nav-page-list{list-style:none;display:flex;gap:var(--space-1);padding:0;margin:0}
+    .nav-page-list li a{display:flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);transition:background .15s ease,color .15s ease}
+    .nav-page-list li a:hover{background:var(--color-bg-warm);color:var(--color-text)}
+    .nav-page-list li.active a{background:var(--color-accent-light);color:var(--color-accent);font-weight:600}
+    .nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:var(--space-2)}
+    .hamburger-bar{display:block;width:20px;height:2px;background:var(--color-text);border-radius:2px;transition:transform .2s ease,opacity .2s ease}
+    @media(max-width:768px){.nav-hamburger{display:flex}.nav-links{display:none;flex-direction:column;width:100%;padding-top:var(--space-3)}.nav-links.open{display:flex}.nav-page-list{flex-direction:column;width:100%}.nav-page-list li a{padding:var(--space-2) var(--space-3)}}
+
     .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}
     .page-header-content{flex:1;min-width:0}
-    .page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin-bottom:var(--space-3);line-height:1.15;margin-top:var(--space-2)}
+    .page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
     .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}
     .page-level-badge.beginner{background:var(--color-success-light);color:var(--color-success)}
-    .page-level-badge.intermediate{background:var(--color-warning-light);color:var(--color-warning)}
-    .page-level-badge.advanced{background:var(--color-error-light);color:var(--color-error)}
+    .page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}
+    .page-level-badge.advanced{background:var(--color-warning-light);color:var(--color-warning)}
 
-    /* Copy markdown btn */
-    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast) var(--ease-out);white-space:nowrap}
     .copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}
     .copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
-    .copy-markdown-btn .btn-icon{font-size:var(--text-base);line-height:1}.copy-markdown-btn .btn-label{display:inline}
     @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}.copy-markdown-btn{padding:var(--space-1) var(--space-2)}}
 
-    /* CONTENT */
     .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}
     .content-section{margin-bottom:var(--space-10)}
     .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4)}
     .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin-bottom:var(--space-3)}
     .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin-bottom:var(--space-4)}
-    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg)}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
 
-    /* Level badge inline */
-    .level-badge{display:inline-block;font-family:var(--font-mono);font-size:var(--text-xs);font-weight:600;padding:2px var(--space-2);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.03em;vertical-align:middle;line-height:1.4}
-    .level-beginner{background:var(--color-success-light);color:var(--color-success)}.level-intermediate{background:var(--color-warning-light);color:#B8860B}.level-advanced{background:var(--color-error-light);color:var(--color-error)}
-
-    /* Concept cards */
+    /* Concept Cards */
     .concept-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin:var(--space-6) 0}
-    .concept-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-top:3px solid var(--card-color,var(--color-accent));box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
+    .concept-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-top:3px solid var(--card-color);box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
     .concept-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
-    .card-icon{font-size:1.5rem;margin-bottom:var(--space-2)}.card-title{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-2)}
+    .card-icon{font-size:1.5rem;margin-bottom:var(--space-2)}
+    .card-title{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-2)}
     .card-desc{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal)}
     .card-expand-btn{margin-top:var(--space-3);background:none;border:none;font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-accent);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
     .card-expand-btn:hover{color:var(--color-accent-hover)}
-    .card-expanded{max-height:0;overflow:hidden;opacity:0;transition:max-height var(--duration-normal),opacity var(--duration-normal)}.card-expanded.open{max-height:300px;opacity:1;margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--color-border-light)}
-    .card-expanded p{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal)}
+    .card-expanded{max-height:0;overflow:hidden;opacity:0;transition:max-height var(--duration-normal),opacity var(--duration-normal)}
+    .card-expanded.open{max-height:300px;opacity:1;margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--color-border-light)}
+    .card-expanded p{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:var(--leading-normal);margin:0}
     @media(max-width:768px){.concept-cards{grid-template-columns:1fr}}
 
     /* Callout */
     .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}
-    .callout-tip{background:var(--color-success-light);border-color:var(--color-success)}.callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}
-    .callout-info{background:var(--color-info-light);border-color:var(--color-info)}.callout-insight{background:#F3EFF8;border-color:#7B6DAA}
-    .callout-icon{font-size:1.3rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}
+    .callout-tip{background:var(--color-success-light);border-color:var(--color-success)}
+    .callout-insight{background:#F3EFF8;border-color:#7B6DAA}
+    .callout-info{background:var(--color-info-light);border-color:var(--color-info)}
+    .callout-icon{font-size:1.3rem;flex-shrink:0}
+    .callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}
     .callout-content code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px var(--space-1);border-radius:3px}
 
-    /* Glossary */
+    /* Glossary Tooltips */
     .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}
     .glossary-tooltip{position:fixed;background:var(--color-text);color:white;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}
-    .glossary-tooltip.visible{opacity:1}.glossary-tooltip::before{content:'';position:absolute;bottom:100%;left:20px;border:6px solid transparent;border-bottom-color:var(--color-text)}
+    .glossary-tooltip.visible{opacity:1}
 
-    /* Flow diagram */
+    /* Flow Diagram */
     .flow-diagram{display:flex;align-items:center;gap:var(--space-2);margin:var(--space-8) 0;overflow-x:auto;padding:var(--space-4) 0;-webkit-overflow-scrolling:touch}
-    .flow-step{display:flex;gap:var(--space-3);align-items:flex-start;background:var(--color-surface);padding:var(--space-4) var(--space-5);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);min-width:180px;max-width:240px;flex-shrink:0;opacity:0;transform:translateY(12px);transition:opacity var(--duration-normal) var(--ease-out),transform var(--duration-normal) var(--ease-out);transition-delay:calc(var(--step-delay) * .15s)}
+    .flow-step{display:flex;gap:var(--space-3);align-items:flex-start;background:var(--color-surface);padding:var(--space-4) var(--space-5);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);min-width:180px;max-width:240px;flex-shrink:0;opacity:0;transform:translateY(12px);transition:opacity var(--duration-normal) var(--ease-out),transform var(--duration-normal) var(--ease-out);transition-delay:calc(var(--step-delay) * 0.15s)}
     .flow-step.visible{opacity:1;transform:translateY(0)}
     .flow-step-num{width:32px;height:32px;border-radius:50%;background:var(--color-accent);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;flex-shrink:0}
     .flow-step-content strong{font-family:var(--font-display);font-size:var(--text-sm);display:block;margin-bottom:var(--space-1)}
     .flow-step-content p{font-size:var(--text-xs);color:var(--color-text-secondary);margin:0}
-    .flow-arrow{font-size:var(--text-xl);color:var(--color-accent);flex-shrink:0;opacity:0;transition:opacity var(--duration-normal);transition-delay:calc(var(--step-delay) * .15s)}.flow-arrow.visible{opacity:1}
+    .flow-arrow{font-size:var(--text-xl);color:var(--color-accent);flex-shrink:0;opacity:0;transition:opacity var(--duration-normal);transition-delay:calc(var(--step-delay) * 0.15s)}
+    .flow-arrow.visible{opacity:1}
     @media(max-width:768px){.flow-diagram{flex-direction:column;align-items:stretch;overflow-x:visible}.flow-step{min-width:auto;max-width:none}.flow-arrow{text-align:center;transform:rotate(90deg)}}
 
-    /* References footer */
+    /* References */
     .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}
     .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
     .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
-    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
-    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}
-    .reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}
+    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}
+    .reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
+    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}
+    .reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}
+    .reference-title a{color:var(--color-accent);text-decoration:none}
+    .reference-title a:hover{text-decoration:underline}
     .reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
 
-    /* Nav footer */
+    /* Prev/Next */
     .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
-    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s}
-    .page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s ease}
+    .page-nav-footer a:hover{color:var(--color-accent-hover)}
+    .page-nav-footer .prev::before{content:"\2190\00a0"}
+    .page-nav-footer .next::after{content:"\00a0\2192"}
+
     .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
 
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
+    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}
+    .animate-in.visible{opacity:1;transform:translateY(0)}
     .stagger-children>.animate-in{transition-delay:calc(var(--stagger-index,0)*var(--stagger-delay))}
+
     @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
   </style>
   <!-- page-context:
     system: "NemoClaw"
-    description: "an open-source security and orchestration runtime for AI agents"
+    description: "an open-source AI agent security and orchestration platform by NVIDIA"
     page: "Core Concepts"
     level: "Beginner"
   -->
@@ -131,18 +140,24 @@
 <body>
 
   <nav class="site-nav" role="navigation" aria-label="Course navigation">
-    <a href="index.html" class="nav-brand"><span class="nav-brand-name">NemoClaw</span><span class="nav-brand-label">Interactive Course</span></a>
-    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></button>
+    <a href="index.html" class="nav-brand">
+      <span class="nav-brand-name">NemoClaw</span>
+      <span class="nav-brand-label">Interactive Course</span>
+    </a>
+    <button class="nav-hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+      <span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span>
+    </button>
     <div class="nav-links" id="nav-links">
       <ul class="nav-page-list">
-        <li class="active"><a href="concepts.html">Concepts</a></li>
-        <li><a href="architecture.html">Architecture</a></li>
-        <li><a href="how-it-works.html">How It Works</a></li>
-        <li><a href="implementation.html">Implementation</a></li>
-        <li><a href="use-cases.html">Use Cases</a></li>
-        <li><a href="ecosystem.html">Ecosystem</a></li>
-        <li><a href="faq.html">FAQ</a></li>
-        <li><a href="tradeoffs.html">Trade-offs</a></li>
+        <li><a href="index.html"><span class="nav-page-title">Home</span></a></li>
+        <li class="active"><a href="concepts.html"><span class="nav-page-title">Concepts</span></a></li>
+        <li><a href="architecture.html"><span class="nav-page-title">Architecture</span></a></li>
+        <li><a href="how-it-works.html"><span class="nav-page-title">How It Works</span></a></li>
+        <li><a href="implementation.html"><span class="nav-page-title">Implementation</span></a></li>
+        <li><a href="use-cases.html"><span class="nav-page-title">Use Cases</span></a></li>
+        <li><a href="ecosystem.html"><span class="nav-page-title">Ecosystem</span></a></li>
+        <li><a href="faq.html"><span class="nav-page-title">FAQ</span></a></li>
+        <li><a href="tradeoffs.html"><span class="nav-page-title">Trade-offs</span></a></li>
       </ul>
     </div>
   </nav>
@@ -160,120 +175,119 @@
 
   <main class="content-area">
 
-    <!-- SECTION 1: Concept Cards -->
     <section class="content-section animate-in" data-level="beginner">
-      <h2>The Seven Building Blocks <span class="level-badge level-beginner">Beginner</span></h2>
-      <p>NemoClaw is built from seven interlocking components. Each one handles a specific aspect of agent security and orchestration. Click "Learn more" on any card to dive deeper.</p>
+      <h2>Key Building Blocks</h2>
+      <p>NemoClaw is built from a small set of interconnected concepts. Understanding these seven building blocks will give you a complete mental model of how the system works and why each piece exists.</p>
 
       <div class="concept-cards stagger-children">
-        <div class="concept-card animate-in" style="--card-color: #E06B56">
-          <div class="card-icon">&#x1F3E6;</div>
+        <div class="concept-card animate-in" style="--card-color: var(--color-concept-1)">
+          <div class="card-icon">&#x1F512;</div>
           <h4 class="card-title">Sandbox</h4>
-          <p class="card-desc">An isolated container where the OpenClaw agent runs, restricted to specific filesystem paths, network endpoints, and system calls.</p>
+          <p class="card-desc">An isolated container environment where the OpenClaw agent runs -- like a sealed clean room in a laboratory.</p>
           <button class="card-expand-btn" onclick="toggleCardExpand(this)">Learn more</button>
           <div class="card-expanded">
-            <p>Think of it like a bank vault with a teller window. The agent can interact with the outside world, but only through approved channels. Even a compromised agent cannot override its own restrictions because enforcement happens outside the agent entirely.</p>
+            <p>The agent can work freely inside the room, but every entrance and exit is monitored and controlled. NemoClaw sandboxes enforce filesystem boundaries (the agent can only write to <code>/sandbox</code> and <code>/tmp</code>) and network restrictions using Linux kernel mechanisms including Landlock, seccomp, and network namespace isolation. The sandbox denies everything by default and only permits what is explicitly allowed.</p>
           </div>
         </div>
-
-        <div class="concept-card animate-in" style="--card-color: #7B6DAA">
+        <div class="concept-card animate-in" style="--card-color: var(--color-concept-2)">
           <div class="card-icon">&#x1F4D0;</div>
           <h4 class="card-title">Blueprint</h4>
-          <p class="card-desc">A versioned, cryptographically verified Python artifact containing sandbox creation logic, policies, and inference config.</p>
+          <p class="card-desc">A versioned artifact that defines how a sandbox should be configured -- like an architectural plan for a building.</p>
           <button class="card-expand-btn" onclick="toggleCardExpand(this)">Learn more</button>
           <div class="card-expanded">
-            <p>Like an architect's sealed building plan. Before sandbox creation begins, the plan is verified against a tamper-proof cryptographic digest. This prevents <span class="glossary-term" data-definition="An attack where a malicious actor compromises a software dependency or build artifact, injecting malicious code before it reaches the end user.">supply-chain attacks</span> where someone substitutes a tampered artifact.</p>
+            <p>Blueprints contain a manifest file (<code>blueprint.yaml</code>) and policy definitions (<code>openclaw-sandbox.yaml</code>). The blueprint lifecycle follows five stages: resolve version constraints, verify artifact digest, plan required resource changes, apply those changes, and report system state. Blueprints ensure that sandbox deployments are reproducible and tamper-evident.</p>
           </div>
         </div>
-
-        <div class="concept-card animate-in" style="--card-color: #2A7B9B">
-          <div class="card-icon">&#x1F510;</div>
-          <h4 class="card-title">OpenShell Runtime</h4>
-          <p class="card-desc">NVIDIA's secure runtime providing kernel-level isolation using Landlock LSM, seccomp, and network namespaces.</p>
-          <button class="card-expand-btn" onclick="toggleCardExpand(this)">Learn more</button>
-          <div class="card-expanded">
-            <p>OpenShell is the prison warden. The sandbox is the cell, the policies are the rulebook. Security controls are enforced at the OS kernel level, which means no amount of <span class="glossary-term" data-definition="A technique where a malicious user crafts input designed to hijack an AI model's behavior, overriding its instructions to perform unintended actions.">prompt injection</span> or agent cleverness can bypass the restrictions.</p>
-          </div>
-        </div>
-
-        <div class="concept-card animate-in" style="--card-color: #D4A843">
+        <div class="concept-card animate-in" style="--card-color: var(--color-concept-3)">
           <div class="card-icon">&#x1F6E1;&#xFE0F;</div>
           <h4 class="card-title">Network Policy</h4>
-          <p class="card-desc">Declarative YAML rules governing which endpoints the sandbox can reach. Deny-by-default: anything not explicitly allowed is blocked.</p>
+          <p class="card-desc">A declarative YAML file defining exactly which external endpoints the agent may contact -- like a corporate firewall whitelist.</p>
           <button class="card-expand-btn" onclick="toggleCardExpand(this)">Learn more</button>
           <div class="card-expanded">
-            <p>Like a corporate firewall with a whitelist. The agent cannot call home, download packages, or exfiltrate data unless every destination is pre-approved. Unknown requests get escalated to a human operator for real-time approval.</p>
+            <p>NemoClaw operates on a deny-by-default model: if an endpoint is not listed, the agent cannot reach it. Policies specify allowed domains, ports (all connections enforce TLS on port 443), and HTTP methods. Documentation endpoints may allow only GET requests, for example.</p>
           </div>
         </div>
-
-        <div class="concept-card animate-in" style="--card-color: #2D8B55">
-          <div class="card-icon">&#x1F4E8;</div>
-          <h4 class="card-title">Inference Router</h4>
-          <p class="card-desc">A gateway that intercepts all model API calls and routes them to configured providers. Credentials stay on the host.</p>
+        <div class="concept-card animate-in" style="--card-color: var(--color-concept-4)">
+          <div class="card-icon">&#x1F500;</div>
+          <h4 class="card-title">Inference Routing</h4>
+          <p class="card-desc">Directs the agent's LLM API calls through a controlled path -- like routing phone calls through a corporate switchboard.</p>
           <button class="card-expand-btn" onclick="toggleCardExpand(this)">Learn more</button>
           <div class="card-expanded">
-            <p>Like a mail room in a classified facility. Outgoing letters go through a central desk that stamps them with the right postage (API credentials) and routes them to the correct recipient. The sender never sees the postage meter or address book.</p>
+            <p>The agent communicates with a local endpoint (<code>inference.local</code>) inside the sandbox, while OpenShell on the host manages actual credentials and upstream connections. API keys never enter the sandbox, preventing credential leakage even if the agent is compromised.</p>
           </div>
         </div>
-
-        <div class="concept-card animate-in" style="--card-color: #5A9DB5">
-          <div class="card-icon">&#x1F50C;</div>
-          <h4 class="card-title">Plugin</h4>
-          <p class="card-desc">A lightweight TypeScript module in the OpenClaw CLI that registers commands and manages the blueprint lifecycle.</p>
+        <div class="concept-card animate-in" style="--card-color: var(--color-concept-5)">
+          <div class="card-icon">&#x2699;&#xFE0F;</div>
+          <h4 class="card-title">OpenShell</h4>
+          <p class="card-desc">The NVIDIA runtime that NemoClaw depends on -- like the operating system on which NemoClaw applications run.</p>
           <button class="card-expand-btn" onclick="toggleCardExpand(this)">Learn more</button>
           <div class="card-expanded">
-            <p>The receptionist at the front desk. It takes your request, routes it to the right department (blueprint, sandbox, policy engine), and reports back. The plugin-blueprint separation ensures commands remain stable even as the backend evolves.</p>
+            <p>OpenShell provides the gateway that intercepts and routes inference requests, the kernel-level isolation mechanisms for sandboxing, and the TUI (terminal user interface) for monitoring and approving network requests in real time. NemoClaw is a purpose-built configuration layer on top of OpenShell.</p>
           </div>
         </div>
-
-        <div class="concept-card animate-in" style="--card-color: #C93B3B">
-          <div class="card-icon">&#x1F4FA;</div>
-          <h4 class="card-title">Operator Terminal</h4>
-          <p class="card-desc">A TUI for monitoring sandbox activity in real time and approving or denying blocked network requests.</p>
+        <div class="concept-card animate-in" style="--card-color: var(--color-concept-6)">
+          <div class="card-icon">&#x2705;</div>
+          <h4 class="card-title">Approval Workflow</h4>
+          <p class="card-desc">The human-in-the-loop process for reviewing network requests to unlisted endpoints -- like a security guard at the loading dock.</p>
           <button class="card-expand-btn" onclick="toggleCardExpand(this)">Learn more</button>
           <div class="card-expanded">
-            <p>Like an air traffic control tower. The operator watches all outbound "flights" from the sandbox, approves cleared ones, and blocks anything suspicious -- all without the agent being able to override the decision.</p>
+            <p>When the agent tries to reach a host not in the network policy, OpenShell blocks the request and surfaces it in the TUI for the operator to approve or deny. Approved requests can be added to the session-level policy to avoid repeat approvals for the same endpoint.</p>
+          </div>
+        </div>
+        <div class="concept-card animate-in" style="--card-color: var(--color-concept-7)">
+          <div class="card-icon">&#x1F916;</div>
+          <h4 class="card-title">Inference Provider</h4>
+          <p class="card-desc">A backend that serves LLM responses to the agent -- like choosing which telephone company handles your calls.</p>
+          <button class="card-expand-btn" onclick="toggleCardExpand(this)">Learn more</button>
+          <div class="card-expanded">
+            <p>NemoClaw supports six categories: NVIDIA Endpoints (including Nemotron), OpenAI, Anthropic, Google Gemini, custom OpenAI-compatible proxies, and local self-hosted runtimes (Ollama, NVIDIA NIM, vLLM). The agent never sees raw API credentials regardless of which provider is selected.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- SECTION 2: How they fit together -->
     <section class="content-section animate-in" data-level="beginner">
-      <h2>How They Fit Together <span class="level-badge level-beginner">Beginner</span></h2>
-      <p>The system operates in concentric layers. At the center, the <strong>OpenClaw agent</strong> runs inside a <strong>sandbox</strong>, which is built from a verified <strong>blueprint</strong>.</p>
-      <p>The sandbox communicates with the outside world through two controlled channels: the <strong>inference router</strong> (for model calls) and the <strong>network policy</strong> (for everything else). The <strong>OpenShell runtime</strong> enforces all policies at the kernel level.</p>
+      <h2>How They Fit Together</h2>
+      <p>NemoClaw's concepts form a layered security model. Here is the flow from deployment specification to running agent:</p>
 
       <div class="flow-diagram" id="flow-concepts">
-        <div class="flow-step animate-in" style="--step-delay:0">
+        <div class="flow-step animate-in" style="--step-delay: 0">
           <div class="flow-step-num">1</div>
           <div class="flow-step-content">
-            <strong>Blueprint Verified</strong>
-            <p>Cryptographic digest checked before anything runs</p>
+            <strong>Blueprint</strong>
+            <p>Defines the desired state of the deployment</p>
           </div>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay:1">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:2">
+        <div class="flow-arrow animate-in" style="--step-delay: 1">&rarr;</div>
+        <div class="flow-step animate-in" style="--step-delay: 2">
           <div class="flow-step-num">2</div>
           <div class="flow-step-content">
-            <strong>Sandbox Created</strong>
-            <p>Docker container with Landlock + seccomp isolation</p>
+            <strong>Sandbox</strong>
+            <p>Isolated environment created from the blueprint</p>
           </div>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay:3">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:4">
+        <div class="flow-arrow animate-in" style="--step-delay: 3">&rarr;</div>
+        <div class="flow-step animate-in" style="--step-delay: 4">
           <div class="flow-step-num">3</div>
           <div class="flow-step-content">
-            <strong>Policies Applied</strong>
-            <p>Network deny-by-default and filesystem restrictions locked</p>
+            <strong>Network Policy</strong>
+            <p>Governs outbound traffic from the sandbox</p>
           </div>
         </div>
-        <div class="flow-arrow animate-in" style="--step-delay:5">&rarr;</div>
-        <div class="flow-step animate-in" style="--step-delay:6">
+        <div class="flow-arrow animate-in" style="--step-delay: 5">&rarr;</div>
+        <div class="flow-step animate-in" style="--step-delay: 6">
           <div class="flow-step-num">4</div>
           <div class="flow-step-content">
-            <strong>Agent Runs</strong>
-            <p>OpenClaw agent operates within full containment</p>
+            <strong>Inference Routing</strong>
+            <p>Channels model calls through OpenShell to providers</p>
+          </div>
+        </div>
+        <div class="flow-arrow animate-in" style="--step-delay: 7">&rarr;</div>
+        <div class="flow-step animate-in" style="--step-delay: 8">
+          <div class="flow-step-num">5</div>
+          <div class="flow-step-content">
+            <strong>Approval Workflow</strong>
+            <p>Human review for requests to unlisted endpoints</p>
           </div>
         </div>
       </div>
@@ -281,39 +295,27 @@
       <div class="callout callout-insight">
         <div class="callout-icon">&#x1F52D;</div>
         <div class="callout-content">
-          <strong>Architecture insight:</strong> Every layer reinforces the others -- there is no single point of failure in the security model. Even if the agent is compromised via prompt injection, it cannot bypass kernel-level enforcement to escape the sandbox.
+          <strong>Architecture insight:</strong> The result is a system where an autonomous agent can operate continuously while every boundary -- filesystem, network, and credentials -- is explicitly controlled. No single mechanism is the sole line of defense; they work together as layers.
         </div>
       </div>
     </section>
 
-    <!-- SECTION 3: Why this matters -->
     <section class="content-section animate-in" data-level="beginner">
-      <h2>Why Agent Security Matters <span class="level-badge level-beginner">Beginner</span></h2>
-      <p>Autonomous AI agents that can write code, spawn sub-agents, and persist across sessions create security risks that traditional containers do not fully address. The <a href="https://cyberpress.org/clawhavoc-poisons-openclaws-clawhub-with-1184-malicious-skills/" target="_blank" rel="noopener noreferrer">ClawHavoc supply-chain attack</a> (February 2026) poisoned 1,184+ skills in OpenClaw's ClawHub registry, proving that the ecosystem needed stronger containment.</p>
-
-      <div class="callout callout-warning">
-        <div class="callout-icon">&#x26A0;&#xFE0F;</div>
+      <h2>The Security Model at a Glance</h2>
+      <p>Think of NemoClaw's security model like a secured office for an untrusted but skilled contractor:</p>
+      <div class="callout callout-info">
+        <div class="callout-icon">&#x2139;&#xFE0F;</div>
         <div class="callout-content">
-          <strong>Warning:</strong> Running autonomous agents without sandboxing is like giving a stranger admin access to your machine. They might be helpful, but if compromised, they can exfiltrate credentials, modify system files, and make unauthorized API calls.
+          <strong>The analogy:</strong> Every door requires a badge swipe (<span class="glossary-term" data-definition="Linux kernel mechanism that restricts filesystem access. Policies cannot be overridden by processes inside the sandbox, even with root privileges.">Landlock</span> filesystem isolation), every phone call is routed through a switchboard (<span class="glossary-term" data-definition="The mechanism that directs agent LLM API calls through a controlled local endpoint, keeping real API credentials on the host side.">inference routing</span>), and someone reviews every outgoing package before it leaves the building (<span class="glossary-term" data-definition="The human-in-the-loop process where operators approve or deny network requests to endpoints not listed in the network policy.">approval workflow</span>).
         </div>
       </div>
-
-      <p>NemoClaw's design philosophy is that <strong>security controls must be mathematical runtime properties, not model personality traits</strong>. You cannot rely on an AI model to self-regulate; you must enforce restrictions at a level the model cannot reach -- the operating system kernel.</p>
     </section>
 
   </main>
 
-  <!-- References -->
   <section class="references-footer">
     <h3>&#x1F4DA; References &amp; Resources</h3>
     <ul class="references-list">
-      <li class="reference-item">
-        <span class="reference-type-icon">&#x1F4C4;</span>
-        <div class="reference-content">
-          <span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/about/how-it-works.html" target="_blank" rel="noopener noreferrer">NemoClaw: How It Works</a></span>
-          <span class="reference-domain">docs.nvidia.com</span>
-        </div>
-      </li>
       <li class="reference-item">
         <span class="reference-type-icon">&#x1F4C4;</span>
         <div class="reference-content">
@@ -322,10 +324,17 @@
         </div>
       </li>
       <li class="reference-item">
-        <span class="reference-type-icon">&#x1F4F0;</span>
+        <span class="reference-type-icon">&#x1F4C4;</span>
         <div class="reference-content">
-          <span class="reference-title"><a href="https://stormap.ai/post/inside-nemoclaw-the-architecture-sandbox-model-and-security-tradeoffs" target="_blank" rel="noopener noreferrer">Inside NemoClaw: Architecture, Sandbox Model, and Security Trade-offs</a></span>
-          <span class="reference-domain">stormap.ai</span>
+          <span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/about/how-it-works.html" target="_blank" rel="noopener noreferrer">How NemoClaw Works</a></span>
+          <span class="reference-domain">docs.nvidia.com</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4C4;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://docs.nvidia.com/nemoclaw/latest/reference/network-policies.html" target="_blank" rel="noopener noreferrer">Network Policies Reference</a></span>
+          <span class="reference-domain">docs.nvidia.com</span>
         </div>
       </li>
     </ul>
@@ -341,27 +350,26 @@
   </footer>
 
   <script>
-    /* Mobile nav */
-    (function(){var btn=document.querySelector('.nav-hamburger'),links=document.getElementById('nav-links');if(!btn||!links)return;btn.addEventListener('click',function(){var o=links.classList.toggle('open');btn.setAttribute('aria-expanded',o?'true':'false')});links.addEventListener('click',function(e){if(e.target.closest('a')){links.classList.remove('open');btn.setAttribute('aria-expanded','false')}})})();
+    function toggleCardExpand(btn){var expanded=btn.nextElementSibling;var isOpen=expanded.classList.contains('open');expanded.classList.toggle('open');btn.textContent=isOpen?'Learn more':'Show less'}
 
-    /* Scroll animations */
-    var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});
+    // Glossary tooltips
+    (function(){var tooltip=null;function showTooltip(term){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=term.dataset.definition;document.body.appendChild(tooltip);var rect=term.getBoundingClientRect();var tipRect=tooltip.getBoundingClientRect();var left=rect.left+rect.width/2-tipRect.width/2;var top=rect.bottom+8;if(left<8)left=8;if(left+tipRect.width>window.innerWidth-8)left=window.innerWidth-tipRect.width-8;if(top+tipRect.height>window.innerHeight-8)top=rect.top-tipRect.height-8;tooltip.style.left=left+'px';tooltip.style.top=top+'px';requestAnimationFrame(function(){tooltip.classList.add('visible')})}function hideTooltip(){if(tooltip){tooltip.remove();tooltip=null}}document.addEventListener('mouseover',function(e){var term=e.target.closest('.glossary-term');if(term)showTooltip(term)});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hideTooltip()});document.addEventListener('click',function(e){var term=e.target.closest('.glossary-term');if(term){e.preventDefault();showTooltip(term)}else hideTooltip()})})();
+
+    // Mobile nav
+    (function(){'use strict';document.addEventListener('DOMContentLoaded',function(){var btn=document.querySelector('.nav-hamburger');var links=document.getElementById('nav-links');if(!btn||!links)return;btn.addEventListener('click',function(){var isOpen=links.classList.toggle('open');btn.setAttribute('aria-expanded',isOpen?'true':'false')});links.addEventListener('click',function(e){if(e.target.closest('a')){links.classList.remove('open');btn.setAttribute('aria-expanded','false')}})})})();
+
+    // Scroll animations
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});
     document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
-    document.querySelectorAll('.stagger-children').forEach(function(p){Array.from(p.children).forEach(function(c,i){c.style.setProperty('--stagger-index',i)})});
 
-    /* Flow diagram observer */
-    (function(){var obs=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.querySelectorAll('.animate-in').forEach(function(item){item.classList.add('visible')});obs.unobserve(entry.target)}})},{threshold:0.2});document.querySelectorAll('.flow-diagram').forEach(function(d){obs.observe(d)})})();
+    // Stagger
+    document.querySelectorAll('.stagger-children').forEach(function(parent){Array.from(parent.children).forEach(function(child,i){child.style.setProperty('--stagger-index',i)})});
 
-    /* Card expand */
-    function toggleCardExpand(btn){var exp=btn.nextElementSibling;var isOpen=exp.classList.contains('open');exp.classList.toggle('open');btn.textContent=isOpen?'Learn more':'Show less'}
+    // Flow diagram observer
+    (function(){var obs=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){var items=entry.target.querySelectorAll('.animate-in, .flow-arrow');items.forEach(function(item){item.classList.add('visible')});obs.unobserve(entry.target)}})},{threshold:0.2});document.querySelectorAll('.flow-diagram').forEach(function(d){obs.observe(d)})})();
 
-    /* Glossary tooltips */
-    (function(){var tooltip=null;function show(term){if(tooltip)tooltip.remove();tooltip=document.createElement('div');tooltip.className='glossary-tooltip';tooltip.textContent=term.dataset.definition;document.body.appendChild(tooltip);var r=term.getBoundingClientRect(),tr=tooltip.getBoundingClientRect();var left=r.left+r.width/2-tr.width/2,top=r.bottom+8;if(left<8)left=8;if(left+tr.width>window.innerWidth-8)left=window.innerWidth-tr.width-8;if(top+tr.height>window.innerHeight-8)top=r.top-tr.height-8;tooltip.style.left=left+'px';tooltip.style.top=top+'px';requestAnimationFrame(function(){tooltip.classList.add('visible')})}function hide(){if(tooltip){tooltip.remove();tooltip=null}}document.addEventListener('mouseover',function(e){var t=e.target.closest('.glossary-term');if(t)show(t)});document.addEventListener('mouseout',function(e){if(e.target.closest('.glossary-term'))hide()});document.addEventListener('click',function(e){var t=e.target.closest('.glossary-term');if(t){e.preventDefault();show(t)}else hide()})})();
-
-    /* Copy as Markdown */
-    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var ctxMatch=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(ctxMatch){ctxMatch[1].split('\n').forEach(function(line){var m=line.match(/(\w+):\s*"(.+)"/);if(m)ctx[m[1]]=m[2]})}var md='# '+( ctx.system||'')+': '+(ctx.page||document.title)+'\n';md+='> Source: '+window.location.href+' | Level: '+(ctx.level||'Unknown')+'\n';if(ctx.description){md+='> This is the '+ctx.page+' section of an interactive course about '+ctx.system+', '+ctx.description+'.\n'}md+='\n';var content=document.querySelector('.content-area');if(content){md+=domToMarkdown(content)}md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');var label=btn.querySelector('.btn-label');var orig=label.textContent;label.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){label.textContent=orig;btn.classList.remove('copied')},2000)})}
-    function domToMarkdown(el){var md='';el.childNodes.forEach(function(node){if(node.nodeType===3){md+=node.textContent;return}if(node.nodeType!==1)return;var tag=node.tagName.toLowerCase();if(/^h[1-6]$/.test(tag)){md+='\n'+'#'.repeat(parseInt(tag[1]))+' '+node.textContent.trim()+'\n\n';return}if(tag==='p'){md+=processInline(node)+'\n\n';return}if(tag==='div'&&node.classList.contains('code-block')){var langEl=node.querySelector('.code-lang');var lang=langEl?langEl.textContent.trim().toLowerCase():'';var pre=node.querySelector('pre');md+='```'+lang+'\n'+(pre?pre.textContent.trim():'')+'\n```\n\n';return}if(tag==='div'&&node.classList.contains('callout')){var type='Note';if(node.classList.contains('callout-insight'))type='Insight';if(node.classList.contains('callout-tip'))type='Tip';if(node.classList.contains('callout-warning'))type='Warning';var body=node.querySelector('.callout-content');md+='> **'+type+':** '+(body?body.textContent.trim():'')+'\n\n';return}if(tag==='div'&&node.classList.contains('concept-cards')){node.querySelectorAll('.concept-card').forEach(function(card){var title=card.querySelector('.card-title');var desc=card.querySelector('.card-desc');md+='- **'+(title?title.textContent.trim():'')+''+'**: '+(desc?desc.textContent.trim():'')+'\n'});md+='\n';return}if(tag==='ul'||tag==='ol'){var items=node.querySelectorAll(':scope > li');items.forEach(function(li,i){var prefix=tag==='ol'?(i+1)+'. ':'- ';md+=prefix+li.textContent.trim()+'\n'});md+='\n';return}if(tag==='nav'||tag==='button'||tag==='script')return;md+=domToMarkdown(node)});return md}
-    function processInline(node){var r='';node.childNodes.forEach(function(c){if(c.nodeType===3){r+=c.textContent;return}if(c.nodeType!==1)return;var t=c.tagName.toLowerCase();if(t==='strong'||t==='b')r+='**'+c.textContent+'**';else if(t==='em'||t==='i')r+='*'+c.textContent+'*';else if(t==='code')r+='`'+c.textContent+'`';else if(t==='a')r+='['+c.textContent+']('+c.href+')';else if(t==='span'&&c.classList.contains('glossary-term')){r+=c.textContent;if(c.dataset.definition)r+=' ('+c.dataset.definition+')'}else r+=c.textContent});return r}
+    // Copy as Markdown
+    function copyPageAsMarkdown(){var html=document.documentElement.innerHTML;var ctxMatch=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);var ctx={};if(ctxMatch){ctxMatch[1].split('\n').forEach(function(line){var m=line.match(/(\w+):\s*"(.+)"/);if(m)ctx[m[1]]=m[2]})}var md='# '+( ctx.system||'')+': '+(ctx.page||document.title)+'\n';md+='> Source: '+window.location.href+' | Level: '+(ctx.level||'Unknown')+'\n\n';var content=document.querySelector('.content-area');if(content){content.querySelectorAll('h2,h3,p').forEach(function(el){var tag=el.tagName.toLowerCase();if(tag==='h2')md+='\n## '+el.textContent.trim()+'\n\n';else if(tag==='h3')md+='\n### '+el.textContent.trim()+'\n\n';else md+=el.textContent.trim()+'\n\n'})}md+='\n---\n*Generated by System Explorer*\n';navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');var label=btn.querySelector('.btn-label');label.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){label.textContent='Copy as Markdown';btn.classList.remove('copied')},2000)})}
   </script>
 </body>
 </html>
