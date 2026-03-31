@@ -383,11 +383,13 @@
     }
 
     /* --- Animations --- */
+    /* animate-in: visible by default, JS adds .js-ready to enable animations */
     .animate-in {
-      opacity: 0; transform: translateY(16px);
+      opacity: 1; transform: none;
       transition: opacity var(--duration-slow) var(--ease-out), transform var(--duration-slow) var(--ease-out);
     }
-    .animate-in.visible { opacity: 1; transform: translateY(0); }
+    .js-ready .animate-in { opacity: 0; transform: translateY(20px); transition: opacity var(--duration-slow) var(--ease-out), transform var(--duration-slow) var(--ease-out); }
+    .js-ready .animate-in.visible { opacity: 1; transform: translateY(0); }
 
     /* --- Responsive --- */
     @media (max-width: 768px) {
@@ -770,6 +772,7 @@
   </footer>
 
   <script>
+    document.documentElement.classList.add("js-ready");
     /* --- Mobile Nav --- */
     var hamburger = document.getElementById('navHamburger');
     var navPages = document.getElementById('navPages');

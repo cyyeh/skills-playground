@@ -120,7 +120,7 @@
     .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
 
     /* Animations */
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.animate-in.visible{opacity:1;transform:translateY(0)}
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
 
     @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.concept-cards{grid-template-columns:1fr}.vector-types{grid-template-columns:1fr}.pipeline-steps{flex-direction:column;align-items:flex-start}.pipeline-arrow{transform:rotate(90deg);margin:var(--space-1) 0 var(--space-1) var(--space-4)}}
     @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.page-header h1{font-size:var(--text-2xl)}}
@@ -462,6 +462,7 @@
   </footer>
 
   <script>
+    document.documentElement.classList.add("js-ready");
     /* Hamburger toggle */
     document.getElementById('navHamburger').addEventListener('click', function() {
       this.classList.toggle('open');

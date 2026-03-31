@@ -974,15 +974,25 @@ Per-page button in the page header that copies LLM-friendly markdown content of 
 }
 ```
 
-**Scroll-triggered reveal:**
+**Scroll-triggered reveal (progressive enhancement):**
+
+Content must be visible by default. Animations are opt-in via a `.js-ready` class that JavaScript adds to `<html>`. This ensures content is never hidden if JS fails to load.
+
 ```css
+/* Default: content visible (no JS required) */
 .animate-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* When JS is ready, start hidden and animate in on scroll */
+.js-ready .animate-in {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity var(--duration-slow) var(--ease-out),
               transform var(--duration-slow) var(--ease-out);
 }
-.animate-in.visible {
+.js-ready .animate-in.visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -993,8 +1003,12 @@ Per-page button in the page header that copies LLM-friendly markdown content of 
 }
 ```
 
-**JS setup for stagger:**
+**JS setup (must run at top of `<script>`):**
 ```javascript
+/* Enable animations — MUST be the first line in <script> */
+document.documentElement.classList.add('js-ready');
+
+/* Stagger index assignment */
 document.querySelectorAll('.stagger-children').forEach(parent => {
   Array.from(parent.children).forEach((child, i) => {
     child.style.setProperty('--stagger-index', i);

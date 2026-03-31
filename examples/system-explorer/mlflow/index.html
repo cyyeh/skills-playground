@@ -132,8 +132,7 @@
     .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-12)}
     .site-footer a{color:var(--color-accent);text-decoration:none}
     .site-footer a:hover{text-decoration:underline}
-    .animate-in{opacity:0;transform:translateY(16px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}
-    .animate-in.visible{opacity:1;transform:translateY(0)}
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(16px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
     @media(max-width:768px){
       :root{--text-4xl:1.875rem;--nav-height:56px}
       .nav-pages{display:none}
@@ -291,6 +290,7 @@ mlflow.set_experiment(<span class="code-string">"quickstart"</span>)
   </footer>
 
   <script>
+    document.documentElement.classList.add("js-ready");
     function copyCode(btn){var code=btn.closest('.code-block').querySelector('pre').textContent;navigator.clipboard.writeText(code).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},2000)})}
     var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
     document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});

@@ -124,8 +124,7 @@
 
     .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
 
-    .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}
-    .animate-in.visible{opacity:1;transform:translateY(0)}
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
     .stagger-children>.animate-in{transition-delay:calc(var(--stagger-index,0)*var(--stagger-delay))}
 
     @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
@@ -350,6 +349,7 @@
   </footer>
 
   <script>
+    document.documentElement.classList.add("js-ready");
     function toggleCardExpand(btn){var expanded=btn.nextElementSibling;var isOpen=expanded.classList.contains('open');expanded.classList.toggle('open');btn.textContent=isOpen?'Learn more':'Show less'}
 
     // Glossary tooltips
