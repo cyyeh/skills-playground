@@ -1750,7 +1750,7 @@ def build_full_page(page_idx, body_content):
   <style>{css}</style>
 </head>
 <body>
-  <div class="sidebar-overlay" onclick="this.classList.remove('open'); document.querySelector('.sidebar').classList.remove('open');"></div>
+  <div class="sidebar-overlay"></div>
 
   <div class="page-layout">
     <aside class="sidebar">
@@ -1776,7 +1776,7 @@ def build_full_page(page_idx, body_content):
 
     <main class="main-content">
       <div class="top-bar">
-        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open');">&#9776;</button>
+        <button class="mobile-menu-btn">&#9776;</button>
         <div class="page-title-bar">{escape_html(short if not is_index else "Home")}</div>
         <div class="level-selector">
           <button class="level-btn active" data-level="all">All</button>
