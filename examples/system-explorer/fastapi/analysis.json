@@ -1,0 +1,17 @@
+{
+  "system": "FastAPI",
+  "version": "latest (0.115+)",
+  "analyzed_date": "2026-04-01",
+  "sections": [
+    {"file": "00-metadata.md", "title": "Metadata & Overview"},
+    {"file": "01-concepts.md", "title": "Core Concepts"},
+    {"file": "02-architecture.md", "title": "Architecture & Internals"},
+    {"file": "03-getting-started.md", "title": "Getting Started"},
+    {"file": "04-implementation.md", "title": "Implementation Patterns"},
+    {"file": "05-use-cases.md", "title": "Use Cases & Adoption"},
+    {"file": "06-ecosystem.md", "title": "Ecosystem & Integrations"},
+    {"file": "07-performance.md", "title": "Performance & Optimization"},
+    {"file": "08-advanced.md", "title": "Advanced Topics"},
+    {"file": "09-tradeoffs.md", "title": "Tradeoffs & Alternatives"}
+  ]
+}

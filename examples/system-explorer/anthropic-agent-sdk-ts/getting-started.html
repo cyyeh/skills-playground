@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Getting Started - Anthropic Agent SDK Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-card: #1e2a4a;
+  --bg-card-hover: #243356;
+  --bg-code: #0d1425;
+  --text-primary: #e8e8f0;
+  --text-secondary: #a0a0c0;
+  --text-muted: #6a6a8a;
+  --accent: #e07850;
+  --accent-light: #f0956a;
+  --accent-glow: rgba(224, 120, 80, 0.15);
+  --accent-secondary: #5a8adb;
+  --accent-green: #5ac48a;
+  --accent-yellow: #e0c050;
+  --border: #2a2a4a;
+  --border-light: #3a3a5a;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --nav-width: 280px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; min-height: 100vh; }
+
+.nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+.nav-overlay.active { display: block; }
+.sidebar { position: fixed; top: 0; left: 0; width: var(--nav-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border); overflow-y: auto; z-index: 100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
+.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sidebar-logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+.sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; font-weight: 700; }
+.sidebar-version { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+.nav-sections { flex: 1; overflow-y: auto; padding: 12px 0; }
+.nav-item { display: flex; align-items: center; padding: 10px 20px; color: var(--text-secondary); text-decoration: none; font-size: 13.5px; font-weight: 450; transition: all 0.15s ease; border-left: 3px solid transparent; gap: 10px; }
+.nav-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: var(--accent); background: var(--accent-glow); border-left-color: var(--accent); font-weight: 600; }
+.nav-item .nav-num { font-size: 11px; font-weight: 600; color: var(--text-muted); min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 5px; }
+.nav-item.active .nav-num { color: var(--accent); background: rgba(224, 120, 80, 0.15); }
+.nav-item.visited .nav-num { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.nav-progress { padding: 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.progress-label { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.progress-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); border-radius: 2px; transition: width 0.5s ease; }
+.nav-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 110; width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); cursor: pointer; align-items: center; justify-content: center; font-size: 18px; }
+.main-content { margin-left: var(--nav-width); min-height: 100vh; }
+.level-bar { position: sticky; top: 0; z-index: 50; background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 10px 40px; display: flex; align-items: center; gap: 16px; backdrop-filter: blur(10px); }
+.level-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.level-buttons { display: flex; gap: 4px; background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px; }
+.level-btn { padding: 6px 14px; font-size: 12.5px; font-weight: 500; font-family: var(--font-sans); border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-secondary); }
+.level-btn:hover { color: var(--text-primary); }
+.level-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.level-btn[data-level="beginner"].active { background: var(--accent-green); box-shadow: 0 2px 8px rgba(90, 196, 138, 0.3); }
+.level-btn[data-level="intermediate"].active { background: var(--accent-secondary); box-shadow: 0 2px 8px rgba(90, 138, 219, 0.3); }
+.level-btn[data-level="advanced"].active { background: var(--accent); box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.page-content { max-width: 860px; margin: 0 auto; padding: 40px 40px 80px; }
+.page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+.page-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; font-weight: 400; }
+h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.3px; margin: 40px 0 16px; color: var(--text-primary); }
+h3 { font-size: 18px; font-weight: 600; margin: 28px 0 12px; color: var(--text-primary); }
+h4 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--text-primary); }
+h2 .anchor, h3 .anchor, h4 .anchor { color: var(--text-muted); text-decoration: none; margin-left: 8px; opacity: 0; transition: opacity 0.2s; font-weight: 400; }
+h2:hover .anchor, h3:hover .anchor, h4:hover .anchor { opacity: 1; }
+p { margin-bottom: 14px; color: var(--text-secondary); }
+strong { color: var(--text-primary); font-weight: 600; }
+em { color: var(--text-secondary); font-style: italic; }
+a { color: var(--accent-secondary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { margin: 0 0 16px 20px; color: var(--text-secondary); }
+li { margin-bottom: 6px; }
+.page-content > :not(pre) code, .page-content li code, .page-content p code, .page-content td code { background: rgba(224, 120, 80, 0.1); color: var(--accent-light); padding: 2px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; font-weight: 450; }
+pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 0; margin: 0 0 20px; overflow: hidden; position: relative; }
+pre .code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+pre .copy-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 3px 10px; border-radius: 4px; font-size: 11px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+pre .copy-btn:hover { color: var(--text-primary); border-color: var(--border-light); }
+pre .copy-btn.copied { color: var(--accent-green); border-color: var(--accent-green); }
+pre code { display: block; padding: 16px 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.65; color: var(--text-secondary); tab-size: 2; }
+.tok-kw { color: #c792ea; }
+.tok-str { color: #c3e88d; }
+.tok-num { color: #f78c6c; }
+.tok-cm { color: #546e7a; font-style: italic; }
+.tok-fn { color: #82aaff; }
+.tok-type { color: #ffcb6b; }
+.tok-op { color: #89ddff; }
+.tok-dec { color: #c792ea; }
+.tok-prop { color: #f07178; }
+table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 13.5px; }
+th { background: rgba(255,255,255,0.05); padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+blockquote { border-left: 3px solid var(--accent); padding: 12px 20px; margin: 0 0 16px; background: var(--accent-glow); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text-secondary); }
+.level-section { transition: all 0.3s ease; }
+.level-section.hidden { display: none; }
+.level-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.level-badge.beginner { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.level-badge.intermediate { background: rgba(90, 138, 219, 0.15); color: var(--accent-secondary); }
+.level-badge.advanced { background: rgba(224, 120, 80, 0.15); color: var(--accent); }
+.ascii-diagram { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin: 0 0 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; color: var(--accent-secondary); white-space: pre; }
+.page-nav { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); gap: 16px; }
+.page-nav a { display: flex; flex-direction: column; padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); text-decoration: none; transition: all 0.2s; flex: 1; max-width: 48%; }
+.page-nav a:hover { background: var(--bg-card-hover); border-color: var(--border-light); transform: translateY(-1px); }
+.page-nav a .nav-dir { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.page-nav a .nav-title { font-size: 14px; font-weight: 600; color: var(--accent-light); }
+.page-nav a.next { text-align: right; margin-left: auto; }
+.quiz-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 32px 0; }
+.quiz-title { font-size: 13px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.quiz-question { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt { display: block; width: 100%; text-align: left; padding: 10px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 13.5px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+.quiz-opt:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+.quiz-opt.correct { background: rgba(90, 196, 138, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
+.quiz-opt.wrong { background: rgba(224, 80, 80, 0.15); border-color: #e05050; color: #e05050; }
+.quiz-opt.disabled { pointer-events: none; opacity: 0.6; }
+.quiz-feedback { margin-top: 12px; font-size: 13px; font-weight: 500; }
+.quiz-feedback.correct { color: var(--accent-green); }
+.quiz-feedback.wrong { color: #e05050; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .nav-toggle { display: flex; }
+  .main-content { margin-left: 0; }
+  .level-bar { padding: 10px 16px 10px 60px; }
+  .page-content { padding: 32px 20px 60px; }
+  .page-nav { flex-direction: column; }
+  .page-nav a { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+<div class="nav-overlay" onclick="toggleNav()"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="logo-icon">A</div> Agent SDK Course</div>
+    <div class="sidebar-version">TypeScript v0.2.87</div>
+  </div>
+  <div class="nav-sections">
+    <a class="nav-item" href="index.html"><span class="nav-num">~</span> Overview</a>
+    <a class="nav-item" href="concepts.html"><span class="nav-num">01</span> Core Concepts</a>
+    <a class="nav-item" href="architecture.html"><span class="nav-num">02</span> Architecture</a>
+    <a class="nav-item active" href="getting-started.html"><span class="nav-num">03</span> Getting Started</a>
+    <a class="nav-item" href="implementation.html"><span class="nav-num">04</span> Implementation</a>
+    <a class="nav-item" href="use-cases.html"><span class="nav-num">05</span> Use Cases</a>
+    <a class="nav-item" href="ecosystem.html"><span class="nav-num">06</span> Ecosystem</a>
+    <a class="nav-item" href="performance.html"><span class="nav-num">07</span> Performance</a>
+    <a class="nav-item" href="advanced.html"><span class="nav-num">08</span> Advanced Topics</a>
+    <a class="nav-item" href="tradeoffs.html"><span class="nav-num">09</span> Tradeoffs</a>
+  </div>
+  <div class="nav-progress">
+    <div class="progress-label">Progress: <span id="progressText">0/10</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<main class="main-content">
+  <div class="level-bar">
+    <span class="level-label">Level</span>
+    <div class="level-buttons">
+      <button class="level-btn active" data-level="all" onclick="setLevel('all')">All</button>
+      <button class="level-btn" data-level="beginner" onclick="setLevel('beginner')">Beginner</button>
+      <button class="level-btn" data-level="intermediate" onclick="setLevel('intermediate')">Intermediate</button>
+      <button class="level-btn" data-level="advanced" onclick="setLevel('advanced')">Advanced</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="page-title">Getting Started</div>
+    <div class="page-subtitle">Section 03 of 9</div>
+
+<div class="level-section" data-level="beginner">
+<span class="level-badge beginner">Beginner</span>
+<h2 id="installation">Installation <a class="anchor" href="#installation">#</a></h2>
+<h3 id="prerequisites">Prerequisites <a class="anchor" href="#prerequisites">#</a></h3>
+<ul>
+<li><strong>Node.js 18+</strong> (check with <code>node --version</code>)</li>
+<li>An <strong>Anthropic API key</strong> from <a href="https://platform.claude.com">platform.claude.com</a></li>
+</ul>
+<h3 id="step-1-install-the-package">Step 1: Install the Package <a class="anchor" href="#step-1-install-the-package">#</a></h3>
+<pre><div class="code-header">bash<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-fn">npm</span> <span class="tok-fn">install</span> @anthropic-ai/claude-agent-sdk</code></pre>
+<p>Or with your preferred package manager:</p>
+<pre><div class="code-header">bash<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-cm"># yarn</span>
+<span class="tok-fn">yarn</span> <span class="tok-fn">add</span> @anthropic-ai/claude-agent-sdk
+
+<span class="tok-cm"># pnpm</span>
+<span class="tok-fn">pnpm</span> <span class="tok-fn">add</span> @anthropic-ai/claude-agent-sdk</code></pre>
+<h3 id="step-2-set-your-api-key">Step 2: Set Your API Key <a class="anchor" href="#step-2-set-your-api-key">#</a></h3>
+<p>Create a <code>.env</code> file in your project root:</p>
+<pre><div class="code-header">bash<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>ANTHROPIC_API_KEY=your-api-key-here</code></pre>
+<p>Or set it as an environment variable:</p>
+<pre><div class="code-header">bash<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-fn">export</span> ANTHROPIC_API_KEY=your-api-key-here</code></pre>
+<h3 id="step-3-write-your-first-agent">Step 3: Write Your First Agent <a class="anchor" href="#step-3-write-your-first-agent">#</a></h3>
+<p>Create a file called <code>agent.ts</code>:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-cm">// The simplest possible agent</span>
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"What files are in this directory? List them with brief descriptions."</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Glob"</span>, <span class="tok-str">"Read"</span>]
+  }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) {
+    console.<span class="tok-fn">log</span>(message.result);
+  }
+}</code></pre>
+<h3 id="step-4-run-it">Step 4: Run It <a class="anchor" href="#step-4-run-it">#</a></h3>
+<pre><div class="code-header">bash<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-fn">npx</span> tsx agent.ts</code></pre>
+<p>That is it. Claude will use the <code>Glob</code> tool to find files, the <code>Read</code> tool to examine them, and return a summary.</p>
+<h2 id="your-first-real-agent-bug-fixer">Your First Real Agent: Bug Fixer <a class="anchor" href="#your-first-real-agent-bug-fixer">#</a></h2>
+<p>Let us build something more practical -- an agent that finds and fixes bugs:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Review utils.py for bugs that would cause crashes. Fix any issues you find."</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Edit"</span>, <span class="tok-str">"Glob"</span>],
+    permissionMode: <span class="tok-str">"acceptEdits"</span>  <span class="tok-cm">// Auto-approve file changes</span>
+  }
+})) {
+  <span class="tok-cm">// Show Claude's reasoning and actions</span>
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"assistant"</span> &amp;&amp; message.message?.content) {
+    <span class="tok-kw">for</span> (<span class="tok-kw">const</span> block <span class="tok-kw">of</span> message.message.content) {
+      <span class="tok-kw">if</span> (<span class="tok-str">"text"</span> <span class="tok-kw">in</span> block) {
+        console.<span class="tok-fn">log</span>(block.text);
+      } <span class="tok-kw">else</span> <span class="tok-kw">if</span> (<span class="tok-str">"name"</span> <span class="tok-kw">in</span> block) {
+        console.<span class="tok-fn">log</span>(<span class="tok-str">`Tool: ${block.name}`</span>);
+      }
+    }
+  } <span class="tok-kw">else</span> <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span>) {
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`Done: ${message.subtype}`</span>);
+  }
+}</code></pre>
+<h3 id="what-happens-when-this-runs">What Happens When This Runs <a class="anchor" href="#what-happens-when-this-runs">#</a></h3>
+<ol>
+<li>Claude receives your prompt and the list of available tools</li>
+<li>It decides to read <code>utils.py</code> using the <code>Read</code> tool</li>
+<li>It analyzes the code and identifies bugs (e.g., division by zero, null handling)</li>
+<li>It uses the <code>Edit</code> tool to fix each bug with precise string replacements</li>
+<li>It reports what it found and fixed</li>
+<li>You see each step streamed in real time</li>
+</ol>
+<h2 id="understanding-the-output">Understanding the Output <a class="anchor" href="#understanding-the-output">#</a></h2>
+<p>The <code>for await</code> loop yields different message types. Here is a practical way to handle them:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Add type hints to all functions in src/utils.ts"</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Edit"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+    permissionMode: <span class="tok-str">"acceptEdits"</span>
+  }
+})) {
+  <span class="tok-kw">switch</span> (message.<span class="tok-kw">type</span>) {
+    <span class="tok-kw">case</span> <span class="tok-str">"system"</span>:
+      <span class="tok-cm">// Session started -- you can capture the session_id here</span>
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`Session: ${message.session_id}`</span>);
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`Model: ${(message as any).model}`</span>);
+      <span class="tok-kw">break</span>;
+
+    <span class="tok-kw">case</span> <span class="tok-str">"assistant"</span>:
+      <span class="tok-cm">// Claude is working -- show what it's doing</span>
+      <span class="tok-kw">for</span> (<span class="tok-kw">const</span> block <span class="tok-kw">of</span> message.message.content) {
+        <span class="tok-kw">if</span> (block.<span class="tok-kw">type</span> === <span class="tok-str">"text"</span>) {
+          process.stdout.<span class="tok-fn">write</span>(block.text);
+        } <span class="tok-kw">else</span> <span class="tok-kw">if</span> (block.<span class="tok-kw">type</span> === <span class="tok-str">"tool_use"</span>) {
+          console.<span class="tok-fn">log</span>(<span class="tok-str">`\n[Using ${block.name}]`</span>);
+        }
+      }
+      <span class="tok-kw">break</span>;
+
+    <span class="tok-kw">case</span> <span class="tok-str">"result"</span>:
+      <span class="tok-cm">// Task complete</span>
+      <span class="tok-kw">if</span> (message.subtype === <span class="tok-str">"success"</span>) {
+        console.<span class="tok-fn">log</span>(<span class="tok-str">`\n\nDone! Cost: $${message.total_cost_usd.toFixed(4)}`</span>);
+        console.<span class="tok-fn">log</span>(<span class="tok-str">`Turns: ${message.num_turns}, Time: ${message.duration_ms}ms`</span>);
+      } <span class="tok-kw">else</span> {
+        console.<span class="tok-fn">error</span>(<span class="tok-str">`Failed: ${message.subtype}`</span>);
+      }
+      <span class="tok-kw">break</span>;
+  }
+}</code></pre>
+</div>
+<div class="level-section" data-level="intermediate">
+<span class="level-badge intermediate">Intermediate</span>
+<h2 id="configuration-deep-dive">Configuration Deep Dive <a class="anchor" href="#configuration-deep-dive">#</a></h2>
+<h3 id="the-options-object">The Options Object <a class="anchor" href="#the-options-object">#</a></h3>
+<p>The <code>options</code> parameter controls nearly every aspect of agent behavior. Here are the most commonly used fields:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Refactor the authentication module"</span>,
+  options: {
+    <span class="tok-cm">// What tools Claude can use</span>
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Edit"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>, <span class="tok-str">"Bash"</span>],
+    disallowedTools: [<span class="tok-str">"Write"</span>],  <span class="tok-cm">// Block creating new files</span>
+
+    <span class="tok-cm">// Permission behavior</span>
+    permissionMode: <span class="tok-str">"acceptEdits"</span>,
+
+    <span class="tok-cm">// Model selection</span>
+    model: <span class="tok-str">"claude-sonnet-4-20250514"</span>,
+    fallbackModel: <span class="tok-str">"claude-haiku-4-20250514"</span>,
+
+    <span class="tok-cm">// Budget controls</span>
+    maxTurns: <span class="tok-num">20</span>,
+    maxBudgetUsd: <span class="tok-num">1.0</span>,
+
+    <span class="tok-cm">// Thinking behavior</span>
+    effort: <span class="tok-str">"high"</span>,
+    thinking: { <span class="tok-kw">type</span>: <span class="tok-str">"adaptive"</span> },
+
+    <span class="tok-cm">// System prompt</span>
+    systemPrompt: <span class="tok-str">"You are a senior TypeScript developer. Follow project conventions."</span>,
+
+    <span class="tok-cm">// Working directory</span>
+    cwd: <span class="tok-str">"/path/to/project"</span>,
+
+    <span class="tok-cm">// Debug output</span>
+    debug: <span class="tok-kw">true</span>,
+    debugFile: <span class="tok-str">"./agent-debug.log"</span>
+  }
+})) {
+  <span class="tok-cm">// ...</span>
+}</code></pre>
+<h3 id="adding-custom-system-prompts">Adding Custom System Prompts <a class="anchor" href="#adding-custom-system-prompts">#</a></h3>
+<p>You have two options for system prompts:</p>
+<p><strong>Custom string prompt:</strong></p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  systemPrompt: <span class="tok-str">"You are a security auditor. Only report high-severity issues."</span>
+}</code></pre>
+<p><strong>Claude Code preset with additions:</strong></p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  systemPrompt: {
+    <span class="tok-kw">type</span>: <span class="tok-str">"preset"</span>,
+    preset: <span class="tok-str">"claude_code"</span>,
+    append: <span class="tok-str">"Always follow our team's coding standards in CLAUDE.md"</span>
+  },
+  settingSources: [<span class="tok-str">"project"</span>]  <span class="tok-cm">// Required to load CLAUDE.md</span>
+}</code></pre>
+<h3 id="working-with-multiple-directories">Working with Multiple Directories <a class="anchor" href="#working-with-multiple-directories">#</a></h3>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  cwd: <span class="tok-str">"/main/project"</span>,
+  additionalDirectories: [
+    <span class="tok-str">"/shared/libraries"</span>,
+    <span class="tok-str">"/config/templates"</span>
+  ]
+}</code></pre>
+<h3 id="structured-output">Structured Output <a class="anchor" href="#structured-output">#</a></h3>
+<p>Force Claude to return results in a specific JSON schema:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Analyze this codebase and categorize all functions"</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+    outputFormat: {
+      <span class="tok-kw">type</span>: <span class="tok-str">"json_schema"</span>,
+      schema: {
+        <span class="tok-kw">type</span>: <span class="tok-str">"object"</span>,
+        properties: {
+          functions: {
+            <span class="tok-kw">type</span>: <span class="tok-str">"array"</span>,
+            items: {
+              <span class="tok-kw">type</span>: <span class="tok-str">"object"</span>,
+              properties: {
+                name: { <span class="tok-kw">type</span>: <span class="tok-str">"string"</span> },
+                file: { <span class="tok-kw">type</span>: <span class="tok-str">"string"</span> },
+                category: { <span class="tok-kw">type</span>: <span class="tok-str">"string"</span>, <span class="tok-kw">enum</span>: [<span class="tok-str">"utility"</span>, <span class="tok-str">"handler"</span>, <span class="tok-str">"middleware"</span>, <span class="tok-str">"model"</span>] },
+                complexity: { <span class="tok-kw">type</span>: <span class="tok-str">"string"</span>, <span class="tok-kw">enum</span>: [<span class="tok-str">"low"</span>, <span class="tok-str">"medium"</span>, <span class="tok-str">"high"</span>] }
+              },
+              required: [<span class="tok-str">"name"</span>, <span class="tok-str">"file"</span>, <span class="tok-str">"category"</span>, <span class="tok-str">"complexity"</span>]
+            }
+          }
+        },
+        required: [<span class="tok-str">"functions"</span>]
+      }
+    }
+  }
+})) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span> &amp;&amp; message.subtype === <span class="tok-str">"success"</span>) {
+    <span class="tok-kw">const</span> analysis = message.structured_output;
+    console.<span class="tok-fn">log</span>(JSON.<span class="tok-fn">stringify</span>(analysis, <span class="tok-kw">null</span>, <span class="tok-num">2</span>));
+  }
+}</code></pre>
+<h3 id="abortcontroller-for-cancellation">AbortController for Cancellation <a class="anchor" href="#abortcontroller-for-cancellation">#</a></h3>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">const</span> controller = <span class="tok-kw">new</span> <span class="tok-fn">AbortController</span>();
+
+<span class="tok-cm">// Cancel after 30 seconds</span>
+<span class="tok-fn">setTimeout</span>(() =&gt; controller.<span class="tok-fn">abort</span>(), 30_000);
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Do a comprehensive code review"</span>,
+  options: {
+    abortController: controller,
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>]
+  }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) console.<span class="tok-fn">log</span>(message.result);
+}</code></pre>
+<h2 id="the-v2-interface-preview">The V2 Interface (Preview) <a class="anchor" href="#the-v2-interface-preview">#</a></h2>
+<p>The V2 interface simplifies multi-turn conversations by replacing the async generator pattern with explicit <code>send()</code> and <code>stream()</code> calls:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { unstable_v2_createSession } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-cm">// Create a session (auto-cleaned up with `await using`)</span>
+<span class="tok-kw">await</span> using session = <span class="tok-fn">unstable_v2_createSession</span>({
+  model: <span class="tok-str">"claude-opus-4-6"</span>
+});
+
+<span class="tok-cm">// Turn 1</span>
+<span class="tok-kw">await</span> session.<span class="tok-fn">send</span>(<span class="tok-str">"What is 5 + 3?"</span>);
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> msg <span class="tok-kw">of</span> session.<span class="tok-fn">stream</span>()) {
+  <span class="tok-kw">if</span> (msg.<span class="tok-kw">type</span> === <span class="tok-str">"assistant"</span>) {
+    <span class="tok-kw">const</span> text = msg.message.content
+      .<span class="tok-fn">filter</span>((b) =&gt; b.<span class="tok-kw">type</span> === <span class="tok-str">"text"</span>)
+      .<span class="tok-fn">map</span>((b) =&gt; b.text)
+      .<span class="tok-fn">join</span>(<span class="tok-str">""</span>);
+    console.<span class="tok-fn">log</span>(text);
+  }
+}
+
+<span class="tok-cm">// Turn 2 -- Claude remembers the previous answer</span>
+<span class="tok-kw">await</span> session.<span class="tok-fn">send</span>(<span class="tok-str">"Multiply that by 2"</span>);
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> msg <span class="tok-kw">of</span> session.<span class="tok-fn">stream</span>()) {
+  <span class="tok-kw">if</span> (msg.<span class="tok-kw">type</span> === <span class="tok-str">"assistant"</span>) {
+    <span class="tok-kw">const</span> text = msg.message.content
+      .<span class="tok-fn">filter</span>((b) =&gt; b.<span class="tok-kw">type</span> === <span class="tok-str">"text"</span>)
+      .<span class="tok-fn">map</span>((b) =&gt; b.text)
+      .<span class="tok-fn">join</span>(<span class="tok-str">""</span>);
+    console.<span class="tok-fn">log</span>(text);
+  }
+}</code></pre>
+<h3 id="v2-one-shot-convenience">V2 One-Shot Convenience <a class="anchor" href="#v2-one-shot-convenience">#</a></h3>
+<p>For simple single-turn queries without session management:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { unstable_v2_prompt } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">const</span> result = <span class="tok-kw">await</span> <span class="tok-fn">unstable_v2_prompt</span>(<span class="tok-str">"What is 2 + 2?"</span>, {
+  model: <span class="tok-str">"claude-opus-4-6"</span>
+});
+
+<span class="tok-kw">if</span> (result.subtype === <span class="tok-str">"success"</span>) {
+  console.<span class="tok-fn">log</span>(result.result);  <span class="tok-cm">// "4"</span>
+}</code></pre>
+</div>
+<div class="level-section" data-level="advanced">
+<span class="level-badge advanced">Advanced</span>
+<h2 id="advanced-initialization-patterns">Advanced Initialization Patterns <a class="anchor" href="#advanced-initialization-patterns">#</a></h2>
+<h3 id="streaming-input-mode-for-interactive-applications">Streaming Input Mode for Interactive Applications <a class="anchor" href="#streaming-input-mode-for-interactive-applications">#</a></h3>
+<p>For interactive applications (chat UIs, REPLs), use an async iterable as the prompt to enable multi-turn conversations within a single <code>query()</code> call:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query, SDKUserMessage } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-cm">// Create a message queue for the input stream</span>
+<span class="tok-kw">async</span> <span class="tok-kw">function</span>* <span class="tok-fn">createInputStream</span>(): <span class="tok-type">AsyncIterable</span>&lt;SDKUserMessage&gt; {
+  <span class="tok-cm">// In a real app, this would read from stdin, a WebSocket, etc.</span>
+  <span class="tok-kw">const</span> messages = [
+    <span class="tok-str">"Read the authentication module"</span>,
+    <span class="tok-str">"Now find all security vulnerabilities"</span>,
+    <span class="tok-str">"Fix the most critical one"</span>
+  ];
+
+  <span class="tok-kw">for</span> (<span class="tok-kw">const</span> text <span class="tok-kw">of</span> messages) {
+    <span class="tok-kw">yield</span> {
+      <span class="tok-kw">type</span>: <span class="tok-str">"user"</span>,
+      session_id: <span class="tok-str">""</span>,
+      message: { role: <span class="tok-str">"user"</span>, content: [{ <span class="tok-kw">type</span>: <span class="tok-str">"text"</span>, text }] },
+      parent_tool_use_id: <span class="tok-kw">null</span>
+    };
+  }
+}
+
+<span class="tok-kw">const</span> q = <span class="tok-fn">query</span>({
+  prompt: <span class="tok-fn">createInputStream</span>(),
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Edit"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+    permissionMode: <span class="tok-str">"acceptEdits"</span>
+  }
+});
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> q) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"assistant"</span>) {
+    <span class="tok-kw">const</span> text = message.message.content
+      .<span class="tok-fn">filter</span>((b: any) =&gt; b.<span class="tok-kw">type</span> === <span class="tok-str">"text"</span>)
+      .<span class="tok-fn">map</span>((b: any) =&gt; b.text)
+      .<span class="tok-fn">join</span>(<span class="tok-str">""</span>);
+    <span class="tok-kw">if</span> (text) console.<span class="tok-fn">log</span>(text);
+  }
+}</code></pre>
+<h3 id="runtime-reconfiguration">Runtime Reconfiguration <a class="anchor" href="#runtime-reconfiguration">#</a></h3>
+<p>The <code>Query</code> object supports changing configuration mid-session:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">const</span> q = <span class="tok-fn">query</span>({
+  prompt: <span class="tok-fn">createInputStream</span>(),
+  options: { allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>] }
+});
+
+<span class="tok-cm">// After initialization, upgrade to a more capable model</span>
+<span class="tok-kw">const</span> init = <span class="tok-kw">await</span> q.<span class="tok-fn">initializationResult</span>();
+console.<span class="tok-fn">log</span>(<span class="tok-str">"Started with model:"</span>, init.models[<span class="tok-num">0</span>]);
+
+<span class="tok-cm">// Dynamically switch model</span>
+<span class="tok-kw">await</span> q.<span class="tok-fn">setModel</span>(<span class="tok-str">"claude-opus-4-6"</span>);
+
+<span class="tok-cm">// Add MCP servers at runtime</span>
+<span class="tok-kw">await</span> q.<span class="tok-fn">setMcpServers</span>({
+  github: {
+    command: <span class="tok-str">"npx"</span>,
+    args: [<span class="tok-str">"-y"</span>, <span class="tok-str">"@modelcontextprotocol/server-github"</span>],
+    env: { GITHUB_TOKEN: process.env.GITHUB_TOKEN! }
+  }
+});
+
+<span class="tok-cm">// Change permission mode</span>
+<span class="tok-kw">await</span> q.<span class="tok-fn">setPermissionMode</span>(<span class="tok-str">"acceptEdits"</span>);</code></pre>
+<h3 id="file-checkpointing-and-rewind">File Checkpointing and Rewind <a class="anchor" href="#file-checkpointing-and-rewind">#</a></h3>
+<p>Enable file checkpointing to track and revert file changes:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">const</span> q = <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Refactor the entire codebase to use TypeScript strict mode"</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Edit"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+    permissionMode: <span class="tok-str">"acceptEdits"</span>,
+    enableFileCheckpointing: <span class="tok-kw">true</span>  <span class="tok-cm">// Track all file changes</span>
+  }
+});
+
+<span class="tok-kw">let</span> lastUserMessageId: string | <span class="tok-kw">undefined</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> q) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"user"</span>) {
+    lastUserMessageId = message.uuid;
+  }
+
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span> &amp;&amp; message.subtype === <span class="tok-str">"success"</span>) {
+    <span class="tok-cm">// Preview what would be reverted</span>
+    <span class="tok-kw">const</span> preview = <span class="tok-kw">await</span> q.<span class="tok-fn">rewindFiles</span>(lastUserMessageId!, { dryRun: <span class="tok-kw">true</span> });
+    console.<span class="tok-fn">log</span>(<span class="tok-str">"Would revert:"</span>, preview);
+
+    <span class="tok-cm">// Actually revert if something went wrong</span>
+    <span class="tok-cm">// const result = await q.rewindFiles(lastUserMessageId!);</span>
+  }
+}</code></pre>
+<h3 id="custom-process-spawning-for-remote-execution">Custom Process Spawning for Remote Execution <a class="anchor" href="#custom-process-spawning-for-remote-execution">#</a></h3>
+<p>Run the agent process inside a Docker container, VM, or remote machine:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+<span class="tok-kw">import</span> { spawn } <span class="tok-kw">from</span> <span class="tok-str">"child_process"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Analyze the project"</span>,
+  options: {
+    spawnClaudeCodeProcess: (spawnOptions) =&gt; {
+      <span class="tok-kw">const</span> proc = <span class="tok-fn">spawn</span>(<span class="tok-str">"ssh"</span>, [
+        <span class="tok-str">"build-server"</span>,
+        <span class="tok-str">"claude-code"</span>, ...spawnOptions.args
+      ], {
+        stdio: [<span class="tok-str">"pipe"</span>, <span class="tok-str">"pipe"</span>, <span class="tok-str">"pipe"</span>],
+        env: { ...process.env, ...spawnOptions.env }
+      });
+
+      <span class="tok-kw">return</span> {
+        stdin: proc.stdin!,
+        stdout: proc.stdout!,
+        stderr: proc.stderr!,
+        on: proc.on.<span class="tok-fn">bind</span>(proc),
+        kill: proc.kill.<span class="tok-fn">bind</span>(proc)
+      };
+    }
+  }
+})) {
+  <span class="tok-cm">// Messages stream from the remote agent</span>
+}</code></pre>
+<h3 id="sandbox-configuration">Sandbox Configuration <a class="anchor" href="#sandbox-configuration">#</a></h3>
+<p>Control the sandbox behavior programmatically:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  sandbox: {
+    <span class="tok-cm">// Configure how the agent process is sandboxed</span>
+    <span class="tok-cm">// Platform-specific options</span>
+    <span class="tok-kw">type</span>: <span class="tok-str">"docker"</span>,
+    image: <span class="tok-str">"node:20-slim"</span>,
+    volumes: [<span class="tok-str">"/workspace:/workspace"</span>]
+  }
+}</code></pre>
+<h3 id="beta-features">Beta Features <a class="anchor" href="#beta-features">#</a></h3>
+<p>Enable experimental features:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  betas: [<span class="tok-str">"context-1m-2025-08-07"</span>]  <span class="tok-cm">// 1M token context on Sonnet 4/4.5</span>
+}</code></pre>
+<h3 id="environment-variable-configuration">Environment Variable Configuration <a class="anchor" href="#environment-variable-configuration">#</a></h3>
+<p>Pass custom environment variables to the agent process:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  env: {
+    ...process.env,
+    CLAUDE_AGENT_SDK_CLIENT_APP: <span class="tok-str">"my-ci-pipeline"</span>,  <span class="tok-cm">// Identifies your app in User-Agent</span>
+    DATABASE_URL: "postgres:<span class="tok-cm">//...",</span>
+    API_KEY: process.env.INTERNAL_API_KEY
+  }
+}</code></pre>
+</div>
+
+
+    <div class="quiz-box">
+      <div class="quiz-title">Quick Check</div>
+      <div class="quiz-question">What is the minimum Node.js version required?</div>
+      <div class="quiz-options">
+      <button class="quiz-opt" data-idx="0" onclick="checkQuiz(this, 2)">14</button>
+      <button class="quiz-opt" data-idx="1" onclick="checkQuiz(this, 2)">16</button>
+      <button class="quiz-opt" data-idx="2" onclick="checkQuiz(this, 2)">18</button>
+      <button class="quiz-opt" data-idx="3" onclick="checkQuiz(this, 2)">20</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+<nav class="page-nav">
+  <a class="prev" href="architecture.html"><span class="nav-dir">&larr; Previous</span><span class="nav-title">Architecture & Internals</span></a>
+  <a class="next" href="implementation.html"><span class="nav-dir">Next</span><span class="nav-title">Implementation Patterns &rarr;</span></a>
+</nav>
+  </div>
+</main>
+
+<script>
+function getVisited() { try { return JSON.parse(localStorage.getItem('agentsdk-visited') || '[]'); } catch { return []; } }
+function markVisited(page) { var v = getVisited(); if (!v.includes(page)) { v.push(page); localStorage.setItem('agentsdk-visited', JSON.stringify(v)); } updateProgress(); }
+function updateProgress() {
+  var pages = ['index.html','concepts.html','architecture.html','getting-started.html','implementation.html','use-cases.html','ecosystem.html','performance.html','advanced.html','tradeoffs.html'];
+  var visited = getVisited();
+  var count = pages.filter(function(p) { return visited.includes(p); }).length;
+  var pct = Math.round((count / pages.length) * 100);
+  var pt = document.getElementById('progressText');
+  var pf = document.getElementById('progressFill');
+  if (pt) pt.textContent = count + '/' + pages.length;
+  if (pf) pf.style.width = pct + '%';
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    var href = item.getAttribute('href');
+    if (visited.includes(href) && !item.classList.contains('active')) item.classList.add('visited');
+  });
+}
+markVisited('getting-started.html');
+function setLevel(level) {
+  localStorage.setItem('agentsdk-level', level);
+  document.querySelectorAll('.level-btn').forEach(function(btn) { btn.classList.toggle('active', btn.dataset.level === level); });
+  document.querySelectorAll('.level-section').forEach(function(sec) {
+    if (level === 'all') sec.classList.remove('hidden');
+    else sec.classList.toggle('hidden', sec.dataset.level !== level);
+  });
+}
+(function() { var saved = localStorage.getItem('agentsdk-level') || 'all'; setLevel(saved); })();
+function toggleNav() { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.nav-overlay').classList.toggle('active'); }
+function copyCode(btn) {
+  var code = btn.closest('pre').querySelector('code');
+  var text = code.textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+function checkQuiz(btn, correctIdx) {
+  var opts = btn.parentElement.querySelectorAll('.quiz-opt');
+  var feedback = btn.closest('.quiz-box').querySelector('.quiz-feedback');
+  var idx = parseInt(btn.dataset.idx);
+  opts.forEach(function(o) { o.classList.add('disabled'); });
+  if (idx === correctIdx) {
+    btn.classList.add('correct');
+    feedback.textContent = 'Correct!';
+    feedback.className = 'quiz-feedback correct';
+  } else {
+    btn.classList.add('wrong');
+    opts[correctIdx].classList.add('correct');
+    feedback.textContent = 'Not quite. The correct answer is highlighted.';
+    feedback.className = 'quiz-feedback wrong';
+  }
+}
+document.addEventListener('click', function(e) {
+  var toggle = e.target.closest('.collapsible-toggle');
+  if (toggle) { toggle.classList.toggle('open'); var body = toggle.nextElementSibling; if (body) body.classList.toggle('open'); }
+});
+</script>
+</body>
+</html>

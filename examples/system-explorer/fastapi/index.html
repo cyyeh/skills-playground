@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastAPI Course | FastAPI Interactive Course</title>
+  <meta name="description" content="Welcome to the FastAPI Interactive Course">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --primary: #009688;
+      --primary-dark: #00796b;
+      --primary-light: #4db6ac;
+      --primary-bg: #e0f2f1;
+      --accent: #00bcd4;
+      --accent-dark: #0097a7;
+
+      --bg: #fafbfc;
+      --bg-card: #ffffff;
+      --bg-code: #1e1e2e;
+      --bg-sidebar: #0d1117;
+
+      --text: #1a1a2e;
+      --text-secondary: #4a5568;
+      --text-muted: #718096;
+      --text-light: #a0aec0;
+      --text-on-dark: #e2e8f0;
+
+      --border: #e2e8f0;
+      --border-light: #edf2f7;
+
+      --beginner: #4caf50;
+      --beginner-bg: #e8f5e9;
+      --intermediate: #ff9800;
+      --intermediate-bg: #fff3e0;
+      --advanced: #f44336;
+      --advanced-bg: #ffebee;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+
+      --transition: 0.2s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ===== LAYOUT ===== */
+    .page-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-sidebar);
+      color: var(--text-on-dark);
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 100;
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .sidebar-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .sidebar-logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .sidebar-logo-sub {
+      font-size: 11px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      padding: 12px 0;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 400;
+      transition: all var(--transition);
+      border-left: 3px solid transparent;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.05);
+      color: white;
+    }
+
+    .nav-item.active {
+      background: rgba(0,150,136,0.15);
+      color: var(--primary-light);
+      border-left-color: var(--primary);
+      font-weight: 500;
+    }
+
+    .nav-icon {
+      width: 20px;
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    .nav-visited::after {
+      content: '';
+      position: absolute;
+      right: 16px;
+      width: 6px;
+      height: 6px;
+      background: var(--primary);
+      border-radius: 50%;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .progress-bar-container {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      height: 6px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      margin-left: 280px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ===== TOP BAR ===== */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .page-title-bar {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .level-selector {
+      display: flex;
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      padding: 3px;
+      gap: 2px;
+      border: 1px solid var(--border);
+    }
+
+    .level-btn {
+      padding: 6px 16px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition);
+      color: var(--text-secondary);
+      font-family: inherit;
+    }
+
+    .level-btn:hover { background: rgba(0,0,0,0.04); }
+
+    .level-btn.active {
+      background: white;
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .level-btn[data-level="beginner"].active { color: var(--beginner); }
+    .level-btn[data-level="intermediate"].active { color: var(--intermediate); }
+    .level-btn[data-level="advanced"].active { color: var(--advanced); }
+
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--text);
+    }
+
+    /* ===== CONTENT AREA ===== */
+    .content-area {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 40px 80px;
+    }
+
+    .page-header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid var(--primary-bg);
+    }
+
+    .page-header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .page-header .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* ===== LEVEL SECTIONS ===== */
+    .level-section {
+      margin-bottom: 32px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .level-section[data-level].hidden {
+      display: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .level-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 20px;
+    }
+
+    .level-badge-beginner { background: var(--beginner-bg); color: var(--beginner); }
+    .level-badge-intermediate { background: var(--intermediate-bg); color: var(--intermediate); }
+    .level-badge-advanced { background: var(--advanced-bg); color: var(--advanced); }
+
+    /* ===== TYPOGRAPHY ===== */
+    .section-header {
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      position: relative;
+      padding-left: 0;
+    }
+
+    h2.section-header {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--text);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    h3.section-header {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    h4.section-header {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .header-anchor {
+      position: absolute;
+      left: -24px;
+      color: var(--primary);
+      text-decoration: none;
+      opacity: 0;
+      transition: opacity var(--transition);
+      font-weight: 400;
+    }
+
+    .section-header:hover .header-anchor { opacity: 1; }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    .content-list {
+      margin: 0 0 1.2rem 1.5rem;
+      line-height: 1.9;
+    }
+
+    .content-list li {
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .content-list li::marker {
+      color: var(--primary);
+    }
+
+    .inline-code {
+      background: var(--primary-bg);
+      color: var(--primary-dark);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88em;
+      font-weight: 500;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color var(--transition);
+    }
+
+    a:hover {
+      border-bottom-color: var(--primary);
+    }
+
+    strong { font-weight: 600; }
+
+    /* ===== CODE BLOCKS ===== */
+    .code-block-wrapper {
+      margin: 1.2rem 0 1.5rem;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #181825;
+      padding: 8px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .code-lang {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-light);
+      border-radius: var(--radius-sm);
+      padding: 4px 12px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .copy-btn:hover {
+      background: rgba(255,255,255,0.15);
+      color: white;
+    }
+
+    .copy-btn.copied {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    pre {
+      background: var(--bg-code);
+      color: #cdd6f4;
+      padding: 20px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      line-height: 1.65;
+      tab-size: 4;
+    }
+
+    pre.diagram {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin: 1rem 0 1.5rem;
+      font-size: 13px;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Syntax highlighting */
+    .hl-kw { color: #cba6f7; }  /* purple - keywords */
+    .hl-str { color: #a6e3a1; } /* green - strings */
+    .hl-cmt { color: #6c7086; font-style: italic; } /* gray - comments */
+    .hl-num { color: #fab387; } /* peach - numbers */
+    .hl-fn { color: #89b4fa; }  /* blue - functions */
+    .hl-dec { color: #f9e2af; } /* yellow - decorators */
+
+    /* ===== TABLES ===== */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 1rem 0 1.5rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead {
+      background: var(--primary-bg);
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--primary-dark);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border-light);
+      color: var(--text);
+    }
+
+    tbody tr:hover {
+      background: rgba(0,150,136,0.03);
+    }
+
+    /* ===== NAV FOOTER ===== */
+    .page-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      gap: 16px;
+      margin-top: 60px;
+      padding-top: 32px;
+      border-top: 2px solid var(--border-light);
+    }
+
+    .page-nav-link {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      color: var(--text);
+      transition: all var(--transition);
+    }
+
+    .page-nav-link:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .page-nav-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .page-nav-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+
+    .page-nav-link.next { text-align: right; }
+
+    .page-nav-placeholder { flex: 1; }
+
+    /* ===== INDEX PAGE ===== */
+    .hero {
+      text-align: center;
+      padding: 60px 20px 50px;
+      background: linear-gradient(135deg, var(--primary-bg) 0%, #b2dfdb 50%, #e0f7fa 100%);
+      border-radius: var(--radius-lg);
+      margin-bottom: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 50%, rgba(0,150,136,0.08) 0%, transparent 50%);
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .hero .tagline {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+      position: relative;
+    }
+
+    .hero-stat {
+      text-align: center;
+    }
+
+    .hero-stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .hero-stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin: 32px 0;
+    }
+
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary);
+      transform: scaleX(0);
+      transition: transform 0.25s ease;
+    }
+
+    .section-card:hover {
+      border-color: var(--primary-light);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-3px);
+    }
+
+    .section-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .section-card-num {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary-bg);
+      line-height: 1;
+    }
+
+    .section-card-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .section-card-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ===== COLLAPSIBLE ===== */
+    .collapsible-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: left;
+      transition: all var(--transition);
+      margin: 1rem 0 0.5rem;
+    }
+
+    .collapsible-trigger:hover {
+      background: var(--primary-bg);
+      border-color: var(--primary-light);
+    }
+
+    .collapsible-trigger .arrow {
+      transition: transform 0.2s ease;
+      font-size: 12px;
+    }
+
+    .collapsible-trigger.open .arrow {
+      transform: rotate(90deg);
+    }
+
+    .collapsible-content {
+      display: none;
+      padding: 0 16px 16px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .collapsible-content.open { display: block; }
+
+    /* ===== QUIZ ===== */
+    .quiz-container {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin: 2rem 0;
+    }
+
+    .quiz-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quiz-question {
+      font-size: 15px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .quiz-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 16px;
+      margin: 6px 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      transition: all var(--transition);
+    }
+
+    .quiz-option:hover:not(.selected) {
+      border-color: var(--primary-light);
+      background: var(--primary-bg);
+    }
+
+    .quiz-option.correct {
+      background: var(--beginner-bg);
+      border-color: var(--beginner);
+      color: #2e7d32;
+    }
+
+    .quiz-option.incorrect {
+      background: var(--advanced-bg);
+      border-color: var(--advanced);
+      color: #c62828;
+    }
+
+    .quiz-feedback {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      display: none;
+    }
+
+    .quiz-feedback.show { display: block; }
+
+    .quiz-feedback.correct {
+      background: var(--beginner-bg);
+      color: #2e7d32;
+    }
+
+    .quiz-feedback.incorrect {
+      background: var(--advanced-bg);
+      color: #c62828;
+    }
+
+    /* ===== TOOLTIP ===== */
+    .tooltip-wrapper {
+      position: relative;
+      display: inline;
+      cursor: help;
+      border-bottom: 1px dashed var(--primary);
+    }
+
+    .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-sidebar);
+      color: var(--text-on-dark);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      white-space: nowrap;
+      z-index: 200;
+      box-shadow: var(--shadow-lg);
+      transition: all 0.15s ease;
+      pointer-events: none;
+    }
+
+    .tooltip-wrapper:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 90;
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-overlay.open {
+        display: block;
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+      .content-area {
+        padding: 24px 20px 60px;
+      }
+      .top-bar {
+        padding: 10px 16px;
+      }
+      .hero h1 { font-size: 2rem; }
+      .hero-stats { gap: 20px; flex-wrap: wrap; }
+      .section-grid { grid-template-columns: 1fr; }
+      .page-nav { flex-direction: column; }
+    }
+
+    @media (max-width: 600px) {
+      .level-selector {
+        flex-wrap: wrap;
+      }
+      .level-btn { padding: 5px 10px; font-size: 12px; }
+      .page-header h1 { font-size: 1.6rem; }
+    }
+    </style>
+</head>
+<body>
+  <div class="sidebar-overlay" onclick="this.classList.remove('open'); document.querySelector('.sidebar').classList.remove('open');"></div>
+
+  <div class="page-layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <div class="sidebar-logo-icon">F</div>
+          <div>
+            <div class="sidebar-logo-text">FastAPI</div>
+            <div class="sidebar-logo-sub">Interactive Course</div>
+          </div>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="index.html" class="nav-item active" title="FastAPI Course"><span class="nav-icon">&#9733;</span>Home</a>
+<a href="concepts.html" class="nav-item " title="Core Concepts"><span class="nav-icon">&#9670;</span>Concepts</a>
+<a href="architecture.html" class="nav-item " title="Architecture &amp; Internals"><span class="nav-icon">&#9881;</span>Architecture</a>
+<a href="getting-started.html" class="nav-item " title="Getting Started"><span class="nav-icon">&#9654;</span>Getting Started</a>
+<a href="implementation.html" class="nav-item " title="Implementation Patterns"><span class="nav-icon">&#9998;</span>Implementation</a>
+<a href="use-cases.html" class="nav-item " title="Use Cases &amp; Adoption"><span class="nav-icon">&#9992;</span>Use Cases</a>
+<a href="ecosystem.html" class="nav-item " title="Ecosystem &amp; Integrations"><span class="nav-icon">&#9741;</span>Ecosystem</a>
+<a href="performance.html" class="nav-item " title="Performance &amp; Optimization"><span class="nav-icon">&#9889;</span>Performance</a>
+<a href="advanced.html" class="nav-item " title="Advanced Topics"><span class="nav-icon">&#9733;</span>Advanced</a>
+<a href="tradeoffs.html" class="nav-item " title="Tradeoffs &amp; Alternatives"><span class="nav-icon">&#9878;</span>Tradeoffs</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="progress-label">0% complete</div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width: 0%"></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="top-bar">
+        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open');">&#9776;</button>
+        <div class="page-title-bar">Home</div>
+        <div class="level-selector">
+          <button class="level-btn active" data-level="all">All</button>
+          <button class="level-btn" data-level="beginner">Beginner</button>
+          <button class="level-btn" data-level="intermediate">Intermediate</button>
+          <button class="level-btn" data-level="advanced">Advanced</button>
+        </div>
+      </div>
+
+      <div class="content-area">
+        
+        
+    <div class="hero">
+      <h1>FastAPI</h1>
+      <p class="tagline">A modern, high-performance Python web framework for building APIs. Master it from beginner to advanced with this interactive course.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-value">~97k</div><div class="hero-stat-label">GitHub Stars</div></div>
+        <div class="hero-stat"><div class="hero-stat-value">4M+</div><div class="hero-stat-label">Weekly Downloads</div></div>
+        <div class="hero-stat"><div class="hero-stat-value">MIT</div><div class="hero-stat-label">License</div></div>
+        <div class="hero-stat"><div class="hero-stat-value">10</div><div class="hero-stat-label">Course Sections</div></div>
+      </div>
+    </div>
+
+    <h2 class="section-header" style="margin-top: 0;">Course Sections</h2>
+    <p>Click any section to begin learning. Your progress is tracked automatically.</p>
+    <div class="section-grid">
+      <a href="concepts.html" class="section-card">
+          <div class="section-card-num">01</div>
+          <div class="section-card-title">Core Concepts</div>
+          <div class="section-card-desc">Type hints, Pydantic models, dependency injection, and the core ideas that drive FastAPI.</div>
+        </a><a href="architecture.html" class="section-card">
+          <div class="section-card-num">02</div>
+          <div class="section-card-title">Architecture &amp; Internals</div>
+          <div class="section-card-desc">How FastAPI builds on Starlette and Pydantic, the ASGI protocol, and request lifecycle.</div>
+        </a><a href="getting-started.html" class="section-card">
+          <div class="section-card-num">03</div>
+          <div class="section-card-title">Getting Started</div>
+          <div class="section-card-desc">Installation, your first API, project structure, testing, and deployment.</div>
+        </a><a href="implementation.html" class="section-card">
+          <div class="section-card-num">04</div>
+          <div class="section-card-title">Implementation Patterns</div>
+          <div class="section-card-desc">CRUD operations, authentication, pagination, rate limiting, and production patterns.</div>
+        </a><a href="use-cases.html" class="section-card">
+          <div class="section-card-num">05</div>
+          <div class="section-card-title">Use Cases &amp; Adoption</div>
+          <div class="section-card-desc">REST APIs, microservices, ML model serving, and real-world adoption stories.</div>
+        </a><a href="ecosystem.html" class="section-card">
+          <div class="section-card-num">06</div>
+          <div class="section-card-title">Ecosystem &amp; Integrations</div>
+          <div class="section-card-desc">Database integrations, task queues, caching, monitoring, and the broader library ecosystem.</div>
+        </a><a href="performance.html" class="section-card">
+          <div class="section-card-num">07</div>
+          <div class="section-card-title">Performance &amp; Optimization</div>
+          <div class="section-card-desc">Benchmark numbers, optimization techniques, profiling, and understanding the speed stack.</div>
+        </a><a href="advanced.html" class="section-card">
+          <div class="section-card-num">08</div>
+          <div class="section-card-title">Advanced Topics</div>
+          <div class="section-card-desc">WebSockets, SSE, background tasks, lifespan events, and expert-level patterns.</div>
+        </a><a href="tradeoffs.html" class="section-card">
+          <div class="section-card-num">09</div>
+          <div class="section-card-title">Tradeoffs &amp; Alternatives</div>
+          <div class="section-card-desc">FastAPI vs Django vs Flask vs Litestar, migration strategies, and architectural decisions.</div>
+        </a>
+    </div>
+    
+<div class="level-section" data-level="beginner">
+<div class="level-badge level-badge-beginner">Beginner</div>
+<h2 id="what-is-fastapi" class="section-header"><a href="#what-is-fastapi" class="header-anchor" aria-label="Link to What Is FastAPI?">#</a>What Is FastAPI?</h2>
+<p>FastAPI is a modern, high-performance Python web framework for building APIs. Created by Sebastian Ramirez (tiangolo) and first released in December 2018, it has rapidly become one of the most popular Python web frameworks in existence.</p>
+<p>At its core, FastAPI lets you write web APIs using standard Python type hints. This single design decision unlocks automatic request validation, serialization, and interactive documentation &mdash; all with minimal boilerplate code.</p>
+<h3 id="the-elevator-pitch" class="section-header"><a href="#the-elevator-pitch" class="header-anchor" aria-label="Link to The Elevator Pitch">#</a>The Elevator Pitch</h3>
+<p>If you know Python and type hints, you already know most of FastAPI. Here is a complete, working API:</p>
+<div class="code-block-wrapper">
+<div class="code-header">
+<span class="code-lang">python</span>
+<button class="copy-btn" onclick="copyCode('code-67640')" title="Copy to clipboard">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+Copy
+</button>
+</div>
+<pre><code id="code-67640" class="language-python"><span class="hl-kw">from</span> fastapi <span class="hl-kw">import</span> FastAPI
+
+app = FastAPI()
+
+<span class="hl-dec">@app.get</span>(<span class="hl-str">&quot;/&quot;</span>)
+<span class="hl-kw">def</span> read_root():
+    <span class="hl-kw">return</span> {<span class="hl-str">&quot;message&quot;</span>: <span class="hl-str">&quot;Hello, World!&quot;</span>}
+
+<span class="hl-dec">@app.get</span>(<span class="hl-str">&quot;/items/{item_id}&quot;</span>)
+<span class="hl-kw">def</span> read_item(item_id: <span class="hl-fn">int</span>, q: <span class="hl-fn">str</span> | <span class="hl-kw">None</span> = <span class="hl-kw">None</span>):
+    <span class="hl-kw">return</span> {<span class="hl-str">&quot;item_id&quot;</span>: item_id, <span class="hl-str">&quot;q&quot;</span>: q}</code></pre>
+</div>
+<p>That is a fully functional API with:</p>
+<ul class="content-list">
+<li>Automatic input validation (<code class="inline-code">item_id</code> must be an integer)</li>
+<li>Optional query parameters (<code class="inline-code">q</code> defaults to <code class="inline-code">None</code>)</li>
+<li>Auto-generated interactive documentation at <code class="inline-code">/docs</code> and <code class="inline-code">/redoc</code></li>
+<li>JSON serialization of the response</li>
+</ul>
+<h3 id="key-claims-from-official-docs" class="section-header"><a href="#key-claims-from-official-docs" class="header-anchor" aria-label="Link to Key Claims (from official docs)">#</a>Key Claims (from official docs)</h3>
+<ul class="content-list">
+<li><strong>Performance</strong>: On par with Node.js and Go, thanks to Starlette and Pydantic</li>
+<li><strong>Developer speed</strong>: Increases feature development speed by 200-300%</li>
+<li><strong>Fewer bugs</strong>: Reduces human-induced errors by approximately 40%</li>
+<li><strong>Intuitive</strong>: Full editor support with autocomplete everywhere</li>
+<li><strong>Standards-based</strong>: Built on OpenAPI (formerly Swagger) and JSON Schema</li>
+</ul>
+<h3 id="project-vitals" class="section-header"><a href="#project-vitals" class="header-anchor" aria-label="Link to Project Vitals">#</a>Project Vitals</h3>
+<div class="table-wrapper"><table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody><tr><td>First release</td><td>December 2018</td></tr><tr><td>GitHub stars</td><td>~97,000 (as of early 2026)</td></tr><tr><td>GitHub forks</td><td>~9,000+</td></tr><tr><td>PyPI weekly downloads</td><td>4,000,000+</td></tr><tr><td>License</td><td>MIT</td></tr><tr><td>Python versions</td><td>3.8+</td></tr><tr><td>Creator</td><td>Sebastian Ramirez (@tiangolo)</td></tr><tr><td>GitHub organization</td><td>github.com/fastapi</td></tr></tbody></table></div>
+<h3 id="who-uses-fastapi" class="section-header"><a href="#who-uses-fastapi" class="header-anchor" aria-label="Link to Who Uses FastAPI?">#</a>Who Uses FastAPI?</h3>
+<p>Major organizations using FastAPI in production include:</p>
+<ul class="content-list">
+<li><strong>Microsoft</strong> &mdash; ML services, integrated into Windows and Office products</li>
+<li><strong>Netflix</strong> &mdash; Dispatch crisis management framework</li>
+<li><strong>Uber</strong> &mdash; Backend APIs for real-time, high-concurrency data processing</li>
+<li><strong>Cisco</strong> &mdash; API-first development strategy</li>
+<li><strong>JPMorgan</strong> &mdash; Financial services APIs</li>
+<li><strong>Hugging Face</strong> &mdash; ML model serving infrastructure</li>
+</ul>
+</div>
+<div class="level-section" data-level="intermediate">
+<div class="level-badge level-badge-intermediate">Intermediate</div>
+<h2 id="framework-positioning-and-philosophy" class="section-header"><a href="#framework-positioning-and-philosophy" class="header-anchor" aria-label="Link to Framework Positioning and Philosophy">#</a>Framework Positioning and Philosophy</h2>
+<p>FastAPI occupies a specific niche in the Python web framework landscape. It is not a full-stack framework like Django; it is not a minimalist micro-framework like Flask. It is purpose-built for API development, combining ideas from both traditions.</p>
+<h3 id="design-philosophy" class="section-header"><a href="#design-philosophy" class="header-anchor" aria-label="Link to Design Philosophy">#</a>Design Philosophy</h3>
+<p>FastAPI is built on several core principles:</p>
+<ol class="content-list">
+<li><strong>Type hints are the single source of truth.</strong> Parameter types, request bodies, query parameters, and response models are all defined via Python type annotations. The framework extracts validation rules, serialization logic, and documentation from these annotations.</li>
+</ol>
+<ol class="content-list">
+<li><strong>Standards over proprietary abstractions.</strong> FastAPI generates an OpenAPI 3.1 schema for every application. This means your API documentation, client generation, and testing tools all work out of the box.</li>
+</ol>
+<ol class="content-list">
+<li><strong>Developer experience is a feature.</strong> Editor support (autocomplete, inline errors, type checking) is treated as first-class. The framework is designed so that <code class="inline-code">mypy</code> and editors like VS Code or PyCharm can understand your entire API surface.</li>
+</ol>
+<ol class="content-list">
+<li><strong>Async-first, sync-compatible.</strong> FastAPI uses ASGI natively but transparently runs synchronous handler functions in a thread pool, so you never have to choose up front.</li>
+</ol>
+<h3 id="adoption-trajectory" class="section-header"><a href="#adoption-trajectory" class="header-anchor" aria-label="Link to Adoption Trajectory">#</a>Adoption Trajectory</h3>
+<p>FastAPI's adoption has been remarkably fast:</p>
+<ul class="content-list">
+<li>2020: ~15,000 GitHub stars</li>
+<li>2023: ~60,000 GitHub stars</li>
+<li>2025: ~88,000 GitHub stars (surpassing Flask)</li>
+<li>2026: ~97,000 GitHub stars</li>
+</ul>
+<p>The 2025 JetBrains Python Developer Survey showed FastAPI usage jumping from 29% to 38% among Python developers &mdash; a 40% year-over-year increase.</p>
+<h3 id="the-two-pillars" class="section-header"><a href="#the-two-pillars" class="header-anchor" aria-label="Link to The Two Pillars">#</a>The Two Pillars</h3>
+<p>FastAPI does not exist in isolation. It is built on top of two foundational libraries:</p>
+<div class="code-block-wrapper">
+<div class="code-header">
+<span class="code-lang">text</span>
+<button class="copy-btn" onclick="copyCode('code-50833')" title="Copy to clipboard">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+Copy
+</button>
+</div>
+<pre><code id="code-50833" class="language-text">+-------------------+
+|     FastAPI        |  &lt;-- Your API logic, DI, security, docs
++-------------------+
+|    Starlette       |  &lt;-- ASGI toolkit: routing, middleware, WebSockets
++-------------------+
+|    Pydantic        |  &lt;-- Data validation, serialization, settings
++-------------------+
+|  Uvicorn / Hypercorn  |  &lt;-- ASGI server
++-------------------+</code></pre>
+</div>
+<ul class="content-list">
+<li><strong>Starlette</strong> provides the web layer: routing, middleware, WebSocket support, background tasks, startup/shutdown events, and test client.</li>
+<li><strong>Pydantic</strong> provides data validation: model definitions, JSON Schema generation, serialization/deserialization, and settings management.</li>
+</ul>
+<p>FastAPI is, in essence, a carefully designed layer that wires Starlette routing to Pydantic models using Python type hints, and adds dependency injection, security utilities, and OpenAPI generation on top.</p>
+</div>
+<div class="level-section" data-level="advanced">
+<div class="level-badge level-badge-advanced">Advanced</div>
+<h2 id="technical-identity-and-lineage" class="section-header"><a href="#technical-identity-and-lineage" class="header-anchor" aria-label="Link to Technical Identity and Lineage">#</a>Technical Identity and Lineage</h2>
+<h3 id="inspiration-chain" class="section-header"><a href="#inspiration-chain" class="header-anchor" aria-label="Link to Inspiration Chain">#</a>Inspiration Chain</h3>
+<p>FastAPI's design was directly informed by a specific sequence of projects:</p>
+<ol class="content-list">
+<li><strong>Django REST Framework</strong> &mdash; Proved that auto-generated API documentation was valuable</li>
+<li><strong>Flask</strong> &mdash; Showed that a micro-framework with decorators could be the ideal developer interface</li>
+<li><strong>APIStar (<=0.5)</strong> &mdash; Tom Christie's framework that first combined type hints with OpenAPI generation (the spiritual predecessor to FastAPI)</li>
+<li><strong>Requests</strong> &mdash; Inspired the "simple API with sensible defaults" philosophy</li>
+<li><strong>Marshmallow / Webargs</strong> &mdash; Showed the value of declarative validation, but predated type hints</li>
+<li><strong>NestJS</strong> &mdash; Demonstrated that dependency injection and type declarations could unify validation and documentation</li>
+<li><strong>Molten</strong> &mdash; First Python framework to use type hints for DI and validation, but lacked ASGI</li>
+</ol>
+<p>When Tom Christie (APIStar's creator) pivoted to building Starlette as a pure ASGI toolkit, Sebastian Ramirez recognized the opportunity: combine Starlette's performance foundation with Pydantic's type-hint-based validation to create the framework APIStar was trying to be.</p>
+<h3 id="class-hierarchy" class="section-header"><a href="#class-hierarchy" class="header-anchor" aria-label="Link to Class Hierarchy">#</a>Class Hierarchy</h3>
+<p>FastAPI's <code class="inline-code">FastAPI</code> class inherits directly from <code class="inline-code">Starlette</code>:</p>
+<div class="code-block-wrapper">
+<div class="code-header">
+<span class="code-lang">python</span>
+<button class="copy-btn" onclick="copyCode('code-71747')" title="Copy to clipboard">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+Copy
+</button>
+</div>
+<pre><code id="code-71747" class="language-python"><span class="hl-cmt"># Simplified from fastapi/applications.py</span>
+<span class="hl-kw">class</span> FastAPI(Starlette):
+    <span class="hl-kw">def</span> __init__(self, ...):
+        <span class="hl-cmt"># Sets up OpenAPI schema generation</span>
+        <span class="hl-cmt"># Configures dependency injection</span>
+        <span class="hl-cmt"># Adds API router</span>
+        ...</code></pre>
+</div>
+<p>This means every Starlette feature is available in FastAPI. You can use Starlette middleware, mount ASGI sub-applications, and access the raw ASGI interface when needed.</p>
+<h3 id="version-history-highlights" class="section-header"><a href="#version-history-highlights" class="header-anchor" aria-label="Link to Version History Highlights">#</a>Version History Highlights</h3>
+<ul class="content-list">
+<li><strong>0.1.0 (Dec 2018)</strong>: Initial release with core routing, Pydantic integration, OpenAPI</li>
+<li><strong>0.65.0 (2021)</strong>: <code class="inline-code">Annotated</code> support for dependencies</li>
+<li><strong>0.95.0 (2023)</strong>: Pydantic v2 support (major performance improvement)</li>
+<li><strong>0.100.0 (2023)</strong>: Lifespan context managers replace startup/shutdown events</li>
+<li><strong>0.109.0+ (2024)</strong>: OpenAPI 3.1 support, improved type annotations</li>
+<li><strong>0.115.0+ (2025)</strong>: Refined WebSocket handling, improved error responses</li>
+</ul>
+<p>The project has deliberately stayed at 0.x versioning, though it has been production-ready and stable for years. Sebastian Ramirez has stated that a 1.0 release is planned once certain API stabilization goals are met.</p>
+</div>
+        
+    <div class="quiz-container" id="quiz-home">
+      <div class="quiz-title">&#128218; Quick Check</div>
+      <div class="quiz-question">What two libraries form the foundation of FastAPI?</div>
+      <button class="quiz-option">Django and Celery</button>
+<button class="quiz-option">Flask and Marshmallow</button>
+<button class="quiz-option">Starlette and Pydantic</button>
+<button class="quiz-option">Tornado and SQLAlchemy</button>
+
+      <div class="quiz-feedback"></div>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        initQuiz('quiz-home', 2);
+      });
+    </script>
+    
+        <nav class="page-nav"><div class="page-nav-placeholder"></div><a href="concepts.html" class="page-nav-link next"><span class="page-nav-label">Next &rarr;</span><span class="page-nav-title">Core Concepts</span></a></nav>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ===== LEVEL SELECTOR =====
+    function initLevelSelector() {
+      const stored = localStorage.getItem('fastapi-course-level');
+      const buttons = document.querySelectorAll('.level-btn');
+      const sections = document.querySelectorAll('.level-section');
+
+      function showLevel(level) {
+        localStorage.setItem('fastapi-course-level', level);
+        buttons.forEach(b => b.classList.toggle('active', b.dataset.level === level));
+        sections.forEach(s => {
+          if (level === 'all') {
+            s.classList.remove('hidden');
+          } else {
+            const sectionLevel = s.dataset.level;
+            const levels = ['beginner', 'intermediate', 'advanced'];
+            const selectedIdx = levels.indexOf(level);
+            const sectionIdx = levels.indexOf(sectionLevel);
+            s.classList.toggle('hidden', sectionIdx > selectedIdx);
+          }
+        });
+      }
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => showLevel(btn.dataset.level));
+      });
+
+      showLevel(stored || 'all');
+    }
+
+    // ===== COPY CODE =====
+    function copyCode(id) {
+      const codeEl = document.getElementById(id);
+      if (!codeEl) return;
+      const text = codeEl.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = codeEl.closest('.code-block-wrapper').querySelector('.copy-btn');
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+        }, 2000);
+      });
+    }
+
+    // ===== PROGRESS TRACKING =====
+    function trackProgress() {
+      const page = window.location.pathname.split('/').pop() || 'index.html';
+      let visited = JSON.parse(localStorage.getItem('fastapi-course-visited') || '[]');
+      if (!visited.includes(page)) {
+        visited.push(page);
+        localStorage.setItem('fastapi-course-visited', JSON.stringify(visited));
+      }
+      // Update nav items
+      document.querySelectorAll('.nav-item').forEach(item => {
+        const href = item.getAttribute('href');
+        if (visited.includes(href)) {
+          item.classList.add('nav-visited');
+        }
+      });
+      // Update progress bar
+      const total = document.querySelectorAll('.nav-item').length;
+      const visitedCount = visited.length;
+      const pct = Math.round((visitedCount / total) * 100);
+      const bar = document.querySelector('.progress-bar');
+      const label = document.querySelector('.progress-label');
+      if (bar) bar.style.width = pct + '%';
+      if (label) label.textContent = pct + '% complete (' + visitedCount + '/' + total + ' sections)';
+    }
+
+    // ===== MOBILE MENU =====
+    function initMobileMenu() {
+      const btn = document.querySelector('.mobile-menu-btn');
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      if (!btn) return;
+
+      function toggle() {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+      }
+
+      btn.addEventListener('click', toggle);
+      overlay.addEventListener('click', toggle);
+    }
+
+    // ===== COLLAPSIBLES =====
+    function initCollapsibles() {
+      document.querySelectorAll('.collapsible-trigger').forEach(trigger => {
+        trigger.addEventListener('click', () => {
+          trigger.classList.toggle('open');
+          const content = trigger.nextElementSibling;
+          if (content) content.classList.toggle('open');
+        });
+      });
+    }
+
+    // ===== QUIZ =====
+    function initQuiz(quizId, correctIdx) {
+      const container = document.getElementById(quizId);
+      if (!container) return;
+      const options = container.querySelectorAll('.quiz-option');
+      const feedback = container.querySelector('.quiz-feedback');
+      let answered = false;
+
+      options.forEach((opt, idx) => {
+        opt.addEventListener('click', () => {
+          if (answered) return;
+          answered = true;
+          opt.classList.add('selected');
+          if (idx === correctIdx) {
+            opt.classList.add('correct');
+            feedback.className = 'quiz-feedback show correct';
+            feedback.textContent = 'Correct! Well done.';
+          } else {
+            opt.classList.add('incorrect');
+            options[correctIdx].classList.add('correct');
+            feedback.className = 'quiz-feedback show incorrect';
+            feedback.textContent = 'Not quite. The correct answer is highlighted above.';
+          }
+        });
+      });
+    }
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+      initLevelSelector();
+      trackProgress();
+      initMobileMenu();
+      initCollapsibles();
+    });
+    </script>
+</body>
+</html>

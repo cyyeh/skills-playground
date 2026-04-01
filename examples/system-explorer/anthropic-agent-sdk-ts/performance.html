@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance & Optimization - Anthropic Agent SDK Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-card: #1e2a4a;
+  --bg-card-hover: #243356;
+  --bg-code: #0d1425;
+  --text-primary: #e8e8f0;
+  --text-secondary: #a0a0c0;
+  --text-muted: #6a6a8a;
+  --accent: #e07850;
+  --accent-light: #f0956a;
+  --accent-glow: rgba(224, 120, 80, 0.15);
+  --accent-secondary: #5a8adb;
+  --accent-green: #5ac48a;
+  --accent-yellow: #e0c050;
+  --border: #2a2a4a;
+  --border-light: #3a3a5a;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --nav-width: 280px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; min-height: 100vh; }
+
+.nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+.nav-overlay.active { display: block; }
+.sidebar { position: fixed; top: 0; left: 0; width: var(--nav-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border); overflow-y: auto; z-index: 100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
+.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sidebar-logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+.sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; font-weight: 700; }
+.sidebar-version { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+.nav-sections { flex: 1; overflow-y: auto; padding: 12px 0; }
+.nav-item { display: flex; align-items: center; padding: 10px 20px; color: var(--text-secondary); text-decoration: none; font-size: 13.5px; font-weight: 450; transition: all 0.15s ease; border-left: 3px solid transparent; gap: 10px; }
+.nav-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: var(--accent); background: var(--accent-glow); border-left-color: var(--accent); font-weight: 600; }
+.nav-item .nav-num { font-size: 11px; font-weight: 600; color: var(--text-muted); min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 5px; }
+.nav-item.active .nav-num { color: var(--accent); background: rgba(224, 120, 80, 0.15); }
+.nav-item.visited .nav-num { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.nav-progress { padding: 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.progress-label { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.progress-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); border-radius: 2px; transition: width 0.5s ease; }
+.nav-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 110; width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); cursor: pointer; align-items: center; justify-content: center; font-size: 18px; }
+.main-content { margin-left: var(--nav-width); min-height: 100vh; }
+.level-bar { position: sticky; top: 0; z-index: 50; background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 10px 40px; display: flex; align-items: center; gap: 16px; backdrop-filter: blur(10px); }
+.level-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.level-buttons { display: flex; gap: 4px; background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px; }
+.level-btn { padding: 6px 14px; font-size: 12.5px; font-weight: 500; font-family: var(--font-sans); border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-secondary); }
+.level-btn:hover { color: var(--text-primary); }
+.level-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.level-btn[data-level="beginner"].active { background: var(--accent-green); box-shadow: 0 2px 8px rgba(90, 196, 138, 0.3); }
+.level-btn[data-level="intermediate"].active { background: var(--accent-secondary); box-shadow: 0 2px 8px rgba(90, 138, 219, 0.3); }
+.level-btn[data-level="advanced"].active { background: var(--accent); box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.page-content { max-width: 860px; margin: 0 auto; padding: 40px 40px 80px; }
+.page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+.page-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; font-weight: 400; }
+h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.3px; margin: 40px 0 16px; color: var(--text-primary); }
+h3 { font-size: 18px; font-weight: 600; margin: 28px 0 12px; color: var(--text-primary); }
+h4 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--text-primary); }
+h2 .anchor, h3 .anchor, h4 .anchor { color: var(--text-muted); text-decoration: none; margin-left: 8px; opacity: 0; transition: opacity 0.2s; font-weight: 400; }
+h2:hover .anchor, h3:hover .anchor, h4:hover .anchor { opacity: 1; }
+p { margin-bottom: 14px; color: var(--text-secondary); }
+strong { color: var(--text-primary); font-weight: 600; }
+em { color: var(--text-secondary); font-style: italic; }
+a { color: var(--accent-secondary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { margin: 0 0 16px 20px; color: var(--text-secondary); }
+li { margin-bottom: 6px; }
+.page-content > :not(pre) code, .page-content li code, .page-content p code, .page-content td code { background: rgba(224, 120, 80, 0.1); color: var(--accent-light); padding: 2px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; font-weight: 450; }
+pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 0; margin: 0 0 20px; overflow: hidden; position: relative; }
+pre .code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+pre .copy-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 3px 10px; border-radius: 4px; font-size: 11px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+pre .copy-btn:hover { color: var(--text-primary); border-color: var(--border-light); }
+pre .copy-btn.copied { color: var(--accent-green); border-color: var(--accent-green); }
+pre code { display: block; padding: 16px 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.65; color: var(--text-secondary); tab-size: 2; }
+.tok-kw { color: #c792ea; }
+.tok-str { color: #c3e88d; }
+.tok-num { color: #f78c6c; }
+.tok-cm { color: #546e7a; font-style: italic; }
+.tok-fn { color: #82aaff; }
+.tok-type { color: #ffcb6b; }
+.tok-op { color: #89ddff; }
+.tok-dec { color: #c792ea; }
+.tok-prop { color: #f07178; }
+table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 13.5px; }
+th { background: rgba(255,255,255,0.05); padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+blockquote { border-left: 3px solid var(--accent); padding: 12px 20px; margin: 0 0 16px; background: var(--accent-glow); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text-secondary); }
+.level-section { transition: all 0.3s ease; }
+.level-section.hidden { display: none; }
+.level-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.level-badge.beginner { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.level-badge.intermediate { background: rgba(90, 138, 219, 0.15); color: var(--accent-secondary); }
+.level-badge.advanced { background: rgba(224, 120, 80, 0.15); color: var(--accent); }
+.ascii-diagram { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin: 0 0 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; color: var(--accent-secondary); white-space: pre; }
+.page-nav { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); gap: 16px; }
+.page-nav a { display: flex; flex-direction: column; padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); text-decoration: none; transition: all 0.2s; flex: 1; max-width: 48%; }
+.page-nav a:hover { background: var(--bg-card-hover); border-color: var(--border-light); transform: translateY(-1px); }
+.page-nav a .nav-dir { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.page-nav a .nav-title { font-size: 14px; font-weight: 600; color: var(--accent-light); }
+.page-nav a.next { text-align: right; margin-left: auto; }
+.quiz-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 32px 0; }
+.quiz-title { font-size: 13px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.quiz-question { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt { display: block; width: 100%; text-align: left; padding: 10px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 13.5px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+.quiz-opt:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+.quiz-opt.correct { background: rgba(90, 196, 138, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
+.quiz-opt.wrong { background: rgba(224, 80, 80, 0.15); border-color: #e05050; color: #e05050; }
+.quiz-opt.disabled { pointer-events: none; opacity: 0.6; }
+.quiz-feedback { margin-top: 12px; font-size: 13px; font-weight: 500; }
+.quiz-feedback.correct { color: var(--accent-green); }
+.quiz-feedback.wrong { color: #e05050; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .nav-toggle { display: flex; }
+  .main-content { margin-left: 0; }
+  .level-bar { padding: 10px 16px 10px 60px; }
+  .page-content { padding: 32px 20px 60px; }
+  .page-nav { flex-direction: column; }
+  .page-nav a { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+<div class="nav-overlay" onclick="toggleNav()"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="logo-icon">A</div> Agent SDK Course</div>
+    <div class="sidebar-version">TypeScript v0.2.87</div>
+  </div>
+  <div class="nav-sections">
+    <a class="nav-item" href="index.html"><span class="nav-num">~</span> Overview</a>
+    <a class="nav-item" href="concepts.html"><span class="nav-num">01</span> Core Concepts</a>
+    <a class="nav-item" href="architecture.html"><span class="nav-num">02</span> Architecture</a>
+    <a class="nav-item" href="getting-started.html"><span class="nav-num">03</span> Getting Started</a>
+    <a class="nav-item" href="implementation.html"><span class="nav-num">04</span> Implementation</a>
+    <a class="nav-item" href="use-cases.html"><span class="nav-num">05</span> Use Cases</a>
+    <a class="nav-item" href="ecosystem.html"><span class="nav-num">06</span> Ecosystem</a>
+    <a class="nav-item active" href="performance.html"><span class="nav-num">07</span> Performance</a>
+    <a class="nav-item" href="advanced.html"><span class="nav-num">08</span> Advanced Topics</a>
+    <a class="nav-item" href="tradeoffs.html"><span class="nav-num">09</span> Tradeoffs</a>
+  </div>
+  <div class="nav-progress">
+    <div class="progress-label">Progress: <span id="progressText">0/10</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<main class="main-content">
+  <div class="level-bar">
+    <span class="level-label">Level</span>
+    <div class="level-buttons">
+      <button class="level-btn active" data-level="all" onclick="setLevel('all')">All</button>
+      <button class="level-btn" data-level="beginner" onclick="setLevel('beginner')">Beginner</button>
+      <button class="level-btn" data-level="intermediate" onclick="setLevel('intermediate')">Intermediate</button>
+      <button class="level-btn" data-level="advanced" onclick="setLevel('advanced')">Advanced</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="page-title">Performance & Optimization</div>
+    <div class="page-subtitle">Section 07 of 9</div>
+
+<div class="level-section" data-level="beginner">
+<span class="level-badge beginner">Beginner</span>
+<h2 id="understanding-costs">Understanding Costs <a class="anchor" href="#understanding-costs">#</a></h2>
+<p>Every agent interaction has costs in three dimensions:</p>
+<h3 id="1-api-token-cost">1. API Token Cost <a class="anchor" href="#1-api-token-cost">#</a></h3>
+<p>Claude charges per input and output token. The Agent SDK adds overhead because:</p>
+<ul>
+<li>Each tool call adds tokens for the tool definition + call + result</li>
+<li>Multi-turn conversations accumulate context</li>
+<li>Subagents run separate API calls</li>
+</ul>
+<h3 id="2-time">2. Time <a class="anchor" href="#2-time">#</a></h3>
+<p>Agent tasks take time because:</p>
+<ul>
+<li>Each API call has latency (typically 2-15 seconds depending on complexity)</li>
+<li>Tool execution adds time (file reads, web requests, bash commands)</li>
+<li>Multi-turn loops multiply these delays</li>
+</ul>
+<h3 id="3-compute">3. Compute <a class="anchor" href="#3-compute">#</a></h3>
+<p>The agent process consumes local CPU and memory for:</p>
+<ul>
+<li>Tool execution (bash commands, file operations)</li>
+<li>MCP server processes</li>
+<li>Session persistence (disk I/O)</li>
+</ul>
+<h3 id="quick-cost-controls">Quick Cost Controls <a class="anchor" href="#quick-cost-controls">#</a></h3>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Analyze this codebase"</span>,
+  options: {
+    <span class="tok-cm">// Budget: stop if cost exceeds $0.50</span>
+    maxBudgetUsd: <span class="tok-num">0.50</span>,
+
+    <span class="tok-cm">// Turns: limit to 15 round-trips</span>
+    maxTurns: <span class="tok-num">15</span>,
+
+    <span class="tok-cm">// Model: use a cheaper model for simple tasks</span>
+    model: <span class="tok-str">"claude-haiku-4-20250514"</span>,
+
+    <span class="tok-cm">// Effort: lower effort = fewer thinking tokens</span>
+    effort: <span class="tok-str">"medium"</span>,
+
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>]
+  }
+})) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span>) {
+    <span class="tok-kw">if</span> (message.subtype === <span class="tok-str">"success"</span>) {
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`Cost: $${message.total_cost_usd.toFixed(4)}`</span>);
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`Turns: ${message.num_turns}`</span>);
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`Time: ${message.duration_ms}ms`</span>);
+    } <span class="tok-kw">else</span> <span class="tok-kw">if</span> (message.subtype === <span class="tok-str">"error_max_budget_usd"</span>) {
+      console.<span class="tok-fn">log</span>(<span class="tok-str">"Budget exceeded"</span>);
+    } <span class="tok-kw">else</span> <span class="tok-kw">if</span> (message.subtype === <span class="tok-str">"error_max_turns"</span>) {
+      console.<span class="tok-fn">log</span>(<span class="tok-str">"Turn limit reached"</span>);
+    }
+  }
+}</code></pre>
+<h3 id="model-selection-for-cost-optimization">Model Selection for Cost Optimization <a class="anchor" href="#model-selection-for-cost-optimization">#</a></h3>
+<table>
+<tr><th>Model</th><th>Speed</th><th>Cost</th><th>Best For</th></tr>
+<tr><td><strong>Haiku</strong></td><td>Fastest</td><td>Lowest</td><td>Simple tasks, classification, formatting</td></tr>
+<tr><td><strong>Sonnet</strong></td><td>Medium</td><td>Medium</td><td>Most development tasks, code review</td></tr>
+<tr><td><strong>Opus</strong></td><td>Slowest</td><td>Highest</td><td>Complex reasoning, security audits, architecture</td></tr>
+</table>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-cm">// Use the fallback model when primary is unavailable or rate-limited</span>
+options: {
+  model: <span class="tok-str">"claude-sonnet-4-20250514"</span>,
+  fallbackModel: <span class="tok-str">"claude-haiku-4-20250514"</span>
+}</code></pre>
+</div>
+<div class="level-section" data-level="intermediate">
+<span class="level-badge intermediate">Intermediate</span>
+<h2 id="optimization-strategies">Optimization Strategies <a class="anchor" href="#optimization-strategies">#</a></h2>
+<h3 id="strategy-1-minimize-tool-calls">Strategy 1: Minimize Tool Calls <a class="anchor" href="#strategy-1-minimize-tool-calls">#</a></h3>
+<p>Each tool call is an API round-trip. Reduce them by:</p>
+<p><strong>Giving precise prompts:</strong></p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-cm">// Bad: vague prompt leads to many exploratory tool calls</span>
+prompt: <span class="tok-str">"Check the code for issues"</span>
+
+<span class="tok-cm">// Good: specific prompt reduces exploration</span>
+prompt: <span class="tok-str">"Check src/auth/login.ts for SQL injection vulnerabilities in the query functions"</span></code></pre>
+<p><strong>Providing context in the system prompt:</strong></p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  systemPrompt: <span class="tok-str">`Project structure:
+- src/server/ -- Express.js backend
+- src/client/ -- React frontend
+- src/shared/ -- Shared types
+- Tests are co-located as *.test.ts
+Use Glob before Read to find files efficiently.`</span>
+}</code></pre>
+<h3 id="strategy-2-limit-tool-access">Strategy 2: Limit Tool Access <a class="anchor" href="#strategy-2-limit-tool-access">#</a></h3>
+<p>Only allow tools the agent actually needs:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-cm">// Read-only analysis -- no Write, Edit, or Bash</span>
+options: { allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>] }
+
+<span class="tok-cm">// Editing tasks -- add Edit but not Bash</span>
+options: { allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Edit"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>] }
+
+<span class="tok-cm">// Full automation -- include Bash only when necessary</span>
+options: { allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Edit"</span>, <span class="tok-str">"Write"</span>, <span class="tok-str">"Bash"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>] }</code></pre>
+<p>Fewer available tools means fewer tokens spent on tool definitions in the context window.</p>
+<h3 id="strategy-3-use-subagents-for-context-efficiency">Strategy 3: Use Subagents for Context Efficiency <a class="anchor" href="#strategy-3-use-subagents-for-context-efficiency">#</a></h3>
+<p>Subagents have fresh context windows. A main agent analyzing 50 files will accumulate all that content in its context. Delegating to subagents keeps each context focused:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  allowedTools: [<span class="tok-str">"Agent"</span>, <span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>],
+  agents: {
+    <span class="tok-str">"file-analyzer"</span>: {
+      description: <span class="tok-str">"Analyze a single file or small set of files"</span>,
+      prompt: <span class="tok-str">"Analyze the given files. Return a concise summary."</span>,
+      tools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Grep"</span>],
+      model: <span class="tok-str">"haiku"</span>  <span class="tok-cm">// Cheaper model for individual file analysis</span>
+    }
+  }
+}</code></pre>
+<h3 id="strategy-4-control-thinking-depth">Strategy 4: Control Thinking Depth <a class="anchor" href="#strategy-4-control-thinking-depth">#</a></h3>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-cm">// For simple tasks: minimal thinking</span>
+options: {
+  effort: <span class="tok-str">"low"</span>,
+  thinking: { <span class="tok-kw">type</span>: <span class="tok-str">"disabled"</span> }
+}
+
+<span class="tok-cm">// For complex tasks: full thinking</span>
+options: {
+  effort: <span class="tok-str">"max"</span>,
+  thinking: { <span class="tok-kw">type</span>: <span class="tok-str">"adaptive"</span> }
+}
+
+<span class="tok-cm">// For budget-sensitive tasks: capped thinking</span>
+options: {
+  thinking: { <span class="tok-kw">type</span>: <span class="tok-str">"enabled"</span>, budget_tokens: <span class="tok-num">2000</span> }
+}</code></pre>
+<h3 id="strategy-5-disable-session-persistence">Strategy 5: Disable Session Persistence <a class="anchor" href="#strategy-5-disable-session-persistence">#</a></h3>
+<p>For one-off tasks where you do not need to resume:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  persistSession: <span class="tok-kw">false</span>  <span class="tok-cm">// Skip disk I/O for session storage</span>
+}</code></pre>
+<h3 id="strategy-6-use-structured-output">Strategy 6: Use Structured Output <a class="anchor" href="#strategy-6-use-structured-output">#</a></h3>
+<p>When you need data, not prose, use structured output to avoid wasted tokens on formatting:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  outputFormat: {
+    <span class="tok-kw">type</span>: <span class="tok-str">"json_schema"</span>,
+    schema: {
+      <span class="tok-kw">type</span>: <span class="tok-str">"object"</span>,
+      properties: {
+        issues: {
+          <span class="tok-kw">type</span>: <span class="tok-str">"array"</span>,
+          items: {
+            <span class="tok-kw">type</span>: <span class="tok-str">"object"</span>,
+            properties: {
+              file: { <span class="tok-kw">type</span>: <span class="tok-str">"string"</span> },
+              line: { <span class="tok-kw">type</span>: <span class="tok-str">"number"</span> },
+              severity: { <span class="tok-kw">type</span>: <span class="tok-str">"string"</span> },
+              description: { <span class="tok-kw">type</span>: <span class="tok-str">"string"</span> }
+            }
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+<div class="level-section" data-level="advanced">
+<span class="level-badge advanced">Advanced</span>
+<h2 id="advanced-performance-tuning">Advanced Performance Tuning <a class="anchor" href="#advanced-performance-tuning">#</a></h2>
+<h3 id="monitoring-cost-and-usage">Monitoring Cost and Usage <a class="anchor" href="#monitoring-cost-and-usage">#</a></h3>
+<p>Extract detailed usage metrics from result messages:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({ prompt: <span class="tok-str">"..."</span>, options })) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span> &amp;&amp; message.subtype === <span class="tok-str">"success"</span>) {
+    <span class="tok-cm">// Overall metrics</span>
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`Total cost: $${message.total_cost_usd.toFixed(4)}`</span>);
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`Total turns: ${message.num_turns}`</span>);
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`Wall time: ${message.duration_ms}ms`</span>);
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`API time: ${message.duration_api_ms}ms`</span>);
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`Overhead: ${message.duration_ms - message.duration_api_ms}ms`</span>);
+
+    <span class="tok-cm">// Per-model breakdown</span>
+    <span class="tok-kw">for</span> (<span class="tok-kw">const</span> [model, usage] <span class="tok-kw">of</span> <span class="tok-type">Object</span>.<span class="tok-fn">entries</span>(message.modelUsage)) {
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`Model ${model}:`</span>);
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`  Input tokens: ${usage.input_tokens}`</span>);
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`  Output tokens: ${usage.output_tokens}`</span>);
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`  Cache read: ${usage.cache_read_input_tokens}`</span>);
+      console.<span class="tok-fn">log</span>(<span class="tok-str">`  Cache write: ${usage.cache_creation_input_tokens}`</span>);
+    }
+
+    <span class="tok-cm">// Token usage</span>
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`Total input: ${message.usage.input_tokens}`</span>);
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`Total output: ${message.usage.output_tokens}`</span>);
+
+    <span class="tok-cm">// Permission denials (may indicate misconfiguration)</span>
+    <span class="tok-kw">if</span> (message.permission_denials.length &gt; <span class="tok-num">0</span>) {
+      console.<span class="tok-fn">log</span>(<span class="tok-str">"Permission denials:"</span>, message.permission_denials);
+    }
+  }
+}</code></pre>
+<h3 id="rate-limit-handling">Rate Limit Handling <a class="anchor" href="#rate-limit-handling">#</a></h3>
+<p>The SDK emits rate limit events that you can monitor:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({ prompt: <span class="tok-str">"..."</span>, options })) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"rate_limit"</span>) {
+    <span class="tok-cm">// SDK handles retry automatically, but you can log it</span>
+    console.<span class="tok-fn">warn</span>(<span class="tok-str">"Rate limited -- SDK will retry"</span>);
+  }
+}</code></pre>
+<h3 id="context-window-management">Context Window Management <a class="anchor" href="#context-window-management">#</a></h3>
+<p>The SDK automatically compacts conversations when they approach the context limit. You can hook into this process:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query, HookCallback } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">const</span> preCompactHook: HookCallback = <span class="tok-kw">async</span> (input) =&gt; {
+  <span class="tok-kw">if</span> (input.hook_event_name !== <span class="tok-str">"PreCompact"</span>) <span class="tok-kw">return</span> {};
+
+  <span class="tok-kw">const</span> compactInput = input <span class="tok-kw">as</span> any;
+  console.<span class="tok-fn">log</span>(<span class="tok-str">`Context compaction triggered:`</span>);
+  console.<span class="tok-fn">log</span>(<span class="tok-str">`  Trigger: ${compactInput.trigger}`</span>);  <span class="tok-cm">// "auto" or "manual"</span>
+  console.<span class="tok-fn">log</span>(<span class="tok-str">`  Pre-tokens: ${compactInput.compact_metadata?.pre_tokens}`</span>);
+
+  <span class="tok-cm">// You could archive the full transcript here before compaction</span>
+  <span class="tok-cm">// await archiveTranscript(input.transcript_path);</span>
+
+  <span class="tok-kw">return</span> {};
+};
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Do a comprehensive analysis (may require many tool calls)"</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+    hooks: {
+      PreCompact: [{ hooks: [preCompactHook] }]
+    }
+  }
+})) {
+  <span class="tok-cm">// Monitor compaction boundaries in the message stream</span>
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"system"</span> &amp;&amp; (message <span class="tok-kw">as</span> any).subtype === <span class="tok-str">"compact_boundary"</span>) {
+    <span class="tok-kw">const</span> compact = message <span class="tok-kw">as</span> any;
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`Compacted at ${compact.compact_metadata.pre_tokens} tokens`</span>);
+  }
+}</code></pre>
+<h3 id="1m-context-window">1M Context Window <a class="anchor" href="#1m-context-window">#</a></h3>
+<p>For tasks requiring very large context (reading entire codebases):</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  betas: [<span class="tok-str">"context-1m-2025-08-07"</span>],  <span class="tok-cm">// Enable 1M token context</span>
+  model: <span class="tok-str">"claude-sonnet-4-20250514"</span>   <span class="tok-cm">// Must be Sonnet 4 or 4.5</span>
+}</code></pre>
+<h3 id="parallel-tool-execution">Parallel Tool Execution <a class="anchor" href="#parallel-tool-execution">#</a></h3>
+<p>Mark custom tools as read-only to enable parallel execution:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">const</span> readOnlyTool = <span class="tok-fn">tool</span>(
+  <span class="tok-str">"check_endpoint"</span>,
+  <span class="tok-str">"Check if an API endpoint is responding"</span>,
+  { url: z.<span class="tok-fn">string</span>().<span class="tok-fn">url</span>() },
+  <span class="tok-kw">async</span> (args) =&gt; {
+    <span class="tok-kw">const</span> start = <span class="tok-type">Date</span>.<span class="tok-fn">now</span>();
+    <span class="tok-kw">const</span> resp = <span class="tok-kw">await</span> <span class="tok-fn">fetch</span>(args.url);
+    <span class="tok-kw">return</span> {
+      content: [{
+        <span class="tok-kw">type</span>: <span class="tok-str">"text"</span>,
+        text: <span class="tok-str">`${args.url}: ${resp.status} (${Date.now() - start}ms)`</span>
+      }]
+    };
+  },
+  { annotations: { readOnlyHint: <span class="tok-kw">true</span> } }  <span class="tok-cm">// Enables parallel execution</span>
+);</code></pre>
+<p>When Claude calls multiple read-only tools in a single turn, they execute concurrently rather than sequentially.</p>
+<h3 id="tool-search-for-large-tool-sets">Tool Search for Large Tool Sets <a class="anchor" href="#tool-search-for-large-tool-sets">#</a></h3>
+<p>When you have dozens of MCP tools, the SDK uses tool search to avoid context window bloat:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-cm">// With many tools, tool search is enabled automatically</span>
+options: {
+  mcpServers: {
+    crm: crmServer,         <span class="tok-cm">// 15 tools</span>
+    analytics: analyticsServer,  <span class="tok-cm">// 12 tools</span>
+    email: emailServer,     <span class="tok-cm">// 8 tools</span>
+    calendar: calendarServer <span class="tok-cm">// 6 tools</span>
+    <span class="tok-cm">// 41 tools total -- tool search kicks in</span>
+  },
+  allowedTools: [
+    <span class="tok-str">"mcp__crm__*"</span>,
+    <span class="tok-str">"mcp__analytics__*"</span>,
+    <span class="tok-str">"mcp__email__*"</span>,
+    <span class="tok-str">"mcp__calendar__*"</span>
+  ]
+}
+<span class="tok-cm">// Claude uses ToolSearch to discover tools on-demand</span>
+<span class="tok-cm">// instead of loading all 41 tool definitions upfront</span></code></pre>
+<h3 id="cancellation-and-cleanup">Cancellation and Cleanup <a class="anchor" href="#cancellation-and-cleanup">#</a></h3>
+<p>Use AbortController for timeout management and graceful cancellation:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">const</span> controller = <span class="tok-kw">new</span> <span class="tok-fn">AbortController</span>();
+
+<span class="tok-cm">// Hard timeout</span>
+<span class="tok-kw">const</span> timeout = <span class="tok-fn">setTimeout</span>(() =&gt; {
+  controller.<span class="tok-fn">abort</span>();
+  console.<span class="tok-fn">log</span>(<span class="tok-str">"Agent timed out after 60 seconds"</span>);
+}, 60_000);
+
+<span class="tok-kw">try</span> {
+  <span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+    prompt: <span class="tok-str">"Analyze the codebase"</span>,
+    options: {
+      abortController: controller,
+      allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>]
+    }
+  })) {
+    <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span>) {
+      <span class="tok-fn">clearTimeout</span>(timeout);
+      console.<span class="tok-fn">log</span>(<span class="tok-str">"Completed within time limit"</span>);
+    }
+  }
+} <span class="tok-kw">catch</span> (error) {
+  <span class="tok-kw">if</span> (controller.signal.aborted) {
+    console.<span class="tok-fn">log</span>(<span class="tok-str">"Cancelled by timeout"</span>);
+  }
+} <span class="tok-kw">finally</span> {
+  <span class="tok-fn">clearTimeout</span>(timeout);
+}</code></pre>
+<h3 id="benchmark-turns-vs-cost">Benchmark: Turns vs. Cost <a class="anchor" href="#benchmark-turns-vs-cost">#</a></h3>
+<p>Empirical observations for common task types:</p>
+<table>
+<tr><th>Task Type</th><th>Typical Turns</th><th>Typical Cost (Sonnet)</th><th>Typical Time</th></tr>
+<tr><td>Read and summarize 1 file</td><td>2-3</td><td>$0.01-0.03</td><td>5-10s</td></tr>
+<tr><td>Find and fix a single bug</td><td>4-8</td><td>$0.05-0.15</td><td>15-30s</td></tr>
+<tr><td>Code review (10 files)</td><td>10-20</td><td>$0.10-0.30</td><td>30-90s</td></tr>
+<tr><td>Refactor a module</td><td>8-15</td><td>$0.10-0.40</td><td>30-60s</td></tr>
+<tr><td>Full codebase analysis</td><td>20-40</td><td>$0.30-1.00</td><td>2-5min</td></tr>
+<tr><td>Multi-agent review pipeline</td><td>15-30</td><td>$0.20-0.80</td><td>1-3min</td></tr>
+</table>
+<p>These numbers vary significantly based on project size, complexity, model choice, and effort level. Use <code>maxBudgetUsd</code> and <code>maxTurns</code> to set hard limits.</p>
+</div>
+
+
+    <div class="quiz-box">
+      <div class="quiz-title">Quick Check</div>
+      <div class="quiz-question">Which model is the cheapest option?</div>
+      <div class="quiz-options">
+      <button class="quiz-opt" data-idx="0" onclick="checkQuiz(this, 2)">Opus</button>
+      <button class="quiz-opt" data-idx="1" onclick="checkQuiz(this, 2)">Sonnet</button>
+      <button class="quiz-opt" data-idx="2" onclick="checkQuiz(this, 2)">Haiku</button>
+      <button class="quiz-opt" data-idx="3" onclick="checkQuiz(this, 2)">They all cost the same</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+<nav class="page-nav">
+  <a class="prev" href="ecosystem.html"><span class="nav-dir">&larr; Previous</span><span class="nav-title">Ecosystem & Integrations</span></a>
+  <a class="next" href="advanced.html"><span class="nav-dir">Next</span><span class="nav-title">Advanced Topics &rarr;</span></a>
+</nav>
+  </div>
+</main>
+
+<script>
+function getVisited() { try { return JSON.parse(localStorage.getItem('agentsdk-visited') || '[]'); } catch { return []; } }
+function markVisited(page) { var v = getVisited(); if (!v.includes(page)) { v.push(page); localStorage.setItem('agentsdk-visited', JSON.stringify(v)); } updateProgress(); }
+function updateProgress() {
+  var pages = ['index.html','concepts.html','architecture.html','getting-started.html','implementation.html','use-cases.html','ecosystem.html','performance.html','advanced.html','tradeoffs.html'];
+  var visited = getVisited();
+  var count = pages.filter(function(p) { return visited.includes(p); }).length;
+  var pct = Math.round((count / pages.length) * 100);
+  var pt = document.getElementById('progressText');
+  var pf = document.getElementById('progressFill');
+  if (pt) pt.textContent = count + '/' + pages.length;
+  if (pf) pf.style.width = pct + '%';
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    var href = item.getAttribute('href');
+    if (visited.includes(href) && !item.classList.contains('active')) item.classList.add('visited');
+  });
+}
+markVisited('performance.html');
+function setLevel(level) {
+  localStorage.setItem('agentsdk-level', level);
+  document.querySelectorAll('.level-btn').forEach(function(btn) { btn.classList.toggle('active', btn.dataset.level === level); });
+  document.querySelectorAll('.level-section').forEach(function(sec) {
+    if (level === 'all') sec.classList.remove('hidden');
+    else sec.classList.toggle('hidden', sec.dataset.level !== level);
+  });
+}
+(function() { var saved = localStorage.getItem('agentsdk-level') || 'all'; setLevel(saved); })();
+function toggleNav() { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.nav-overlay').classList.toggle('active'); }
+function copyCode(btn) {
+  var code = btn.closest('pre').querySelector('code');
+  var text = code.textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+function checkQuiz(btn, correctIdx) {
+  var opts = btn.parentElement.querySelectorAll('.quiz-opt');
+  var feedback = btn.closest('.quiz-box').querySelector('.quiz-feedback');
+  var idx = parseInt(btn.dataset.idx);
+  opts.forEach(function(o) { o.classList.add('disabled'); });
+  if (idx === correctIdx) {
+    btn.classList.add('correct');
+    feedback.textContent = 'Correct!';
+    feedback.className = 'quiz-feedback correct';
+  } else {
+    btn.classList.add('wrong');
+    opts[correctIdx].classList.add('correct');
+    feedback.textContent = 'Not quite. The correct answer is highlighted.';
+    feedback.className = 'quiz-feedback wrong';
+  }
+}
+document.addEventListener('click', function(e) {
+  var toggle = e.target.closest('.collapsible-toggle');
+  if (toggle) { toggle.classList.toggle('open'); var body = toggle.nextElementSibling; if (body) body.classList.toggle('open'); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecosystem & Integrations - Anthropic Agent SDK Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-card: #1e2a4a;
+  --bg-card-hover: #243356;
+  --bg-code: #0d1425;
+  --text-primary: #e8e8f0;
+  --text-secondary: #a0a0c0;
+  --text-muted: #6a6a8a;
+  --accent: #e07850;
+  --accent-light: #f0956a;
+  --accent-glow: rgba(224, 120, 80, 0.15);
+  --accent-secondary: #5a8adb;
+  --accent-green: #5ac48a;
+  --accent-yellow: #e0c050;
+  --border: #2a2a4a;
+  --border-light: #3a3a5a;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --nav-width: 280px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; min-height: 100vh; }
+
+.nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+.nav-overlay.active { display: block; }
+.sidebar { position: fixed; top: 0; left: 0; width: var(--nav-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border); overflow-y: auto; z-index: 100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
+.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sidebar-logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+.sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; font-weight: 700; }
+.sidebar-version { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+.nav-sections { flex: 1; overflow-y: auto; padding: 12px 0; }
+.nav-item { display: flex; align-items: center; padding: 10px 20px; color: var(--text-secondary); text-decoration: none; font-size: 13.5px; font-weight: 450; transition: all 0.15s ease; border-left: 3px solid transparent; gap: 10px; }
+.nav-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: var(--accent); background: var(--accent-glow); border-left-color: var(--accent); font-weight: 600; }
+.nav-item .nav-num { font-size: 11px; font-weight: 600; color: var(--text-muted); min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 5px; }
+.nav-item.active .nav-num { color: var(--accent); background: rgba(224, 120, 80, 0.15); }
+.nav-item.visited .nav-num { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.nav-progress { padding: 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.progress-label { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.progress-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); border-radius: 2px; transition: width 0.5s ease; }
+.nav-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 110; width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); cursor: pointer; align-items: center; justify-content: center; font-size: 18px; }
+.main-content { margin-left: var(--nav-width); min-height: 100vh; }
+.level-bar { position: sticky; top: 0; z-index: 50; background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 10px 40px; display: flex; align-items: center; gap: 16px; backdrop-filter: blur(10px); }
+.level-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.level-buttons { display: flex; gap: 4px; background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px; }
+.level-btn { padding: 6px 14px; font-size: 12.5px; font-weight: 500; font-family: var(--font-sans); border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-secondary); }
+.level-btn:hover { color: var(--text-primary); }
+.level-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.level-btn[data-level="beginner"].active { background: var(--accent-green); box-shadow: 0 2px 8px rgba(90, 196, 138, 0.3); }
+.level-btn[data-level="intermediate"].active { background: var(--accent-secondary); box-shadow: 0 2px 8px rgba(90, 138, 219, 0.3); }
+.level-btn[data-level="advanced"].active { background: var(--accent); box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.page-content { max-width: 860px; margin: 0 auto; padding: 40px 40px 80px; }
+.page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+.page-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; font-weight: 400; }
+h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.3px; margin: 40px 0 16px; color: var(--text-primary); }
+h3 { font-size: 18px; font-weight: 600; margin: 28px 0 12px; color: var(--text-primary); }
+h4 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--text-primary); }
+h2 .anchor, h3 .anchor, h4 .anchor { color: var(--text-muted); text-decoration: none; margin-left: 8px; opacity: 0; transition: opacity 0.2s; font-weight: 400; }
+h2:hover .anchor, h3:hover .anchor, h4:hover .anchor { opacity: 1; }
+p { margin-bottom: 14px; color: var(--text-secondary); }
+strong { color: var(--text-primary); font-weight: 600; }
+em { color: var(--text-secondary); font-style: italic; }
+a { color: var(--accent-secondary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { margin: 0 0 16px 20px; color: var(--text-secondary); }
+li { margin-bottom: 6px; }
+.page-content > :not(pre) code, .page-content li code, .page-content p code, .page-content td code { background: rgba(224, 120, 80, 0.1); color: var(--accent-light); padding: 2px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; font-weight: 450; }
+pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 0; margin: 0 0 20px; overflow: hidden; position: relative; }
+pre .code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+pre .copy-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 3px 10px; border-radius: 4px; font-size: 11px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+pre .copy-btn:hover { color: var(--text-primary); border-color: var(--border-light); }
+pre .copy-btn.copied { color: var(--accent-green); border-color: var(--accent-green); }
+pre code { display: block; padding: 16px 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.65; color: var(--text-secondary); tab-size: 2; }
+.tok-kw { color: #c792ea; }
+.tok-str { color: #c3e88d; }
+.tok-num { color: #f78c6c; }
+.tok-cm { color: #546e7a; font-style: italic; }
+.tok-fn { color: #82aaff; }
+.tok-type { color: #ffcb6b; }
+.tok-op { color: #89ddff; }
+.tok-dec { color: #c792ea; }
+.tok-prop { color: #f07178; }
+table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 13.5px; }
+th { background: rgba(255,255,255,0.05); padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+blockquote { border-left: 3px solid var(--accent); padding: 12px 20px; margin: 0 0 16px; background: var(--accent-glow); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text-secondary); }
+.level-section { transition: all 0.3s ease; }
+.level-section.hidden { display: none; }
+.level-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.level-badge.beginner { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.level-badge.intermediate { background: rgba(90, 138, 219, 0.15); color: var(--accent-secondary); }
+.level-badge.advanced { background: rgba(224, 120, 80, 0.15); color: var(--accent); }
+.ascii-diagram { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin: 0 0 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; color: var(--accent-secondary); white-space: pre; }
+.page-nav { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); gap: 16px; }
+.page-nav a { display: flex; flex-direction: column; padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); text-decoration: none; transition: all 0.2s; flex: 1; max-width: 48%; }
+.page-nav a:hover { background: var(--bg-card-hover); border-color: var(--border-light); transform: translateY(-1px); }
+.page-nav a .nav-dir { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.page-nav a .nav-title { font-size: 14px; font-weight: 600; color: var(--accent-light); }
+.page-nav a.next { text-align: right; margin-left: auto; }
+.quiz-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 32px 0; }
+.quiz-title { font-size: 13px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.quiz-question { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt { display: block; width: 100%; text-align: left; padding: 10px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 13.5px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+.quiz-opt:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+.quiz-opt.correct { background: rgba(90, 196, 138, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
+.quiz-opt.wrong { background: rgba(224, 80, 80, 0.15); border-color: #e05050; color: #e05050; }
+.quiz-opt.disabled { pointer-events: none; opacity: 0.6; }
+.quiz-feedback { margin-top: 12px; font-size: 13px; font-weight: 500; }
+.quiz-feedback.correct { color: var(--accent-green); }
+.quiz-feedback.wrong { color: #e05050; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .nav-toggle { display: flex; }
+  .main-content { margin-left: 0; }
+  .level-bar { padding: 10px 16px 10px 60px; }
+  .page-content { padding: 32px 20px 60px; }
+  .page-nav { flex-direction: column; }
+  .page-nav a { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+<div class="nav-overlay" onclick="toggleNav()"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="logo-icon">A</div> Agent SDK Course</div>
+    <div class="sidebar-version">TypeScript v0.2.87</div>
+  </div>
+  <div class="nav-sections">
+    <a class="nav-item" href="index.html"><span class="nav-num">~</span> Overview</a>
+    <a class="nav-item" href="concepts.html"><span class="nav-num">01</span> Core Concepts</a>
+    <a class="nav-item" href="architecture.html"><span class="nav-num">02</span> Architecture</a>
+    <a class="nav-item" href="getting-started.html"><span class="nav-num">03</span> Getting Started</a>
+    <a class="nav-item" href="implementation.html"><span class="nav-num">04</span> Implementation</a>
+    <a class="nav-item" href="use-cases.html"><span class="nav-num">05</span> Use Cases</a>
+    <a class="nav-item active" href="ecosystem.html"><span class="nav-num">06</span> Ecosystem</a>
+    <a class="nav-item" href="performance.html"><span class="nav-num">07</span> Performance</a>
+    <a class="nav-item" href="advanced.html"><span class="nav-num">08</span> Advanced Topics</a>
+    <a class="nav-item" href="tradeoffs.html"><span class="nav-num">09</span> Tradeoffs</a>
+  </div>
+  <div class="nav-progress">
+    <div class="progress-label">Progress: <span id="progressText">0/10</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<main class="main-content">
+  <div class="level-bar">
+    <span class="level-label">Level</span>
+    <div class="level-buttons">
+      <button class="level-btn active" data-level="all" onclick="setLevel('all')">All</button>
+      <button class="level-btn" data-level="beginner" onclick="setLevel('beginner')">Beginner</button>
+      <button class="level-btn" data-level="intermediate" onclick="setLevel('intermediate')">Intermediate</button>
+      <button class="level-btn" data-level="advanced" onclick="setLevel('advanced')">Advanced</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="page-title">Ecosystem & Integrations</div>
+    <div class="page-subtitle">Section 06 of 9</div>
+
+<div class="level-section" data-level="beginner">
+<span class="level-badge beginner">Beginner</span>
+<h2 id="the-mcp-ecosystem">The MCP Ecosystem <a class="anchor" href="#the-mcp-ecosystem">#</a></h2>
+<p>The Agent SDK's primary extension mechanism is the <strong>Model Context Protocol (MCP)</strong>. MCP is an open standard created by Anthropic for connecting AI agents to external tools and data sources. Think of it as USB for AI -- a universal connector that lets your agent plug into databases, APIs, browsers, and more.</p>
+<h3 id="what-mcp-servers-are-available">What MCP Servers Are Available? <a class="anchor" href="#what-mcp-servers-are-available">#</a></h3>
+<p>The MCP ecosystem includes hundreds of servers. Here are the most popular categories:</p>
+<table>
+<tr><th>Category</th><th>Example Servers</th><th>What They Enable</th></tr>
+<tr><td><strong>Version Control</strong></td><td>GitHub, GitLab</td><td>PR reviews, issue management, repo search</td></tr>
+<tr><td><strong>Databases</strong></td><td>PostgreSQL, SQLite, MySQL</td><td>Natural language database queries</td></tr>
+<tr><td><strong>Cloud Platforms</strong></td><td>AWS, GCP, Azure</td><td>Cloud resource management</td></tr>
+<tr><td><strong>Communication</strong></td><td>Slack, Discord, Email</td><td>Sending notifications and messages</td></tr>
+<tr><td><strong>Browsers</strong></td><td>Playwright, Puppeteer</td><td>Web automation, scraping, testing</td></tr>
+<tr><td><strong>File Systems</strong></td><td>Filesystem, S3</td><td>File management beyond local disk</td></tr>
+<tr><td><strong>Search</strong></td><td>Brave Search, Google</td><td>Web search capabilities</td></tr>
+<tr><td><strong>Documentation</strong></td><td>Notion, Confluence</td><td>Reading and writing documentation</td></tr>
+<tr><td><strong>Monitoring</strong></td><td>Datadog, PagerDuty</td><td>Checking metrics and alerts</td></tr>
+</table>
+<h3 id="connecting-an-mcp-server">Connecting an MCP Server <a class="anchor" href="#connecting-an-mcp-server">#</a></h3>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-cm">// Connect the Playwright MCP server for browser automation</span>
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Open example.com and describe what you see"</span>,
+  options: {
+    mcpServers: {
+      playwright: {
+        command: <span class="tok-str">"npx"</span>,
+        args: [<span class="tok-str">"@playwright/mcp@latest"</span>]
+      }
+    },
+    allowedTools: [<span class="tok-str">"mcp__playwright__*"</span>]
+  }
+})) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span> &amp;&amp; message.subtype === <span class="tok-str">"success"</span>) {
+    console.<span class="tok-fn">log</span>(message.result);
+  }
+}</code></pre>
+<h2 id="cloud-provider-support">Cloud Provider Support <a class="anchor" href="#cloud-provider-support">#</a></h2>
+<p>The Agent SDK works with multiple cloud AI providers, not just Anthropic's direct API:</p>
+<h3 id="amazon-bedrock">Amazon Bedrock <a class="anchor" href="#amazon-bedrock">#</a></h3>
+<pre><div class="code-header">bash<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-fn">export</span> CLAUDE_CODE_USE_BEDROCK=1
+<span class="tok-fn">export</span> AWS_REGION=us-east-1
+<span class="tok-fn">export</span> AWS_ACCESS_KEY_ID=your-key
+<span class="tok-fn">export</span> AWS_SECRET_ACCESS_KEY=your-secret</code></pre>
+<h3 id="google-vertex-ai">Google Vertex AI <a class="anchor" href="#google-vertex-ai">#</a></h3>
+<pre><div class="code-header">bash<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-fn">export</span> CLAUDE_CODE_USE_VERTEX=1
+<span class="tok-fn">export</span> GOOGLE_CLOUD_PROJECT=your-project
+<span class="tok-fn">export</span> GOOGLE_CLOUD_REGION=us-central1</code></pre>
+<h3 id="microsoft-azure-ai-foundry">Microsoft Azure AI Foundry <a class="anchor" href="#microsoft-azure-ai-foundry">#</a></h3>
+<pre><div class="code-header">bash<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-fn">export</span> CLAUDE_CODE_USE_FOUNDRY=1
+<span class="tok-cm"># Configure Azure credentials</span></code></pre>
+<p>This means you can use the Agent SDK in environments where direct Anthropic API access is not available, routing through your existing cloud provider instead.</p>
+<h2 id="related-anthropic-tools">Related Anthropic Tools <a class="anchor" href="#related-anthropic-tools">#</a></h2>
+<table>
+<tr><th>Tool</th><th>Relationship to Agent SDK</th></tr>
+<tr><td><strong>Claude Code CLI</strong></td><td>Same capabilities, interactive terminal interface. The SDK is the programmatic version of the CLI.</td></tr>
+<tr><td><strong>Anthropic SDK</strong> (<code>@anthropic-ai/sdk</code>)</td><td>Lower-level API client. Agent SDK builds on top of this.</td></tr>
+<tr><td><strong>Claude.ai</strong></td><td>Web interface for Claude. Different product, same underlying model.</td></tr>
+</table>
+</div>
+<div class="level-section" data-level="intermediate">
+<span class="level-badge intermediate">Intermediate</span>
+<h2 id="integration-patterns">Integration Patterns <a class="anchor" href="#integration-patterns">#</a></h2>
+<h3 id="github-integration">GitHub Integration <a class="anchor" href="#github-integration">#</a></h3>
+<p>The GitHub MCP server is one of the most commonly used integrations:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-cm">// Full GitHub integration with issue creation</span>
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">`Review the codebase for security issues.
+For each issue found:
+1. Create a GitHub issue with the label  T2 
+2. Include the file path, line numbers, and suggested fix
+3. Assign severity: critical, high, medium, or low`</span>,
+  options: {
+    mcpServers: {
+      github: {
+        command: <span class="tok-str">"npx"</span>,
+        args: [<span class="tok-str">"-y"</span>, <span class="tok-str">"@modelcontextprotocol/server-github"</span>],
+        env: { GITHUB_TOKEN: process.env.GITHUB_TOKEN }
+      }
+    },
+    allowedTools: [
+      <span class="tok-str">"Read"</span>, <span class="tok-str">"Grep"</span>, <span class="tok-str">"Glob"</span>,
+      <span class="tok-str">"mcp__github__list_issues"</span>,
+      <span class="tok-str">"mcp__github__create_issue"</span>,
+      <span class="tok-str">"mcp__github__search_code"</span>
+    ]
+  }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) console.<span class="tok-fn">log</span>(message.result);
+}</code></pre>
+<h3 id="database-integration">Database Integration <a class="anchor" href="#database-integration">#</a></h3>
+<p>Connect to databases for natural language querying:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"How many users signed up last week? Break down by day and source."</span>,
+  options: {
+    mcpServers: {
+      postgres: {
+        command: <span class="tok-str">"npx"</span>,
+        args: [
+          <span class="tok-str">"-y"</span>,
+          <span class="tok-str">"@modelcontextprotocol/server-postgres"</span>,
+          process.env.DATABASE_URL!
+        ]
+      }
+    },
+    allowedTools: [<span class="tok-str">"mcp__postgres__query"</span>]  <span class="tok-cm">// Read-only -- no write access</span>
+  }
+})) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span> &amp;&amp; message.subtype === <span class="tok-str">"success"</span>) {
+    console.<span class="tok-fn">log</span>(message.result);
+  }
+}</code></pre>
+<h3 id="slack-notifications-via-hooks">Slack Notifications via Hooks <a class="anchor" href="#slack-notifications-via-hooks">#</a></h3>
+<p>Integrate Slack notifications without a full MCP server:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query, HookCallback, NotificationHookInput } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">const</span> slackNotifier: HookCallback = <span class="tok-kw">async</span> (input, toolUseID, { signal }) =&gt; {
+  <span class="tok-kw">const</span> notification = input <span class="tok-kw">as</span> NotificationHookInput;
+
+  <span class="tok-kw">try</span> {
+    <span class="tok-kw">await</span> <span class="tok-fn">fetch</span>(process.env.SLACK_WEBHOOK_URL!, {
+      method: <span class="tok-str">"POST"</span>,
+      headers: { <span class="tok-str">"Content-Type"</span>: <span class="tok-str">"application/json"</span> },
+      body: JSON.<span class="tok-fn">stringify</span>({
+        text: <span class="tok-str">`Agent update: ${notification.message}`</span>
+      }),
+      signal
+    });
+  } <span class="tok-kw">catch</span> (error) {
+    <span class="tok-cm">// Don't block the agent if Slack is down</span>
+  }
+
+  <span class="tok-kw">return</span> {};
+};
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Run the deployment pipeline"</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Bash"</span>, <span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>],
+    hooks: {
+      Notification: [{ hooks: [slackNotifier] }]
+    }
+  }
+})) {
+  <span class="tok-cm">// ...</span>
+}</code></pre>
+<h3 id="plugin-system">Plugin System <a class="anchor" href="#plugin-system">#</a></h3>
+<p>The SDK supports plugins for extending functionality:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Use the custom linter to check code quality"</span>,
+  options: {
+    plugins: [
+      { <span class="tok-kw">type</span>: <span class="tok-str">"local"</span>, path: <span class="tok-str">"./plugins/custom-linter"</span> },
+      { <span class="tok-kw">type</span>: <span class="tok-str">"local"</span>, path: <span class="tok-str">"/shared/plugins/team-tools"</span> }
+    ]
+  }
+})) {
+  <span class="tok-cm">// Plugins add custom commands, agents, and MCP servers</span>
+}</code></pre>
+<h3 id="mcpjson-configuration-file">.mcp.json Configuration File <a class="anchor" href="#mcpjson-configuration-file">#</a></h3>
+<p>For project-wide MCP server configuration that is version-controlled:</p>
+<pre><div class="code-header">json<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>{
+  <span class="tok-prop">"mcpServers"</span>: {
+    <span class="tok-prop">"github"</span>: {
+      <span class="tok-prop">"command"</span>: <span class="tok-str">"npx"</span>,
+      <span class="tok-prop">"args"</span>: [<span class="tok-str">"-y"</span>, <span class="tok-str">"@modelcontextprotocol/server-github"</span>],
+      <span class="tok-prop">"env"</span>: {
+        <span class="tok-prop">"GITHUB_TOKEN"</span>: <span class="tok-str">"${GITHUB_TOKEN}"</span>
+      }
+    },
+    <span class="tok-prop">"postgres"</span>: {
+      <span class="tok-prop">"command"</span>: <span class="tok-str">"npx"</span>,
+      <span class="tok-prop">"args"</span>: [<span class="tok-str">"-y"</span>, <span class="tok-str">"@modelcontextprotocol/server-postgres"</span>, <span class="tok-str">"${DATABASE_URL}"</span>]
+    },
+    <span class="tok-prop">"docs"</span>: {
+      <span class="tok-prop">"type"</span>: <span class="tok-str">"http"</span>,
+      <span class="tok-prop">"url"</span>: <span class="tok-str">"https://docs.mycompany.com/mcp"</span>
+    }
+  }
+}</code></pre>
+<p>Place this in your project root and the SDK loads it automatically.</p>
+<h3 id="claudemd-for-project-context">CLAUDE.md for Project Context <a class="anchor" href="#claudemd-for-project-context">#</a></h3>
+<p>Create a <code>CLAUDE.md</code> or <code>.claude/CLAUDE.md</code> file to give agents project-specific knowledge:</p>
+<pre><div class="code-header">markdown<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code># Project: MyApp
+
+## Architecture
+- Express.js backend in src/server/
+- React frontend in src/client/
+- PostgreSQL database, migrations in db/migrations/
+
+## Coding Standards
+- Use TypeScript strict mode
+- All functions must have JSDoc comments
+- Error handling: use Result&lt;T, E&gt; pattern
+- Tests: co-locate with source files as *.test.ts
+
+## Common Commands
+- `npm test` -- run all tests
+- `npm run lint` -- lint with ESLint
+- `npm run build` -- production build</code></pre>
+<p>To load this, use the <code>claude_code</code> preset and project settings:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  systemPrompt: { <span class="tok-kw">type</span>: <span class="tok-str">"preset"</span>, preset: <span class="tok-str">"claude_code"</span> },
+  settingSources: [<span class="tok-str">"project"</span>]
+}</code></pre>
+</div>
+<div class="level-section" data-level="advanced">
+<span class="level-badge advanced">Advanced</span>
+<h2 id="building-custom-mcp-servers">Building Custom MCP Servers <a class="anchor" href="#building-custom-mcp-servers">#</a></h2>
+<h3 id="in-process-server-with-multiple-tools">In-Process Server with Multiple Tools <a class="anchor" href="#in-process-server-with-multiple-tools">#</a></h3>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { tool, createSdkMcpServer, query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+<span class="tok-kw">import</span> { z } <span class="tok-kw">from</span> <span class="tok-str">"zod"</span>;
+
+<span class="tok-cm">// Tool 1: Customer lookup</span>
+<span class="tok-kw">const</span> lookupCustomer = <span class="tok-fn">tool</span>(
+  <span class="tok-str">"lookup_customer"</span>,
+  <span class="tok-str">"Look up a customer by email or ID"</span>,
+  {
+    query: z.<span class="tok-fn">string</span>().<span class="tok-fn">describe</span>(<span class="tok-str">"Email address or customer ID"</span>),
+    <span class="tok-kw">type</span>: z.<span class="tok-kw">enum</span>([<span class="tok-str">"email"</span>, <span class="tok-str">"id"</span>]).<span class="tok-kw">default</span>(<span class="tok-str">"email"</span>)
+  },
+  <span class="tok-kw">async</span> (args) =&gt; {
+    <span class="tok-kw">const</span> customer = args.<span class="tok-kw">type</span> === <span class="tok-str">"email"</span>
+      ? <span class="tok-kw">await</span> db.customers.<span class="tok-fn">findByEmail</span>(args.query)
+      : <span class="tok-kw">await</span> db.customers.<span class="tok-fn">findById</span>(args.query);
+
+    <span class="tok-kw">if</span> (!customer) {
+      <span class="tok-kw">return</span> { content: [{ <span class="tok-kw">type</span>: <span class="tok-str">"text"</span>, text: <span class="tok-str">"Customer not found"</span> }], isError: <span class="tok-kw">true</span> };
+    }
+    <span class="tok-kw">return</span> { content: [{ <span class="tok-kw">type</span>: <span class="tok-str">"text"</span>, text: JSON.<span class="tok-fn">stringify</span>(customer, <span class="tok-kw">null</span>, <span class="tok-num">2</span>) }] };
+  },
+  { annotations: { readOnlyHint: <span class="tok-kw">true</span> } }
+);
+
+<span class="tok-cm">// Tool 2: Create support ticket</span>
+<span class="tok-kw">const</span> createTicket = <span class="tok-fn">tool</span>(
+  <span class="tok-str">"create_ticket"</span>,
+  <span class="tok-str">"Create a support ticket in the ticketing system"</span>,
+  {
+    customerId: z.<span class="tok-fn">string</span>(),
+    title: z.<span class="tok-fn">string</span>().<span class="tok-fn">max</span>(<span class="tok-num">200</span>),
+    description: z.<span class="tok-fn">string</span>(),
+    priority: z.<span class="tok-kw">enum</span>([<span class="tok-str">"low"</span>, <span class="tok-str">"medium"</span>, <span class="tok-str">"high"</span>, <span class="tok-str">"urgent"</span>]),
+    category: z.<span class="tok-kw">enum</span>([<span class="tok-str">"billing"</span>, <span class="tok-str">"technical"</span>, <span class="tok-str">"account"</span>, <span class="tok-str">"other"</span>])
+  },
+  <span class="tok-kw">async</span> (args) =&gt; {
+    <span class="tok-kw">const</span> ticket = <span class="tok-kw">await</span> ticketingSystem.<span class="tok-fn">create</span>({
+      customer_id: args.customerId,
+      title: args.title,
+      description: args.description,
+      priority: args.priority,
+      category: args.category
+    });
+    <span class="tok-kw">return</span> {
+      content: [{
+        <span class="tok-kw">type</span>: <span class="tok-str">"text"</span>,
+        text: <span class="tok-str">`Ticket created: ${ticket.id} (${ticket.url})`</span>
+      }]
+    };
+  }
+);
+
+<span class="tok-cm">// Tool 3: Image analysis (returning non-text content)</span>
+<span class="tok-kw">const</span> fetchScreenshot = <span class="tok-fn">tool</span>(
+  <span class="tok-str">"fetch_screenshot"</span>,
+  <span class="tok-str">"Capture a screenshot of a URL for visual analysis"</span>,
+  { url: z.<span class="tok-fn">string</span>().<span class="tok-fn">url</span>() },
+  <span class="tok-kw">async</span> (args) =&gt; {
+    <span class="tok-kw">const</span> buffer = <span class="tok-kw">await</span> screenshotService.<span class="tok-fn">capture</span>(args.url);
+    <span class="tok-kw">return</span> {
+      content: [{
+        <span class="tok-kw">type</span>: <span class="tok-str">"image"</span>,
+        data: buffer.<span class="tok-fn">toString</span>(<span class="tok-str">"base64"</span>),
+        mimeType: <span class="tok-str">"image/png"</span>
+      }]
+    };
+  },
+  { annotations: { readOnlyHint: <span class="tok-kw">true</span>, openWorldHint: <span class="tok-kw">true</span> } }
+);
+
+<span class="tok-cm">// Bundle into a server</span>
+<span class="tok-kw">const</span> supportServer = <span class="tok-fn">createSdkMcpServer</span>({
+  name: <span class="tok-str">"support"</span>,
+  version: <span class="tok-str">"2.0.0"</span>,
+  tools: [lookupCustomer, createTicket, fetchScreenshot]
+});</code></pre>
+<h3 id="connecting-to-external-mcp-servers-with-authentication">Connecting to External MCP Servers with Authentication <a class="anchor" href="#connecting-to-external-mcp-servers-with-authentication">#</a></h3>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-cm">// OAuth2 flow completed externally</span>
+<span class="tok-kw">const</span> accessToken = <span class="tok-kw">await</span> oauthClient.<span class="tok-fn">getAccessToken</span>();
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"List my recent Jira tickets and summarize their status"</span>,
+  options: {
+    mcpServers: {
+      <span class="tok-cm">// HTTP transport with OAuth bearer token</span>
+      jira: {
+        <span class="tok-kw">type</span>: <span class="tok-str">"http"</span>,
+        url: <span class="tok-str">"https: T2 
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      },
+       T3 
+      monitoring: {
+        type: "</span>sse<span class="tok-str">",
+        url: "</span>https:<span class="tok-cm">//monitoring.internal/mcp/sse",</span>
+        headers: {
+          <span class="tok-str">"X-API-Key"</span>: process.env.MONITORING_API_KEY!
+        }
+      }
+    },
+    allowedTools: [<span class="tok-str">"mcp__jira__*"</span>, <span class="tok-str">"mcp__monitoring__*"</span>]
+  }
+})) {
+  <span class="tok-cm">// ...</span>
+}</code></pre>
+<h3 id="dynamic-mcp-server-management">Dynamic MCP Server Management <a class="anchor" href="#dynamic-mcp-server-management">#</a></h3>
+<p>Add and remove MCP servers at runtime:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">async</span> <span class="tok-kw">function</span>* <span class="tok-fn">inputStream</span>() {
+  <span class="tok-kw">yield</span> { <span class="tok-kw">type</span>: <span class="tok-str">"user"</span> <span class="tok-kw">as</span> <span class="tok-kw">const</span>, session_id: <span class="tok-str">""</span>, message: {
+    role: <span class="tok-str">"user"</span> <span class="tok-kw">as</span> <span class="tok-kw">const</span>,
+    content: [{ <span class="tok-kw">type</span>: <span class="tok-str">"text"</span> <span class="tok-kw">as</span> <span class="tok-kw">const</span>, text: <span class="tok-str">"Start analyzing"</span> }]
+  }, parent_tool_use_id: <span class="tok-kw">null</span> };
+}
+
+<span class="tok-kw">const</span> q = <span class="tok-fn">query</span>({
+  prompt: <span class="tok-fn">inputStream</span>(),
+  options: { allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>] }
+});
+
+<span class="tok-cm">// Start consuming messages</span>
+<span class="tok-kw">const</span> iterator = q[<span class="tok-type">Symbol</span>.asyncIterator]();
+
+<span class="tok-cm">// After initialization, dynamically add an MCP server</span>
+<span class="tok-kw">const</span> result = <span class="tok-kw">await</span> q.<span class="tok-fn">setMcpServers</span>({
+  github: {
+    command: <span class="tok-str">"npx"</span>,
+    args: [<span class="tok-str">"-y"</span>, <span class="tok-str">"@modelcontextprotocol/server-github"</span>],
+    env: { GITHUB_TOKEN: process.env.GITHUB_TOKEN! }
+  }
+});
+console.<span class="tok-fn">log</span>(<span class="tok-str">"Added servers:"</span>, result);
+
+<span class="tok-cm">// Check MCP server status</span>
+<span class="tok-kw">const</span> status = <span class="tok-kw">await</span> q.<span class="tok-fn">mcpServerStatus</span>();
+<span class="tok-kw">for</span> (<span class="tok-kw">const</span> server <span class="tok-kw">of</span> status) {
+  console.<span class="tok-fn">log</span>(<span class="tok-str">`${server.name}: ${server.status}`</span>);
+}
+
+<span class="tok-cm">// Reconnect a failing server</span>
+<span class="tok-kw">await</span> q.<span class="tok-fn">reconnectMcpServer</span>(<span class="tok-str">"github"</span>);
+
+<span class="tok-cm">// Toggle a server on/off</span>
+<span class="tok-kw">await</span> q.<span class="tok-fn">toggleMcpServer</span>(<span class="tok-str">"github"</span>, <span class="tok-kw">false</span>);  <span class="tok-cm">// Disable</span>
+<span class="tok-kw">await</span> q.<span class="tok-fn">toggleMcpServer</span>(<span class="tok-str">"github"</span>, <span class="tok-kw">true</span>);   <span class="tok-cm">// Re-enable</span></code></pre>
+<h3 id="settings-sources-and-configuration-hierarchy">Settings Sources and Configuration Hierarchy <a class="anchor" href="#settings-sources-and-configuration-hierarchy">#</a></h3>
+<p>The SDK can load filesystem-based settings at multiple levels:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  settingSources: [<span class="tok-str">"user"</span>, <span class="tok-str">"project"</span>, <span class="tok-str">"local"</span>]
+  <span class="tok-cm">//               ^        ^          ^</span>
+  <span class="tok-cm">//               |        |          +-- .claude/settings.local.json (gitignored)</span>
+  <span class="tok-cm">//               |        +-- .claude/settings.json (version controlled)</span>
+  <span class="tok-cm">//               +-- ~/.claude/settings.json (global user prefs)</span>
+}</code></pre>
+<p>Precedence (highest to lowest):</p>
+<ol>
+<li>Programmatic options (always win)</li>
+<li>Local settings</li>
+<li>Project settings</li>
+<li>User settings</li>
+</ol>
+<p>For CI/CD, use only project settings for consistency:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  settingSources: [<span class="tok-str">"project"</span>]  <span class="tok-cm">// Only team-shared config</span>
+}</code></pre>
+<p>For SDK-only applications, skip all filesystem settings:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>options: {
+  <span class="tok-cm">// settingSources defaults to [] -- no filesystem dependency</span>
+  <span class="tok-cm">// Define everything programmatically</span>
+}</code></pre>
+</div>
+
+
+    <div class="quiz-box">
+      <div class="quiz-title">Quick Check</div>
+      <div class="quiz-question">What does MCP stand for?</div>
+      <div class="quiz-options">
+      <button class="quiz-opt" data-idx="0" onclick="checkQuiz(this, 1)">Model Compute Protocol</button>
+      <button class="quiz-opt" data-idx="1" onclick="checkQuiz(this, 1)">Model Context Protocol</button>
+      <button class="quiz-opt" data-idx="2" onclick="checkQuiz(this, 1)">Multi-Channel Protocol</button>
+      <button class="quiz-opt" data-idx="3" onclick="checkQuiz(this, 1)">Message Control Protocol</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+<nav class="page-nav">
+  <a class="prev" href="use-cases.html"><span class="nav-dir">&larr; Previous</span><span class="nav-title">Use Cases & Adoption</span></a>
+  <a class="next" href="performance.html"><span class="nav-dir">Next</span><span class="nav-title">Performance & Optimization &rarr;</span></a>
+</nav>
+  </div>
+</main>
+
+<script>
+function getVisited() { try { return JSON.parse(localStorage.getItem('agentsdk-visited') || '[]'); } catch { return []; } }
+function markVisited(page) { var v = getVisited(); if (!v.includes(page)) { v.push(page); localStorage.setItem('agentsdk-visited', JSON.stringify(v)); } updateProgress(); }
+function updateProgress() {
+  var pages = ['index.html','concepts.html','architecture.html','getting-started.html','implementation.html','use-cases.html','ecosystem.html','performance.html','advanced.html','tradeoffs.html'];
+  var visited = getVisited();
+  var count = pages.filter(function(p) { return visited.includes(p); }).length;
+  var pct = Math.round((count / pages.length) * 100);
+  var pt = document.getElementById('progressText');
+  var pf = document.getElementById('progressFill');
+  if (pt) pt.textContent = count + '/' + pages.length;
+  if (pf) pf.style.width = pct + '%';
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    var href = item.getAttribute('href');
+    if (visited.includes(href) && !item.classList.contains('active')) item.classList.add('visited');
+  });
+}
+markVisited('ecosystem.html');
+function setLevel(level) {
+  localStorage.setItem('agentsdk-level', level);
+  document.querySelectorAll('.level-btn').forEach(function(btn) { btn.classList.toggle('active', btn.dataset.level === level); });
+  document.querySelectorAll('.level-section').forEach(function(sec) {
+    if (level === 'all') sec.classList.remove('hidden');
+    else sec.classList.toggle('hidden', sec.dataset.level !== level);
+  });
+}
+(function() { var saved = localStorage.getItem('agentsdk-level') || 'all'; setLevel(saved); })();
+function toggleNav() { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.nav-overlay').classList.toggle('active'); }
+function copyCode(btn) {
+  var code = btn.closest('pre').querySelector('code');
+  var text = code.textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+function checkQuiz(btn, correctIdx) {
+  var opts = btn.parentElement.querySelectorAll('.quiz-opt');
+  var feedback = btn.closest('.quiz-box').querySelector('.quiz-feedback');
+  var idx = parseInt(btn.dataset.idx);
+  opts.forEach(function(o) { o.classList.add('disabled'); });
+  if (idx === correctIdx) {
+    btn.classList.add('correct');
+    feedback.textContent = 'Correct!';
+    feedback.className = 'quiz-feedback correct';
+  } else {
+    btn.classList.add('wrong');
+    opts[correctIdx].classList.add('correct');
+    feedback.textContent = 'Not quite. The correct answer is highlighted.';
+    feedback.className = 'quiz-feedback wrong';
+  }
+}
+document.addEventListener('click', function(e) {
+  var toggle = e.target.closest('.collapsible-toggle');
+  if (toggle) { toggle.classList.toggle('open'); var body = toggle.nextElementSibling; if (body) body.classList.toggle('open'); }
+});
+</script>
+</body>
+</html>

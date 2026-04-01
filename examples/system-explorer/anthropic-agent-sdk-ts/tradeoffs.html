@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tradeoffs & Alternatives - Anthropic Agent SDK Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-card: #1e2a4a;
+  --bg-card-hover: #243356;
+  --bg-code: #0d1425;
+  --text-primary: #e8e8f0;
+  --text-secondary: #a0a0c0;
+  --text-muted: #6a6a8a;
+  --accent: #e07850;
+  --accent-light: #f0956a;
+  --accent-glow: rgba(224, 120, 80, 0.15);
+  --accent-secondary: #5a8adb;
+  --accent-green: #5ac48a;
+  --accent-yellow: #e0c050;
+  --border: #2a2a4a;
+  --border-light: #3a3a5a;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --nav-width: 280px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; min-height: 100vh; }
+
+.nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+.nav-overlay.active { display: block; }
+.sidebar { position: fixed; top: 0; left: 0; width: var(--nav-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border); overflow-y: auto; z-index: 100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
+.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sidebar-logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+.sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; font-weight: 700; }
+.sidebar-version { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+.nav-sections { flex: 1; overflow-y: auto; padding: 12px 0; }
+.nav-item { display: flex; align-items: center; padding: 10px 20px; color: var(--text-secondary); text-decoration: none; font-size: 13.5px; font-weight: 450; transition: all 0.15s ease; border-left: 3px solid transparent; gap: 10px; }
+.nav-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: var(--accent); background: var(--accent-glow); border-left-color: var(--accent); font-weight: 600; }
+.nav-item .nav-num { font-size: 11px; font-weight: 600; color: var(--text-muted); min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 5px; }
+.nav-item.active .nav-num { color: var(--accent); background: rgba(224, 120, 80, 0.15); }
+.nav-item.visited .nav-num { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.nav-progress { padding: 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.progress-label { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.progress-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); border-radius: 2px; transition: width 0.5s ease; }
+.nav-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 110; width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); cursor: pointer; align-items: center; justify-content: center; font-size: 18px; }
+.main-content { margin-left: var(--nav-width); min-height: 100vh; }
+.level-bar { position: sticky; top: 0; z-index: 50; background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 10px 40px; display: flex; align-items: center; gap: 16px; backdrop-filter: blur(10px); }
+.level-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.level-buttons { display: flex; gap: 4px; background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px; }
+.level-btn { padding: 6px 14px; font-size: 12.5px; font-weight: 500; font-family: var(--font-sans); border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-secondary); }
+.level-btn:hover { color: var(--text-primary); }
+.level-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.level-btn[data-level="beginner"].active { background: var(--accent-green); box-shadow: 0 2px 8px rgba(90, 196, 138, 0.3); }
+.level-btn[data-level="intermediate"].active { background: var(--accent-secondary); box-shadow: 0 2px 8px rgba(90, 138, 219, 0.3); }
+.level-btn[data-level="advanced"].active { background: var(--accent); box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.page-content { max-width: 860px; margin: 0 auto; padding: 40px 40px 80px; }
+.page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+.page-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; font-weight: 400; }
+h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.3px; margin: 40px 0 16px; color: var(--text-primary); }
+h3 { font-size: 18px; font-weight: 600; margin: 28px 0 12px; color: var(--text-primary); }
+h4 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--text-primary); }
+h2 .anchor, h3 .anchor, h4 .anchor { color: var(--text-muted); text-decoration: none; margin-left: 8px; opacity: 0; transition: opacity 0.2s; font-weight: 400; }
+h2:hover .anchor, h3:hover .anchor, h4:hover .anchor { opacity: 1; }
+p { margin-bottom: 14px; color: var(--text-secondary); }
+strong { color: var(--text-primary); font-weight: 600; }
+em { color: var(--text-secondary); font-style: italic; }
+a { color: var(--accent-secondary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { margin: 0 0 16px 20px; color: var(--text-secondary); }
+li { margin-bottom: 6px; }
+.page-content > :not(pre) code, .page-content li code, .page-content p code, .page-content td code { background: rgba(224, 120, 80, 0.1); color: var(--accent-light); padding: 2px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; font-weight: 450; }
+pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 0; margin: 0 0 20px; overflow: hidden; position: relative; }
+pre .code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+pre .copy-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 3px 10px; border-radius: 4px; font-size: 11px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+pre .copy-btn:hover { color: var(--text-primary); border-color: var(--border-light); }
+pre .copy-btn.copied { color: var(--accent-green); border-color: var(--accent-green); }
+pre code { display: block; padding: 16px 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.65; color: var(--text-secondary); tab-size: 2; }
+.tok-kw { color: #c792ea; }
+.tok-str { color: #c3e88d; }
+.tok-num { color: #f78c6c; }
+.tok-cm { color: #546e7a; font-style: italic; }
+.tok-fn { color: #82aaff; }
+.tok-type { color: #ffcb6b; }
+.tok-op { color: #89ddff; }
+.tok-dec { color: #c792ea; }
+.tok-prop { color: #f07178; }
+table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 13.5px; }
+th { background: rgba(255,255,255,0.05); padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+blockquote { border-left: 3px solid var(--accent); padding: 12px 20px; margin: 0 0 16px; background: var(--accent-glow); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text-secondary); }
+.level-section { transition: all 0.3s ease; }
+.level-section.hidden { display: none; }
+.level-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.level-badge.beginner { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.level-badge.intermediate { background: rgba(90, 138, 219, 0.15); color: var(--accent-secondary); }
+.level-badge.advanced { background: rgba(224, 120, 80, 0.15); color: var(--accent); }
+.ascii-diagram { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin: 0 0 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; color: var(--accent-secondary); white-space: pre; }
+.page-nav { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); gap: 16px; }
+.page-nav a { display: flex; flex-direction: column; padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); text-decoration: none; transition: all 0.2s; flex: 1; max-width: 48%; }
+.page-nav a:hover { background: var(--bg-card-hover); border-color: var(--border-light); transform: translateY(-1px); }
+.page-nav a .nav-dir { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.page-nav a .nav-title { font-size: 14px; font-weight: 600; color: var(--accent-light); }
+.page-nav a.next { text-align: right; margin-left: auto; }
+.quiz-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 32px 0; }
+.quiz-title { font-size: 13px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.quiz-question { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt { display: block; width: 100%; text-align: left; padding: 10px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 13.5px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+.quiz-opt:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+.quiz-opt.correct { background: rgba(90, 196, 138, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
+.quiz-opt.wrong { background: rgba(224, 80, 80, 0.15); border-color: #e05050; color: #e05050; }
+.quiz-opt.disabled { pointer-events: none; opacity: 0.6; }
+.quiz-feedback { margin-top: 12px; font-size: 13px; font-weight: 500; }
+.quiz-feedback.correct { color: var(--accent-green); }
+.quiz-feedback.wrong { color: #e05050; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .nav-toggle { display: flex; }
+  .main-content { margin-left: 0; }
+  .level-bar { padding: 10px 16px 10px 60px; }
+  .page-content { padding: 32px 20px 60px; }
+  .page-nav { flex-direction: column; }
+  .page-nav a { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+<div class="nav-overlay" onclick="toggleNav()"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="logo-icon">A</div> Agent SDK Course</div>
+    <div class="sidebar-version">TypeScript v0.2.87</div>
+  </div>
+  <div class="nav-sections">
+    <a class="nav-item" href="index.html"><span class="nav-num">~</span> Overview</a>
+    <a class="nav-item" href="concepts.html"><span class="nav-num">01</span> Core Concepts</a>
+    <a class="nav-item" href="architecture.html"><span class="nav-num">02</span> Architecture</a>
+    <a class="nav-item" href="getting-started.html"><span class="nav-num">03</span> Getting Started</a>
+    <a class="nav-item" href="implementation.html"><span class="nav-num">04</span> Implementation</a>
+    <a class="nav-item" href="use-cases.html"><span class="nav-num">05</span> Use Cases</a>
+    <a class="nav-item" href="ecosystem.html"><span class="nav-num">06</span> Ecosystem</a>
+    <a class="nav-item" href="performance.html"><span class="nav-num">07</span> Performance</a>
+    <a class="nav-item" href="advanced.html"><span class="nav-num">08</span> Advanced Topics</a>
+    <a class="nav-item active" href="tradeoffs.html"><span class="nav-num">09</span> Tradeoffs</a>
+  </div>
+  <div class="nav-progress">
+    <div class="progress-label">Progress: <span id="progressText">0/10</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<main class="main-content">
+  <div class="level-bar">
+    <span class="level-label">Level</span>
+    <div class="level-buttons">
+      <button class="level-btn active" data-level="all" onclick="setLevel('all')">All</button>
+      <button class="level-btn" data-level="beginner" onclick="setLevel('beginner')">Beginner</button>
+      <button class="level-btn" data-level="intermediate" onclick="setLevel('intermediate')">Intermediate</button>
+      <button class="level-btn" data-level="advanced" onclick="setLevel('advanced')">Advanced</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="page-title">Tradeoffs & Alternatives</div>
+    <div class="page-subtitle">Section 09 of 9</div>
+
+<div class="level-section" data-level="beginner">
+<span class="level-badge beginner">Beginner</span>
+<h2 id="when-should-you-use-the-agent-sdk">When Should You Use the Agent SDK? <a class="anchor" href="#when-should-you-use-the-agent-sdk">#</a></h2>
+<h3 id="use-the-agent-sdk-when">Use the Agent SDK When: <a class="anchor" href="#use-the-agent-sdk-when">#</a></h3>
+<ul>
+<li>You want <strong>built-in tool execution</strong> (files, shell, web) without implementing it yourself</li>
+<li>You are building <strong>Claude-powered automation</strong> (CI/CD, code review, deployment)</li>
+<li>You need the <strong>same capabilities as Claude Code</strong> but in a programmatic form</li>
+<li>You want <strong>session persistence</strong> with resume and fork capabilities</li>
+<li>Your use case involves <strong>code understanding and modification</strong></li>
+<li>You need <strong>MCP integration</strong> for connecting to external services</li>
+</ul>
+<h3 id="consider-alternatives-when">Consider Alternatives When: <a class="anchor" href="#consider-alternatives-when">#</a></h3>
+<ul>
+<li>You need to use <strong>multiple AI providers</strong> (OpenAI, Google, etc.) interchangeably</li>
+<li>You need a <strong>framework-level abstraction</strong> with built-in RAG, memory, and routing</li>
+<li>You want a <strong>model-agnostic</strong> agent framework</li>
+<li>You need <strong>visual workflow builders</strong> or low-code solutions</li>
+<li>Your agents do not need file/shell/web tools -- just conversation</li>
+</ul>
+<h3 id="the-agent-sdk-vs-the-anthropic-client-sdk">The Agent SDK vs. the Anthropic Client SDK <a class="anchor" href="#the-agent-sdk-vs-the-anthropic-client-sdk">#</a></h3>
+<table>
+<tr><th>Feature</th><th>Client SDK (<code>@anthropic-ai/sdk</code>)</th><th>Agent SDK (<code>@anthropic-ai/claude-agent-sdk</code>)</th></tr>
+<tr><td>Tool execution</td><td>You implement it</td><td>Built-in</td></tr>
+<tr><td>Agent loop</td><td>You build it</td><td>Built-in</td></tr>
+<tr><td>File operations</td><td>Not included</td><td>Read, Write, Edit, Glob, Grep</td></tr>
+<tr><td>Shell commands</td><td>Not included</td><td>Bash tool</td></tr>
+<tr><td>Web access</td><td>Not included</td><td>WebSearch, WebFetch</td></tr>
+<tr><td>Session management</td><td>Not included</td><td>Built-in persistence/resume</td></tr>
+<tr><td>MCP support</td><td>Not included</td><td>Built-in</td></tr>
+<tr><td>Subagents</td><td>Not included</td><td>Built-in</td></tr>
+<tr><td>Hooks/guardrails</td><td>Not included</td><td>Built-in</td></tr>
+<tr><td>Control level</td><td>Maximum</td><td>Abstracted</td></tr>
+<tr><td>Overhead</td><td>Minimal</td><td>Spawns child process</td></tr>
+<tr><td>Cost</td><td>Pay per API call</td><td>Pay per API call + tool overhead</td></tr>
+</table>
+<p><strong>Rule of thumb:</strong> If you need Claude to <strong>do things</strong> (read files, run commands, edit code), use the Agent SDK. If you need Claude to <strong>answer questions</strong> or you want full control over every API call, use the Client SDK.</p>
+<h2 id="comparison-with-major-alternatives">Comparison with Major Alternatives <a class="anchor" href="#comparison-with-major-alternatives">#</a></h2>
+<h3 id="vs-langchain-langgraph">vs. LangChain / LangGraph <a class="anchor" href="#vs-langchain-langgraph">#</a></h3>
+<table>
+<tr><th>Aspect</th><th>Agent SDK</th><th>LangChain / LangGraph</th></tr>
+<tr><td><strong>Model support</strong></td><td>Claude only</td><td>Multi-model (OpenAI, Claude, Llama, etc.)</td></tr>
+<tr><td><strong>Language</strong></td><td>TypeScript + Python</td><td>Python + JavaScript/TypeScript</td></tr>
+<tr><td><strong>Philosophy</strong></td><td>Opinionated, batteries-included</td><td>Flexible, composable</td></tr>
+<tr><td><strong>Built-in tools</strong></td><td>Yes (file, shell, web, MCP)</td><td>Minimal -- you add your own</td></tr>
+<tr><td><strong>Agent loop</strong></td><td>Managed automatically</td><td>You compose with LangGraph</td></tr>
+<tr><td><strong>Complexity</strong></td><td>Lower</td><td>Higher (more concepts to learn)</td></tr>
+<tr><td><strong>RAG support</strong></td><td>Via MCP servers</td><td>Built-in with vector stores</td></tr>
+<tr><td><strong>Community</strong></td><td>Growing (1.1K+ users)</td><td>Large (70K+ GitHub stars)</td></tr>
+<tr><td><strong>Maturity</strong></td><td>Newer (2025)</td><td>Established (2023+)</td></tr>
+</table>
+<p><strong>Choose LangChain/LangGraph when:</strong> You need multi-model support, complex graph-based workflows, built-in RAG, or you are already invested in the LangChain ecosystem.</p>
+<p><strong>Choose Agent SDK when:</strong> You are committed to Claude, want built-in tool execution, need Claude Code parity, or want simpler setup for file/code/shell tasks.</p>
+<h3 id="vs-crewai">vs. CrewAI <a class="anchor" href="#vs-crewai">#</a></h3>
+<table>
+<tr><th>Aspect</th><th>Agent SDK</th><th>CrewAI</th></tr>
+<tr><td><strong>Multi-agent pattern</strong></td><td>Subagents (parent delegates)</td><td>Crews (role-based teams)</td></tr>
+<tr><td><strong>Agent definition</strong></td><td>Programmatic (<code>AgentDefinition</code>)</td><td>Role, goal, backstory</td></tr>
+<tr><td><strong>Task routing</strong></td><td>Claude decides via description</td><td>Explicit task assignment</td></tr>
+<tr><td><strong>Model support</strong></td><td>Claude only</td><td>Multi-model</td></tr>
+<tr><td><strong>Built-in tools</strong></td><td>Yes (comprehensive)</td><td>Minimal</td></tr>
+<tr><td><strong>Complexity</strong></td><td>Lower</td><td>Medium</td></tr>
+<tr><td><strong>Best for</strong></td><td>Code/automation tasks</td><td>Business process automation</td></tr>
+</table>
+<p><strong>Choose CrewAI when:</strong> You want role-based multi-agent teams, multi-model support, or business-process-style orchestration.</p>
+<p><strong>Choose Agent SDK when:</strong> You want tight Claude integration, built-in code tools, or simpler subagent delegation.</p>
+<h3 id="vs-microsoft-autogen">vs. Microsoft AutoGen <a class="anchor" href="#vs-microsoft-autogen">#</a></h3>
+<table>
+<tr><th>Aspect</th><th>Agent SDK</th><th>AutoGen</th></tr>
+<tr><td><strong>Architecture</strong></td><td>Parent-subagent tree</td><td>Conversable agent network</td></tr>
+<tr><td><strong>Communication</strong></td><td>Tool calls (parent -> child)</td><td>Multi-agent chat</td></tr>
+<tr><td><strong>Human-in-loop</strong></td><td>Hooks, canUseTool, AskUserQuestion</td><td>Built-in human proxy</td></tr>
+<tr><td><strong>Model support</strong></td><td>Claude only</td><td>Multi-model</td></tr>
+<tr><td><strong>Concurrency</strong></td><td>Event-driven, async</td><td>Async, multi-agent</td></tr>
+<tr><td><strong>Code execution</strong></td><td>Built-in (sandboxed)</td><td>Docker-based sandbox</td></tr>
+<tr><td><strong>Best for</strong></td><td>Autonomous coding/ops</td><td>Research, complex multi-agent</td></tr>
+</table>
+<p><strong>Choose AutoGen when:</strong> You need complex multi-agent conversation patterns, research-grade flexibility, or multi-model agent networks.</p>
+<p><strong>Choose Agent SDK when:</strong> You want production-ready tool execution, session management, and a simpler mental model.</p>
+</div>
+<div class="level-section" data-level="intermediate">
+<span class="level-badge intermediate">Intermediate</span>
+<h2 id="detailed-tradeoff-analysis">Detailed Tradeoff Analysis <a class="anchor" href="#detailed-tradeoff-analysis">#</a></h2>
+<h3 id="tradeoff-claude-lock-in">Tradeoff: Claude Lock-In <a class="anchor" href="#tradeoff-claude-lock-in">#</a></h3>
+<p><strong>Pro:</strong> Deep integration means you get the best possible Claude experience. The SDK uses the same binary as Claude Code, so you get immediate access to every new Claude capability.</p>
+<p><strong>Con:</strong> You cannot switch to a different model provider without rewriting your agent logic. If Claude's API has downtime, your agents are down.</p>
+<p><strong>Mitigation:</strong></p>
+<ul>
+<li>Use the <code>fallbackModel</code> option for within-Claude resilience</li>
+<li>The Bedrock/Vertex/Azure providers give you alternative infrastructure</li>
+<li>Keep your business logic separate from agent invocations</li>
+</ul>
+<h3 id="tradeoff-child-process-architecture">Tradeoff: Child Process Architecture <a class="anchor" href="#tradeoff-child-process-architecture">#</a></h3>
+<p><strong>Pro:</strong> Isolation means tool crashes do not crash your app. The agent process can be containerized or run remotely.</p>
+<p><strong>Con:</strong> There is overhead in spawning a process, and communication adds latency. You cannot directly call into the agent process's runtime -- it is a separate binary.</p>
+<p><strong>Mitigation:</strong></p>
+<ul>
+<li>The process is reused within a session</li>
+<li>The V2 interface reduces per-turn overhead</li>
+<li>In-process MCP servers (<code>createSdkMcpServer</code>) avoid extra processes for custom tools</li>
+</ul>
+<h3 id="tradeoff-opinionated-tool-set">Tradeoff: Opinionated Tool Set <a class="anchor" href="#tradeoff-opinionated-tool-set">#</a></h3>
+<p><strong>Pro:</strong> Built-in tools (Read, Write, Edit, Bash, Glob, Grep) work immediately without configuration. They are battle-tested from Claude Code.</p>
+<p><strong>Con:</strong> You cannot customize the behavior of built-in tools (e.g., changing how <code>Read</code> works). You can only add new tools via MCP, not replace built-in ones.</p>
+<p><strong>Mitigation:</strong></p>
+<ul>
+<li>Use <code>disallowedTools</code> to block built-in tools you do not want</li>
+<li>Use <code>tools</code> to control which built-ins are in context</li>
+<li>PreToolUse hooks can modify tool inputs before execution</li>
+<li>Custom MCP tools can wrap built-in tools with different behavior</li>
+</ul>
+<h3 id="tradeoff-session-persistence">Tradeoff: Session Persistence <a class="anchor" href="#tradeoff-session-persistence">#</a></h3>
+<p><strong>Pro:</strong> Sessions persist to disk automatically, enabling resume, fork, and audit trails.</p>
+<p><strong>Con:</strong> Disk I/O for every message, JSONL files can grow large, and sessions accumulate over time.</p>
+<p><strong>Mitigation:</strong></p>
+<ul>
+<li>Set <code>persistSession: false</code> for one-off tasks</li>
+<li>Sessions auto-cleanup after <code>cleanupPeriodDays</code> (default 30 days)</li>
+<li>Use <code>listSessions()</code> to manage old sessions</li>
+</ul>
+<h3 id="tradeoff-permission-system-complexity">Tradeoff: Permission System Complexity <a class="anchor" href="#tradeoff-permission-system-complexity">#</a></h3>
+<p><strong>Pro:</strong> Layered permissions (disallowedTools -> allowedTools -> permissionMode -> canUseTool -> hooks) provide defense in depth.</p>
+<p><strong>Con:</strong> The evaluation order can be confusing. It is easy to misconfigure and either over-permit or over-deny.</p>
+<p><strong>Mitigation:</strong></p>
+<ul>
+<li>Start with <code>dontAsk</code> mode (deny by default) and add allowedTools explicitly</li>
+<li>Use the <code>permission_denials</code> field in result messages to debug</li>
+<li>Test permission configurations with non-destructive prompts first</li>
+</ul>
+<h3 id="tradeoff-rapid-release-cadence">Tradeoff: Rapid Release Cadence <a class="anchor" href="#tradeoff-rapid-release-cadence">#</a></h3>
+<p><strong>Pro:</strong> New features and bug fixes ship quickly (71+ releases). You get improvements fast.</p>
+<p><strong>Con:</strong> APIs may change between versions. The V2 interface is explicitly marked <code>unstable</code>. Migration effort can accumulate.</p>
+<p><strong>Mitigation:</strong></p>
+<ul>
+<li>Pin specific versions in package.json</li>
+<li>Read the CHANGELOG before upgrading</li>
+<li>The migration guide documents breaking changes</li>
+</ul>
+</div>
+<div class="level-section" data-level="advanced">
+<span class="level-badge advanced">Advanced</span>
+<h2 id="architectural-comparison">Architectural Comparison <a class="anchor" href="#architectural-comparison">#</a></h2>
+<h3 id="agent-loop-architectures">Agent Loop Architectures <a class="anchor" href="#agent-loop-architectures">#</a></h3>
+<div class="ascii-diagram">Agent SDK (Linear Agent Loop):
+  User Prompt -&gt; Think -&gt; Act -&gt; Observe -&gt; Think -&gt; Act -&gt; ... -&gt; Result
+
+LangGraph (Graph-Based):
+  Start -&gt; Node A -&gt; [Condition] -&gt; Node B -&gt; Node C -&gt; End
+                        |
+                        +-&gt; Node D -&gt; Node E -&gt; End
+
+CrewAI (Role-Based Crews):
+  Manager -&gt; Researcher -&gt; Writer -&gt; Editor -&gt; (sequential or parallel)
+
+AutoGen (Multi-Agent Chat):
+  Agent A &lt;-&gt; Agent B &lt;-&gt; Agent C &lt;-&gt; Human (conversational)</div>
+<h3 id="tool-execution-models">Tool Execution Models <a class="anchor" href="#tool-execution-models">#</a></h3>
+<pre><div class="code-header"><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>Agent SDK:
+  Claude -&gt; tool_use block -&gt; SDK executes tool -&gt; tool_result -&gt; Claude
+  (tools run in agent subprocess, managed by SDK)
+
+LangChain:
+  LLM -&gt; tool call -&gt; Your code executes tool -&gt; result -&gt; LLM
+  (you implement the tool executor)
+
+CrewAI:
+  Agent -&gt; tool call -&gt; CrewAI executes tool -&gt; result -&gt; Agent
+  (tools are Python functions or LangChain tools)
+
+AutoGen:
+  Agent -&gt; code block -&gt; Code executor runs in Docker -&gt; result -&gt; Agent
+  (code-centric execution model)</code></pre>
+<h3 id="when-framework-maturity-matters">When Framework Maturity Matters <a class="anchor" href="#when-framework-maturity-matters">#</a></h3>
+<table>
+<tr><th>Framework</th><th>First Release</th><th>GitHub Stars</th><th>NPM/PyPI Downloads</th><th>Production Users</th></tr>
+<tr><td>LangChain</td><td>Oct 2022</td><td>~100K</td><td>Very high</td><td>Widespread</td></tr>
+<tr><td>AutoGen</td><td>Sep 2023</td><td>~40K</td><td>High</td><td>Growing</td></tr>
+<tr><td>CrewAI</td><td>Dec 2023</td><td>~25K</td><td>Medium</td><td>Growing</td></tr>
+<tr><td>Agent SDK</td><td>Oct 2025</td><td>~1.2K</td><td>Growing</td><td>1.1K+ projects</td></tr>
+</table>
+<p>The Agent SDK is the newest entrant but benefits from being built by the same team that builds Claude. It is not a wrapper around an API -- it is an extension of the Claude Code product.</p>
+<h3 id="cost-comparison">Cost Comparison <a class="anchor" href="#cost-comparison">#</a></h3>
+<table>
+<tr><th>Framework</th><th>LLM Costs</th><th>Infrastructure</th><th>Additional Costs</th></tr>
+<tr><td>Agent SDK</td><td>Claude API tokens</td><td>Node.js process</td><td>None (no orchestration fees)</td></tr>
+<tr><td>LangChain</td><td>Varies by provider</td><td>Python/Node process</td><td>LangSmith (optional, paid)</td></tr>
+<tr><td>CrewAI</td><td>Varies by provider</td><td>Python process</td><td>CrewAI Enterprise (optional)</td></tr>
+<tr><td>AutoGen</td><td>Varies by provider</td><td>Python process + Docker</td><td>AutoGen Studio (free)</td></tr>
+</table>
+<p>All frameworks charge based on the underlying LLM's token pricing. The Agent SDK has no additional orchestration fees -- you pay only for Claude API usage.</p>
+<h3 id="decision-matrix">Decision Matrix <a class="anchor" href="#decision-matrix">#</a></h3>
+<table>
+<tr><th>Your Priority</th><th>Best Choice</th><th>Why</th></tr>
+<tr><td>Fastest time to working agent</td><td><strong>Agent SDK</strong></td><td>Built-in tools, no setup needed</td></tr>
+<tr><td>Multi-model flexibility</td><td><strong>LangChain/LangGraph</strong></td><td>Broad provider support</td></tr>
+<tr><td>Role-based team patterns</td><td><strong>CrewAI</strong></td><td>Natural crew metaphor</td></tr>
+<tr><td>Research/academic agents</td><td><strong>AutoGen</strong></td><td>Flexible conversation patterns</td></tr>
+<tr><td>Code-centric automation</td><td><strong>Agent SDK</strong></td><td>Claude Code parity</td></tr>
+<tr><td>Enterprise RAG pipeline</td><td><strong>LangChain</strong></td><td>Mature RAG ecosystem</td></tr>
+<tr><td>TypeScript-first</td><td><strong>Agent SDK</strong> or <strong>Mastra</strong></td><td>Native TS support</td></tr>
+<tr><td>Python-first complex graphs</td><td><strong>LangGraph</strong></td><td>Mature graph framework</td></tr>
+<tr><td>Minimal abstraction</td><td><strong>Anthropic Client SDK</strong></td><td>Direct API, full control</td></tr>
+</table>
+<h3 id="future-trajectory">Future Trajectory <a class="anchor" href="#future-trajectory">#</a></h3>
+<p>The Agent SDK is on a rapid development trajectory. Key signals:</p>
+<ol>
+<li><strong>V2 Interface</strong> -- Simpler session management is being developed</li>
+<li><strong>MCP Ecosystem Growth</strong> -- Hundreds of MCP servers available, with the ecosystem growing</li>
+<li><strong>Multi-Cloud Support</strong> -- Bedrock, Vertex, and Azure integration</li>
+<li><strong>Plugin System</strong> -- Extensibility beyond MCP</li>
+<li><strong>Background Tasks</strong> -- Concurrent subagent execution</li>
+<li><strong>Tool Search</strong> -- Scaling to hundreds of tools efficiently</li>
+</ol>
+<p>The main risk is vendor lock-in to Claude. The main advantage is that no other framework gives you this level of tool execution out of the box with this little configuration.</p>
+</div>
+
+
+    <div class="quiz-box">
+      <div class="quiz-title">Quick Check</div>
+      <div class="quiz-question">Which framework is the newest?</div>
+      <div class="quiz-options">
+      <button class="quiz-opt" data-idx="0" onclick="checkQuiz(this, 3)">LangChain</button>
+      <button class="quiz-opt" data-idx="1" onclick="checkQuiz(this, 3)">AutoGen</button>
+      <button class="quiz-opt" data-idx="2" onclick="checkQuiz(this, 3)">CrewAI</button>
+      <button class="quiz-opt" data-idx="3" onclick="checkQuiz(this, 3)">Agent SDK</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+<nav class="page-nav">
+  <a class="prev" href="advanced.html"><span class="nav-dir">&larr; Previous</span><span class="nav-title">Advanced Topics</span></a>
+  <span></span>
+</nav>
+  </div>
+</main>
+
+<script>
+function getVisited() { try { return JSON.parse(localStorage.getItem('agentsdk-visited') || '[]'); } catch { return []; } }
+function markVisited(page) { var v = getVisited(); if (!v.includes(page)) { v.push(page); localStorage.setItem('agentsdk-visited', JSON.stringify(v)); } updateProgress(); }
+function updateProgress() {
+  var pages = ['index.html','concepts.html','architecture.html','getting-started.html','implementation.html','use-cases.html','ecosystem.html','performance.html','advanced.html','tradeoffs.html'];
+  var visited = getVisited();
+  var count = pages.filter(function(p) { return visited.includes(p); }).length;
+  var pct = Math.round((count / pages.length) * 100);
+  var pt = document.getElementById('progressText');
+  var pf = document.getElementById('progressFill');
+  if (pt) pt.textContent = count + '/' + pages.length;
+  if (pf) pf.style.width = pct + '%';
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    var href = item.getAttribute('href');
+    if (visited.includes(href) && !item.classList.contains('active')) item.classList.add('visited');
+  });
+}
+markVisited('tradeoffs.html');
+function setLevel(level) {
+  localStorage.setItem('agentsdk-level', level);
+  document.querySelectorAll('.level-btn').forEach(function(btn) { btn.classList.toggle('active', btn.dataset.level === level); });
+  document.querySelectorAll('.level-section').forEach(function(sec) {
+    if (level === 'all') sec.classList.remove('hidden');
+    else sec.classList.toggle('hidden', sec.dataset.level !== level);
+  });
+}
+(function() { var saved = localStorage.getItem('agentsdk-level') || 'all'; setLevel(saved); })();
+function toggleNav() { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.nav-overlay').classList.toggle('active'); }
+function copyCode(btn) {
+  var code = btn.closest('pre').querySelector('code');
+  var text = code.textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+function checkQuiz(btn, correctIdx) {
+  var opts = btn.parentElement.querySelectorAll('.quiz-opt');
+  var feedback = btn.closest('.quiz-box').querySelector('.quiz-feedback');
+  var idx = parseInt(btn.dataset.idx);
+  opts.forEach(function(o) { o.classList.add('disabled'); });
+  if (idx === correctIdx) {
+    btn.classList.add('correct');
+    feedback.textContent = 'Correct!';
+    feedback.className = 'quiz-feedback correct';
+  } else {
+    btn.classList.add('wrong');
+    opts[correctIdx].classList.add('correct');
+    feedback.textContent = 'Not quite. The correct answer is highlighted.';
+    feedback.className = 'quiz-feedback wrong';
+  }
+}
+document.addEventListener('click', function(e) {
+  var toggle = e.target.closest('.collapsible-toggle');
+  if (toggle) { toggle.classList.toggle('open'); var body = toggle.nextElementSibling; if (body) body.classList.toggle('open'); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Use Cases & Adoption - Anthropic Agent SDK Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-card: #1e2a4a;
+  --bg-card-hover: #243356;
+  --bg-code: #0d1425;
+  --text-primary: #e8e8f0;
+  --text-secondary: #a0a0c0;
+  --text-muted: #6a6a8a;
+  --accent: #e07850;
+  --accent-light: #f0956a;
+  --accent-glow: rgba(224, 120, 80, 0.15);
+  --accent-secondary: #5a8adb;
+  --accent-green: #5ac48a;
+  --accent-yellow: #e0c050;
+  --border: #2a2a4a;
+  --border-light: #3a3a5a;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --nav-width: 280px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; min-height: 100vh; }
+
+.nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+.nav-overlay.active { display: block; }
+.sidebar { position: fixed; top: 0; left: 0; width: var(--nav-width); height: 100vh; background: var(--bg-secondary); border-right: 1px solid var(--border); overflow-y: auto; z-index: 100; transition: transform 0.3s ease; display: flex; flex-direction: column; }
+.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sidebar-logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+.sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; font-weight: 700; }
+.sidebar-version { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+.nav-sections { flex: 1; overflow-y: auto; padding: 12px 0; }
+.nav-item { display: flex; align-items: center; padding: 10px 20px; color: var(--text-secondary); text-decoration: none; font-size: 13.5px; font-weight: 450; transition: all 0.15s ease; border-left: 3px solid transparent; gap: 10px; }
+.nav-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: var(--accent); background: var(--accent-glow); border-left-color: var(--accent); font-weight: 600; }
+.nav-item .nav-num { font-size: 11px; font-weight: 600; color: var(--text-muted); min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 5px; }
+.nav-item.active .nav-num { color: var(--accent); background: rgba(224, 120, 80, 0.15); }
+.nav-item.visited .nav-num { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.nav-progress { padding: 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.progress-label { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.progress-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); border-radius: 2px; transition: width 0.5s ease; }
+.nav-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 110; width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); cursor: pointer; align-items: center; justify-content: center; font-size: 18px; }
+.main-content { margin-left: var(--nav-width); min-height: 100vh; }
+.level-bar { position: sticky; top: 0; z-index: 50; background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 10px 40px; display: flex; align-items: center; gap: 16px; backdrop-filter: blur(10px); }
+.level-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.level-buttons { display: flex; gap: 4px; background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px; }
+.level-btn { padding: 6px 14px; font-size: 12.5px; font-weight: 500; font-family: var(--font-sans); border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--text-secondary); }
+.level-btn:hover { color: var(--text-primary); }
+.level-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.level-btn[data-level="beginner"].active { background: var(--accent-green); box-shadow: 0 2px 8px rgba(90, 196, 138, 0.3); }
+.level-btn[data-level="intermediate"].active { background: var(--accent-secondary); box-shadow: 0 2px 8px rgba(90, 138, 219, 0.3); }
+.level-btn[data-level="advanced"].active { background: var(--accent); box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+.page-content { max-width: 860px; margin: 0 auto; padding: 40px 40px 80px; }
+.page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+.page-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; font-weight: 400; }
+h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.3px; margin: 40px 0 16px; color: var(--text-primary); }
+h3 { font-size: 18px; font-weight: 600; margin: 28px 0 12px; color: var(--text-primary); }
+h4 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--text-primary); }
+h2 .anchor, h3 .anchor, h4 .anchor { color: var(--text-muted); text-decoration: none; margin-left: 8px; opacity: 0; transition: opacity 0.2s; font-weight: 400; }
+h2:hover .anchor, h3:hover .anchor, h4:hover .anchor { opacity: 1; }
+p { margin-bottom: 14px; color: var(--text-secondary); }
+strong { color: var(--text-primary); font-weight: 600; }
+em { color: var(--text-secondary); font-style: italic; }
+a { color: var(--accent-secondary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+ul, ol { margin: 0 0 16px 20px; color: var(--text-secondary); }
+li { margin-bottom: 6px; }
+.page-content > :not(pre) code, .page-content li code, .page-content p code, .page-content td code { background: rgba(224, 120, 80, 0.1); color: var(--accent-light); padding: 2px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; font-weight: 450; }
+pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 0; margin: 0 0 20px; overflow: hidden; position: relative; }
+pre .code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+pre .copy-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 3px 10px; border-radius: 4px; font-size: 11px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+pre .copy-btn:hover { color: var(--text-primary); border-color: var(--border-light); }
+pre .copy-btn.copied { color: var(--accent-green); border-color: var(--accent-green); }
+pre code { display: block; padding: 16px 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.65; color: var(--text-secondary); tab-size: 2; }
+.tok-kw { color: #c792ea; }
+.tok-str { color: #c3e88d; }
+.tok-num { color: #f78c6c; }
+.tok-cm { color: #546e7a; font-style: italic; }
+.tok-fn { color: #82aaff; }
+.tok-type { color: #ffcb6b; }
+.tok-op { color: #89ddff; }
+.tok-dec { color: #c792ea; }
+.tok-prop { color: #f07178; }
+table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 13.5px; }
+th { background: rgba(255,255,255,0.05); padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-primary); border-bottom: 2px solid var(--border); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+blockquote { border-left: 3px solid var(--accent); padding: 12px 20px; margin: 0 0 16px; background: var(--accent-glow); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text-secondary); }
+.level-section { transition: all 0.3s ease; }
+.level-section.hidden { display: none; }
+.level-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.level-badge.beginner { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.level-badge.intermediate { background: rgba(90, 138, 219, 0.15); color: var(--accent-secondary); }
+.level-badge.advanced { background: rgba(224, 120, 80, 0.15); color: var(--accent); }
+.ascii-diagram { background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin: 0 0 20px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; color: var(--accent-secondary); white-space: pre; }
+.page-nav { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); gap: 16px; }
+.page-nav a { display: flex; flex-direction: column; padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); text-decoration: none; transition: all 0.2s; flex: 1; max-width: 48%; }
+.page-nav a:hover { background: var(--bg-card-hover); border-color: var(--border-light); transform: translateY(-1px); }
+.page-nav a .nav-dir { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.page-nav a .nav-title { font-size: 14px; font-weight: 600; color: var(--accent-light); }
+.page-nav a.next { text-align: right; margin-left: auto; }
+.quiz-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin: 32px 0; }
+.quiz-title { font-size: 13px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.quiz-question { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt { display: block; width: 100%; text-align: left; padding: 10px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 13.5px; font-family: var(--font-sans); cursor: pointer; transition: all 0.2s; }
+.quiz-opt:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+.quiz-opt.correct { background: rgba(90, 196, 138, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
+.quiz-opt.wrong { background: rgba(224, 80, 80, 0.15); border-color: #e05050; color: #e05050; }
+.quiz-opt.disabled { pointer-events: none; opacity: 0.6; }
+.quiz-feedback { margin-top: 12px; font-size: 13px; font-weight: 500; }
+.quiz-feedback.correct { color: var(--accent-green); }
+.quiz-feedback.wrong { color: #e05050; }
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .nav-toggle { display: flex; }
+  .main-content { margin-left: 0; }
+  .level-bar { padding: 10px 16px 10px 60px; }
+  .page-content { padding: 32px 20px 60px; }
+  .page-nav { flex-direction: column; }
+  .page-nav a { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+<div class="nav-overlay" onclick="toggleNav()"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo"><div class="logo-icon">A</div> Agent SDK Course</div>
+    <div class="sidebar-version">TypeScript v0.2.87</div>
+  </div>
+  <div class="nav-sections">
+    <a class="nav-item" href="index.html"><span class="nav-num">~</span> Overview</a>
+    <a class="nav-item" href="concepts.html"><span class="nav-num">01</span> Core Concepts</a>
+    <a class="nav-item" href="architecture.html"><span class="nav-num">02</span> Architecture</a>
+    <a class="nav-item" href="getting-started.html"><span class="nav-num">03</span> Getting Started</a>
+    <a class="nav-item" href="implementation.html"><span class="nav-num">04</span> Implementation</a>
+    <a class="nav-item active" href="use-cases.html"><span class="nav-num">05</span> Use Cases</a>
+    <a class="nav-item" href="ecosystem.html"><span class="nav-num">06</span> Ecosystem</a>
+    <a class="nav-item" href="performance.html"><span class="nav-num">07</span> Performance</a>
+    <a class="nav-item" href="advanced.html"><span class="nav-num">08</span> Advanced Topics</a>
+    <a class="nav-item" href="tradeoffs.html"><span class="nav-num">09</span> Tradeoffs</a>
+  </div>
+  <div class="nav-progress">
+    <div class="progress-label">Progress: <span id="progressText">0/10</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<main class="main-content">
+  <div class="level-bar">
+    <span class="level-label">Level</span>
+    <div class="level-buttons">
+      <button class="level-btn active" data-level="all" onclick="setLevel('all')">All</button>
+      <button class="level-btn" data-level="beginner" onclick="setLevel('beginner')">Beginner</button>
+      <button class="level-btn" data-level="intermediate" onclick="setLevel('intermediate')">Intermediate</button>
+      <button class="level-btn" data-level="advanced" onclick="setLevel('advanced')">Advanced</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="page-title">Use Cases & Adoption</div>
+    <div class="page-subtitle">Section 05 of 9</div>
+
+<div class="level-section" data-level="beginner">
+<span class="level-badge beginner">Beginner</span>
+<h2 id="who-uses-the-agent-sdk">Who Uses the Agent SDK? <a class="anchor" href="#who-uses-the-agent-sdk">#</a></h2>
+<p>The Anthropic Agent SDK is used by 1,100+ projects as of March 2026. It targets developers building AI-powered automation in several domains:</p>
+<h3 id="primary-use-cases">Primary Use Cases <a class="anchor" href="#primary-use-cases">#</a></h3>
+<h4 id="1-cicd-pipeline-automation">1. CI/CD Pipeline Automation <a class="anchor" href="#1-cicd-pipeline-automation">#</a></h4>
+<p>Integrate Claude into your continuous integration to automatically review code, fix linting errors, update tests, and generate changelogs.</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-cm">// CI pipeline step: auto-fix linting and type errors</span>
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">`Run  T12  and  T13 . Fix any errors found.
+Do not change test files. Commit fixes with a descriptive message.`</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Edit"</span>, <span class="tok-str">"Bash"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+    permissionMode: <span class="tok-str">"bypassPermissions"</span>,
+    allowDangerouslySkipPermissions: <span class="tok-kw">true</span>,
+    maxBudgetUsd: <span class="tok-num">1.0</span>,
+    maxTurns: <span class="tok-num">20</span>
+  }
+})) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span>) {
+    <span class="tok-kw">if</span> (message.subtype === <span class="tok-str">"success"</span>) {
+      console.<span class="tok-fn">log</span>(<span class="tok-str">"CI fix completed:"</span>, message.result);
+      process.<span class="tok-fn">exit</span>(<span class="tok-num">0</span>);
+    } <span class="tok-kw">else</span> {
+      console.<span class="tok-fn">error</span>(<span class="tok-str">"CI fix failed:"</span>, message.subtype);
+      process.<span class="tok-fn">exit</span>(<span class="tok-num">1</span>);
+    }
+  }
+}</code></pre>
+<h4 id="2-code-review-automation">2. Code Review Automation <a class="anchor" href="#2-code-review-automation">#</a></h4>
+<p>Automatically review pull requests for quality, security, and style:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">`Review the changes in the current git diff (git diff main...HEAD).
+Categorize findings as: CRITICAL, WARNING, SUGGESTION.
+Focus on security, correctness, and maintainability.`</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Bash"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+    systemPrompt: <span class="tok-str">"You are a senior code reviewer. Be thorough but constructive."</span>
+  }
+})) {
+  <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span> &amp;&amp; message.subtype === <span class="tok-str">"success"</span>) {
+    <span class="tok-cm">// Post review to GitHub PR</span>
+    console.<span class="tok-fn">log</span>(message.result);
+  }
+}</code></pre>
+<h4 id="3-documentation-generation">3. Documentation Generation <a class="anchor" href="#3-documentation-generation">#</a></h4>
+<p>Generate or update documentation from code:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">`Analyze all public functions in src/ and generate API documentation.
+Create a docs/api-reference.md file with function signatures, descriptions,
+parameter types, return types, and usage examples.`</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Write"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+    permissionMode: <span class="tok-str">"acceptEdits"</span>
+  }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) console.<span class="tok-fn">log</span>(message.result);
+}</code></pre>
+<h4 id="4-research-and-analysis">4. Research and Analysis <a class="anchor" href="#4-research-and-analysis">#</a></h4>
+<p>Build agents that gather and synthesize information:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">`Research the top 5 alternatives to Redis for caching in Node.js applications.
+Compare them on: performance, ease of use, clustering support, and community size.
+Write a summary to research-results.md.`</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"WebSearch"</span>, <span class="tok-str">"WebFetch"</span>, <span class="tok-str">"Write"</span>],
+    permissionMode: <span class="tok-str">"acceptEdits"</span>
+  }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) console.<span class="tok-fn">log</span>(message.result);
+}</code></pre>
+<h4 id="5-data-processing-pipelines">5. Data Processing Pipelines <a class="anchor" href="#5-data-processing-pipelines">#</a></h4>
+<p>Automate data transformation and analysis tasks:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { tool, createSdkMcpServer, query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+<span class="tok-kw">import</span> { z } <span class="tok-kw">from</span> <span class="tok-str">"zod"</span>;
+
+<span class="tok-kw">const</span> queryDB = <span class="tok-fn">tool</span>(
+  <span class="tok-str">"query_database"</span>,
+  <span class="tok-str">"Run a read-only SQL query"</span>,
+  { sql: z.<span class="tok-fn">string</span>() },
+  <span class="tok-kw">async</span> (args) =&gt; {
+    <span class="tok-kw">const</span> results = <span class="tok-kw">await</span> pool.<span class="tok-fn">query</span>(args.sql);
+    <span class="tok-kw">return</span> { content: [{ <span class="tok-kw">type</span>: <span class="tok-str">"text"</span>, text: JSON.<span class="tok-fn">stringify</span>(results.rows) }] };
+  },
+  { annotations: { readOnlyHint: <span class="tok-kw">true</span> } }
+);
+
+<span class="tok-kw">const</span> dbServer = <span class="tok-fn">createSdkMcpServer</span>({ name: <span class="tok-str">"db"</span>, tools: [queryDB] });
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"Analyze user signup trends over the past 30 days. Break down by source, device, and geography. Write a summary."</span>,
+  options: {
+    mcpServers: { db: dbServer },
+    allowedTools: [<span class="tok-str">"mcp__db__query_database"</span>, <span class="tok-str">"Write"</span>],
+    permissionMode: <span class="tok-str">"acceptEdits"</span>
+  }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) console.<span class="tok-fn">log</span>(message.result);
+}</code></pre>
+</div>
+<div class="level-section" data-level="intermediate">
+<span class="level-badge intermediate">Intermediate</span>
+<h2 id="real-world-patterns">Real-World Patterns <a class="anchor" href="#real-world-patterns">#</a></h2>
+<h3 id="pattern-pr-bot-with-github-mcp">Pattern: PR Bot with GitHub MCP <a class="anchor" href="#pattern-pr-bot-with-github-mcp">#</a></h3>
+<p>Build a GitHub-integrated PR review bot:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">async</span> <span class="tok-kw">function</span> <span class="tok-fn">reviewPR</span>(prNumber: number, repo: string) {
+  <span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+    prompt: <span class="tok-str">`Review PR #${prNumber} in ${repo}.
+Fetch the diff using the GitHub MCP server.
+For each file changed, check for:
+1. Security vulnerabilities
+2. Performance regressions
+3. Missing error handling
+4. Test coverage gaps
+Format as a structured review with file-by-file comments.`</span>,
+    options: {
+      mcpServers: {
+        github: {
+          command: <span class="tok-str">"npx"</span>,
+          args: [<span class="tok-str">"-y"</span>, <span class="tok-str">"@modelcontextprotocol/server-github"</span>],
+          env: { GITHUB_TOKEN: process.env.GITHUB_TOKEN }
+        }
+      },
+      allowedTools: [
+        <span class="tok-str">"mcp__github__*"</span>,
+        <span class="tok-str">"Read"</span>, <span class="tok-str">"Grep"</span>, <span class="tok-str">"Glob"</span>
+      ],
+      systemPrompt: <span class="tok-str">`You are a thorough code reviewer.
+Always explain WHY something is a problem, not just WHAT the problem is.
+Suggest specific fixes with code examples.`</span>
+    }
+  })) {
+    <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span> &amp;&amp; message.subtype === <span class="tok-str">"success"</span>) {
+      <span class="tok-kw">return</span> message.result;
+    }
+  }
+}</code></pre>
+<h3 id="pattern-database-migration-assistant">Pattern: Database Migration Assistant <a class="anchor" href="#pattern-database-migration-assistant">#</a></h3>
+<p>An agent that generates and validates database migrations:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">`I need to add a  T1  timestamp column to the users table.
+1. Read the existing migration files to understand the pattern
+2. Generate a new migration following the same conventions
+3. Generate a rollback migration
+4. Verify both migrations are syntactically valid by dry-running them`</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Write"</span>, <span class="tok-str">"Bash"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+    permissionMode: <span class="tok-str">"acceptEdits"</span>,
+    agents: {
+      <span class="tok-str">"migration-validator"</span>: {
+        description: <span class="tok-str">"Validates SQL migrations for correctness and safety"</span>,
+        prompt: <span class="tok-str">`You validate SQL migrations. Check for:
+- Backward compatibility (no destructive changes without fallback)
+- Index creation on large tables (use CONCURRENTLY)
+- Data migration safety
+- Rollback correctness`</span>,
+        tools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Bash"</span>, <span class="tok-str">"Grep"</span>]
+      }
+    }
+  }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) console.<span class="tok-fn">log</span>(message.result);
+}</code></pre>
+<h3 id="pattern-emailreport-generator">Pattern: Email/Report Generator <a class="anchor" href="#pattern-emailreport-generator">#</a></h3>
+<p>Build an agent that collects data and generates formatted reports:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { tool, createSdkMcpServer, query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+<span class="tok-kw">import</span> { z } <span class="tok-kw">from</span> <span class="tok-str">"zod"</span>;
+
+<span class="tok-kw">const</span> sendEmail = <span class="tok-fn">tool</span>(
+  <span class="tok-str">"send_email"</span>,
+  <span class="tok-str">"Send an email via the company email service"</span>,
+  {
+    to: z.<span class="tok-fn">string</span>().<span class="tok-fn">email</span>(),
+    subject: z.<span class="tok-fn">string</span>(),
+    body: z.<span class="tok-fn">string</span>().<span class="tok-fn">describe</span>(<span class="tok-str">"HTML email body"</span>)
+  },
+  <span class="tok-kw">async</span> (args) =&gt; {
+    <span class="tok-kw">await</span> emailService.<span class="tok-fn">send</span>(args.to, args.subject, args.body);
+    <span class="tok-kw">return</span> { content: [{ <span class="tok-kw">type</span>: <span class="tok-str">"text"</span>, text: <span class="tok-str">"Email sent successfully"</span> }] };
+  }
+);
+
+<span class="tok-kw">const</span> getMetrics = <span class="tok-fn">tool</span>(
+  <span class="tok-str">"get_metrics"</span>,
+  <span class="tok-str">"Fetch application metrics for a time range"</span>,
+  {
+    metric: z.<span class="tok-kw">enum</span>([<span class="tok-str">"requests"</span>, <span class="tok-str">"errors"</span>, <span class="tok-str">"latency"</span>, <span class="tok-str">"signups"</span>]),
+    period: z.<span class="tok-kw">enum</span>([<span class="tok-str">"1h"</span>, <span class="tok-str">"24h"</span>, <span class="tok-str">"7d"</span>, <span class="tok-str">"30d"</span>])
+  },
+  <span class="tok-kw">async</span> (args) =&gt; {
+    <span class="tok-kw">const</span> data = <span class="tok-kw">await</span> metricsService.<span class="tok-fn">query</span>(args.metric, args.period);
+    <span class="tok-kw">return</span> { content: [{ <span class="tok-kw">type</span>: <span class="tok-str">"text"</span>, text: JSON.<span class="tok-fn">stringify</span>(data) }] };
+  },
+  { annotations: { readOnlyHint: <span class="tok-kw">true</span> } }
+);
+
+<span class="tok-kw">const</span> reportServer = <span class="tok-fn">createSdkMcpServer</span>({
+  name: <span class="tok-str">"reports"</span>,
+  tools: [sendEmail, getMetrics]
+});
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">`Generate a weekly status report:
+1. Get request volume, error rate, and latency for the past 7 days
+2. Get signup numbers for the past 7 days
+3. Format as an HTML email with charts described in text
+4. Send to team@company.com with subject  T19 `</span>,
+  options: {
+    mcpServers: { reports: reportServer },
+    allowedTools: [<span class="tok-str">"mcp__reports__*"</span>]
+  }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) console.<span class="tok-fn">log</span>(message.result);
+}</code></pre>
+<h3 id="pattern-deployment-agent">Pattern: Deployment Agent <a class="anchor" href="#pattern-deployment-agent">#</a></h3>
+<p>An agent that handles deployments with safety checks:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query, HookCallback, PreToolUseHookInput } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">const</span> deployGuard: HookCallback = <span class="tok-kw">async</span> (input) =&gt; {
+  <span class="tok-kw">if</span> (input.hook_event_name !== <span class="tok-str">"PreToolUse"</span>) <span class="tok-kw">return</span> {};
+  <span class="tok-kw">const</span> preInput = input <span class="tok-kw">as</span> PreToolUseHookInput;
+  <span class="tok-kw">if</span> (preInput.tool_name !== <span class="tok-str">"Bash"</span>) <span class="tok-kw">return</span> {};
+
+  <span class="tok-kw">const</span> cmd = (preInput.tool_input <span class="tok-kw">as</span> any)?.command <span class="tok-kw">as</span> string;
+
+  <span class="tok-cm">// Block production deployments on Friday afternoons</span>
+  <span class="tok-kw">const</span> now = <span class="tok-kw">new</span> <span class="tok-type">Date</span>();
+  <span class="tok-kw">if</span> (now.<span class="tok-fn">getDay</span>() === <span class="tok-num">5</span> &amp;&amp; now.<span class="tok-fn">getHours</span>() &gt;= <span class="tok-num">14</span>) {
+    <span class="tok-kw">if</span> (cmd.<span class="tok-fn">includes</span>(<span class="tok-str">"deploy"</span>) &amp;&amp; cmd.<span class="tok-fn">includes</span>(<span class="tok-str">"production"</span>)) {
+      <span class="tok-kw">return</span> {
+        systemMessage: <span class="tok-str">"Production deployments are blocked on Friday afternoons."</span>,
+        hookSpecificOutput: {
+          hookEventName: <span class="tok-str">"PreToolUse"</span>,
+          permissionDecision: <span class="tok-str">"deny"</span>,
+          permissionDecisionReason: <span class="tok-str">"No Friday afternoon production deploys"</span>
+        }
+      };
+    }
+  }
+
+  <span class="tok-kw">return</span> {};
+};
+
+<span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">`Deploy the staging branch to production:
+1. Run the full test suite
+2. Build the production bundle
+3. Deploy to staging first and run smoke tests
+4. If staging passes, deploy to production
+5. Verify production health checks`</span>,
+  options: {
+    allowedTools: [<span class="tok-str">"Bash"</span>, <span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>],
+    permissionMode: <span class="tok-str">"acceptEdits"</span>,
+    hooks: {
+      PreToolUse: [{ matcher: <span class="tok-str">"Bash"</span>, hooks: [deployGuard] }]
+    }
+  }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) console.<span class="tok-fn">log</span>(message.result);
+}</code></pre>
+</div>
+<div class="level-section" data-level="advanced">
+<span class="level-badge advanced">Advanced</span>
+<h2 id="enterprise-adoption-patterns">Enterprise Adoption Patterns <a class="anchor" href="#enterprise-adoption-patterns">#</a></h2>
+<h3 id="multi-tenant-agent-platform">Multi-Tenant Agent Platform <a class="anchor" href="#multi-tenant-agent-platform">#</a></h3>
+<p>Build a platform where multiple users run agents with isolated contexts:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">interface</span> TenantConfig {
+  id: string;
+  allowedPaths: string[];
+  maxBudget: number;
+  allowedTools: string[];
+}
+
+<span class="tok-kw">async</span> <span class="tok-kw">function</span> <span class="tok-fn">runTenantAgent</span>(tenant: TenantConfig, prompt: string) {
+  <span class="tok-kw">const</span> pathGuard = <span class="tok-kw">async</span> (input: any) =&gt; {
+    <span class="tok-kw">if</span> (input.hook_event_name !== <span class="tok-str">"PreToolUse"</span>) <span class="tok-kw">return</span> {};
+    <span class="tok-kw">const</span> filePath = (input.tool_input <span class="tok-kw">as</span> any)?.file_path <span class="tok-kw">as</span> string;
+    <span class="tok-kw">if</span> (filePath &amp;&amp; !tenant.allowedPaths.<span class="tok-fn">some</span>(p =&gt; filePath.<span class="tok-fn">startsWith</span>(p))) {
+      <span class="tok-kw">return</span> {
+        hookSpecificOutput: {
+          hookEventName: <span class="tok-str">"PreToolUse"</span>,
+          permissionDecision: <span class="tok-str">"deny"</span> <span class="tok-kw">as</span> <span class="tok-kw">const</span>,
+          permissionDecisionReason: <span class="tok-str">`Tenant ${tenant.id} cannot access ${filePath}`</span>
+        }
+      };
+    }
+    <span class="tok-kw">return</span> {};
+  };
+
+  <span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+    prompt,
+    options: {
+      cwd: <span class="tok-str">`/tenants/${tenant.id}/workspace`</span>,
+      allowedTools: tenant.allowedTools,
+      maxBudgetUsd: tenant.maxBudget,
+      maxTurns: <span class="tok-num">25</span>,
+      permissionMode: <span class="tok-str">"dontAsk"</span>,
+      hooks: {
+        PreToolUse: [{ hooks: [pathGuard] }]
+      },
+      env: {
+        ...process.env,
+        CLAUDE_AGENT_SDK_CLIENT_APP: <span class="tok-str">`tenant-platform-${tenant.id}`</span>
+      }
+    }
+  })) {
+    <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span>) {
+      <span class="tok-kw">await</span> <span class="tok-fn">logTenantUsage</span>(tenant.id, message);
+      <span class="tok-kw">return</span> message;
+    }
+  }
+}</code></pre>
+<h3 id="agent-as-a-service-architecture">Agent-as-a-Service Architecture <a class="anchor" href="#agent-as-a-service-architecture">#</a></h3>
+<p>Deploy agents as HTTP endpoints:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> express <span class="tok-kw">from</span> <span class="tok-str">"express"</span>;
+<span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">const</span> app = <span class="tok-fn">express</span>();
+app.<span class="tok-fn">use</span>(express.<span class="tok-fn">json</span>());
+
+app.<span class="tok-fn">post</span>(<span class="tok-str">"/api/agent/analyze"</span>, <span class="tok-kw">async</span> (req, res) =&gt; {
+  <span class="tok-kw">const</span> { prompt, projectPath } = req.body;
+
+  <span class="tok-kw">try</span> {
+    <span class="tok-kw">const</span> results: any[] = [];
+
+    <span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+      prompt,
+      options: {
+        cwd: projectPath,
+        allowedTools: [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>],
+        maxTurns: <span class="tok-num">15</span>,
+        maxBudgetUsd: <span class="tok-num">0.25</span>,
+        persistSession: <span class="tok-kw">false</span>  <span class="tok-cm">// Don't persist -- API is stateless</span>
+      }
+    })) {
+      <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span> &amp;&amp; message.subtype === <span class="tok-str">"success"</span>) {
+        <span class="tok-kw">return</span> res.<span class="tok-fn">json</span>({
+          success: <span class="tok-kw">true</span>,
+          result: message.result,
+          cost: message.total_cost_usd,
+          turns: message.num_turns
+        });
+      }
+    }
+
+    res.<span class="tok-fn">status</span>(<span class="tok-num">500</span>).<span class="tok-fn">json</span>({ success: <span class="tok-kw">false</span>, error: <span class="tok-str">"No result"</span> });
+  } <span class="tok-kw">catch</span> (error) {
+    res.<span class="tok-fn">status</span>(<span class="tok-num">500</span>).<span class="tok-fn">json</span>({ success: <span class="tok-kw">false</span>, error: <span class="tok-type">String</span>(error) });
+  }
+});
+
+app.<span class="tok-fn">listen</span>(<span class="tok-num">3000</span>);</code></pre>
+<h3 id="cost-aware-agent-orchestrator">Cost-Aware Agent Orchestrator <a class="anchor" href="#cost-aware-agent-orchestrator">#</a></h3>
+<p>Implement budget management across multiple agent runs:</p>
+<pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query, SDKMessage } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">class</span> AgentOrchestrator {
+  <span class="tok-kw">private</span> totalSpent = <span class="tok-num">0</span>;
+  <span class="tok-kw">private</span> <span class="tok-kw">readonly</span> globalBudget: number;
+
+  <span class="tok-fn">constructor</span>(budgetUsd: number) {
+    <span class="tok-kw">this</span>.globalBudget = budgetUsd;
+  }
+
+  <span class="tok-kw">async</span> <span class="tok-fn">runTask</span>(
+    prompt: string,
+    tools: string[],
+    taskBudget?: number
+  ): <span class="tok-type">Promise</span>&lt;{ result: string; cost: number }&gt; {
+    <span class="tok-kw">const</span> remaining = <span class="tok-kw">this</span>.globalBudget - <span class="tok-kw">this</span>.totalSpent;
+    <span class="tok-kw">if</span> (remaining &lt;= <span class="tok-num">0</span>) {
+      <span class="tok-kw">throw</span> <span class="tok-kw">new</span> <span class="tok-type">Error</span>(<span class="tok-str">`Global budget exhausted. Spent: $${this.totalSpent.toFixed(4)}`</span>);
+    }
+
+    <span class="tok-kw">const</span> budget = Math.<span class="tok-fn">min</span>(taskBudget ?? remaining, remaining);
+
+    <span class="tok-kw">for</span> <span class="tok-kw">await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+      prompt,
+      options: {
+        allowedTools: tools,
+        maxBudgetUsd: budget,
+        maxTurns: <span class="tok-num">20</span>
+      }
+    })) {
+      <span class="tok-kw">if</span> (message.<span class="tok-kw">type</span> === <span class="tok-str">"result"</span>) {
+        <span class="tok-kw">const</span> cost = message.total_cost_usd;
+        <span class="tok-kw">this</span>.totalSpent += cost;
+
+        <span class="tok-kw">if</span> (message.subtype === <span class="tok-str">"success"</span>) {
+          <span class="tok-kw">return</span> { result: message.result, cost };
+        } <span class="tok-kw">else</span> {
+          <span class="tok-kw">throw</span> <span class="tok-kw">new</span> <span class="tok-type">Error</span>(<span class="tok-str">`Task failed: ${message.subtype}`</span>);
+        }
+      }
+    }
+
+    <span class="tok-kw">throw</span> <span class="tok-kw">new</span> <span class="tok-type">Error</span>(<span class="tok-str">"No result received"</span>);
+  }
+
+  get <span class="tok-fn">spent</span>(): number { <span class="tok-kw">return</span> <span class="tok-kw">this</span>.totalSpent; }
+  get <span class="tok-fn">remaining</span>(): number { <span class="tok-kw">return</span> <span class="tok-kw">this</span>.globalBudget - <span class="tok-kw">this</span>.totalSpent; }
+}
+
+<span class="tok-cm">// Usage</span>
+<span class="tok-kw">const</span> orchestrator = <span class="tok-kw">new</span> <span class="tok-fn">AgentOrchestrator</span>(<span class="tok-num">5.0</span>);  <span class="tok-cm">// $5 global budget</span>
+
+<span class="tok-kw">const</span> review = <span class="tok-kw">await</span> orchestrator.<span class="tok-fn">runTask</span>(
+  <span class="tok-str">"Review src/ for code quality"</span>, [<span class="tok-str">"Read"</span>, <span class="tok-str">"Glob"</span>, <span class="tok-str">"Grep"</span>], <span class="tok-num">1.0</span>
+);
+console.<span class="tok-fn">log</span>(<span class="tok-str">`Review cost: $${review.cost.toFixed(4)}, remaining: $${orchestrator.remaining.toFixed(4)}`</span>);
+
+<span class="tok-kw">const</span> fix = <span class="tok-kw">await</span> orchestrator.<span class="tok-fn">runTask</span>(
+  <span class="tok-str">"Fix the top 3 issues found"</span>, [<span class="tok-str">"Read"</span>, <span class="tok-str">"Edit"</span>, <span class="tok-str">"Glob"</span>], <span class="tok-num">2.0</span>
+);
+console.<span class="tok-fn">log</span>(<span class="tok-str">`Fix cost: $${fix.cost.toFixed(4)}, remaining: $${orchestrator.remaining.toFixed(4)}`</span>);</code></pre>
+</div>
+
+
+    <div class="quiz-box">
+      <div class="quiz-title">Quick Check</div>
+      <div class="quiz-question">How many projects use the Agent SDK as of March 2026?</div>
+      <div class="quiz-options">
+      <button class="quiz-opt" data-idx="0" onclick="checkQuiz(this, 2)">500+</button>
+      <button class="quiz-opt" data-idx="1" onclick="checkQuiz(this, 2)">800+</button>
+      <button class="quiz-opt" data-idx="2" onclick="checkQuiz(this, 2)">1,100+</button>
+      <button class="quiz-opt" data-idx="3" onclick="checkQuiz(this, 2)">2,000+</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+<nav class="page-nav">
+  <a class="prev" href="implementation.html"><span class="nav-dir">&larr; Previous</span><span class="nav-title">Implementation Patterns</span></a>
+  <a class="next" href="ecosystem.html"><span class="nav-dir">Next</span><span class="nav-title">Ecosystem & Integrations &rarr;</span></a>
+</nav>
+  </div>
+</main>
+
+<script>
+function getVisited() { try { return JSON.parse(localStorage.getItem('agentsdk-visited') || '[]'); } catch { return []; } }
+function markVisited(page) { var v = getVisited(); if (!v.includes(page)) { v.push(page); localStorage.setItem('agentsdk-visited', JSON.stringify(v)); } updateProgress(); }
+function updateProgress() {
+  var pages = ['index.html','concepts.html','architecture.html','getting-started.html','implementation.html','use-cases.html','ecosystem.html','performance.html','advanced.html','tradeoffs.html'];
+  var visited = getVisited();
+  var count = pages.filter(function(p) { return visited.includes(p); }).length;
+  var pct = Math.round((count / pages.length) * 100);
+  var pt = document.getElementById('progressText');
+  var pf = document.getElementById('progressFill');
+  if (pt) pt.textContent = count + '/' + pages.length;
+  if (pf) pf.style.width = pct + '%';
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    var href = item.getAttribute('href');
+    if (visited.includes(href) && !item.classList.contains('active')) item.classList.add('visited');
+  });
+}
+markVisited('use-cases.html');
+function setLevel(level) {
+  localStorage.setItem('agentsdk-level', level);
+  document.querySelectorAll('.level-btn').forEach(function(btn) { btn.classList.toggle('active', btn.dataset.level === level); });
+  document.querySelectorAll('.level-section').forEach(function(sec) {
+    if (level === 'all') sec.classList.remove('hidden');
+    else sec.classList.toggle('hidden', sec.dataset.level !== level);
+  });
+}
+(function() { var saved = localStorage.getItem('agentsdk-level') || 'all'; setLevel(saved); })();
+function toggleNav() { document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.nav-overlay').classList.toggle('active'); }
+function copyCode(btn) {
+  var code = btn.closest('pre').querySelector('code');
+  var text = code.textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+function checkQuiz(btn, correctIdx) {
+  var opts = btn.parentElement.querySelectorAll('.quiz-opt');
+  var feedback = btn.closest('.quiz-box').querySelector('.quiz-feedback');
+  var idx = parseInt(btn.dataset.idx);
+  opts.forEach(function(o) { o.classList.add('disabled'); });
+  if (idx === correctIdx) {
+    btn.classList.add('correct');
+    feedback.textContent = 'Correct!';
+    feedback.className = 'quiz-feedback correct';
+  } else {
+    btn.classList.add('wrong');
+    opts[correctIdx].classList.add('correct');
+    feedback.textContent = 'Not quite. The correct answer is highlighted.';
+    feedback.className = 'quiz-feedback wrong';
+  }
+}
+document.addEventListener('click', function(e) {
+  var toggle = e.target.closest('.collapsible-toggle');
+  if (toggle) { toggle.classList.toggle('open'); var body = toggle.nextElementSibling; if (body) body.classList.toggle('open'); }
+});
+</script>
+</body>
+</html>

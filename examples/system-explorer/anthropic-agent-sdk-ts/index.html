@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anthropic Agent SDK (TypeScript) - Interactive Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-card: #1e2a4a;
+  --bg-card-hover: #243356;
+  --bg-code: #0d1425;
+  --text-primary: #e8e8f0;
+  --text-secondary: #a0a0c0;
+  --text-muted: #6a6a8a;
+  --accent: #e07850;
+  --accent-light: #f0956a;
+  --accent-glow: rgba(224, 120, 80, 0.15);
+  --accent-secondary: #5a8adb;
+  --accent-green: #5ac48a;
+  --accent-yellow: #e0c050;
+  --border: #2a2a4a;
+  --border-light: #3a3a5a;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.4);
+  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --nav-width: 280px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* Navigation */
+.nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 90;
+}
+.nav-overlay.active { display: block; }
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--nav-width);
+  height: 100vh;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-logo .logo-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: white;
+  font-weight: 700;
+}
+
+.sidebar-version {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.nav-sections {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 450;
+  transition: all 0.15s ease;
+  border-left: 3px solid transparent;
+  gap: 10px;
+}
+
+.nav-item:hover {
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.03);
+}
+
+.nav-item.active {
+  color: var(--accent);
+  background: var(--accent-glow);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.nav-item .nav-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.05);
+  border-radius: 5px;
+}
+
+.nav-item.active .nav-num {
+  color: var(--accent);
+  background: rgba(224, 120, 80, 0.15);
+}
+
+.nav-item.visited .nav-num {
+  background: rgba(90, 196, 138, 0.15);
+  color: var(--accent-green);
+}
+
+.nav-progress {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.progress-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Mobile nav toggle */
+.nav-toggle {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 110;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Main content */
+.main-content {
+  margin-left: var(--nav-width);
+  min-height: 100vh;
+}
+
+/* Level selector bar */
+.level-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 40px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.level-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.level-buttons {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.05);
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.level-btn {
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.level-btn:hover { color: var(--text-primary); }
+
+.level-btn.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3);
+}
+
+.level-btn[data-level="beginner"].active { background: var(--accent-green); box-shadow: 0 2px 8px rgba(90, 196, 138, 0.3); }
+.level-btn[data-level="intermediate"].active { background: var(--accent-secondary); box-shadow: 0 2px 8px rgba(90, 138, 219, 0.3); }
+.level-btn[data-level="advanced"].active { background: var(--accent); box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
+
+/* Page content */
+.page-content {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 40px 80px;
+}
+
+/* Landing page hero */
+.hero {
+  text-align: center;
+  padding: 60px 0 40px;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: var(--accent-glow);
+  border: 1px solid rgba(224, 120, 80, 0.25);
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent-light);
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 32px;
+  line-height: 1.7;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 32px;
+}
+
+.hero-stat {
+  text-align: center;
+}
+
+.hero-stat .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent-light);
+}
+
+.hero-stat .stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+/* Section cards grid */
+.section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.section-card {
+  display: block;
+  text-decoration: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.section-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.section-card .card-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.section-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.section-card p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.section-card .card-arrow {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.section-card:hover .card-arrow {
+  color: var(--accent);
+  transform: translateY(-50%) translateX(3px);
+}
+
+/* Quick start code block on landing */
+.quick-start {
+  margin-top: 48px;
+  text-align: left;
+}
+
+.quick-start h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+/* Typography */
+h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 16px; }
+h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.3px; margin: 40px 0 16px; color: var(--text-primary); }
+h3 { font-size: 18px; font-weight: 600; margin: 28px 0 12px; color: var(--text-primary); }
+h4 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--text-primary); }
+
+h2 .anchor, h3 .anchor, h4 .anchor {
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-weight: 400;
+}
+h2:hover .anchor, h3:hover .anchor, h4:hover .anchor { opacity: 1; }
+
+p { margin-bottom: 14px; color: var(--text-secondary); }
+
+strong { color: var(--text-primary); font-weight: 600; }
+
+a { color: var(--accent-secondary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+ul, ol { margin: 0 0 16px 20px; color: var(--text-secondary); }
+li { margin-bottom: 6px; }
+li > code { font-size: 13px; }
+
+/* Inline code */
+.page-content > :not(pre) code, .page-content li code, .page-content p code, .page-content td code {
+  background: rgba(224, 120, 80, 0.1);
+  color: var(--accent-light);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  font-weight: 450;
+}
+
+/* Code blocks */
+pre {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0;
+  margin: 0 0 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+pre .code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+pre .copy-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+pre .copy-btn:hover { color: var(--text-primary); border-color: var(--border-light); }
+pre .copy-btn.copied { color: var(--accent-green); border-color: var(--accent-green); }
+
+pre code {
+  display: block;
+  padding: 16px 20px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  tab-size: 2;
+}
+
+/* Syntax highlighting */
+.tok-kw { color: #c792ea; }
+.tok-str { color: #c3e88d; }
+.tok-num { color: #f78c6c; }
+.tok-cm { color: #546e7a; font-style: italic; }
+.tok-fn { color: #82aaff; }
+.tok-type { color: #ffcb6b; }
+.tok-op { color: #89ddff; }
+.tok-dec { color: #c792ea; }
+.tok-prop { color: #f07178; }
+.tok-re { color: #89ddff; }
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 20px;
+  font-size: 13.5px;
+}
+
+th {
+  background: rgba(255,255,255,0.05);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border);
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Blockquotes */
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 12px 20px;
+  margin: 0 0 16px;
+  background: var(--accent-glow);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-secondary);
+}
+
+/* Collapsible sections */
+.collapsible {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.collapsible-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.collapsible-toggle:hover { background: var(--bg-card-hover); }
+
+.collapsible-toggle .toggle-icon {
+  font-size: 12px;
+  transition: transform 0.2s;
+  color: var(--text-muted);
+}
+
+.collapsible-toggle.open .toggle-icon { transform: rotate(90deg); }
+
+.collapsible-body {
+  display: none;
+  padding: 16px 18px;
+  border-top: 1px solid var(--border);
+}
+
+.collapsible-body.open { display: block; }
+
+/* Level markers */
+.level-section { transition: all 0.3s ease; }
+.level-section.hidden { display: none; }
+
+.level-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.level-badge.beginner { background: rgba(90, 196, 138, 0.15); color: var(--accent-green); }
+.level-badge.intermediate { background: rgba(90, 138, 219, 0.15); color: var(--accent-secondary); }
+.level-badge.advanced { background: rgba(224, 120, 80, 0.15); color: var(--accent); }
+
+/* Tooltips */
+.tooltip-term {
+  border-bottom: 1px dashed var(--accent-secondary);
+  cursor: help;
+  position: relative;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  white-space: nowrap;
+  max-width: 300px;
+  white-space: normal;
+  z-index: 200;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+  margin-bottom: 6px;
+}
+
+.tooltip-term:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+/* Prev/Next navigation */
+.page-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 60px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  gap: 16px;
+}
+
+.page-nav a {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all 0.2s;
+  flex: 1;
+  max-width: 48%;
+}
+
+.page-nav a:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+  transform: translateY(-1px);
+}
+
+.page-nav a .nav-dir {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.page-nav a .nav-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-light);
+}
+
+.page-nav a.next { text-align: right; margin-left: auto; }
+
+/* ASCII diagram styling */
+.ascii-diagram {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 0 0 20px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--accent-secondary);
+  white-space: pre;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .nav-toggle { display: flex; }
+  .main-content { margin-left: 0; }
+  .level-bar { padding: 10px 16px 10px 60px; }
+  .page-content { padding: 32px 20px 60px; }
+  .hero h1 { font-size: 30px; }
+  .hero-stats { gap: 24px; }
+  .hero-stat .stat-value { font-size: 22px; }
+  .section-grid { grid-template-columns: 1fr; }
+  .page-nav { flex-direction: column; }
+  .page-nav a { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+<div class="nav-overlay" onclick="toggleNav()"></div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="logo-icon">A</div>
+      Agent SDK Course
+    </div>
+    <div class="sidebar-version">TypeScript v0.2.87</div>
+  </div>
+  <div class="nav-sections">
+    <a class="nav-item active" href="index.html"><span class="nav-num">~</span> Overview</a>
+    <a class="nav-item" href="concepts.html"><span class="nav-num">01</span> Core Concepts</a>
+    <a class="nav-item" href="architecture.html"><span class="nav-num">02</span> Architecture</a>
+    <a class="nav-item" href="getting-started.html"><span class="nav-num">03</span> Getting Started</a>
+    <a class="nav-item" href="implementation.html"><span class="nav-num">04</span> Implementation</a>
+    <a class="nav-item" href="use-cases.html"><span class="nav-num">05</span> Use Cases</a>
+    <a class="nav-item" href="ecosystem.html"><span class="nav-num">06</span> Ecosystem</a>
+    <a class="nav-item" href="performance.html"><span class="nav-num">07</span> Performance</a>
+    <a class="nav-item" href="advanced.html"><span class="nav-num">08</span> Advanced Topics</a>
+    <a class="nav-item" href="tradeoffs.html"><span class="nav-num">09</span> Tradeoffs</a>
+  </div>
+  <div class="nav-progress">
+    <div class="progress-label">Progress: <span id="progressText">0/10</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<main class="main-content">
+  <div class="level-bar">
+    <span class="level-label">Level</span>
+    <div class="level-buttons">
+      <button class="level-btn active" data-level="all" onclick="setLevel('all')">All</button>
+      <button class="level-btn" data-level="beginner" onclick="setLevel('beginner')">Beginner</button>
+      <button class="level-btn" data-level="intermediate" onclick="setLevel('intermediate')">Intermediate</button>
+      <button class="level-btn" data-level="advanced" onclick="setLevel('advanced')">Advanced</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="hero">
+      <div class="hero-badge">Interactive Course</div>
+      <h1>Anthropic Agent SDK<br>(TypeScript)</h1>
+      <p>Build autonomous AI agents powered by Claude. The same tools, agent loop, and context management that power Claude Code -- packaged as a library for your applications.</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="stat-value">v0.2.87</div>
+          <div class="stat-label">Latest Version</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-value">1,100+</div>
+          <div class="stat-label">Projects</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-value">10</div>
+          <div class="stat-label">Sections</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="level-section" data-level="beginner">
+      <span class="level-badge beginner">Beginner</span>
+      <h2 id="what-is">What is the Anthropic Agent SDK?</h2>
+      <p>The <strong>Anthropic Agent SDK</strong> (TypeScript) -- published as <code>@anthropic-ai/claude-agent-sdk</code> on npm -- is a library for building autonomous AI agents powered by Claude. It gives you the same tools, agent loop, and context management that power Claude Code, packaged as a library you can embed in your own applications.</p>
+      <p>Think of it this way: if the Anthropic SDK (<code>@anthropic-ai/sdk</code>) is a telephone that lets you talk to Claude, the Agent SDK is a complete robotic assistant -- Claude with hands. It can read files, run terminal commands, search the web, edit code, and orchestrate complex multi-step workflows without you implementing any of the tool execution logic.</p>
+
+      <h3>Key Facts at a Glance</h3>
+      <table>
+        <tr><th>Property</th><th>Value</th></tr>
+        <tr><td><strong>NPM Package</strong></td><td><code>@anthropic-ai/claude-agent-sdk</code></td></tr>
+        <tr><td><strong>GitHub</strong></td><td><code>anthropics/claude-agent-sdk-typescript</code></td></tr>
+        <tr><td><strong>Latest Version</strong></td><td>v0.2.87 (March 2026)</td></tr>
+        <tr><td><strong>Minimum Node.js</strong></td><td>18+</td></tr>
+        <tr><td><strong>Language</strong></td><td>TypeScript / JavaScript</td></tr>
+        <tr><td><strong>Used by</strong></td><td>1,100+ projects</td></tr>
+        <tr><td><strong>Python Equivalent</strong></td><td><code>claude-agent-sdk</code> (pip)</td></tr>
+      </table>
+
+      <h3>One-Sentence Summary</h3>
+      <p>The Agent SDK wraps Claude's intelligence with built-in tool execution, turning a chat API into an autonomous agent that can read, write, search, and execute -- all with a single function call.</p>
+    </div>
+
+    <div class="level-section" data-level="intermediate">
+      <span class="level-badge intermediate">Intermediate</span>
+      <h2 id="tech-overview">Technical Overview</h2>
+      <p>The Agent SDK sits between your application and the Claude API, managing the entire agent lifecycle:</p>
+      <div class="ascii-diagram">Your Application
+      |
+      v
+  Agent SDK (query / ClaudeSDKClient)
+      |
+      +-- Agent Loop (think -> tool_use -> observe -> repeat)
+      |       |
+      |       +-- Built-in Tools (Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch)
+      |       +-- MCP Tools (custom + third-party via Model Context Protocol)
+      |       +-- Subagents (specialized delegate agents)
+      |
+      +-- Session Management (persistence, resume, fork)
+      +-- Permission System (allowedTools, hooks, canUseTool)
+      +-- Hooks (PreToolUse, PostToolUse, Stop, SessionStart, ...)
+      |
+      v
+  Claude API (Messages API with tool_use)</div>
+
+      <h3>Two Primary Interfaces</h3>
+      <ol>
+        <li><strong><code>query()</code></strong> -- A standalone function returning an async generator. Best for single-shot tasks and simple integrations.</li>
+        <li><strong>V2 Session Interface (Preview)</strong> -- <code>unstable_v2_createSession()</code> provides a class-based session with explicit <code>send()</code> and <code>stream()</code> methods for multi-turn conversations.</li>
+      </ol>
+
+      <h3>Authentication</h3>
+      <p>The SDK supports multiple authentication methods:</p>
+      <ul>
+        <li><strong>Anthropic API Key</strong> -- <code>ANTHROPIC_API_KEY</code> environment variable</li>
+        <li><strong>Amazon Bedrock</strong> -- Set <code>CLAUDE_CODE_USE_BEDROCK=1</code> with AWS credentials</li>
+        <li><strong>Google Vertex AI</strong> -- Set <code>CLAUDE_CODE_USE_VERTEX=1</code> with GCP credentials</li>
+        <li><strong>Azure AI Foundry</strong> -- Set <code>CLAUDE_CODE_USE_FOUNDRY=1</code> with Azure credentials</li>
+      </ul>
+    </div>
+
+    <div class="level-section" data-level="advanced">
+      <span class="level-badge advanced">Advanced</span>
+      <h2 id="arch-position">Architectural Position</h2>
+      <p>The Agent SDK embodies several deliberate architectural choices:</p>
+      <ol>
+        <li><strong>Same Runtime as Claude Code</strong> -- The SDK spawns a Claude Code process under the hood. Your agent runs the same binary that powers the CLI.</li>
+        <li><strong>Tool Execution, Not Tool Description</strong> -- Unlike the Client SDK, the Agent SDK executes tools directly. You define <em>what</em> Claude can do, not <em>how</em>.</li>
+        <li><strong>Streaming-First</strong> -- The <code>query()</code> function returns an <code>AsyncGenerator&lt;SDKMessage, void&gt;</code>. Every interaction is streaming by default.</li>
+        <li><strong>Security by Default</strong> -- Tools are not auto-approved. Explicit opt-in via <code>allowedTools</code>, <code>permissionMode</code>, or <code>canUseTool</code>.</li>
+        <li><strong>Session Persistence</strong> -- Sessions persist to disk (JSONL format), enabling resume, fork, and inspection.</li>
+      </ol>
+
+      <pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-cm">// Client SDK: You build the loop</span>
+<span class="tok-kw">let</span> response = <span class="tok-kw">await</span> client.messages.<span class="tok-fn">create</span>({ ...params });
+<span class="tok-kw">while</span> (response.stop_reason === <span class="tok-str">"tool_use"</span>) {
+  <span class="tok-kw">const</span> result = <span class="tok-fn">yourToolExecutor</span>(response.tool_use);
+  response = <span class="tok-kw">await</span> client.messages.<span class="tok-fn">create</span>({ tool_result: result, ...params });
+}
+
+<span class="tok-cm">// Agent SDK: The loop is built for you</span>
+<span class="tok-kw">for await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({ prompt: <span class="tok-str">"Fix the bug in auth.py"</span> })) {
+  console.<span class="tok-fn">log</span>(message);
+}</code></pre>
+    </div>
+
+    <h2 id="sections">Course Sections</h2>
+    <div class="section-grid">
+      <a class="section-card" href="concepts.html">
+        <div class="card-num">Section 01</div>
+        <h3>Core Concepts</h3>
+        <p>The agent loop, tools, messages, permissions, sessions, and subagents.</p>
+        <span class="card-arrow">&rarr;</span>
+      </a>
+      <a class="section-card" href="architecture.html">
+        <div class="card-num">Section 02</div>
+        <h3>Architecture & Internals</h3>
+        <p>High-level architecture, message flow, IPC protocol, and hook execution.</p>
+        <span class="card-arrow">&rarr;</span>
+      </a>
+      <a class="section-card" href="getting-started.html">
+        <div class="card-num">Section 03</div>
+        <h3>Getting Started</h3>
+        <p>Installation, first agent, configuration deep dive, V2 interface.</p>
+        <span class="card-arrow">&rarr;</span>
+      </a>
+      <a class="section-card" href="implementation.html">
+        <div class="card-num">Section 04</div>
+        <h3>Implementation Patterns</h3>
+        <p>Common patterns: analyzers, modifiers, MCP tools, multi-agent pipelines.</p>
+        <span class="card-arrow">&rarr;</span>
+      </a>
+      <a class="section-card" href="use-cases.html">
+        <div class="card-num">Section 05</div>
+        <h3>Use Cases & Adoption</h3>
+        <p>CI/CD, code review, documentation, research, enterprise patterns.</p>
+        <span class="card-arrow">&rarr;</span>
+      </a>
+      <a class="section-card" href="ecosystem.html">
+        <div class="card-num">Section 06</div>
+        <h3>Ecosystem & Integrations</h3>
+        <p>MCP servers, cloud providers, GitHub, databases, plugins.</p>
+        <span class="card-arrow">&rarr;</span>
+      </a>
+      <a class="section-card" href="performance.html">
+        <div class="card-num">Section 07</div>
+        <h3>Performance & Optimization</h3>
+        <p>Cost management, optimization strategies, monitoring, benchmarks.</p>
+        <span class="card-arrow">&rarr;</span>
+      </a>
+      <a class="section-card" href="advanced.html">
+        <div class="card-num">Section 08</div>
+        <h3>Advanced Topics</h3>
+        <p>Streaming input, V2 deep dive, file checkpointing, hook orchestration.</p>
+        <span class="card-arrow">&rarr;</span>
+      </a>
+      <a class="section-card" href="tradeoffs.html">
+        <div class="card-num">Section 09</div>
+        <h3>Tradeoffs & Alternatives</h3>
+        <p>Comparison with LangChain, CrewAI, AutoGen. Decision matrix.</p>
+        <span class="card-arrow">&rarr;</span>
+      </a>
+    </div>
+
+    <div class="quick-start">
+      <h2>Quick Start</h2>
+      <pre><div class="code-header">bash<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code>npm install @anthropic-ai/claude-agent-sdk</code></pre>
+      <pre><div class="code-header">typescript<button class="copy-btn" onclick="copyCode(this)">Copy</button></div><code><span class="tok-kw">import</span> { query } <span class="tok-kw">from</span> <span class="tok-str">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="tok-kw">for await</span> (<span class="tok-kw">const</span> message <span class="tok-kw">of</span> <span class="tok-fn">query</span>({
+  prompt: <span class="tok-str">"What files are in this directory?"</span>,
+  options: { allowedTools: [<span class="tok-str">"Bash"</span>, <span class="tok-str">"Glob"</span>] }
+})) {
+  <span class="tok-kw">if</span> (<span class="tok-str">"result"</span> <span class="tok-kw">in</span> message) console.<span class="tok-fn">log</span>(message.result);
+}</code></pre>
+    </div>
+
+    <nav class="page-nav">
+      <span></span>
+      <a class="next" href="concepts.html">
+        <span class="nav-dir">Next</span>
+        <span class="nav-title">Core Concepts &rarr;</span>
+      </a>
+    </nav>
+  </div>
+</main>
+
+<script>
+// Progress tracking
+function getVisited() {
+  try { return JSON.parse(localStorage.getItem('agentsdk-visited') || '[]'); } catch { return []; }
+}
+function markVisited(page) {
+  const visited = getVisited();
+  if (!visited.includes(page)) { visited.push(page); localStorage.setItem('agentsdk-visited', JSON.stringify(visited)); }
+  updateProgress();
+}
+function updateProgress() {
+  const pages = ['index.html','concepts.html','architecture.html','getting-started.html','implementation.html','use-cases.html','ecosystem.html','performance.html','advanced.html','tradeoffs.html'];
+  const visited = getVisited();
+  const count = pages.filter(p => visited.includes(p)).length;
+  const pct = Math.round((count / pages.length) * 100);
+  const progressText = document.getElementById('progressText');
+  const progressFill = document.getElementById('progressFill');
+  if (progressText) progressText.textContent = count + '/' + pages.length;
+  if (progressFill) progressFill.style.width = pct + '%';
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const href = item.getAttribute('href');
+    if (visited.includes(href) && !item.classList.contains('active')) {
+      item.classList.add('visited');
+    }
+  });
+}
+markVisited('index.html');
+
+// Level selector
+function setLevel(level) {
+  localStorage.setItem('agentsdk-level', level);
+  document.querySelectorAll('.level-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.level === level));
+  document.querySelectorAll('.level-section').forEach(sec => {
+    if (level === 'all') { sec.classList.remove('hidden'); }
+    else { sec.classList.toggle('hidden', sec.dataset.level !== level); }
+  });
+}
+(function() {
+  const saved = localStorage.getItem('agentsdk-level') || 'all';
+  setLevel(saved);
+})();
+
+// Mobile nav
+function toggleNav() {
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.querySelector('.nav-overlay').classList.toggle('active');
+}
+
+// Copy to clipboard
+function copyCode(btn) {
+  const code = btn.closest('pre').querySelector('code');
+  const text = code.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Collapsible sections
+document.addEventListener('click', function(e) {
+  const toggle = e.target.closest('.collapsible-toggle');
+  if (toggle) {
+    toggle.classList.toggle('open');
+    const body = toggle.nextElementSibling;
+    if (body) body.classList.toggle('open');
+  }
+});
+</script>
+</body>
+</html>
