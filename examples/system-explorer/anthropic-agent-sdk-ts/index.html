@@ -211,61 +211,6 @@ body {
   min-height: 100vh;
 }
 
-/* Level selector bar */
-.level-bar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 40px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  backdrop-filter: blur(10px);
-}
-
-.level-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.level-buttons {
-  display: flex;
-  gap: 4px;
-  background: rgba(255,255,255,0.05);
-  padding: 3px;
-  border-radius: 8px;
-}
-
-.level-btn {
-  padding: 6px 14px;
-  font-size: 12.5px;
-  font-weight: 500;
-  font-family: var(--font-sans);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-.level-btn:hover { color: var(--text-primary); }
-
-.level-btn.active {
-  background: var(--accent);
-  color: white;
-  box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3);
-}
-
-.level-btn[data-level="beginner"].active { background: var(--accent-green); box-shadow: 0 2px 8px rgba(90, 196, 138, 0.3); }
-.level-btn[data-level="intermediate"].active { background: var(--accent-secondary); box-shadow: 0 2px 8px rgba(90, 138, 219, 0.3); }
-.level-btn[data-level="advanced"].active { background: var(--accent); box-shadow: 0 2px 8px rgba(224, 120, 80, 0.3); }
-
 /* Page content */
 .page-content {
   max-width: 860px;
@@ -709,7 +654,6 @@ blockquote {
   .sidebar.open { transform: translateX(0); }
   .nav-toggle { display: flex; }
   .main-content { margin-left: 0; }
-  .level-bar { padding: 10px 16px 10px 60px; }
   .page-content { padding: 32px 20px 60px; }
   .hero h1 { font-size: 30px; }
   .hero-stats { gap: 24px; }
@@ -752,16 +696,6 @@ blockquote {
 </nav>
 
 <main class="main-content">
-  <div class="level-bar">
-    <span class="level-label">Level</span>
-    <div class="level-buttons">
-      <button class="level-btn active" data-level="all" onclick="setLevel('all')">All</button>
-      <button class="level-btn" data-level="beginner" onclick="setLevel('beginner')">Beginner</button>
-      <button class="level-btn" data-level="intermediate" onclick="setLevel('intermediate')">Intermediate</button>
-      <button class="level-btn" data-level="advanced" onclick="setLevel('advanced')">Advanced</button>
-    </div>
-  </div>
-
   <div class="page-content">
     <div class="hero">
       <div class="hero-badge">Interactive Course</div>
@@ -976,20 +910,6 @@ function updateProgress() {
   });
 }
 markVisited('index.html');
-
-// Level selector
-function setLevel(level) {
-  localStorage.setItem('agentsdk-level', level);
-  document.querySelectorAll('.level-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.level === level));
-  document.querySelectorAll('.level-section').forEach(sec => {
-    if (level === 'all') { sec.classList.remove('hidden'); }
-    else { sec.classList.toggle('hidden', sec.dataset.level !== level); }
-  });
-}
-(function() {
-  const saved = localStorage.getItem('agentsdk-level') || 'all';
-  setLevel(saved);
-})();
 
 // Mobile nav
 function toggleNav() {

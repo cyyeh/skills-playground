@@ -225,40 +225,6 @@
       color: var(--text);
     }
 
-    .level-selector {
-      display: flex;
-      background: var(--bg);
-      border-radius: var(--radius-md);
-      padding: 3px;
-      gap: 2px;
-      border: 1px solid var(--border);
-    }
-
-    .level-btn {
-      padding: 6px 16px;
-      border: none;
-      background: transparent;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all var(--transition);
-      color: var(--text-secondary);
-      font-family: inherit;
-    }
-
-    .level-btn:hover { background: rgba(0,0,0,0.04); }
-
-    .level-btn.active {
-      background: white;
-      color: var(--text);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .level-btn[data-level="beginner"].active { color: var(--beginner); }
-    .level-btn[data-level="intermediate"].active { color: var(--intermediate); }
-    .level-btn[data-level="advanced"].active { color: var(--advanced); }
-
     .mobile-menu-btn {
       display: none;
       background: none;
@@ -897,10 +863,6 @@
     }
 
     @media (max-width: 600px) {
-      .level-selector {
-        flex-wrap: wrap;
-      }
-      .level-btn { padding: 5px 10px; font-size: 12px; }
       .page-header h1 { font-size: 1.6rem; }
     }
     </style>
@@ -943,12 +905,6 @@
       <div class="top-bar">
         <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open');">&#9776;</button>
         <div class="page-title-bar">Home</div>
-        <div class="level-selector">
-          <button class="level-btn active" data-level="all">All</button>
-          <button class="level-btn" data-level="beginner">Beginner</button>
-          <button class="level-btn" data-level="intermediate">Intermediate</button>
-          <button class="level-btn" data-level="advanced">Advanced</button>
-        </div>
       </div>
 
       <div class="content-area">
@@ -1183,35 +1139,6 @@ Copy
   </div>
 
   <script>
-    // ===== LEVEL SELECTOR =====
-    function initLevelSelector() {
-      const stored = localStorage.getItem('fastapi-course-level');
-      const buttons = document.querySelectorAll('.level-btn');
-      const sections = document.querySelectorAll('.level-section');
-
-      function showLevel(level) {
-        localStorage.setItem('fastapi-course-level', level);
-        buttons.forEach(b => b.classList.toggle('active', b.dataset.level === level));
-        sections.forEach(s => {
-          if (level === 'all') {
-            s.classList.remove('hidden');
-          } else {
-            const sectionLevel = s.dataset.level;
-            const levels = ['beginner', 'intermediate', 'advanced'];
-            const selectedIdx = levels.indexOf(level);
-            const sectionIdx = levels.indexOf(sectionLevel);
-            s.classList.toggle('hidden', sectionIdx > selectedIdx);
-          }
-        });
-      }
-
-      buttons.forEach(btn => {
-        btn.addEventListener('click', () => showLevel(btn.dataset.level));
-      });
-
-      showLevel(stored || 'all');
-    }
-
     // ===== COPY CODE =====
     function copyCode(id) {
       const codeEl = document.getElementById(id);
@@ -1309,7 +1236,6 @@ Copy
 
     // ===== INIT =====
     document.addEventListener('DOMContentLoaded', () => {
-      initLevelSelector();
       trackProgress();
       initMobileMenu();
       initCollapsibles();
