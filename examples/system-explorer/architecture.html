@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture — TensorRT-LLM Interactive Course</title>
+  <meta name="description" content="Three-layer architecture of NVIDIA TensorRT-LLM: Python API, PyExecutor worker, and C++ runtime with interactive diagrams.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #FAF7F2;
+      --color-bg-warm: #F5F0E8;
+      --color-bg-code: #1E1E2E;
+      --color-text: #2C2A28;
+      --color-text-secondary: #6B6560;
+      --color-text-muted: #9E9790;
+      --color-border: #E5DFD6;
+      --color-border-light: #EEEBE5;
+      --color-surface: #FFFFFF;
+      --color-surface-warm: #FDF9F3;
+      --color-accent: #2D8B55;
+      --color-accent-hover: #257548;
+      --color-accent-light: #E8F5EE;
+      --color-accent-muted: #5AAF7A;
+      --color-success: #2D8B55;
+      --color-success-light: #E8F5EE;
+      --color-error: #C93B3B;
+      --color-error-light: #FDE8E8;
+      --color-info: #2A7B9B;
+      --color-info-light: #E4F2F7;
+      --color-warning: #D4A843;
+      --color-warning-light: #FDF6E4;
+      --color-level-beginner: #2D8B55;
+      --color-level-intermediate: #D4A843;
+      --color-level-advanced: #C93B3B;
+      --color-compute: #2A7B9B;
+      --color-compute-light: #E4F2F7;
+      --color-storage: #2D8B55;
+      --color-storage-light: #E8F5EE;
+      --color-network: #D4A843;
+      --color-network-light: #FDF6E4;
+      --font-display: 'Bricolage Grotesque', Georgia, serif;
+      --font-body: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      --text-xs: 0.75rem;
+      --text-sm: 0.875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-xl: 1.25rem;
+      --text-2xl: 1.5rem;
+      --text-3xl: 1.875rem;
+      --leading-tight: 1.15;
+      --leading-snug: 1.3;
+      --leading-normal: 1.6;
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
+      --content-width: 800px;
+      --content-width-wide: 1000px;
+      --nav-height: 60px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(44,42,40,0.05);
+      --shadow-md: 0 4px 12px rgba(44,42,40,0.08);
+      --shadow-lg: 0 8px 24px rgba(44,42,40,0.1);
+      --duration-fast: 150ms;
+      --duration-normal: 250ms;
+      --duration-slow: 400ms;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1)
+    }
+
+    *, *::before, *::after { box-sizing: border-box }
+    html { scroll-behavior: smooth }
+    body {
+      background: var(--color-bg);
+      background-image: radial-gradient(ellipse at 20% 50%, rgba(45,139,85,0.04) 0%, transparent 50%);
+      font-family: var(--font-body);
+      color: var(--color-text);
+      line-height: var(--leading-normal);
+      margin: 0;
+      -webkit-font-smoothing: antialiased
+    }
+    ::-webkit-scrollbar { width: 6px }
+    ::-webkit-scrollbar-track { background: transparent }
+    ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full) }
+
+    /* === NAV === */
+    .site-nav {
+      position: sticky; top: 0; z-index: 1000;
+      height: var(--nav-height);
+      background: rgba(250,247,242,0.92);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border-light)
+    }
+    .nav-progress-bar {
+      position: absolute; top: 0; left: 0;
+      height: 3px; width: 0%;
+      background: var(--color-accent);
+      transition: width 100ms linear; z-index: 1
+    }
+    .nav-inner {
+      max-width: var(--content-width-wide); margin: 0 auto;
+      height: 100%; display: flex; align-items: center;
+      gap: var(--space-4); padding: 0 var(--space-6)
+    }
+    .nav-brand {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: var(--text-lg); color: var(--color-text);
+      text-decoration: none; white-space: nowrap; flex-shrink: 0
+    }
+    .nav-brand:hover { color: var(--color-accent) }
+    .nav-pages {
+      display: flex; align-items: center; gap: var(--space-1);
+      flex: 1; overflow-x: auto; scrollbar-width: none
+    }
+    .nav-pages::-webkit-scrollbar { display: none }
+    .nav-page-link {
+      font-family: var(--font-body); font-size: var(--text-sm);
+      font-weight: 500; color: var(--color-text-secondary);
+      text-decoration: none; padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm); white-space: nowrap;
+      transition: color var(--duration-fast), background var(--duration-fast)
+    }
+    .nav-page-link:hover { color: var(--color-text); background: var(--color-border-light) }
+    .nav-page-link.active { color: var(--color-accent); background: var(--color-accent-light); font-weight: 600 }
+    .nav-hamburger {
+      display: none; flex-direction: column; justify-content: center;
+      gap: 4px; width: 36px; height: 36px; padding: var(--space-2);
+      background: none; border: none; cursor: pointer; flex-shrink: 0
+    }
+    .nav-hamburger span {
+      display: block; width: 20px; height: 2px;
+      background: var(--color-text); border-radius: 1px;
+      transition: transform var(--duration-fast), opacity var(--duration-fast)
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg) }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0 }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg) }
+
+    /* === PAGE HEADER === */
+    .page-header {
+      max-width: var(--content-width);
+      margin: var(--space-12) auto var(--space-8);
+      padding: 0 var(--space-6);
+      display: flex; flex-wrap: wrap; align-items: flex-start;
+      justify-content: space-between; gap: var(--space-4)
+    }
+    .page-header h1 {
+      font-family: var(--font-display); font-size: var(--text-3xl);
+      font-weight: 800; color: var(--color-text);
+      margin: 0; line-height: var(--leading-tight)
+    }
+    .page-level-badge {
+      display: inline-block; font-family: var(--font-body);
+      font-size: var(--text-sm); font-weight: 600;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: var(--space-2)
+    }
+    .page-level-badge.intermediate { background: var(--color-info-light); color: var(--color-info) }
+    .copy-markdown-btn {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      font-family: var(--font-body); font-size: var(--text-sm);
+      font-weight: 500; color: var(--color-text-secondary);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3);
+      cursor: pointer; transition: all var(--duration-fast)
+    }
+    .copy-markdown-btn:hover { color: var(--color-accent); border-color: var(--color-accent) }
+
+    /* === CONTENT === */
+    .content-area {
+      max-width: var(--content-width); margin: 0 auto;
+      padding: 0 var(--space-6)
+    }
+    .content-section { margin-bottom: var(--space-10) }
+    .content-section h2 {
+      font-family: var(--font-display); font-size: var(--text-2xl);
+      font-weight: 700; color: var(--color-text);
+      margin: 0 0 var(--space-4)
+    }
+    .content-section h3 {
+      font-family: var(--font-display); font-size: var(--text-xl);
+      font-weight: 600; color: var(--color-text);
+      margin: var(--space-6) 0 var(--space-3)
+    }
+    .content-section p {
+      font-family: var(--font-body); font-size: var(--text-base);
+      color: var(--color-text); line-height: 1.7;
+      margin: 0 0 var(--space-4)
+    }
+    .content-section p .inline-code,
+    .content-section li .inline-code {
+      background: var(--color-accent-light); color: var(--color-accent-hover);
+      padding: 2px 7px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 0.88em; font-weight: 500
+    }
+
+    /* === SCROLL ANIMATION === */
+    .fade-in-section {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out)
+    }
+    .fade-in-section.visible { opacity: 1; transform: translateY(0) }
+
+    /* === ARCHITECTURE DIAGRAM === */
+    .arch-diagram {
+      background: var(--color-surface); border-radius: var(--radius-lg);
+      padding: var(--space-6); box-shadow: var(--shadow-md);
+      margin: var(--space-8) 0; overflow-x: auto
+    }
+    .arch-title {
+      font-family: var(--font-display); font-weight: 700;
+      margin-bottom: var(--space-5); text-align: center
+    }
+    .arch-subtitle {
+      font-family: var(--font-body); font-size: var(--text-xs);
+      color: var(--color-text-muted); text-align: center;
+      margin-bottom: var(--space-6)
+    }
+    .arch-canvas {
+      display: flex; flex-direction: column;
+      align-items: center; gap: var(--space-2)
+    }
+
+    /* Layer containers */
+    .arch-layer {
+      width: 100%; max-width: 640px;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4); position: relative;
+      transition: border-color var(--duration-fast), box-shadow var(--duration-fast)
+    }
+    .arch-layer:hover { border-color: var(--color-border) }
+    .arch-layer-label {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: var(--text-sm); margin-bottom: var(--space-1);
+      text-align: center
+    }
+    .arch-layer-desc {
+      font-family: var(--font-body); font-size: var(--text-xs);
+      color: var(--color-text-muted); text-align: center;
+      margin-bottom: var(--space-3)
+    }
+
+    /* Components within layers */
+    .arch-row {
+      display: flex; align-items: stretch;
+      justify-content: center; gap: var(--space-3); flex-wrap: wrap
+    }
+    .arch-component {
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      min-width: 120px; max-width: 180px; flex: 1;
+      text-align: center; cursor: pointer;
+      transition: border-color var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast);
+      position: relative; background: var(--color-surface)
+    }
+    .arch-component:hover { transform: translateY(-2px); box-shadow: var(--shadow-md) }
+    .arch-component.expanded {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-accent-light)
+    }
+    .arch-component[data-type="compute"] { border-left: 4px solid var(--color-compute) }
+    .arch-component[data-type="storage"] { border-left: 4px solid var(--color-storage) }
+    .arch-component[data-type="network"] { border-left: 4px solid var(--color-network) }
+    .arch-component-icon { font-size: 1.3rem; margin-bottom: var(--space-1) }
+    .arch-component-label {
+      font-family: var(--font-display); font-weight: 600;
+      font-size: var(--text-sm)
+    }
+    .arch-component-brief {
+      font-size: var(--text-xs); color: var(--color-text-muted);
+      margin-top: var(--space-1)
+    }
+    .arch-component-details {
+      max-height: 0; overflow: hidden; opacity: 0;
+      font-size: var(--text-xs); color: var(--color-text-secondary);
+      line-height: var(--leading-normal); text-align: left;
+      transition: max-height var(--duration-normal), opacity var(--duration-normal), margin var(--duration-normal)
+    }
+    .arch-component.expanded .arch-component-details {
+      max-height: 180px; opacity: 1;
+      margin-top: var(--space-3); padding-top: var(--space-3);
+      border-top: 1px solid var(--color-border-light)
+    }
+
+    /* Full-width clickable layer */
+    .arch-layer-clickable {
+      width: 100%; max-width: 640px;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4); cursor: pointer;
+      text-align: center; background: var(--color-surface);
+      transition: border-color var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast);
+      position: relative
+    }
+    .arch-layer-clickable:hover { transform: translateY(-2px); box-shadow: var(--shadow-md) }
+    .arch-layer-clickable.expanded {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-accent-light)
+    }
+    .arch-layer-clickable[data-type="compute"] { border-left: 4px solid var(--color-compute) }
+    .arch-layer-clickable[data-type="network"] { border-left: 4px solid var(--color-network) }
+    .arch-layer-clickable .arch-component-details {
+      max-height: 0; overflow: hidden; opacity: 0;
+      font-size: var(--text-xs); color: var(--color-text-secondary);
+      line-height: var(--leading-normal); text-align: left;
+      transition: max-height var(--duration-normal), opacity var(--duration-normal), margin var(--duration-normal)
+    }
+    .arch-layer-clickable.expanded .arch-component-details {
+      max-height: 180px; opacity: 1;
+      margin-top: var(--space-3); padding-top: var(--space-3);
+      border-top: 1px solid var(--color-border-light)
+    }
+
+    /* GPU row */
+    .gpu-row {
+      display: flex; gap: var(--space-3);
+      justify-content: center; flex-wrap: wrap
+    }
+    .gpu-chip {
+      background: var(--color-bg-warm); border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm); padding: var(--space-2) var(--space-4);
+      font-family: var(--font-mono); font-size: var(--text-xs);
+      color: var(--color-text-secondary); font-weight: 500
+    }
+
+    /* Legend */
+    .arch-legend {
+      display: flex; gap: var(--space-4); justify-content: center;
+      flex-wrap: wrap; margin-top: var(--space-5);
+      padding-top: var(--space-4); border-top: 1px solid var(--color-border-light)
+    }
+    .arch-legend-item {
+      display: flex; align-items: center; gap: var(--space-2);
+      font-size: var(--text-xs); color: var(--color-text-secondary)
+    }
+    .arch-legend-swatch {
+      width: 12px; height: 12px; border-radius: 2px
+    }
+
+    /* Arrows */
+    .arch-arrow-down {
+      color: var(--color-text-muted); display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0
+    }
+
+    /* === FLOW DIAGRAM === */
+    .flow-diagram {
+      background: var(--color-surface); border-radius: var(--radius-lg);
+      padding: var(--space-6); box-shadow: var(--shadow-md);
+      margin: var(--space-8) 0
+    }
+    .flow-title {
+      font-family: var(--font-display); font-weight: 700;
+      margin-bottom: var(--space-6); text-align: center
+    }
+    .flow-steps {
+      display: flex; flex-direction: column;
+      gap: 0; position: relative; max-width: 600px; margin: 0 auto
+    }
+    .flow-step {
+      display: flex; gap: var(--space-4); align-items: flex-start;
+      position: relative; padding-bottom: var(--space-6)
+    }
+    .flow-step:last-child { padding-bottom: 0 }
+    .flow-step-number {
+      width: 36px; height: 36px; flex-shrink: 0;
+      background: var(--color-accent); color: white;
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-family: var(--font-display);
+      font-weight: 700; font-size: var(--text-sm);
+      position: relative; z-index: 2
+    }
+    .flow-step:not(:last-child)::before {
+      content: ''; position: absolute;
+      left: 17px; top: 36px; bottom: 0;
+      width: 2px; background: var(--color-border); z-index: 1
+    }
+    .flow-step:last-child .flow-step-number {
+      background: var(--color-accent-hover)
+    }
+    .flow-step-content { flex: 1; padding-top: var(--space-1) }
+    .flow-step-title {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: var(--text-sm); color: var(--color-text);
+      margin-bottom: var(--space-1)
+    }
+    .flow-step-desc {
+      font-family: var(--font-body); font-size: var(--text-sm);
+      color: var(--color-text-secondary); line-height: 1.6
+    }
+    .flow-step-loop {
+      margin-top: var(--space-2); font-family: var(--font-mono);
+      font-size: var(--text-xs); color: var(--color-accent);
+      font-weight: 500
+    }
+
+    /* === COMPONENT CARDS === */
+    .component-card {
+      background: var(--color-surface); border-radius: var(--radius-md);
+      border: 1px solid var(--color-border-light);
+      padding: var(--space-5); margin-bottom: var(--space-4);
+      transition: box-shadow var(--duration-fast)
+    }
+    .component-card:hover { box-shadow: var(--shadow-md) }
+    .component-card-header {
+      display: flex; align-items: center; gap: var(--space-3);
+      margin-bottom: var(--space-3)
+    }
+    .component-card-icon {
+      width: 40px; height: 40px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0
+    }
+    .component-card-icon.compute { background: var(--color-compute-light); color: var(--color-compute) }
+    .component-card-icon.storage { background: var(--color-storage-light); color: var(--color-storage) }
+    .component-card-icon.network { background: var(--color-network-light); color: var(--color-network) }
+    .component-card-name {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: var(--text-lg); color: var(--color-text)
+    }
+    .component-what {
+      font-family: var(--font-body); font-size: var(--text-base);
+      color: var(--color-text); line-height: 1.7;
+      margin-bottom: var(--space-3)
+    }
+    .component-why {
+      background: var(--color-bg-warm); border-radius: var(--radius-sm);
+      padding: var(--space-3) var(--space-4);
+      font-family: var(--font-body); font-size: var(--text-sm);
+      color: var(--color-text-secondary); line-height: 1.6
+    }
+    .component-why-label {
+      font-weight: 700; color: var(--color-accent);
+      font-size: var(--text-xs); text-transform: uppercase;
+      letter-spacing: 0.05em; margin-bottom: var(--space-1)
+    }
+
+    /* === CALLOUT BOXES === */
+    .callout {
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-5);
+      margin: var(--space-5) 0;
+      display: flex; gap: var(--space-3); align-items: flex-start
+    }
+    .callout-insight {
+      background: var(--color-info-light);
+      border-left: 4px solid var(--color-info)
+    }
+    .callout-icon {
+      font-size: var(--text-lg); flex-shrink: 0; line-height: 1.4
+    }
+    .callout-body {
+      font-family: var(--font-body); font-size: var(--text-sm);
+      color: var(--color-text); line-height: 1.6
+    }
+    .callout-body strong { font-weight: 700 }
+
+    /* === GLOSSARY TOOLTIPS === */
+    .glossary-term {
+      border-bottom: 1px dashed var(--color-accent-muted);
+      cursor: help; position: relative
+    }
+
+    .glossary-tooltip {
+      position: fixed; z-index: 10000;
+      background: var(--color-bg-code); color: #CDD6F4;
+      font-family: var(--font-body); font-size: var(--text-xs);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-sm);
+      width: 280px; max-width: 90vw;
+      box-shadow: var(--shadow-lg);
+      line-height: 1.5; pointer-events: none;
+      opacity: 0; visibility: hidden;
+      transition: opacity var(--duration-fast)
+    }
+    .glossary-tooltip.show { opacity: 1; visibility: visible }
+
+    /* === REFERENCES === */
+    .references-footer {
+      max-width: var(--content-width);
+      margin: var(--space-12) auto var(--space-4);
+      padding: var(--space-6);
+      background: var(--color-surface-warm);
+      border-radius: var(--radius-md)
+    }
+    .references-footer h3 {
+      font-family: var(--font-display); font-size: var(--text-lg);
+      font-weight: 700; margin: 0 0 var(--space-4)
+    }
+    .references-list {
+      list-style: none; padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: var(--space-3)
+    }
+    .reference-item {
+      display: flex; align-items: center; gap: var(--space-3)
+    }
+    .reference-type-icon { font-size: var(--text-base); flex-shrink: 0 }
+    .reference-title a {
+      color: var(--color-accent); text-decoration: none;
+      font-size: var(--text-sm); font-weight: 500
+    }
+    .reference-title a:hover { text-decoration: underline }
+    .reference-domain {
+      font-size: var(--text-xs); color: var(--color-text-muted);
+      margin-left: var(--space-1)
+    }
+
+    /* === PAGE NAV FOOTER === */
+    .page-nav-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      max-width: var(--content-width);
+      margin: var(--space-12) auto var(--space-6);
+      padding: var(--space-6);
+      border-top: 1px solid var(--color-border-light)
+    }
+    .page-nav-footer a {
+      font-family: var(--font-body); font-size: var(--text-sm);
+      font-weight: 600; color: var(--color-accent);
+      text-decoration: none; display: flex; align-items: center;
+      gap: var(--space-2); transition: color var(--duration-fast)
+    }
+    .page-nav-footer a:hover { color: var(--color-accent-hover) }
+    .page-nav-footer .prev::before { content: "\2190\00a0" }
+    .page-nav-footer .next::after { content: "\00a0\2192" }
+
+    /* === SITE FOOTER === */
+    .site-footer {
+      text-align: center; padding: var(--space-8) var(--space-6);
+      font-family: var(--font-body); font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      border-top: 1px solid var(--color-border-light);
+      margin-top: var(--space-4)
+    }
+
+    /* === MOBILE === */
+    @media (max-width: 768px) {
+      :root { --nav-height: 56px }
+      .nav-pages { display: none }
+      .nav-pages.mobile-open {
+        display: flex; flex-direction: column;
+        position: absolute; top: var(--nav-height);
+        left: 0; right: 0; background: var(--color-bg);
+        border-bottom: 1px solid var(--color-border-light);
+        padding: var(--space-4) var(--space-6);
+        box-shadow: var(--shadow-md); z-index: 999
+      }
+      .nav-hamburger { display: flex }
+      .page-header { flex-direction: column }
+      .page-header h1 { font-size: var(--text-2xl) }
+      .arch-row { flex-direction: column; align-items: center }
+      .arch-component { max-width: 100%; min-width: 0; width: 100% }
+      .gpu-row { flex-direction: column; align-items: center }
+      .page-nav-footer { flex-direction: column; gap: var(--space-4) }
+      .flow-step { gap: var(--space-3) }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="site-nav">
+    <div class="nav-progress-bar" role="progressbar"></div>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">TensorRT-LLM</a>
+      <div class="nav-pages" id="navPages">
+        <a href="index.html" class="nav-page-link">Home</a>
+        <a href="concepts.html" class="nav-page-link">Concepts</a>
+        <a href="architecture.html" class="nav-page-link active">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
+        <a href="implementation.html" class="nav-page-link">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link">FAQ</a>
+        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div>
+      <span class="page-level-badge intermediate">Intermediate</span>
+      <h1>Architecture</h1>
+    </div>
+    <button class="copy-markdown-btn" id="copyMdBtn">&#x1F4CB; Copy as Markdown</button>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="content-area" id="mainContent">
+
+    <!-- HIGH-LEVEL DESIGN -->
+    <section class="content-section fade-in-section">
+      <h2>High-Level Design</h2>
+      <p>TensorRT-LLM is organized into three main layers, each handling a different concern. The <strong>Python LLM API</strong> is the user-facing layer: it loads models from HuggingFace, manages tokenization, and exposes <span class="inline-code">generate()</span>. Underneath, it spawns one <strong>PyExecutor</strong> per GPU rank &mdash; a worker process that runs a continuous inference loop. At the bottom, the <strong>C++ Runtime</strong> handles GPU kernel execution, TensorRT engine inference, and multi-GPU communication via <span class="glossary-term" data-definition="NVIDIA Collective Communications Library. Provides multi-GPU and multi-node communication primitives (all-reduce, all-gather) optimized for NVLink and InfiniBand interconnects.">NCCL</span>.</p>
+      <p>Click any component in the diagram below to see its details.</p>
+
+      <div class="arch-diagram">
+        <h3 class="arch-title">TensorRT-LLM System Architecture</h3>
+        <div class="arch-subtitle">Click components to expand details</div>
+        <div class="arch-canvas">
+
+          <!-- Layer 1: Python LLM API -->
+          <div class="arch-layer-clickable" data-type="network" data-details="The user-facing Python layer. The LLM class handles model loading from HuggingFace, tokenization, and exposes the generate() method. SamplingParams configures decoding strategies (greedy, top-k, top-p, beam search). This layer spawns PyExecutor worker processes and manages the request lifecycle from the user's perspective.">
+            <div class="arch-component-label">Python LLM API</div>
+            <div class="arch-component-brief">LLM class, SamplingParams, model loading, tokenizer</div>
+            <div class="arch-component-details"></div>
+          </div>
+
+          <div class="arch-arrow-down">
+            <svg width="24" height="28" viewBox="0 0 24 28"><path d="M12 0 L12 20 M6 15 L12 24 L18 15" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+          </div>
+
+          <!-- Layer 2: PyExecutor Worker Process -->
+          <div class="arch-layer" style="border-left: 4px solid var(--color-compute)">
+            <div class="arch-layer-label">PyExecutor Worker Process</div>
+            <div class="arch-layer-desc">Continuous inference loop, one per GPU rank</div>
+            <div class="arch-row">
+              <div class="arch-component" data-type="compute" data-details="Decides which requests to admit and how to batch them. Split into Capacity Scheduler (checks KV cache block availability, can pause/evict requests) and Micro-Batch Scheduler (partitions into context/prefill vs generation batches). Prevents OOM by controlling GPU resource admission.">
+                <div class="arch-component-icon">&#x1F4CB;</div>
+                <div class="arch-component-label">Scheduler</div>
+                <div class="arch-component-brief">Request admission &amp; batching</div>
+                <div class="arch-component-details"></div>
+              </div>
+              <div class="arch-component" data-type="storage" data-details="Manages paged KV cache blocks as a memory pool. Allocates blocks on demand and recycles them when sequences finish, similar to virtual memory. Supports block reuse for prefix caching and KV cache quantization (INT8/FP8) for further memory savings. Near-zero waste vs contiguous allocation.">
+                <div class="arch-component-icon">&#x1F9E9;</div>
+                <div class="arch-component-label">KVCacheManager</div>
+                <div class="arch-component-brief">Paged memory allocation</div>
+                <div class="arch-component-details"></div>
+              </div>
+              <div class="arch-component" data-type="compute" data-details="Wraps the compiled TensorRT engine or PyTorch model and executes forward passes. Abstraction layer insulating the system from whether inference runs through TensorRT's compiled path or PyTorch's eager execution. Handles batched input preparation and output collection.">
+                <div class="arch-component-icon">&#x2699;&#xFE0F;</div>
+                <div class="arch-component-label">ModelEngine</div>
+                <div class="arch-component-brief">Forward pass execution</div>
+                <div class="arch-component-details"></div>
+              </div>
+              <div class="arch-component" data-type="compute" data-details="Processes raw logits from the model and selects the next token. Supports greedy, top-k, top-p, beam search, and speculative decoding acceptance/rejection. The C++ sampler is default since v1.1, offering lower overhead than the Python equivalent.">
+                <div class="arch-component-icon">&#x1F3AF;</div>
+                <div class="arch-component-label">Sampler</div>
+                <div class="arch-component-brief">Token selection</div>
+                <div class="arch-component-details"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arch-arrow-down">
+            <svg width="24" height="28" viewBox="0 0 24 28"><path d="M12 0 L12 20 M6 15 L12 24 L18 15" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+          </div>
+
+          <!-- Layer 3: C++ Runtime -->
+          <div class="arch-layer-clickable" data-type="compute" data-details="The performance-critical C++ layer. Executes CUDA kernels for attention (FlashAttention plugin), GEMM (FP8/FP4 quantized), and communication (NCCL all-reduce). TensorRT compiles model graphs into optimized engine files. The Executor manages the low-level inference loop at millisecond cadence, bypassing Python's GIL.">
+            <div class="arch-component-label">C++ Runtime &amp; TensorRT Engine</div>
+            <div class="arch-component-brief">CUDA kernels, plugins, NCCL communication, executor</div>
+            <div class="arch-component-details"></div>
+          </div>
+
+          <div class="arch-arrow-down">
+            <svg width="24" height="28" viewBox="0 0 24 28"><path d="M12 0 L12 20 M6 15 L12 24 L18 15" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+          </div>
+
+          <!-- GPUs -->
+          <div class="gpu-row">
+            <div class="gpu-chip">GPU 0</div>
+            <div class="gpu-chip">GPU 1</div>
+            <div class="gpu-chip">...</div>
+            <div class="gpu-chip">GPU N</div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="arch-legend">
+          <div class="arch-legend-item">
+            <div class="arch-legend-swatch" style="background: var(--color-compute)"></div>
+            Compute
+          </div>
+          <div class="arch-legend-item">
+            <div class="arch-legend-swatch" style="background: var(--color-storage)"></div>
+            Storage
+          </div>
+          <div class="arch-legend-item">
+            <div class="arch-legend-swatch" style="background: var(--color-network)"></div>
+            Network / API
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KEY COMPONENTS -->
+    <section class="content-section fade-in-section">
+      <h2>Key Components</h2>
+      <p>Five core components drive TensorRT-LLM's inference pipeline. Each solves a specific problem that arises when serving LLMs at scale.</p>
+
+      <div class="component-card">
+        <div class="component-card-header">
+          <div class="component-card-icon compute">&#x1F4CB;</div>
+          <div class="component-card-name">Scheduler</div>
+        </div>
+        <div class="component-what">Decides which requests to admit and how to batch them. The scheduler is split into two sub-components: a <strong>Capacity Scheduler</strong> that checks whether resources exist for new requests (and can pause or evict if needed), and a <strong>Micro-Batch Scheduler</strong> that partitions admitted requests into context (prefill) and generation batches.</div>
+        <div class="component-why">
+          <div class="component-why-label">Why it exists</div>
+          GPU resources (KV cache blocks, compute) are finite. Blindly admitting all requests would cause out-of-memory failures. The scheduler gates admission so the system operates within its memory budget at all times.
+        </div>
+      </div>
+
+      <div class="component-card">
+        <div class="component-card-header">
+          <div class="component-card-icon storage">&#x1F9E9;</div>
+          <div class="component-card-name">KVCacheManager</div>
+        </div>
+        <div class="component-what">Manages paged <span class="glossary-term" data-definition="Key-Value cache: stores the intermediate attention states (keys and values) for each generated token, so they don't need to be recomputed at each step. Memory usage grows linearly with sequence length.">KV cache</span> blocks as a memory pool. Allocates blocks on demand and recycles them when sequences finish, similar to virtual memory in an OS. Supports block reuse for prefix caching and KV cache quantization (INT8/FP8) for further memory savings.</div>
+        <div class="component-why">
+          <div class="component-why-label">Why it exists</div>
+          Naive contiguous KV cache allocation wastes memory proportional to <span class="inline-code">max_seq_len x batch_size</span> even when most sequences are short. The paged approach reduces memory waste to near zero, enabling 2-3x more concurrent requests on the same hardware.
+        </div>
+      </div>
+
+      <div class="component-card">
+        <div class="component-card-header">
+          <div class="component-card-icon compute">&#x2699;&#xFE0F;</div>
+          <div class="component-card-name">ModelEngine</div>
+        </div>
+        <div class="component-what">Wraps the compiled TensorRT engine or PyTorch model and executes forward passes. This is an abstraction layer that insulates the rest of the system from whether inference runs through TensorRT's compiled engine path or PyTorch's eager execution path (the two supported backends).</div>
+        <div class="component-why">
+          <div class="component-why-label">Why it exists</div>
+          Two execution backends exist with very different performance characteristics. The abstraction lets the scheduler, KV cache manager, and sampler work identically regardless of which backend runs the forward pass.
+        </div>
+      </div>
+
+      <div class="component-card">
+        <div class="component-card-header">
+          <div class="component-card-icon compute">&#x1F3AF;</div>
+          <div class="component-card-name">Sampler</div>
+        </div>
+        <div class="component-what">Processes raw logits from the model and selects the next token. Supports greedy, top-k, top-p, beam search, and <span class="glossary-term" data-definition="A decoding technique where a smaller 'draft' model proposes multiple tokens, and the larger target model verifies them in a single forward pass. Accepted tokens save inference steps; rejected tokens are re-sampled.">speculative decoding</span> acceptance/rejection. The C++ sampler is default since v1.1.</div>
+        <div class="component-why">
+          <div class="component-why-label">Why it exists</div>
+          Token selection logic must run at the speed of the inference loop (millisecond cadence). The C++ implementation avoids Python interpreter overhead and supports complex decoding strategies like speculative draft-verify without GIL contention.
+        </div>
+      </div>
+
+      <div class="component-card">
+        <div class="component-card-header">
+          <div class="component-card-icon network">&#x1F500;</div>
+          <div class="component-card-name">GenerationExecutor</div>
+        </div>
+        <div class="component-what">The orchestration layer that ties everything together. Manages the request lifecycle: submit, schedule, execute, sample, respond. Comes in several flavors: <span class="inline-code">GenerationExecutorWorker</span> (single-process), <span class="inline-code">GenerationExecutorProxy</span> (multi-process IPC with MPI), and <span class="inline-code">RayExecutor</span> (distributed via Ray).</div>
+        <div class="component-why">
+          <div class="component-why-label">Why it exists</div>
+          Different deployment scenarios need different process topologies. Single-GPU inference, multi-GPU tensor parallelism (via MPI), and distributed cluster inference (via Ray) all require different IPC patterns, but the request lifecycle remains the same.
+        </div>
+      </div>
+    </section>
+
+    <!-- DATA FLOW -->
+    <section class="content-section fade-in-section">
+      <h2>Data Flow</h2>
+      <p>A single inference request flows through the system in nine steps, from user submission to response delivery. The loop repeats continuously, admitting new requests into freed slots.</p>
+
+      <div class="flow-diagram">
+        <h3 class="flow-title">Request Lifecycle</h3>
+        <div class="flow-steps">
+
+          <div class="flow-step">
+            <div class="flow-step-number">1</div>
+            <div class="flow-step-content">
+              <div class="flow-step-title">Request Submission</div>
+              <div class="flow-step-desc">User calls <span class="inline-code">llm.generate("prompt")</span>. The LLM API tokenizes the input and submits a <span class="inline-code">GenerationRequest</span> to the Executor.</div>
+            </div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-step-number">2</div>
+            <div class="flow-step-content">
+              <div class="flow-step-title">Capacity Check</div>
+              <div class="flow-step-desc">The Capacity Scheduler checks whether enough KV cache blocks exist for the new request. If yes, the request is admitted. If memory is tight, lower-priority requests may be paused to make room.</div>
+            </div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-step-number">3</div>
+            <div class="flow-step-content">
+              <div class="flow-step-title">Micro-Batch Formation</div>
+              <div class="flow-step-desc">The Micro-Batch Scheduler partitions all active requests into two groups: <strong>context requests</strong> (prefill, compute-bound &mdash; processes many tokens at once) and <strong>generation requests</strong> (produces one token per step, memory-bound).</div>
+            </div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-step-number">4</div>
+            <div class="flow-step-content">
+              <div class="flow-step-title">KV Cache Allocation</div>
+              <div class="flow-step-desc">The KVCacheManager allocates new blocks for context requests and extends existing allocations for generation requests (one new token per block slot).</div>
+            </div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-step-number">5</div>
+            <div class="flow-step-content">
+              <div class="flow-step-title">Forward Pass</div>
+              <div class="flow-step-desc">The ModelEngine runs the TensorRT engine (or PyTorch model) on the combined batch. Plugins handle attention (<span class="glossary-term" data-definition="An optimized attention algorithm that reduces memory usage from O(n^2) to O(n) by computing attention in tiles, keeping intermediate results in fast SRAM rather than slower GPU HBM.">FlashAttention</span> with paged KV cache), GEMM (FP8/FP4 kernels), and multi-GPU communication (NCCL all-reduce).</div>
+            </div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-step-number">6</div>
+            <div class="flow-step-content">
+              <div class="flow-step-title">Token Sampling</div>
+              <div class="flow-step-desc">The Sampler processes output logits. For greedy decoding, it picks the highest-probability token. For speculative decoding, it validates draft tokens against the target model's distribution.</div>
+            </div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-step-number">7</div>
+            <div class="flow-step-content">
+              <div class="flow-step-title">Context-to-Generation Transition</div>
+              <div class="flow-step-desc">Requests that finish prefill move from the context batch to the generation batch. Their KV cache blocks are retained for subsequent generation steps.</div>
+            </div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-step-number">8</div>
+            <div class="flow-step-content">
+              <div class="flow-step-title">Response Delivery</div>
+              <div class="flow-step-desc">Completed sequences (hit EOS or max length) have their KV cache blocks freed and responses returned to the user. Streaming mode delivers tokens incrementally.</div>
+            </div>
+          </div>
+
+          <div class="flow-step">
+            <div class="flow-step-number">9</div>
+            <div class="flow-step-content">
+              <div class="flow-step-title">Loop Continues</div>
+              <div class="flow-step-desc">The executor returns to step 2 for the next iteration, potentially admitting new requests into the now-freed slots.</div>
+              <div class="flow-step-loop">&#x21BB; Back to step 2</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- DESIGN DECISIONS -->
+    <section class="content-section fade-in-section">
+      <h2>Design Decisions</h2>
+
+      <div class="callout callout-insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-body">
+          <strong>PyTorch as the Default Backend (v1.0+)</strong> &mdash; Starting with v1.0, TensorRT-LLM switched from a custom graph-building API to PyTorch as the primary model definition and execution framework. This dramatically simplified model onboarding (new architectures can reuse HuggingFace code patterns) at the cost of slightly less optimization control. The older TensorRT-native path still exists but is no longer the recommended workflow.
+        </div>
+      </div>
+
+      <div class="callout callout-insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-body">
+          <strong>Paged KV Cache over Contiguous Allocation</strong> &mdash; The team adopted the <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener noreferrer">PagedAttention</a> approach (originally from vLLM) because contiguous KV cache allocation wastes 60&ndash;80% of GPU memory in typical production workloads where request lengths vary widely. Paged allocation reduces memory waste to near zero, enabling 2&ndash;3x more concurrent requests.
+        </div>
+      </div>
+
+      <div class="callout callout-insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-body">
+          <strong>C++ Core with Python Orchestration</strong> &mdash; Performance-critical paths (kernel execution, KV cache management, scheduling) are implemented in C++ for minimal overhead, while model definition and user-facing APIs use Python for developer ergonomics. Python's <span class="glossary-term" data-definition="Global Interpreter Lock. A mutex in CPython that allows only one thread to execute Python bytecode at a time. It prevents true parallelism in CPU-bound Python code and would bottleneck a per-token scheduling loop running at millisecond cadence.">GIL</span> and interpreter overhead would bottleneck the per-token scheduling loop that runs at millisecond cadence.
+        </div>
+      </div>
+
+      <div class="callout callout-insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-body">
+          <strong>Plugin Architecture for Specialized Kernels</strong> &mdash; Rather than relying solely on TensorRT's auto-optimization, TensorRT-LLM registers custom plugins for attention (FlashAttention), GEMM (FP8, FP4), and communication (NCCL). LLM-specific operations (multi-head attention with paged KV cache, quantized matrix multiplication) require hand-tuned kernels that TensorRT's general-purpose pattern matching cannot discover automatically.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- REFERENCES -->
+  <section class="references-footer">
+    <h3>References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4C4;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/architecture/overview.html" target="_blank" rel="noopener noreferrer">Architecture Overview</a></span>
+          <span class="reference-domain">nvidia.github.io</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4C4;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/architecture/core-concepts.html" target="_blank" rel="noopener noreferrer">Core Concepts</a></span>
+          <span class="reference-domain">nvidia.github.io</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F310;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://deepwiki.com/NVIDIA/TensorRT-LLM" target="_blank" rel="noopener noreferrer">DeepWiki &mdash; TensorRT-LLM</a></span>
+          <span class="reference-domain">deepwiki.com</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- PREV / NEXT -->
+  <nav class="page-nav-footer">
+    <a href="concepts.html" class="prev">Concepts</a>
+    <a href="how-it-works.html" class="next">How It Works</a>
+  </nav>
+
+  <footer class="site-footer">
+    <p>Generated by System Explorer &mdash; an interactive course built from system analysis</p>
+  </footer>
+
+  <!-- GLOSSARY TOOLTIP CONTAINER (appended to body, position: fixed) -->
+  <div class="glossary-tooltip" id="glossaryTooltip"></div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      /* === HAMBURGER MENU === */
+      var hamburger = document.getElementById('navHamburger');
+      var navPages = document.getElementById('navPages');
+      hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        hamburger.classList.toggle('open');
+        navPages.classList.toggle('mobile-open');
+      });
+      document.addEventListener('click', function(e) {
+        if (!navPages.contains(e.target) && !hamburger.contains(e.target)) {
+          hamburger.classList.remove('open');
+          navPages.classList.remove('mobile-open');
+        }
+      });
+
+      /* === PROGRESS BAR === */
+      function updateProgressBar() {
+        var s = window.scrollY;
+        var d = document.documentElement.scrollHeight - window.innerHeight;
+        document.querySelector('.nav-progress-bar').style.width = (d > 0 ? (s / d) * 100 : 0) + '%';
+      }
+      window.addEventListener('scroll', function() { requestAnimationFrame(updateProgressBar); }, { passive: true });
+
+      /* === SCROLL ANIMATIONS === */
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+      document.querySelectorAll('.fade-in-section').forEach(function(el) {
+        observer.observe(el);
+      });
+
+      /* === ARCHITECTURE DIAGRAM: CLICK TO EXPAND === */
+      var allClickable = document.querySelectorAll('.arch-component, .arch-layer-clickable');
+      allClickable.forEach(function(c) {
+        c.addEventListener('click', function() {
+          var details = c.querySelector('.arch-component-details');
+          var wasExpanded = c.classList.contains('expanded');
+          // Collapse all
+          allClickable.forEach(function(o) {
+            o.classList.remove('expanded');
+            var od = o.querySelector('.arch-component-details');
+            if (od) od.textContent = '';
+          });
+          // Expand clicked (if it wasn't already expanded)
+          if (!wasExpanded && c.dataset.details) {
+            c.classList.add('expanded');
+            details.textContent = c.dataset.details;
+          }
+        });
+      });
+
+      /* === COPY AS MARKDOWN === */
+      document.getElementById('copyMdBtn').addEventListener('click', function() {
+        var main = document.getElementById('mainContent');
+        var md = '# Architecture\n\n';
+        main.querySelectorAll('h2, h3, p, .component-what, .component-why, .callout-body, .flow-step-title, .flow-step-desc').forEach(function(el) {
+          var text = el.textContent.trim();
+          if (!text) return;
+          if (el.tagName === 'H2') md += '\n## ' + text + '\n\n';
+          else if (el.tagName === 'H3') md += '### ' + text + '\n\n';
+          else md += text + '\n\n';
+        });
+        navigator.clipboard.writeText(md).then(function() {
+          var btn = document.getElementById('copyMdBtn');
+          btn.textContent = 'Copied!';
+          setTimeout(function() { btn.innerHTML = '&#x1F4CB; Copy as Markdown'; }, 2000);
+        });
+      });
+
+      /* === GLOSSARY TOOLTIPS (position: fixed, appended to body) === */
+      var tooltip = document.getElementById('glossaryTooltip');
+      var hideTimer = null;
+
+      document.querySelectorAll('.glossary-term').forEach(function(term) {
+        term.addEventListener('mouseenter', function(e) {
+          clearTimeout(hideTimer);
+          var def = term.getAttribute('data-definition');
+          if (!def) return;
+          tooltip.textContent = def;
+          tooltip.classList.add('show');
+          // Position relative to viewport
+          var rect = term.getBoundingClientRect();
+          var ttWidth = 280;
+          var left = rect.left + (rect.width / 2) - (ttWidth / 2);
+          // Clamp to viewport
+          if (left < 8) left = 8;
+          if (left + ttWidth > window.innerWidth - 8) left = window.innerWidth - 8 - ttWidth;
+          // Above or below
+          var top = rect.top - 8;
+          tooltip.style.left = left + 'px';
+          tooltip.style.width = ttWidth + 'px';
+          // Measure tooltip height
+          tooltip.style.top = '0px';
+          var ttHeight = tooltip.offsetHeight;
+          if (rect.top - ttHeight - 8 > 0) {
+            tooltip.style.top = (rect.top - ttHeight - 8) + 'px';
+          } else {
+            tooltip.style.top = (rect.bottom + 8) + 'px';
+          }
+        });
+        term.addEventListener('mouseleave', function() {
+          hideTimer = setTimeout(function() {
+            tooltip.classList.remove('show');
+          }, 150);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

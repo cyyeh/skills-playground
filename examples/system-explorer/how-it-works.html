@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How It Works — NVIDIA TensorRT-LLM Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system:"NVIDIA TensorRT-LLM" page:"How It Works" level:"Intermediate" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5BAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--stagger-delay:120ms}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent-hover);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
+    p code,li code{font-family:var(--font-mono);font-size:var(--text-sm);background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px}
+
+    /* Nav */
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}
+    .nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}
+    .nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}
+    .nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}
+    .nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}
+    .nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}
+    .nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent-hover);background:var(--color-accent-light);font-weight:600}
+    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}
+    .nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+    /* Page Header */
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}
+    .page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
+    .page-level-badge.intermediate{background:var(--color-warning-light);color:#BF9738}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}
+    .copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}
+    .copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+
+    /* Content */
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}
+    .content-section{margin-bottom:var(--space-10)}
+    .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}
+    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:var(--space-6) 0 var(--space-3)}
+    .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
+    .content-section ul,.content-section ol{font-family:var(--font-body);font-size:var(--text-base);line-height:1.7;color:var(--color-text);padding-left:var(--space-6);margin:0 0 var(--space-4)}
+    .content-section li{margin-bottom:var(--space-2)}
+
+    /* Flow Diagram */
+    .flow-diagram{margin:var(--space-8) 0;padding:var(--space-6);background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+    .flow-diagram-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);margin-bottom:var(--space-5);color:var(--color-text)}
+    .flow-steps{display:flex;flex-direction:column;gap:0}
+    .flow-step{display:flex;align-items:flex-start;gap:var(--space-4);position:relative;padding-bottom:var(--space-5);opacity:0;transform:translateY(12px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}
+    .flow-step.visible{opacity:1;transform:translateY(0)}
+    .flow-step:last-child{padding-bottom:0}
+    .flow-step:last-child .flow-step-connector{display:none}
+    .flow-step-number{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);flex-shrink:0;position:relative;z-index:2}
+    .flow-step-connector{position:absolute;left:18px;top:36px;bottom:0;width:2px;z-index:1}
+    .flow-step-content{flex:1;padding-top:var(--space-1)}
+    .flow-step-label{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);margin-bottom:var(--space-1)}
+    .flow-step-desc{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.6}
+
+    /* Callout */
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}
+    .callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}
+    .callout-tip{background:var(--color-success-light);border-color:var(--color-success)}
+    .callout-info{background:var(--color-info-light);border-color:var(--color-info)}
+    .callout-icon{font-size:1.3rem;flex-shrink:0}
+    .callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}
+    .callout-content strong{color:var(--color-text)}
+
+    /* Comparison Cards (Attention) */
+    .comparison-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);margin:var(--space-6) 0}
+    .comparison-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-top:3px solid var(--card-color,var(--color-accent));box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
+    .comparison-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .comparison-card-header{display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-3)}
+    .comparison-card-icon{font-size:1.4rem}
+    .comparison-card-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text)}
+    .comparison-card-subtitle{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
+    .attn-item{padding:var(--space-3) 0;border-bottom:1px solid var(--color-border-light)}
+    .attn-item:last-child{border-bottom:none;padding-bottom:0}
+    .attn-item-name{font-family:var(--font-display);font-weight:600;font-size:var(--text-sm);color:var(--color-text);margin-bottom:var(--space-1)}
+    .attn-item-desc{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-secondary);line-height:1.5}
+    .attn-tag{display:inline-block;font-family:var(--font-mono);font-size:0.65rem;padding:1px 6px;border-radius:3px;margin-left:var(--space-1);vertical-align:middle}
+    .attn-tag-default{background:var(--color-accent-light);color:var(--color-accent-hover)}
+    .attn-tag-fallback{background:var(--color-warning-light);color:#BF9738}
+
+    /* Memory Mechanism Cards */
+    .memory-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-4);margin:var(--space-6) 0}
+    .memory-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-left:3px solid var(--mc-color,var(--color-accent));box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
+    .memory-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .memory-card-icon{font-size:1.4rem;margin-bottom:var(--space-2)}
+    .memory-card-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);color:var(--color-text);margin-bottom:var(--space-2)}
+    .memory-card-desc{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-secondary);line-height:1.6}
+
+    /* Accordion (Speculative Decoding) */
+    .accordion{margin:var(--space-6) 0;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--color-border-light)}
+    .accordion-item{border-bottom:1px solid var(--color-border-light)}
+    .accordion-item:last-child{border-bottom:none}
+    .accordion-trigger{width:100%;display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-5);background:var(--color-surface);border:none;cursor:pointer;text-align:left;transition:background var(--duration-fast)}
+    .accordion-trigger:hover{background:var(--color-surface-warm)}
+    .accordion-trigger[aria-expanded="true"]{background:var(--color-accent-light)}
+    .accordion-number{width:28px;height:28px;border-radius:50%;background:var(--color-accent);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-xs);flex-shrink:0}
+    .accordion-trigger[aria-expanded="true"] .accordion-number{background:var(--color-accent-hover)}
+    .accordion-label{flex:1;font-family:var(--font-display);font-weight:600;font-size:var(--text-sm);color:var(--color-text)}
+    .accordion-best-for{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);margin-left:auto;white-space:nowrap;padding-left:var(--space-2)}
+    .accordion-chevron{width:20px;height:20px;flex-shrink:0;transition:transform var(--duration-fast);color:var(--color-text-muted)}
+    .accordion-trigger[aria-expanded="true"] .accordion-chevron{transform:rotate(180deg)}
+    .accordion-panel{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}
+    .accordion-panel-inner{padding:0 var(--space-5) var(--space-5);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.7}
+    .accordion-panel-inner strong{color:var(--color-text)}
+
+    /* Perf Gauges */
+    .perf-gauges{display:grid;grid-template-columns:1fr;gap:var(--space-4);margin:var(--space-6) 0}
+    .perf-gauge{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);box-shadow:var(--shadow-sm)}
+    .perf-gauge-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--space-2)}
+    .perf-gauge-label{font-family:var(--font-display);font-size:var(--text-sm);font-weight:600;color:var(--color-text)}
+    .perf-gauge-value{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;color:var(--color-accent-hover)}
+    .perf-gauge-bar{height:10px;background:var(--color-border-light);border-radius:var(--radius-full);overflow:hidden;margin-bottom:var(--space-1)}
+    .perf-gauge-fill{height:100%;border-radius:var(--radius-full);width:0;transition:width 1s var(--ease-out)}
+    .perf-gauge-note{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.5}
+
+    /* Disaggregated Serving Diagram */
+    .disagg-diagram{display:grid;grid-template-columns:1fr auto 1fr;gap:var(--space-4);align-items:center;margin:var(--space-6) 0;padding:var(--space-6);background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+    .disagg-pool{padding:var(--space-5);border-radius:var(--radius-md);text-align:center}
+    .disagg-pool-prefill{background:#E4F2F7;border:2px solid #B3D9E8}
+    .disagg-pool-decode{background:var(--color-accent-light);border:2px solid var(--color-accent-muted)}
+    .disagg-pool-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);margin-bottom:var(--space-2)}
+    .disagg-pool-type{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
+    .disagg-pool-desc{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.5}
+    .disagg-transfer{text-align:center;padding:var(--space-3)}
+    .disagg-arrow{font-size:var(--text-2xl);color:var(--color-accent);display:block;margin-bottom:var(--space-1)}
+    .disagg-protocol{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+
+    /* Glossary */
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}
+    .glossary-tooltip{position:fixed;background:var(--color-bg-code);color:#CDD6F4;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
+
+    /* References */
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}
+    .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
+    .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
+    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}
+    .reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
+    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}
+    .reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}
+    .reference-title a{color:var(--color-accent-hover);text-decoration:none}.reference-title a:hover{text-decoration:underline}
+    .reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+
+    /* Page Nav Footer */
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
+    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent-hover);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s}
+    .page-nav-footer a:hover{color:var(--color-accent)}
+    .page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+
+    /* Site Footer */
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+
+    /* Animations */
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
+
+    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.comparison-grid{grid-template-columns:1fr}.memory-cards{grid-template-columns:1fr}.disagg-diagram{grid-template-columns:1fr}.disagg-transfer .disagg-arrow{transform:rotate(90deg)}.accordion-best-for{display:none}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.page-header h1{font-size:var(--text-2xl)}}
+    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">TensorRT-LLM</a>
+      <div class="nav-pages" id="navPages">
+        <a href="index.html" class="nav-page-link">Home</a>
+        <a href="concepts.html" class="nav-page-link">Concepts</a>
+        <a href="architecture.html" class="nav-page-link">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link active">How It Works</a>
+        <a href="implementation.html" class="nav-page-link">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link">FAQ</a>
+        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <header class="page-header animate-in">
+    <div class="page-header-content">
+      <span class="page-level-badge intermediate">Intermediate</span>
+      <h1>How It Works</h1>
+    </div>
+    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()">
+      <span class="btn-icon">&#x1F4CB;</span>
+      <span class="btn-label">Copy as Markdown</span>
+    </button>
+  </header>
+
+  <main class="content-area">
+
+    <!-- Section 1: Compilation Pipeline -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Compilation Pipeline</h2>
+      <p>The compilation pipeline transforms a HuggingFace model into an optimized GPU executable through five stages. Each step narrows the representation from a general-purpose model definition down to a GPU-architecture-specific binary tuned for maximum throughput.</p>
+
+      <div class="flow-diagram animate-in" id="compilationFlow">
+        <div class="flow-diagram-title">Model-to-Engine Pipeline</div>
+        <div class="flow-steps">
+          <div class="flow-step" style="transition-delay:0.1s">
+            <div class="flow-step-number" style="background:#E4F2F7;color:#2A7B9B">1</div>
+            <div class="flow-step-connector" style="background:linear-gradient(to bottom,#2A7B9B,#2D8B55)"></div>
+            <div class="flow-step-content">
+              <div class="flow-step-label" style="color:#2A7B9B">Model Loading</div>
+              <div class="flow-step-desc">Weights loaded from a HuggingFace checkpoint or local directory. <code>LLaMAConfig.from_hugging_face()</code> maps HuggingFace config fields to TensorRT-LLM's internal representation.</div>
+            </div>
+          </div>
+          <div class="flow-step" style="transition-delay:0.25s">
+            <div class="flow-step-number" style="background:var(--color-accent-light);color:var(--color-accent-hover)">2</div>
+            <div class="flow-step-connector" style="background:linear-gradient(to bottom,#2D8B55,#D4A843)"></div>
+            <div class="flow-step-content">
+              <div class="flow-step-label" style="color:var(--color-accent-hover)">Network Definition</div>
+              <div class="flow-step-desc">Forward pass traced into a TensorRT <code>INetworkDefinition</code> graph. Each layer (attention, MLP, normalization) becomes a set of TensorRT operations. Custom plugins injected where hand-tuned kernels outperform auto-optimization.</div>
+            </div>
+          </div>
+          <div class="flow-step" style="transition-delay:0.4s">
+            <div class="flow-step-number" style="background:var(--color-warning-light);color:#BF9738">3</div>
+            <div class="flow-step-connector" style="background:linear-gradient(to bottom,#D4A843,#C93B3B)"></div>
+            <div class="flow-step-content">
+              <div class="flow-step-label" style="color:#BF9738">Optimization Pass</div>
+              <div class="flow-step-desc"><code>optimize_model_with_config()</code> applies pre-build transformations: <span class="glossary-term" data-definition="Reducing the numerical precision of model weights and activations (e.g., from FP16 to FP8 or INT4) to decrease memory usage and improve throughput with minimal accuracy loss.">quantization</span> (replacing linear layers with FP8/INT4 variants), plugin injection, and layer fusion planning.</div>
+            </div>
+          </div>
+          <div class="flow-step" style="transition-delay:0.55s">
+            <div class="flow-step-number" style="background:var(--color-error-light);color:var(--color-error)">4</div>
+            <div class="flow-step-connector" style="background:linear-gradient(to bottom,#C93B3B,#7B6DAA)"></div>
+            <div class="flow-step-content">
+              <div class="flow-step-label" style="color:var(--color-error)">TensorRT Compilation</div>
+              <div class="flow-step-desc"><code>Builder.build_engine()</code> invokes TensorRT's compiler: evaluates available CUDA kernel implementations, identifies fusible operation sequences (e.g., LayerNorm + quantize), selects optimal kernels via auto-tuning. This step takes <strong>~28 minutes</strong> for a 70B model.</div>
+            </div>
+          </div>
+          <div class="flow-step" style="transition-delay:0.7s">
+            <div class="flow-step-number" style="background:#F3EFF8;color:#7B6DAA">5</div>
+            <div class="flow-step-content">
+              <div class="flow-step-label" style="color:#7B6DAA">Serialization</div>
+              <div class="flow-step-desc">Engine binary, config JSON, and managed weights written to disk. Subsequent loads skip compilation entirely &mdash; deserialization takes <strong>~90 seconds</strong>.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-warning">
+        <div class="callout-icon">&#x26A0;&#xFE0F;</div>
+        <div class="callout-content">
+          <strong>Engine is GPU-architecture-specific:</strong> an engine compiled on H100 cannot run on A100 or B200. This is the fundamental trade-off &mdash; maximum per-GPU optimization at the cost of portability.
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Attention Mechanisms -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Attention Mechanisms</h2>
+      <p>TensorRT-LLM implements several attention strategies that activate based on the inference phase and hardware capabilities. The context (prefill) phase processes all input tokens at once, while the generation (decode) phase produces tokens one at a time against the <span class="glossary-term" data-definition="Key-Value Cache. A memory buffer that stores the key and value tensors from previous attention computations, avoiding redundant recalculation during autoregressive token generation.">KV cache</span>.</p>
+
+      <div class="comparison-grid">
+        <div class="comparison-card" style="--card-color:#2A7B9B">
+          <div class="comparison-card-header">
+            <span class="comparison-card-icon">&#x26A1;</span>
+            <span class="comparison-card-title">Context Phase (Prefill)</span>
+          </div>
+          <div class="comparison-card-subtitle">Processes all input tokens at once</div>
+
+          <div class="attn-item">
+            <div class="attn-item-name">Without FMHA <span class="attn-tag attn-tag-fallback">fallback</span></div>
+            <div class="attn-item-desc">Falls back to a sequence of GPU kernels with quadratic memory overhead. Viable for short sequences but prohibitive at scale.</div>
+          </div>
+          <div class="attn-item">
+            <div class="attn-item-name">With <a href="https://nvidia.github.io/TensorRT-LLM/advanced/gpt-attention.html" target="_blank" rel="noopener noreferrer">FMHA</a> <span class="attn-tag attn-tag-default">default</span></div>
+            <div class="attn-item-desc">Runs <span class="glossary-term" data-definition="An algorithm that computes attention in tiled blocks without materializing the full N x N attention matrix. Reduces memory from O(N^2) to O(N) and improves throughput by reducing GPU memory reads.">FlashAttention</span> / FlashAttention-2 in a single kernel pass. On Hopper GPUs, FP8 context FMHA further reduces compute for Q x K and attention x V products.</div>
+          </div>
+        </div>
+
+        <div class="comparison-card" style="--card-color:var(--color-accent)">
+          <div class="comparison-card-header">
+            <span class="comparison-card-icon">&#x1F504;</span>
+            <span class="comparison-card-title">Generation Phase (Decode)</span>
+          </div>
+          <div class="comparison-card-subtitle">Produces tokens one at a time</div>
+
+          <div class="attn-item">
+            <div class="attn-item-name">Masked MHA Kernel</div>
+            <div class="attn-item-desc">Reads one new query token against the KV cache. Applies QKV bias, <span class="glossary-term" data-definition="Rotary Position Embedding. A position encoding method that rotates query and key vectors by an angle proportional to their position, enabling the model to understand relative token distances.">RoPE</span> position embeddings, and KV cache dequantization (INT8/FP8) on the fly.</div>
+          </div>
+          <div class="attn-item">
+            <div class="attn-item-name">Multi-Block Mode</div>
+            <div class="attn-item-desc">When <code>batch_size x num_heads</code> is less than the GPU's <span class="glossary-term" data-definition="Streaming Multiprocessor. The core compute unit on NVIDIA GPUs. An H100 has 132 SMs, each capable of running thousands of threads concurrently.">SM</span> count, distributes work across multiple CUDA thread-blocks per attention head to keep all SMs busy.</div>
+          </div>
+          <div class="attn-item">
+            <div class="attn-item-name">XQA (Cross-Query Attention) <span class="attn-tag attn-tag-default">default</span></div>
+            <div class="attn-item-desc">Specialized kernel for <span class="glossary-term" data-definition="Multi-Query Attention / Grouped-Query Attention. Attention variants where multiple query heads share fewer key-value heads, reducing KV cache memory and improving decode throughput.">MQA/GQA</span>, exploiting the shared KV head structure for faster decode.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Memory Management -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Memory Management</h2>
+      <p>TensorRT-LLM's memory system is built around the paged KV cache, inspired by virtual memory systems. Blocks are pre-allocated at startup and dynamically assigned as requests arrive, avoiding fragmentation and enabling efficient sharing.</p>
+
+      <div class="memory-cards">
+        <div class="memory-card" style="--mc-color:#2A7B9B">
+          <div class="memory-card-icon">&#x1F9F1;</div>
+          <div class="memory-card-title">Block Pool</div>
+          <div class="memory-card-desc">Pre-allocated at startup by <code>KVCacheManager</code>. Configurable block sizes (8/16/32/64/128 tokens). Pool shape: <code>[num_blocks, num_layers, 2, num_heads, block_size, head_dim]</code>.</div>
+        </div>
+        <div class="memory-card" style="--mc-color:var(--color-accent)">
+          <div class="memory-card-icon">&#x1F504;</div>
+          <div class="memory-card-title">Dynamic Allocation</div>
+          <div class="memory-card-desc">Blocks allocated from the pool on demand as new requests arrive. New blocks added one at a time during generation. Freed back to the pool on request completion.</div>
+        </div>
+        <div class="memory-card" style="--mc-color:#D4A843">
+          <div class="memory-card-icon">&#x1F517;</div>
+          <div class="memory-card-title">Block Reuse (Prefix Caching)</div>
+          <div class="memory-card-desc">Shared prefixes (system prompts, conversation history) reused across requests via <code>storeContextBlocks()</code> / <code>findNewContextBlock()</code>. Avoids recomputing KV cache for identical prefix tokens.</div>
+        </div>
+        <div class="memory-card" style="--mc-color:#C93B3B">
+          <div class="memory-card-icon">&#x1F4E6;</div>
+          <div class="memory-card-title">KV Cache Quantization</div>
+          <div class="memory-card-desc">INT8 or FP8 storage instead of FP16, cutting memory by 2&ndash;4x. On Blackwell GPUs, <a href="https://nvidia.github.io/TensorRT-LLM/reference/precision.html" target="_blank" rel="noopener noreferrer">NVFP4 KV cache</a> provides 50% reduction versus FP8.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Speculative Decoding -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Speculative Decoding</h2>
+      <p>TensorRT-LLM supports <a href="https://nvidia.github.io/TensorRT-LLM/advanced/speculative-decoding.html" target="_blank" rel="noopener noreferrer">six speculative decoding methods</a> that trade extra compute for fewer autoregressive steps. The core mechanism: generate multiple candidate tokens cheaply, then validate them against the full model in a single forward pass. Accepted tokens skip autoregressive steps; rejected tokens trigger a rewind via <code>KVCacheManager.rewindKVCache()</code>.</p>
+
+      <div class="accordion" id="specAccordion">
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">1</span>
+            <span class="accordion-label">Draft-Target</span>
+            <span class="accordion-best-for">Good small model exists</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            A small draft model (e.g., LLaMA-68M) generates K candidate tokens autoregressively. The large target model (e.g., LLaMA-70B) validates all K candidates in a <strong>single forward pass</strong>. Accepted tokens are kept; the first rejected token triggers a fallback to the target model's prediction. Best when a high-quality small model exists for your domain.
+          </div></div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">2</span>
+            <span class="accordion-label">EAGLE (1/2/3)</span>
+            <span class="accordion-best-for">General-purpose</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            A single-layer transformer predicts draft tokens from the target model's <strong>hidden states</strong>, avoiding a separate draft model. EAGLE-2 improves tree-structured verification. <strong>EAGLE-3</strong> adds support for disaggregated serving, enabling speculative decoding across separate prefill and decode GPU pools. No separate draft model needed &mdash; general-purpose and widely applicable.
+          </div></div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">3</span>
+            <span class="accordion-label">Medusa</span>
+            <span class="accordion-best-for">Fine-tunable extra heads</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            Additional LM heads are attached to the model, each predicting a future token position. Verification uses a <strong>tree-structured</strong> approach to evaluate multiple candidate sequences in parallel. Requires fine-tuning the extra heads on your target distribution, but achieves strong acceptance rates when the heads are well-trained.
+          </div></div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">4</span>
+            <span class="accordion-label">Lookahead</span>
+            <span class="accordion-best-for">No training required</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            Uses two parallel branches: a <strong>lookahead branch</strong> that generates n-gram candidates and a <strong>verification branch</strong> that validates them. No extra model training or fine-tuning required &mdash; works with any model out of the box. Particularly useful for quick deployment scenarios.
+          </div></div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">5</span>
+            <span class="accordion-label">NGram</span>
+            <span class="accordion-best-for">Summarization &amp; QA</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            Copies token sequences directly from the <strong>input prompt</strong> as draft candidates. Extremely effective for tasks where output echoes parts of the input &mdash; summarization, extractive QA, and document rewriting. Zero compute overhead for draft generation.
+          </div></div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">6</span>
+            <span class="accordion-label">MTP (Multi-Token Prediction)</span>
+            <span class="accordion-best-for">MTP-trained models</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            Generates <strong>multiple tokens per forward pass</strong> natively, leveraging models specifically trained with multi-token prediction objectives. The model itself produces several next-token predictions simultaneously, which are then verified for consistency. Best suited for models explicitly trained with MTP objectives (e.g., DeepSeek-V3).
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Disaggregated Serving -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Disaggregated Serving</h2>
+      <p><a href="https://nvidia.github.io/TensorRT-LLM/blogs/tech_blog/blog5_Disaggregated_Serving_in_TensorRT-LLM.html" target="_blank" rel="noopener noreferrer">Disaggregated serving</a> separates prefill and decode onto different GPU pools, exploiting their fundamentally different hardware profiles.</p>
+
+      <div class="disagg-diagram animate-in">
+        <div class="disagg-pool disagg-pool-prefill">
+          <div class="disagg-pool-title">Prefill Pool</div>
+          <div class="disagg-pool-type">Compute-bound</div>
+          <div class="disagg-pool-desc">Dense matrix multiplications over many tokens. Benefits from maximum FLOPS.</div>
+        </div>
+        <div class="disagg-transfer">
+          <span class="disagg-arrow">&#x27A1;&#xFE0F;</span>
+          <span class="disagg-protocol">KV Cache Transfer<br>MPI / UCX / NIXL</span>
+        </div>
+        <div class="disagg-pool disagg-pool-decode">
+          <div class="disagg-pool-title">Decode Pool</div>
+          <div class="disagg-pool-type">Memory-bandwidth-bound</div>
+          <div class="disagg-pool-desc">Reading the KV cache for one token at a time. Benefits from maximum memory bandwidth.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-tip">
+        <div class="callout-icon">&#x1F680;</div>
+        <div class="callout-content">
+          <strong>GB200 performance:</strong> On GB200 systems, disaggregated serving achieves <strong>1.4x to 6.1x speedups</strong> depending on the workload mix, by allowing each GPU pool to be independently optimized for its bottleneck.
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Performance Characteristics -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Performance Characteristics</h2>
+      <p>Key performance numbers measured on a single H100 80GB running Llama 3.3 70B with FP8 quantization at 100 concurrent requests.</p>
+
+      <div class="perf-gauges">
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Throughput</span>
+            <span class="perf-gauge-value">~2,780 tok/s</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="92" style="background:var(--color-accent)"></div></div>
+          <div class="perf-gauge-note">At 100 concurrent requests (H100, Llama 70B FP8). ~15% faster than vLLM (~2,400 tok/s) and SGLang (~2,460 tok/s).</div>
+        </div>
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Time to First Token (p95)</span>
+            <span class="perf-gauge-value">~1,280 ms</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="72" style="background:var(--color-warning)"></div></div>
+          <div class="perf-gauge-note">At 100 concurrent requests on H100 (vs ~1,450ms for vLLM). Chunked context and FP8 context FMHA are the main levers for reducing TTFT.</div>
+        </div>
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Cold Start (First Compilation)</span>
+            <span class="perf-gauge-value">~28 min</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="25" style="background:var(--color-error)"></div></div>
+          <div class="perf-gauge-note">First compilation of a 70B model. Cached engine reload takes ~90 seconds. vLLM loads in ~62s, SGLang in ~58s &mdash; this is the primary operational cost.</div>
+        </div>
+        <div class="perf-gauge animate-in">
+          <div class="perf-gauge-header">
+            <span class="perf-gauge-label">Peak VRAM Usage</span>
+            <span class="perf-gauge-value">74&ndash;79 GB</span>
+          </div>
+          <div class="perf-gauge-bar"><div class="perf-gauge-fill" data-width="95" style="background:var(--color-info)"></div></div>
+          <div class="perf-gauge-note">On H100 for a 70B FP8 model. Slightly higher than vLLM (71&ndash;78GB) due to TensorRT workspace buffers.</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/advanced/gpt-attention.html" target="_blank" rel="noopener noreferrer">GPT Attention</a></span>
+          <span class="reference-domain">nvidia.github.io &middot; official-docs</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/advanced/speculative-decoding.html" target="_blank" rel="noopener noreferrer">Speculative Decoding</a></span>
+          <span class="reference-domain">nvidia.github.io &middot; official-docs</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4F0;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/blogs/tech_blog/blog5_Disaggregated_Serving_in_TensorRT-LLM.html" target="_blank" rel="noopener noreferrer">Disaggregated Serving</a></span>
+          <span class="reference-domain">nvidia.github.io &middot; blog</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/reference/precision.html" target="_blank" rel="noopener noreferrer">Numerical Precision</a></span>
+          <span class="reference-domain">nvidia.github.io &middot; official-docs</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <div class="page-nav-footer">
+    <a href="architecture.html" class="prev">Architecture</a>
+    <a href="implementation.html" class="next">Implementation</a>
+  </div>
+
+  <footer class="site-footer">
+    <p>Generated by <strong>System Explorer</strong> &mdash; an interactive course built from system analysis</p>
+  </footer>
+
+  <script>
+    document.documentElement.classList.add('js-ready');
+
+    /* Hamburger toggle */
+    (function() {
+      var hamburger = document.getElementById('navHamburger');
+      var navPages = document.getElementById('navPages');
+      hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = hamburger.classList.contains('open');
+        hamburger.classList.toggle('open');
+        navPages.classList.toggle('mobile-open');
+      });
+      document.addEventListener('click', function(e) {
+        if (!hamburger.contains(e.target) && !navPages.contains(e.target)) {
+          hamburger.classList.remove('open');
+          navPages.classList.remove('mobile-open');
+        }
+      });
+    })();
+
+    /* Scroll progress bar */
+    function updateProgress() {
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      var p = h > 0 ? (window.scrollY / h * 100) : 0;
+      document.querySelector('.nav-progress-bar').style.width = p + '%';
+    }
+    window.addEventListener('scroll', function() { requestAnimationFrame(updateProgress); }, { passive: true });
+
+    /* Intersection observer for animations + perf gauge fills + flow steps */
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          /* Animate perf gauge fills */
+          var fills = e.target.querySelectorAll('.perf-gauge-fill[data-width]');
+          fills.forEach(function(f) { f.style.width = f.dataset.width + '%'; });
+          /* Animate flow steps */
+          var steps = e.target.querySelectorAll('.flow-step');
+          steps.forEach(function(s) { s.classList.add('visible'); });
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.animate-in').forEach(function(el) { observer.observe(el); });
+
+    /* Accordion toggle */
+    function toggleAccordion(trigger) {
+      var panel = trigger.nextElementSibling;
+      var expanded = trigger.getAttribute('aria-expanded') === 'true';
+
+      if (expanded) {
+        trigger.setAttribute('aria-expanded', 'false');
+        panel.style.maxHeight = null;
+      } else {
+        /* Close all other panels in the same accordion */
+        var accordion = trigger.closest('.accordion');
+        accordion.querySelectorAll('.accordion-trigger[aria-expanded="true"]').forEach(function(t) {
+          t.setAttribute('aria-expanded', 'false');
+          t.nextElementSibling.style.maxHeight = null;
+        });
+        trigger.setAttribute('aria-expanded', 'true');
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+    }
+
+    /* Glossary tooltips */
+    (function() {
+      var tt = document.createElement('div');
+      tt.className = 'glossary-tooltip';
+      document.body.appendChild(tt);
+
+      document.querySelectorAll('.glossary-term').forEach(function(term) {
+        term.addEventListener('mouseenter', function(e) {
+          var r = e.target.getBoundingClientRect();
+          tt.textContent = e.target.dataset.definition;
+          tt.classList.add('visible');
+          tt.style.left = Math.max(8, Math.min(r.left + r.width / 2 - 150, window.innerWidth - 308)) + 'px';
+          tt.style.top = (r.top - tt.offsetHeight - 8) + 'px';
+          if (r.top - tt.offsetHeight - 8 < 8) {
+            tt.style.top = (r.bottom + 8) + 'px';
+          }
+        });
+        term.addEventListener('mouseleave', function() {
+          tt.classList.remove('visible');
+        });
+      });
+    })();
+
+    /* Copy as Markdown */
+    function copyPageAsMarkdown() {
+      var md = '# TensorRT-LLM - How It Works\n\n'
+        + '## Compilation Pipeline\n'
+        + '1. **Model Loading** - Weights from HuggingFace checkpoint\n'
+        + '2. **Network Definition** - Forward pass traced into TensorRT INetworkDefinition graph\n'
+        + '3. **Optimization Pass** - Quantization, plugin injection, layer fusion\n'
+        + '4. **TensorRT Compilation** - Kernel evaluation, auto-tuning (~28 min)\n'
+        + '5. **Serialization** - Engine binary + config to disk (~90s reload)\n'
+        + '- Engine is GPU-architecture-specific (H100 engine won\'t run on A100)\n\n'
+        + '## Attention Mechanisms\n'
+        + '### Context Phase (Prefill)\n'
+        + '- Without FMHA: sequence of GPU kernels, quadratic memory\n'
+        + '- With FMHA (default): FlashAttention/FlashAttention-2, single kernel. FP8 on Hopper.\n'
+        + '### Generation Phase (Decode)\n'
+        + '- Masked MHA: reads one query against KV cache, applies QKV bias + RoPE + dequant\n'
+        + '- Multi-Block Mode: distributes work when batch_size x num_heads < SM count\n'
+        + '- XQA: specialized kernel for MQA/GQA (default)\n\n'
+        + '## Memory Management\n'
+        + '- Block pool: pre-allocated at startup [num_blocks, num_layers, 2, num_heads, block_size, head_dim]\n'
+        + '- Dynamic allocation: blocks on demand, freed on completion\n'
+        + '- Block reuse: prefix caching via storeContextBlocks()/findNewContextBlock()\n'
+        + '- KV cache quantization: INT8/FP8 (2-4x less memory), NVFP4 on Blackwell (50% vs FP8)\n\n'
+        + '## Speculative Decoding\n'
+        + '1. Draft-Target: small draft model + large target validates\n'
+        + '2. EAGLE (1/2/3): single-layer transformer from hidden states\n'
+        + '3. Medusa: additional LM heads, tree-structured verification\n'
+        + '4. Lookahead: two parallel branches, no extra training\n'
+        + '5. NGram: copies from input prompt (summarization/QA)\n'
+        + '6. MTP: multiple tokens per forward pass\n\n'
+        + '## Disaggregated Serving\n'
+        + '- Prefill (compute-bound) and decode (memory-bound) on separate GPU pools\n'
+        + '- KV cache transferred via MPI/UCX/NIXL\n'
+        + '- GB200: 1.4x-6.1x speedups\n\n'
+        + '## Performance (H100, Llama 70B FP8, 100 concurrent)\n'
+        + '- Throughput: ~2,780 tok/s\n'
+        + '- TTFT (p95): ~1,280ms\n'
+        + '- Cold start: ~28 min compile, ~90s cached reload\n'
+        + '- Memory: 74-79GB peak VRAM\n';
+
+      var btn = document.querySelector('.copy-markdown-btn');
+      navigator.clipboard.writeText(md).then(function() {
+        btn.querySelector('.btn-label').textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.querySelector('.btn-label').textContent = 'Copy as Markdown';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Implementation Details — NVIDIA TensorRT-LLM Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system:"NVIDIA TensorRT-LLM" page:"Implementation Details" level:"Advanced" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5BAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--stagger-delay:120ms}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent-hover);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
+
+    /* Nav */
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}
+    .nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}
+    .nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}
+    .nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}
+    .nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}
+    .nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}
+    .nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent-hover);background:var(--color-accent-light);font-weight:600}
+    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}
+    .nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+    /* Page Header */
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}
+    .page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
+    .page-level-badge.advanced{background:var(--color-warning-light);color:#BF9738}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}
+    .copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}
+    .copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+
+    /* Content */
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}
+    .content-section{margin-bottom:var(--space-10)}
+    .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}
+    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:var(--space-6) 0 var(--space-3)}
+    .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
+    .content-section ul,.content-section ol{font-family:var(--font-body);font-size:var(--text-base);line-height:1.7;color:var(--color-text);padding-left:var(--space-6);margin:0 0 var(--space-4)}
+    .content-section li{margin-bottom:var(--space-2)}
+    .content-section p code,.content-section li code{font-family:var(--font-mono);font-size:var(--text-sm);background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px}
+
+    /* Code Blocks */
+    .code-block-wrapper{position:relative;margin:var(--space-4) 0;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm)}
+    .code-block-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244}
+    .code-block-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;text-transform:uppercase;letter-spacing:0.08em}
+    .code-block-copy{display:inline-flex;align-items:center;gap:var(--space-1);font-family:var(--font-body);font-size:var(--text-xs);color:#A6ADC8;background:transparent;border:1px solid #45475A;border-radius:4px;padding:2px 8px;cursor:pointer;transition:all var(--duration-fast)}
+    .code-block-copy:hover{color:#CDD6F4;border-color:#CDD6F4;background:rgba(205,214,244,0.08)}
+    .code-block-copy.copied{color:var(--color-accent);border-color:var(--color-accent)}
+    .code-block-pre{margin:0;padding:var(--space-4);background:var(--color-bg-code);overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.65;color:#CDD6F4;tab-size:4}
+
+    /* Source-annotated Code Blocks */
+    .source-block-wrapper{position:relative;margin:var(--space-4) 0;border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid #313244}
+    .source-block-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-2) var(--space-4);background:#11111B;border-bottom:1px solid #313244}
+    .source-block-path{display:flex;align-items:center;gap:var(--space-2);font-family:var(--font-mono);font-size:var(--text-xs);color:#F5C2E7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .source-block-path .file-icon{color:#89B4FA;flex-shrink:0}
+    .source-block-actions{display:flex;align-items:center;gap:var(--space-2);flex-shrink:0}
+    .source-github-link{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;text-decoration:none;padding:2px 6px;border-radius:4px;border:1px solid #45475A;transition:all var(--duration-fast)}
+    .source-github-link:hover{color:#CDD6F4;border-color:#CDD6F4;background:rgba(205,214,244,0.08)}
+    .source-github-link::after{content:none !important}
+    .source-block-copy{display:inline-flex;align-items:center;gap:var(--space-1);font-family:var(--font-body);font-size:var(--text-xs);color:#A6ADC8;background:transparent;border:1px solid #45475A;border-radius:4px;padding:2px 8px;cursor:pointer;transition:all var(--duration-fast)}
+    .source-block-copy:hover{color:#CDD6F4;border-color:#CDD6F4;background:rgba(205,214,244,0.08)}
+    .source-block-copy.copied{color:var(--color-accent);border-color:var(--color-accent)}
+    .source-block-pre{margin:0;padding:var(--space-4);background:var(--color-bg-code);overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.65;color:#CDD6F4;tab-size:4}
+
+    /* Syntax highlighting tokens */
+    .tok-kw{color:#CBA6F7}.tok-str{color:#A6E3A1}.tok-cm{color:#6C7086;font-style:italic}.tok-fn{color:#89B4FA}.tok-cls{color:#F9E2AF}.tok-num{color:#FAB387}.tok-op{color:#89DCEB}.tok-dec{color:#F38BA8}.tok-param{color:#F5C2E7}.tok-self{color:#F38BA8}.tok-const{color:#FAB387}.tok-type{color:#F9E2AF}.tok-pp{color:#CBA6F7}
+
+    /* Source Map */
+    .source-map{margin:var(--space-4) 0;border-radius:var(--radius-md);border:1px solid var(--color-border-light);overflow:hidden}
+    .source-map-header{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--color-surface-warm);border-bottom:1px solid var(--color-border-light);cursor:pointer;user-select:none}
+    .source-map-header:hover{background:var(--color-bg-warm)}
+    .source-map-icon{flex-shrink:0;font-size:1rem}
+    .source-map-title{font-family:var(--font-display);font-size:var(--text-sm);font-weight:600;color:var(--color-text);flex:1}
+    .source-map-chevron{width:18px;height:18px;flex-shrink:0;transition:transform var(--duration-fast);color:var(--color-text-muted)}
+    .source-map-header[aria-expanded="true"] .source-map-chevron{transform:rotate(180deg)}
+    .source-map-content{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}
+    .source-map-list{list-style:none;padding:var(--space-3) var(--space-4);margin:0;display:grid;grid-template-columns:1fr 1fr;gap:var(--space-1) var(--space-6)}
+    .source-map-item{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-secondary);padding:var(--space-1) 0;display:flex;align-items:center;gap:var(--space-2)}
+    .source-map-item .smi-icon{color:var(--color-accent);flex-shrink:0;font-size:0.7rem}
+
+    /* Config Table */
+    .config-table-wrapper{margin:var(--space-4) 0;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--color-border-light);box-shadow:var(--shadow-sm)}
+    .config-table{width:100%;border-collapse:collapse;font-family:var(--font-body);font-size:var(--text-sm)}
+    .config-table thead{background:var(--color-surface-warm)}
+    .config-table th{padding:var(--space-3) var(--space-4);text-align:left;font-family:var(--font-display);font-weight:600;font-size:var(--text-xs);color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid var(--color-border)}
+    .config-table td{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-border-light);vertical-align:top;line-height:1.5}
+    .config-table tr:last-child td{border-bottom:none}
+    .config-table tr:hover{background:var(--color-surface-warm)}
+    .config-table td:first-child{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-accent-hover);white-space:nowrap}
+    .config-table td:nth-child(2){font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .config-table .always-enable{color:var(--color-accent);font-weight:600}
+
+    /* Callout */
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}
+    .callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}
+    .callout-tip{background:var(--color-success-light);border-color:var(--color-success)}
+    .callout-info{background:var(--color-info-light);border-color:var(--color-info)}
+    .callout-icon{font-size:1.3rem;flex-shrink:0}
+    .callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}
+    .callout-content strong{color:var(--color-text)}
+
+    /* Accordion */
+    .accordion{margin:var(--space-6) 0;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--color-border-light)}
+    .accordion-item{border-bottom:1px solid var(--color-border-light)}
+    .accordion-item:last-child{border-bottom:none}
+    .accordion-trigger{width:100%;display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-5);background:var(--color-surface);border:none;cursor:pointer;text-align:left;transition:background var(--duration-fast)}
+    .accordion-trigger:hover{background:var(--color-surface-warm)}
+    .accordion-trigger[aria-expanded="true"]{background:var(--color-accent-light)}
+    .accordion-number{width:28px;height:28px;border-radius:50%;background:var(--color-accent);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:var(--text-xs);flex-shrink:0}
+    .accordion-trigger[aria-expanded="true"] .accordion-number{background:var(--color-accent-hover)}
+    .accordion-label{flex:1;font-family:var(--font-display);font-weight:600;font-size:var(--text-sm);color:var(--color-text)}
+    .accordion-sublabel{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);margin-left:auto;white-space:nowrap;padding-left:var(--space-2)}
+    .accordion-chevron{width:20px;height:20px;flex-shrink:0;transition:transform var(--duration-fast);color:var(--color-text-muted)}
+    .accordion-trigger[aria-expanded="true"] .accordion-chevron{transform:rotate(180deg)}
+    .accordion-panel{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}
+    .accordion-panel-inner{padding:0 var(--space-5) var(--space-5);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.7}
+    .accordion-panel-inner strong{color:var(--color-text)}
+    .accordion-panel-inner p{margin:0 0 var(--space-3)}
+    .accordion-panel-inner p:last-child{margin-bottom:0}
+    .accordion-panel-inner p code,.accordion-panel-inner li code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px}
+
+    /* Deployment Cards */
+    .deploy-cards{display:grid;grid-template-columns:1fr;gap:var(--space-4);margin:var(--space-6) 0}
+    .deploy-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-left:3px solid var(--dc-color,var(--color-accent));box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast)}
+    .deploy-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .deploy-card-header{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)}
+    .deploy-card-icon{font-size:1.4rem;flex-shrink:0}
+    .deploy-card-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text)}
+    .deploy-card-body{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.6}
+    .deploy-card-body ul{padding-left:var(--space-5);margin:var(--space-2) 0 0}
+    .deploy-card-body li{margin-bottom:var(--space-1);font-size:var(--text-sm)}
+    .deploy-card-body li code{font-family:var(--font-mono);font-size:var(--text-xs);background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px}
+
+    /* Getting Started Paths */
+    .install-path{margin:var(--space-5) 0}
+    .install-path-label{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);margin-bottom:var(--space-2);display:flex;align-items:center;gap:var(--space-2)}
+    .install-path-tag{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-accent-light);color:var(--color-accent-hover);padding:1px 8px;border-radius:var(--radius-full);font-weight:500}
+
+    /* References */
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}
+    .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
+    .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
+    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}
+    .reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
+    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}
+    .reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}
+    .reference-title a{color:var(--color-accent-hover);text-decoration:none}.reference-title a:hover{text-decoration:underline}
+    .reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+
+    /* Page Nav Footer */
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
+    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent-hover);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s}
+    .page-nav-footer a:hover{color:var(--color-accent)}
+    .page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+
+    /* Site Footer */
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+
+    /* Animations */
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
+
+    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.deploy-cards{grid-template-columns:1fr}.source-map-list{grid-template-columns:1fr}.config-table-wrapper{overflow-x:auto}.accordion-sublabel{display:none}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.page-header h1{font-size:var(--text-2xl)}}
+    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">TensorRT-LLM</a>
+      <div class="nav-pages" id="navPages">
+        <a href="index.html" class="nav-page-link">Home</a>
+        <a href="concepts.html" class="nav-page-link">Concepts</a>
+        <a href="architecture.html" class="nav-page-link">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
+        <a href="implementation.html" class="nav-page-link active">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link">FAQ</a>
+        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <header class="page-header animate-in">
+    <div class="page-header-content">
+      <span class="page-level-badge advanced">Advanced</span>
+      <h1>Implementation Details</h1>
+    </div>
+    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()">
+      <span class="btn-icon">&#x1F4CB;</span>
+      <span class="btn-label">Copy as Markdown</span>
+    </button>
+  </header>
+
+  <main class="content-area">
+
+    <!-- Section 1: Getting Started -->
+    <section class="content-section animate-in" data-level="advanced">
+      <h2>Getting Started</h2>
+      <p>Three paths to get TensorRT-LLM running, from a turnkey container to a pip install and first inference.</p>
+
+      <div class="install-path">
+        <div class="install-path-label">Docker <span class="install-path-tag">recommended</span></div>
+        <div class="code-block-wrapper">
+          <div class="code-block-header">
+            <span class="code-block-lang">bash</span>
+            <button class="code-block-copy" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre class="code-block-pre"><code><span class="tok-fn">docker</span> run --rm -it --ipc host --gpus all --ulimit memlock=-1 \
+  --ulimit stack=67108864 -p 8000:8000 \
+  nvcr.io/nvidia/tensorrt-llm/release:1.3.0rc10</code></pre>
+        </div>
+      </div>
+
+      <div class="install-path">
+        <div class="install-path-label">Pip Install</div>
+        <div class="code-block-wrapper">
+          <div class="code-block-header">
+            <span class="code-block-lang">bash</span>
+            <button class="code-block-copy" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre class="code-block-pre"><code><span class="tok-fn">pip</span> install tensorrt-llm
+<span class="tok-cm"># Requires: Python 3.10/3.12, CUDA 13.1.1+, PyTorch 2.10.0+</span></code></pre>
+        </div>
+      </div>
+
+      <div class="install-path">
+        <div class="install-path-label">OpenAI-Compatible Server</div>
+        <div class="code-block-wrapper">
+          <div class="code-block-header">
+            <span class="code-block-lang">bash</span>
+            <button class="code-block-copy" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre class="code-block-pre"><code><span class="tok-fn">trtllm-serve</span> <span class="tok-str">"TinyLlama/TinyLlama-1.1B-Chat-v1.0"</span>
+
+<span class="tok-fn">curl</span> -X POST http://localhost:8000/v1/chat/completions \
+  -H <span class="tok-str">"Content-Type: application/json"</span> \
+  -d <span class="tok-str">'{
+    "model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    "messages": [{"role": "user", "content": "Hello!"}],
+    "max_tokens": 32,
+    "temperature": 0
+  }'</span></code></pre>
+        </div>
+      </div>
+
+      <div class="install-path">
+        <div class="install-path-label">Python API</div>
+        <div class="code-block-wrapper">
+          <div class="code-block-header">
+            <span class="code-block-lang">python</span>
+            <button class="code-block-copy" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre class="code-block-pre"><code><span class="tok-kw">from</span> tensorrt_llm <span class="tok-kw">import</span> LLM, SamplingParams
+
+llm = <span class="tok-cls">LLM</span>(model=<span class="tok-str">"TinyLlama/TinyLlama-1.1B-Chat-v1.0"</span>)
+prompts = [<span class="tok-str">"Hello, my name is"</span>, <span class="tok-str">"The capital of France is"</span>]
+sampling_params = <span class="tok-cls">SamplingParams</span>(temperature=<span class="tok-num">0.8</span>, top_p=<span class="tok-num">0.95</span>)
+
+<span class="tok-kw">for</span> output <span class="tok-kw">in</span> llm.generate(prompts, sampling_params):
+    <span class="tok-fn">print</span>(<span class="tok-str">f"Prompt: </span><span class="tok-op">{</span>output.prompt<span class="tok-op">!r}</span><span class="tok-str">, Generated: </span><span class="tok-op">{</span>output.outputs[<span class="tok-num">0</span>].text<span class="tok-op">!r}</span><span class="tok-str">"</span>)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Configuration Essentials -->
+    <section class="content-section animate-in" data-level="advanced">
+      <h2>Configuration Essentials</h2>
+      <p>The most impactful build-time and runtime parameters for tuning TensorRT-LLM throughput and latency.</p>
+
+      <div class="config-table-wrapper">
+        <table class="config-table">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Default</th>
+              <th>What It Controls</th>
+              <th>When to Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>--multiple_profiles</td>
+              <td>off</td>
+              <td>Creates multiple TensorRT optimization profiles for different batch sizes</td>
+              <td><span class="always-enable">Always enable</span> &mdash; only helps, slight build time increase</td>
+            </tr>
+            <tr>
+              <td>--use_paged_context_fmha</td>
+              <td>off</td>
+              <td>Chunks context (prefill) across iterations</td>
+              <td>Enable for long input sequences (&gt;2K tokens)</td>
+            </tr>
+            <tr>
+              <td>--gemm_plugin auto</td>
+              <td>auto</td>
+              <td>Uses cuBLASLt and custom kernels for matrix multiplication</td>
+              <td>Enable for FP16/BF16; disable for FP8 (TRT native is faster)</td>
+            </tr>
+            <tr>
+              <td>--reduce_fusion enable</td>
+              <td>off</td>
+              <td>Fuses ResidualAdd+LayerNorm into AllReduce kernel</td>
+              <td>Enable for multi-GPU LLaMA/Mistral/Mixtral</td>
+            </tr>
+            <tr>
+              <td>max_batch_size</td>
+              <td>256</td>
+              <td>Maximum concurrent requests</td>
+              <td>Increase to 2048 for throughput-focused in-flight batching</td>
+            </tr>
+            <tr>
+              <td>max_num_tokens</td>
+              <td>8192</td>
+              <td>Token budget per iteration</td>
+              <td>Increase for high-throughput; decrease for low-latency</td>
+            </tr>
+            <tr>
+              <td>enable_chunked_context</td>
+              <td>off</td>
+              <td>Splits prefill into smaller chunks</td>
+              <td>Enable when mixing long and short requests</td>
+            </tr>
+            <tr>
+              <td>KV cache memory fraction</td>
+              <td>0.9</td>
+              <td>Fraction of free GPU memory allocated to KV cache</td>
+              <td>Lower if running other processes on the same GPU</td>
+            </tr>
+            <tr>
+              <td>tokens_per_block</td>
+              <td>64</td>
+              <td>KV cache block granularity</td>
+              <td>Smaller (32) for variable-length; larger (128) for long contexts</td>
+            </tr>
+            <tr>
+              <td>kv_cache_type</td>
+              <td>fp16</td>
+              <td>KV cache precision</td>
+              <td>Use <code>int8</code> or <code>fp8</code> to fit 2&ndash;4x more concurrent sequences</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-tip">
+        <div class="callout-icon">&#x1F4A1;</div>
+        <div class="callout-content">
+          <strong>Enabling all build-time optimization flags together yields ~30% throughput improvement and ~54% inter-token latency reduction</strong> on Llama 3.3 70B / 4x H100.
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Code Patterns -->
+    <section class="content-section animate-in" data-level="advanced">
+      <h2>Code Patterns</h2>
+      <p>Common usage patterns for streaming, multi-GPU, quantization, and adapter loading.</p>
+
+      <h3>Streaming Generation</h3>
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">python</span>
+          <button class="code-block-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-block-pre"><code><span class="tok-kw">from</span> tensorrt_llm <span class="tok-kw">import</span> LLM, SamplingParams
+
+llm = <span class="tok-cls">LLM</span>(model=<span class="tok-str">"meta-llama/Llama-3.1-8B-Instruct"</span>)
+sp = <span class="tok-cls">SamplingParams</span>(temperature=<span class="tok-num">0.7</span>, max_tokens=<span class="tok-num">256</span>)
+
+<span class="tok-cm"># Async streaming</span>
+<span class="tok-kw">async for</span> output <span class="tok-kw">in</span> llm.generate_async(<span class="tok-str">"Explain transformers"</span>, sp, streaming=<span class="tok-const">True</span>):
+    <span class="tok-fn">print</span>(output.outputs[<span class="tok-num">0</span>].text, end=<span class="tok-str">""</span>, flush=<span class="tok-const">True</span>)</code></pre>
+      </div>
+
+      <h3>Multi-GPU Tensor Parallelism</h3>
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">python</span>
+          <button class="code-block-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-block-pre"><code><span class="tok-kw">from</span> tensorrt_llm <span class="tok-kw">import</span> LLM, SamplingParams
+
+<span class="tok-cm"># Automatically shards across 4 GPUs</span>
+llm = <span class="tok-cls">LLM</span>(model=<span class="tok-str">"meta-llama/Llama-3.1-70B-Instruct"</span>,
+           tensor_parallel_size=<span class="tok-num">4</span>)
+
+output = llm.generate(<span class="tok-str">"What is TensorRT?"</span>,
+                       <span class="tok-cls">SamplingParams</span>(max_tokens=<span class="tok-num">100</span>))
+<span class="tok-fn">print</span>(output.outputs[<span class="tok-num">0</span>].text)</code></pre>
+      </div>
+
+      <h3>FP8 Quantization</h3>
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">python</span>
+          <button class="code-block-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-block-pre"><code><span class="tok-kw">from</span> tensorrt_llm <span class="tok-kw">import</span> LLM, SamplingParams
+<span class="tok-kw">from</span> tensorrt_llm.llmapi <span class="tok-kw">import</span> QuantConfig, QuantAlgo
+
+llm = <span class="tok-cls">LLM</span>(model=<span class="tok-str">"meta-llama/Llama-3.1-8B"</span>,
+           quant_config=<span class="tok-cls">QuantConfig</span>(quant_algo=<span class="tok-cls">QuantAlgo</span>.FP8))
+
+output = llm.generate(<span class="tok-str">"Hello world"</span>, <span class="tok-cls">SamplingParams</span>(max_tokens=<span class="tok-num">50</span>))</code></pre>
+      </div>
+
+      <h3>LoRA Adapter Loading</h3>
+      <div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-block-lang">python</span>
+          <button class="code-block-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-block-pre"><code><span class="tok-kw">from</span> tensorrt_llm <span class="tok-kw">import</span> LLM, SamplingParams
+<span class="tok-kw">from</span> tensorrt_llm.llmapi <span class="tok-kw">import</span> LoRARequest
+
+llm = <span class="tok-cls">LLM</span>(model=<span class="tok-str">"meta-llama/Llama-3.1-8B-Instruct"</span>)
+lora = <span class="tok-cls">LoRARequest</span>(lora_name=<span class="tok-str">"my-adapter"</span>, lora_path=<span class="tok-str">"/path/to/adapter"</span>)
+
+output = llm.generate(<span class="tok-str">"Summarize:"</span>, <span class="tok-cls">SamplingParams</span>(max_tokens=<span class="tok-num">100</span>),
+                       lora_request=lora)</code></pre>
+      </div>
+    </section>
+
+    <!-- Section 4: Source Code Walkthrough -->
+    <section class="content-section animate-in" data-level="advanced">
+      <h2>Source Code Walkthrough</h2>
+      <p>A guided tour through the key source files that implement the concepts from previous sections. Each block links directly to the source on GitHub.</p>
+
+      <!-- Collapsible Source Map -->
+      <div class="source-map">
+        <div class="source-map-header" aria-expanded="false" onclick="toggleSourceMap(this)">
+          <span class="source-map-icon">&#x1F5C2;</span>
+          <span class="source-map-title">Referenced Source Files (16 files)</span>
+          <svg class="source-map-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="source-map-content">
+          <ul class="source-map-list">
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> tensorrt_llm/builder.py</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> tensorrt_llm/llmapi/llm.py</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> cpp/include/.../kvCacheManager.h</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> tensorrt_llm/runtime/kv_cache_manager.py</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> tensorrt_llm/_torch/.../scheduler.py</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> tensorrt_llm/quantization/mode.py</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> tensorrt_llm/quantization/layers.py</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> cpp/.../gptAttentionPlugin.h</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> cpp/include/.../tllmPlugin.h</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> cpp/include/.../executor.h</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> tensorrt_llm/_torch/.../py_executor.py</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> tensorrt_llm/models/__init__.py</li>
+            <li class="source-map-item"><span class="smi-icon">&#x25CF;</span> tensorrt_llm/models/llama/model.py</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Accordion: Source Code Groups -->
+      <div class="accordion" id="sourceAccordion">
+
+        <!-- 1. Engine/Builder -->
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">1</span>
+            <span class="accordion-label">Engine / Builder</span>
+            <span class="accordion-sublabel">builder.py</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            <p>The <strong>Builder</strong> wraps TensorRT's native builder and handles the full compilation pipeline &mdash; the core of the "model-to-engine" transformation. The <code>build_engine()</code> method is the top-level entry point that takes a model graph, applies quantization and plugin optimizations, then delegates to TensorRT's compiler.</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/builder.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/builder.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">Builder</span>():
+    <span class="tok-str">"""Wraps TensorRT's trt.Builder to build TensorRT-LLM engines."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">__init__</span>(<span class="tok-self">self</span>):
+        <span class="tok-fn">super</span>().__init__()
+        <span class="tok-self">self</span>._trt_builder = trt.Builder(logger.trt_logger)
+
+    <span class="tok-kw">def</span> <span class="tok-fn">create_network</span>(<span class="tok-self">self</span>):
+        network = <span class="tok-self">self</span>._trt_builder.create_network()
+        <span class="tok-kw">return</span> network
+
+    <span class="tok-kw">def</span> <span class="tok-fn">create_builder_config</span>(<span class="tok-self">self</span>, precision, timing_cache, ...):
+        config = <span class="tok-self">self</span>._trt_builder.create_builder_config()
+        <span class="tok-cm"># Set precision flags, workspace size, plugin configs</span>
+        <span class="tok-kw">return</span> config
+
+    <span class="tok-dec">@_is_building</span>
+    <span class="tok-kw">def</span> <span class="tok-fn">build_engine</span>(<span class="tok-self">self</span>, network, builder_config, managed_weights):
+        <span class="tok-str">"""Compile the network into a serialized TensorRT engine."""</span>
+        <span class="tok-self">self</span>._add_optimization_profile(network, builder_config)
+        <span class="tok-cm"># TensorRT compiles: kernel selection, layer fusion, auto-tuning</span>
+        <span class="tok-kw">return</span> <span class="tok-self">self</span>._trt_builder.build_serialized_network(
+            network, builder_config)</code></pre>
+            </div>
+
+            <p>The <strong>Engine</strong> class wraps the compiled binary with its configuration for serialization:</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/builder.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/builder.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">Engine</span>:
+    <span class="tok-str">"""Holds a serialized TRT engine + config + managed weights."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">__init__</span>(<span class="tok-self">self</span>, config: <span class="tok-type">EngineConfig</span>, engine: <span class="tok-type">trt.IHostMemory</span>,
+                 managed_weights=<span class="tok-const">None</span>):
+        <span class="tok-self">self</span>.config = config
+        <span class="tok-self">self</span>.engine = engine
+        <span class="tok-self">self</span>.managed_weights = managed_weights
+
+    <span class="tok-kw">def</span> <span class="tok-fn">save</span>(<span class="tok-self">self</span>, engine_dir: <span class="tok-type">str</span>):
+        <span class="tok-str">"""Serialize engine binary and config to disk."""</span>
+        os.makedirs(engine_dir, exist_ok=<span class="tok-const">True</span>)
+        <span class="tok-kw">with</span> <span class="tok-fn">open</span>(os.path.join(engine_dir, <span class="tok-str">'config.json'</span>), <span class="tok-str">'w'</span>) <span class="tok-kw">as</span> f:
+            json.dump(<span class="tok-self">self</span>.config.to_dict(), f, indent=<span class="tok-num">2</span>)
+        <span class="tok-kw">with</span> <span class="tok-fn">open</span>(os.path.join(engine_dir, <span class="tok-str">f'rank{rank}.engine'</span>), <span class="tok-str">'wb'</span>) <span class="tok-kw">as</span> f:
+            f.write(<span class="tok-self">self</span>.engine)
+
+    <span class="tok-dec">@classmethod</span>
+    <span class="tok-kw">def</span> <span class="tok-fn">from_dir</span>(<span class="tok-self">cls</span>, engine_dir: <span class="tok-type">str</span>):
+        <span class="tok-str">"""Load a previously compiled engine from disk."""</span>
+        config = <span class="tok-cls">EngineConfig</span>.from_json_file(
+            os.path.join(engine_dir, <span class="tok-str">'config.json'</span>))
+        <span class="tok-kw">with</span> <span class="tok-fn">open</span>(os.path.join(engine_dir, <span class="tok-str">f'rank{rank}.engine'</span>), <span class="tok-str">'rb'</span>) <span class="tok-kw">as</span> f:
+            engine = f.read()
+        <span class="tok-kw">return</span> <span class="tok-fn">cls</span>(config, engine)</code></pre>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- 2. LLM API -->
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">2</span>
+            <span class="accordion-label">LLM API</span>
+            <span class="accordion-sublabel">llmapi/llm.py</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            <p>The <strong>LLM</strong> class is the high-level entry point. It inherits from <code>_TorchLLM</code> (PyTorch backend) which inherits from <code>BaseLLM</code>. The <code>generate()</code> method handles batching, async submission, and result collection.</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/llmapi/llm.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/llmapi/llm.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">BaseLLM</span>:
+    <span class="tok-str">"""Abstract base handling tokenizer loading and generate dispatch."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">__init__</span>(<span class="tok-self">self</span>, model, tokenizer, tokenizer_mode, skip_tokenizer_init,
+                 trust_remote_code, tensor_parallel_size, dtype, revision,
+                 tokenizer_revision, **kwargs):
+        <span class="tok-self">self</span>._executor_cls = kwargs.pop(<span class="tok-str">"executor_cls"</span>, GenerationExecutor)
+        <span class="tok-self">self</span>._orchestrator_type = kwargs.get(<span class="tok-str">"orchestrator_type"</span>, <span class="tok-const">None</span>)
+        <span class="tok-cm"># ... tokenizer loading, model resolution</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">generate</span>(<span class="tok-self">self</span>, inputs, sampling_params, use_tqdm=<span class="tok-const">True</span>, **kwargs):
+        <span class="tok-str">"""Synchronous batch generation."""</span>
+        unbatched = <span class="tok-kw">not</span> <span class="tok-fn">isinstance</span>(inputs, <span class="tok-type">list</span>)
+        <span class="tok-kw">if</span> unbatched:
+            inputs = [inputs]
+        futures = []
+        <span class="tok-kw">for</span> i, prompt <span class="tok-kw">in</span> <span class="tok-fn">enumerate</span>(inputs):
+            future = <span class="tok-self">self</span>.generate_async(prompt, sampling_params=sp, **kwargs)
+            futures.append(future)
+        <span class="tok-kw">for</span> future <span class="tok-kw">in</span> futures:
+            future.result()  <span class="tok-cm"># Block until complete</span>
+        <span class="tok-kw">return</span> [<span class="tok-cls">RequestOutput</span>.from_future(f) <span class="tok-kw">for</span> f <span class="tok-kw">in</span> futures]</code></pre>
+            </div>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/llmapi/llm.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/llmapi/llm.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">LLM</span>(<span class="tok-type">_TorchLLM</span>):
+    <span class="tok-str">"""Main public class. Uses PyTorch backend by default (v1.0+)."""</span>
+    <span class="tok-kw">pass</span>
+
+<span class="tok-kw">class</span> <span class="tok-cls">_TorchLLM</span>(<span class="tok-type">BaseLLM</span>):
+    <span class="tok-str">"""PyTorch-native backend using PyExecutor."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">_build_model</span>(<span class="tok-self">self</span>):
+        <span class="tok-cm"># Resolves model from HuggingFace, applies quantization,</span>
+        <span class="tok-cm"># initializes PyExecutor with the model</span>
+        ...</code></pre>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- 3. KV Cache -->
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">3</span>
+            <span class="accordion-label">KV Cache</span>
+            <span class="accordion-sublabel">kvCacheManager.h / kv_cache_manager.py</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            <p>The C++ <strong>KVCacheManager</strong> implements the paged KV cache. Its constructor reveals the complexity of managing block pools across layers, attention windows, and quantization modes.</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> cpp/include/tensorrt_llm/batch_manager/kvCacheManager.h</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/cpp/include/tensorrt_llm/batch_manager/kvCacheManager.h" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">KVCacheManager</span> : <span class="tok-kw">public</span> <span class="tok-type">BaseKVCacheManager</span> {
+<span class="tok-kw">public</span>:
+    <span class="tok-fn">KVCacheManager</span>(
+        std::vector&lt;<span class="tok-type">SizeType32</span>&gt; <span class="tok-kw">const</span>&amp; numKvHeadsPerLayer,
+        <span class="tok-type">SizeType32</span> sizePerHead, <span class="tok-type">SizeType32</span> tokensPerBlock,
+        <span class="tok-type">BlocksPerWindow</span> <span class="tok-kw">const</span>&amp; blocksPerWindow,
+        <span class="tok-type">SizeType32</span> maxNumSequences, <span class="tok-type">SizeType32</span> maxBeamWidth,
+        std::vector&lt;<span class="tok-type">SizeType32</span>&gt; <span class="tok-kw">const</span>&amp; maxAttentionWindowVec,
+        <span class="tok-type">nvinfer1::DataType</span> dtype, <span class="tok-type">SizeType32</span> sinkTokenLength,
+        <span class="tok-type">CudaStreamPtr</span> stream, <span class="tok-type">SizeType32</span> maxSequenceLength,
+        <span class="tok-type">bool</span> enableBlockReuse = <span class="tok-const">false</span>, <span class="tok-type">bool</span> onboardBlocks = <span class="tok-const">true</span>,
+        <span class="tok-type">CacheType</span> cacheType = <span class="tok-type">CacheType</span>::kSELF);
+
+    <span class="tok-cm">// Core lifecycle methods</span>
+    <span class="tok-kw">void</span> <span class="tok-fn">addSequence</span>(<span class="tok-type">RequestId</span> requestId, <span class="tok-type">SizeType32</span> inputLength,
+                     <span class="tok-type">SizeType32</span> beamWidth);
+    <span class="tok-kw">void</span> <span class="tok-fn">addToken</span>(<span class="tok-type">RequestId</span> requestId);
+    <span class="tok-kw">void</span> <span class="tok-fn">removeSequence</span>(<span class="tok-type">RequestId</span> requestId);
+
+    <span class="tok-cm">// Capacity queries</span>
+    [[<span class="tok-fn">nodiscard</span>]] <span class="tok-type">SizeType32</span> <span class="tok-fn">getNumFreeBlocks</span>() <span class="tok-kw">const</span>;
+    [[<span class="tok-fn">nodiscard</span>]] <span class="tok-type">SizeType32</span> <span class="tok-fn">getUsedNumBlocks</span>() <span class="tok-kw">const</span>;
+
+    <span class="tok-cm">// Paged attention offset table for GPU kernels</span>
+    <span class="tok-kw">void</span> <span class="tok-fn">getBlockOffsetsOfBatch</span>(<span class="tok-type">ITensor</span>&amp; output) <span class="tok-kw">const</span>;
+
+    <span class="tok-cm">// Prefix caching</span>
+    <span class="tok-kw">void</span> <span class="tok-fn">storeContextBlocks</span>(<span class="tok-type">RequestId</span> requestId);
+    <span class="tok-type">BlockPtr</span> <span class="tok-fn">findNewContextBlock</span>(<span class="tok-type">TokenRange</span> <span class="tok-kw">const</span>&amp; tokens);
+
+    <span class="tok-cm">// Speculative decoding support</span>
+    <span class="tok-kw">void</span> <span class="tok-fn">rewindKVCache</span>(<span class="tok-type">RequestId</span> requestId,
+                       std::vector&lt;<span class="tok-type">SizeType32</span>&gt; <span class="tok-kw">const</span>&amp; rewindLengths);
+};</code></pre>
+            </div>
+
+            <p>The Python-side <strong>BlocksManager</strong> shows the block pool's physical layout:</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/runtime/kv_cache_manager.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/runtime/kv_cache_manager.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">BlocksManager</span>:
+    <span class="tok-str">"""Manages a pool of KV cache blocks."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">__init__</span>(<span class="tok-self">self</span>, num_blocks, num_layers, block_size, num_kv_heads,
+                 head_size, dtype):
+        <span class="tok-cm"># Pool shape: [num_blocks, num_layers, 2, num_kv_heads, block_size, head_size]</span>
+        <span class="tok-cm"># The '2' dimension holds Key and Value separately</span>
+        <span class="tok-self">self</span>.pool = torch.zeros(
+            num_blocks, num_layers, <span class="tok-num">2</span>, num_kv_heads, block_size, head_size,
+            dtype=dtype, device=<span class="tok-str">'cuda'</span>)
+        <span class="tok-self">self</span>.free_blocks = <span class="tok-fn">list</span>(<span class="tok-fn">range</span>(num_blocks))
+
+    <span class="tok-kw">def</span> <span class="tok-fn">allocate</span>(<span class="tok-self">self</span>):
+        <span class="tok-str">"""Pop a free block from the pool."""</span>
+        <span class="tok-kw">if not</span> <span class="tok-self">self</span>.free_blocks:
+            <span class="tok-kw">raise</span> <span class="tok-cls">RuntimeError</span>(<span class="tok-str">"KV cache OOM: no free blocks"</span>)
+        <span class="tok-kw">return</span> <span class="tok-self">self</span>.free_blocks.pop()
+
+    <span class="tok-kw">def</span> <span class="tok-fn">free</span>(<span class="tok-self">self</span>, block_id):
+        <span class="tok-str">"""Return a block to the free pool."""</span>
+        <span class="tok-self">self</span>.free_blocks.append(block_id)</code></pre>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- 4. In-Flight Batching -->
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">4</span>
+            <span class="accordion-label">In-Flight Batching</span>
+            <span class="accordion-sublabel">scheduler.py</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            <p>The <strong>PyMicroBatchScheduler</strong> splits admitted requests into context (prefill) and generation batches &mdash; the core of continuous batching.</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/_torch/pyexecutor/scheduler/scheduler.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/_torch/pyexecutor/scheduler/scheduler.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">PyMicroBatchScheduler</span>(<span class="tok-type">MicroBatchScheduler</span>):
+    <span class="tok-str">"""Partitions active requests into context vs. generation batches."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">schedule</span>(<span class="tok-self">self</span>, active_requests, inflight_request_ids):
+        context_requests = []
+        generation_requests = []
+        batch_num_tokens = <span class="tok-num">0</span>
+        <span class="tok-kw">for</span> req <span class="tok-kw">in</span> active_requests:
+            <span class="tok-kw">if</span> req.request_id <span class="tok-kw">in</span> inflight_request_ids:
+                <span class="tok-kw">continue</span>
+            <span class="tok-kw">if</span> req.state == <span class="tok-cls">RequestState</span>.CONTEXT_INIT:
+                <span class="tok-cm"># New request: needs prefill</span>
+                context_requests.append(req)
+            <span class="tok-kw">elif</span> req.state == <span class="tok-cls">RequestState</span>.GENERATION_IN_PROGRESS:
+                <span class="tok-cm"># Existing request: generating tokens</span>
+                generation_requests.append(req)
+            batch_num_tokens += req.num_tokens
+            <span class="tok-kw">if</span> batch_num_tokens &gt; <span class="tok-self">self</span>.max_num_tokens:
+                <span class="tok-kw">break</span>
+        <span class="tok-kw">return</span> <span class="tok-cls">ScheduledRequests</span>(context_requests, generation_requests)</code></pre>
+            </div>
+
+            <p>The capacity scheduler implements admission control with eviction policies:</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/_torch/pyexecutor/scheduler/scheduler.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/_torch/pyexecutor/scheduler/scheduler.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">GuaranteedNoEvictPolicy</span>:
+    <span class="tok-str">"""Only admits a request if guaranteed not to evict existing sequences."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">schedule</span>(<span class="tok-self">self</span>, active_requests, kv_cache_manager):
+        scheduled = []
+        paused = []
+        <span class="tok-kw">for</span> req <span class="tok-kw">in</span> active_requests:
+            blocks_needed = <span class="tok-self">self</span>._estimate_blocks(req)
+            <span class="tok-kw">if</span> kv_cache_manager.getNumFreeBlocks() &gt;= blocks_needed:
+                scheduled.append(req)
+            <span class="tok-kw">else</span>:
+                paused.append(req)
+        <span class="tok-kw">return</span> scheduled, paused</code></pre>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- 5. Quantization -->
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">5</span>
+            <span class="accordion-label">Quantization</span>
+            <span class="accordion-sublabel">mode.py / layers.py</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            <p>The <strong>QuantAlgo</strong> enum defines 25+ quantization algorithms. The <strong>QuantMode</strong> bitmask enables combining modes (e.g., INT4 weights + FP8 KV cache).</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/quantization/mode.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/quantization/mode.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">QuantAlgo</span>(<span class="tok-type">StrEnum</span>):
+    W8A16 = <span class="tok-str">"W8A16"</span>
+    W4A16 = <span class="tok-str">"W4A16"</span>
+    W4A16_AWQ = <span class="tok-str">"W4A16_AWQ"</span>
+    W4A8_AWQ = <span class="tok-str">"W4A8_AWQ"</span>
+    W4A16_GPTQ = <span class="tok-str">"W4A16_GPTQ"</span>
+    FP8 = <span class="tok-str">"FP8"</span>
+    FP8_PER_CHANNEL_PER_TOKEN = <span class="tok-str">"FP8_PER_CHANNEL_PER_TOKEN"</span>
+    INT8 = <span class="tok-str">"INT8"</span>
+    NVFP4 = <span class="tok-str">"NVFP4"</span>
+    W4A8_MXFP4_FP8 = <span class="tok-str">"W4A8_MXFP4_FP8"</span>
+    <span class="tok-cm"># ... 15+ more variants</span>
+
+<span class="tok-kw">class</span> <span class="tok-cls">QuantMode</span>(<span class="tok-type">IntFlag</span>):
+    <span class="tok-str">"""Bitmask for quantization mode combinations."""</span>
+    INT4_WEIGHTS = <span class="tok-fn">auto</span>()
+    INT8_WEIGHTS = <span class="tok-fn">auto</span>()
+    ACTIVATIONS = <span class="tok-fn">auto</span>()
+    PER_CHANNEL = <span class="tok-fn">auto</span>()
+    PER_TOKEN = <span class="tok-fn">auto</span>()
+    PER_GROUP = <span class="tok-fn">auto</span>()
+    INT8_KV_CACHE = <span class="tok-fn">auto</span>()
+    FP8_KV_CACHE = <span class="tok-fn">auto</span>()
+    FP8_QDQ = <span class="tok-fn">auto</span>()
+    NVFP4 = <span class="tok-fn">auto</span>()</code></pre>
+            </div>
+
+            <p>The <strong>FP8Linear</strong> layer shows how quantized inference works at the layer level &mdash; per-tensor scaling factors for weights and activations:</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/quantization/layers.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/quantization/layers.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">FP8Linear</span>(<span class="tok-type">Linear</span>):
+    <span class="tok-str">"""FP8 quantized linear layer with per-tensor scaling."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">__init__</span>(<span class="tok-self">self</span>, in_features, out_features, bias=<span class="tok-const">True</span>, dtype=<span class="tok-const">None</span>,
+                 tp_group=<span class="tok-const">None</span>, tp_size=<span class="tok-num">1</span>, gather_output=<span class="tok-const">True</span>):
+        <span class="tok-fn">super</span>().__init__(in_features, out_features, bias, dtype,
+                         tp_group, tp_size, gather_output)
+        <span class="tok-self">self</span>.activation_scaling_factor = <span class="tok-cls">Parameter</span>(shape=(<span class="tok-num">1</span>,), dtype=<span class="tok-str">'float32'</span>)
+        <span class="tok-self">self</span>.weights_scaling_factor = <span class="tok-cls">Parameter</span>(shape=(<span class="tok-num">1</span>,), dtype=<span class="tok-str">'float32'</span>)
+
+    <span class="tok-kw">def</span> <span class="tok-fn">forward</span>(<span class="tok-self">self</span>, x, lora_runtime_params=<span class="tok-const">None</span>):
+        alpha = (<span class="tok-self">self</span>.weights_scaling_factor.raw_value *
+                 <span class="tok-self">self</span>.activation_scaling_factor.raw_value)
+        <span class="tok-cm"># Quantize input to FP8, multiply with quantized weights,</span>
+        <span class="tok-cm"># apply combined scaling factor for dequantization</span>
+        <span class="tok-kw">return</span> <span class="tok-fn">quantized_matmul</span>(x, <span class="tok-self">self</span>.weight, alpha, <span class="tok-self">self</span>.bias)</code></pre>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- 6. Plugins -->
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">6</span>
+            <span class="accordion-label">Plugins</span>
+            <span class="accordion-sublabel">gptAttentionPlugin.h / tllmPlugin.h</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            <p>The <strong>GPT Attention plugin</strong> is the most complex plugin, handling paged KV cache, Flash Attention, RoPE, quantization, and speculative decoding in a single fused kernel. Its constructor with 40+ parameters reveals the breadth of LLM attention requirements.</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> cpp/tensorrt_llm/plugins/gptAttentionPlugin/gptAttentionPlugin.h</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/cpp/tensorrt_llm/plugins/gptAttentionPlugin/gptAttentionPlugin.h" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">GPTAttentionPlugin</span> : <span class="tok-kw">public</span> <span class="tok-type">GPTAttentionPluginCommon</span> {
+<span class="tok-kw">public</span>:
+    <span class="tok-fn">GPTAttentionPlugin</span>(
+        <span class="tok-type">int</span> layer_idx, <span class="tok-type">int</span> num_heads, <span class="tok-type">int</span> vision_start, <span class="tok-type">int</span> vision_length,
+        <span class="tok-type">int</span> num_kv_heads, <span class="tok-type">int</span> num_kv_heads_origin, <span class="tok-type">int</span> head_size,
+        <span class="tok-type">int</span> unidirectional, <span class="tok-type">float</span> q_scaling,
+        <span class="tok-type">float</span> attn_logit_softcapping_scale,
+        <span class="tok-type">PositionEmbeddingType</span> position_embedding_type,
+        <span class="tok-type">int</span> rotary_embedding_dim, <span class="tok-type">float</span> rotary_embedding_base,
+        <span class="tok-type">RotaryScalingType</span> rotary_embedding_scale_type,
+        <span class="tok-cm">// ... 40+ parameters covering:</span>
+        <span class="tok-cm">// - RoPE variants (NTK, YaRN, dynamic)</span>
+        <span class="tok-cm">// - Tensor parallelism config</span>
+        <span class="tok-cm">// - FMHA type (flash, xqa)</span>
+        <span class="tok-cm">// - KV cache quantization mode (int8, fp8, fp4)</span>
+        <span class="tok-cm">// - Paged KV cache settings (tokens_per_block)</span>
+        <span class="tok-cm">// - Cross-attention flags</span>
+        <span class="tok-cm">// - Speculative decoding parameters</span>
+        <span class="tok-cm">// - Multi-Latent Attention (MLA) for DeepSeek</span>
+        <span class="tok-cm">// - Context parallelism settings</span>
+        <span class="tok-type">bool</span> paged_kv_cache, <span class="tok-type">int</span> tokens_per_block,
+        <span class="tok-type">nvinfer1::DataType</span> kv_cache_quant_mode,
+        <span class="tok-type">bool</span> enable_xqa, <span class="tok-type">ContextFMHAType</span> context_fmha_type);
+};</code></pre>
+            </div>
+
+            <p>The plugin registration API shows how custom kernels integrate with TensorRT:</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> cpp/include/tensorrt_llm/plugins/api/tllmPlugin.h</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/cpp/include/tensorrt_llm/plugins/api/tllmPlugin.h" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">namespace</span> <span class="tok-cls">tensorrt_llm</span>::<span class="tok-cls">plugins</span>::<span class="tok-cls">api</span> {
+    <span class="tok-kw">constexpr</span> <span class="tok-type">char</span> <span class="tok-kw">const</span>* kDefaultNamespace = <span class="tok-str">"tensorrt_llm"</span>;
+
+    <span class="tok-cm">// Register all TRT-LLM plugins with the TensorRT runtime</span>
+    <span class="tok-type">bool</span> <span class="tok-fn">initTrtLlmPlugins</span>();
+
+    <span class="tok-cm">// Auto-discovery callback for TensorRT's plugin registry</span>
+    <span class="tok-kw">void</span> <span class="tok-fn">setLoggerFinder</span>();
+
+    <span class="tok-cm">// Returns array of all registered plugin creators</span>
+    <span class="tok-type">IPluginCreator</span>* <span class="tok-kw">const</span>* <span class="tok-fn">getPluginCreators</span>();
+}</code></pre>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- 7. Executor -->
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">7</span>
+            <span class="accordion-label">Executor</span>
+            <span class="accordion-sublabel">executor.h / py_executor.py</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            <p>The C++ <strong>Executor</strong> API is the lowest-level runtime interface &mdash; the "air traffic controller" from Core Concepts:</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> cpp/include/tensorrt_llm/executor/executor.h</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/cpp/include/tensorrt_llm/executor/executor.h" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">Executor</span> {
+<span class="tok-kw">public</span>:
+    <span class="tok-fn">Executor</span>(std::filesystem::path <span class="tok-kw">const</span>&amp; modelPath,
+             <span class="tok-type">ModelType</span> modelType,
+             <span class="tok-type">ExecutorConfig</span> <span class="tok-kw">const</span>&amp; executorConfig);
+
+    [[<span class="tok-fn">nodiscard</span>]] <span class="tok-type">IdType</span> <span class="tok-fn">enqueueRequest</span>(<span class="tok-type">Request</span> <span class="tok-kw">const</span>&amp; request);
+    [[<span class="tok-fn">nodiscard</span>]] std::vector&lt;<span class="tok-type">IdType</span>&gt; <span class="tok-fn">enqueueRequests</span>(
+        std::vector&lt;<span class="tok-type">Request</span>&gt; <span class="tok-kw">const</span>&amp; requests);
+
+    [[<span class="tok-fn">nodiscard</span>]] std::vector&lt;<span class="tok-type">Response</span>&gt; <span class="tok-fn">awaitResponses</span>(
+        std::optional&lt;std::chrono::milliseconds&gt; <span class="tok-kw">const</span>&amp; timeout = std::nullopt);
+
+    <span class="tok-kw">void</span> <span class="tok-fn">cancelRequest</span>(<span class="tok-type">IdType</span> requestId);
+    <span class="tok-kw">void</span> <span class="tok-fn">shutdown</span>();
+
+    std::deque&lt;<span class="tok-type">IterationStats</span>&gt; <span class="tok-fn">getLatestIterationStats</span>();
+    [[<span class="tok-fn">nodiscard</span>]] <span class="tok-type">bool</span> <span class="tok-fn">canEnqueueRequests</span>() <span class="tok-kw">const</span>;
+};</code></pre>
+            </div>
+
+            <p>The Python <strong>PyExecutor</strong> implements the main inference loop that ties scheduling, execution, and sampling together:</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/_torch/pyexecutor/py_executor.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/_torch/pyexecutor/py_executor.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">PyExecutor</span>:
+    <span class="tok-str">"""PyTorch-path executor with its own scheduling loop."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">_executor_loop</span>(<span class="tok-self">self</span>):
+        torch.cuda.set_device(<span class="tok-self">self</span>.device_id)
+        <span class="tok-kw">with</span> <span class="tok-self">self</span>._profiler() <span class="tok-kw">as</span> profile_step, <span class="tok-self">self</span>.hang_detector:
+            <span class="tok-kw">while</span> <span class="tok-const">True</span>:
+                <span class="tok-self">self</span>.hang_detector.checkpoint()
+                profile_step()
+
+                <span class="tok-cm"># 1. Fetch new requests and schedule</span>
+                scheduled_batch, iter_stats = <span class="tok-self">self</span>._prepare_and_schedule_batch()
+                <span class="tok-self">self</span>._handle_control_request()
+
+                <span class="tok-kw">if</span> scheduled_batch <span class="tok-kw">is</span> <span class="tok-const">None</span>:
+                    <span class="tok-kw">break</span>
+
+                <span class="tok-cm"># 2. Pause/terminate requests that can't fit</span>
+                <span class="tok-self">self</span>._terminate_requests(scheduled_batch.terminated_requests)
+                <span class="tok-self">self</span>._pause_requests(scheduled_batch.paused_requests)
+
+                <span class="tok-cm"># 3. Forward pass + sampling</span>
+                finished_requests = []
+                can_queue, _ = <span class="tok-self">self</span>._can_queue(scheduled_batch)
+                <span class="tok-cm"># ... model forward, token sampling, response dispatch</span></code></pre>
+            </div>
+          </div></div>
+        </div>
+
+        <!-- 8. Model Definition -->
+        <div class="accordion-item">
+          <button class="accordion-trigger" aria-expanded="false" onclick="toggleAccordion(this)">
+            <span class="accordion-number">8</span>
+            <span class="accordion-label">Model Definition</span>
+            <span class="accordion-sublabel">models/__init__.py / llama/model.py</span>
+            <svg class="accordion-chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="accordion-panel"><div class="accordion-panel-inner">
+            <p>Model definitions follow a consistent pattern across all 80+ architectures. The <strong>MODEL_MAP</strong> registry maps HuggingFace architecture names to TRT-LLM classes:</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/models/__init__.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/models/__init__.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code>MODEL_MAP = {
+    <span class="tok-str">'LlamaForCausalLM'</span>: LLaMAForCausalLM,
+    <span class="tok-str">'MistralForCausalLM'</span>: LLaMAForCausalLM,  <span class="tok-cm"># Mistral reuses LLaMA</span>
+    <span class="tok-str">'MixtralForCausalLM'</span>: LLaMAForCausalLM,
+    <span class="tok-str">'Qwen2ForCausalLM'</span>: Qwen2ForCausalLM,
+    <span class="tok-str">'GPT2LMHeadModel'</span>: GPTForCausalLM,
+    <span class="tok-str">'FalconForCausalLM'</span>: FalconForCausalLM,
+    <span class="tok-str">'DeepseekV3ForCausalLM'</span>: DeepseekV3ForCausalLM,
+    <span class="tok-str">'GemmaForCausalLM'</span>: GemmaForCausalLM,
+    <span class="tok-cm"># ... 80+ architecture mappings</span>
+}</code></pre>
+            </div>
+
+            <p>The <strong>LLaMAForCausalLM</strong> class shows the standard model construction pattern &mdash; transformer stack + language model head, with tensor parallelism built in:</p>
+
+            <div class="source-block-wrapper">
+              <div class="source-block-header">
+                <span class="source-block-path"><span class="file-icon">&#x1F4C4;</span> tensorrt_llm/models/llama/model.py</span>
+                <div class="source-block-actions">
+                  <a class="source-github-link" href="https://github.com/NVIDIA/TensorRT-LLM/blob/v1.2.0/tensorrt_llm/models/llama/model.py" target="_blank" rel="noopener noreferrer">&#x1F517; GitHub</a>
+                  <button class="source-block-copy" onclick="copyCode(this)">Copy</button>
+                </div>
+              </div>
+              <pre class="source-block-pre"><code><span class="tok-kw">class</span> <span class="tok-cls">LLaMAForCausalLM</span>(<span class="tok-type">DecoderModelForCausalLM</span>):
+    <span class="tok-str">"""Full causal LM: transformer stack + language model head."""</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">__init__</span>(<span class="tok-self">self</span>, config: <span class="tok-type">LLaMAConfig</span>):
+        transformer = <span class="tok-cls">LLaMAModel</span>(config)
+        vocab_size_padded = <span class="tok-fn">pad_vocab_size</span>(
+            config.vocab_size, config.mapping.tp_size)
+        <span class="tok-kw">if</span> config.mapping.is_last_pp_rank():
+            lm_head = <span class="tok-cls">ColumnLinear</span>(
+                config.hidden_size, vocab_size_padded, bias=<span class="tok-const">False</span>,
+                dtype=config.dtype, tp_group=config.mapping.tp_group,
+                tp_size=config.mapping.tp_size, gather_output=<span class="tok-const">True</span>)
+        <span class="tok-kw">else</span>:
+            lm_head = <span class="tok-const">None</span>
+        <span class="tok-self">self</span>.quant_mode = config.quant_mode
+        <span class="tok-fn">super</span>().__init__(config, transformer, lm_head)</code></pre>
+            </div>
+          </div></div>
+        </div>
+
+      </div><!-- end #sourceAccordion -->
+    </section>
+
+    <!-- Section 5: Deployment Considerations -->
+    <section class="content-section animate-in" data-level="advanced">
+      <h2>Deployment Considerations</h2>
+      <p>Practical guidance for running TensorRT-LLM in production environments.</p>
+
+      <div class="deploy-cards">
+        <div class="deploy-card" style="--dc-color:#2A7B9B">
+          <div class="deploy-card-header">
+            <span class="deploy-card-icon">&#x1F5A5;</span>
+            <span class="deploy-card-title">Hardware Requirements</span>
+          </div>
+          <div class="deploy-card-body">
+            <ul>
+              <li><strong>Minimum:</strong> NVIDIA GPU with compute capability 8.0+ (A100, H100, L40S, B200)</li>
+              <li><strong>Recommended:</strong> H100 80GB SXM or B200 for production workloads</li>
+              <li><strong>Multi-GPU:</strong> NVLink/NVSwitch required for efficient tensor parallelism</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="deploy-card" style="--dc-color:var(--color-accent)">
+          <div class="deploy-card-header">
+            <span class="deploy-card-icon">&#x2699;</span>
+            <span class="deploy-card-title">Engine Management</span>
+          </div>
+          <div class="deploy-card-body">
+            <ul>
+              <li>Engines are compiled per GPU architecture &mdash; maintain separate builds for each GPU type in your fleet</li>
+              <li>Cache compiled engines to avoid the ~28-minute cold start</li>
+              <li>Use <code>trtllm-bench</code> to benchmark before deploying: validate throughput and latency targets</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="deploy-card" style="--dc-color:#D4A843">
+          <div class="deploy-card-header">
+            <span class="deploy-card-icon">&#x1F4CA;</span>
+            <span class="deploy-card-title">Monitoring</span>
+          </div>
+          <div class="deploy-card-body">
+            <ul>
+              <li><code>IterationStats</code> from the Executor provides per-step metrics (batch size, queue depth, KV cache utilization)</li>
+              <li>KV cache utilization is the primary resource bottleneck &mdash; monitor <code>getNumFreeBlocks()</code> / total blocks</li>
+              <li>TTFT and inter-token latency should be tracked at p50/p95/p99</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="deploy-card" style="--dc-color:#C93B3B">
+          <div class="deploy-card-header">
+            <span class="deploy-card-icon">&#x1F4C8;</span>
+            <span class="deploy-card-title">Scaling Patterns</span>
+          </div>
+          <div class="deploy-card-body">
+            <ul>
+              <li><strong>Vertical:</strong> Tensor parallelism across GPUs within a node (NVLink)</li>
+              <li><strong>Horizontal:</strong> Pipeline parallelism across nodes (InfiniBand/RoCE)</li>
+              <li><strong>Disaggregated:</strong> Separate prefill and decode GPU pools for mixed workloads</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="deploy-card" style="--dc-color:#7B6DAA">
+          <div class="deploy-card-header">
+            <span class="deploy-card-icon">&#x1F504;</span>
+            <span class="deploy-card-title">Upgrade Path</span>
+          </div>
+          <div class="deploy-card-body">
+            <ul>
+              <li>Engine format changes between major versions &mdash; recompile engines after upgrading</li>
+              <li>The PyTorch workflow (v1.0+) provides more stable model compatibility than the legacy TensorRT path</li>
+              <li>Pin specific container versions in production (<code>nvcr.io/nvidia/tensorrt-llm/release:1.2.0</code>, not <code>latest</code>)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- References -->
+  <section class="references-footer animate-in">
+    <h3>&#x1F4DA; References</h3>
+    <ul class="references-list">
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/quick-start-guide.html" target="_blank" rel="noopener noreferrer">Quick Start Guide</a></span>
+          <span class="reference-domain">nvidia.github.io &middot; official-docs</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/latest/commands/trtllm-build.html" target="_blank" rel="noopener noreferrer">trtllm-build Command</a></span>
+          <span class="reference-domain">nvidia.github.io &middot; official-docs</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/performance/performance-tuning-guide/index.html" target="_blank" rel="noopener noreferrer">Performance Tuning Guide</a></span>
+          <span class="reference-domain">nvidia.github.io &middot; official-docs</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4D6;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://nvidia.github.io/TensorRT-LLM/performance/performance-tuning-guide/useful-build-time-flags.html" target="_blank" rel="noopener noreferrer">Build-Time Flags</a></span>
+          <span class="reference-domain">nvidia.github.io &middot; official-docs</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4BB;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://github.com/NVIDIA/TensorRT-LLM" target="_blank" rel="noopener noreferrer">TensorRT-LLM GitHub</a></span>
+          <span class="reference-domain">github.com &middot; github</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <div class="page-nav-footer">
+    <a href="how-it-works.html" class="prev">How It Works</a>
+    <a href="use-cases.html" class="next">Use Cases</a>
+  </div>
+
+  <footer class="site-footer">
+    <p>Generated by <strong>System Explorer</strong> &mdash; an interactive course built from system analysis</p>
+  </footer>
+
+  <script>
+    document.documentElement.classList.add('js-ready');
+
+    /* Hamburger toggle */
+    (function() {
+      var hamburger = document.getElementById('navHamburger');
+      var navPages = document.getElementById('navPages');
+      hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        hamburger.classList.toggle('open');
+        navPages.classList.toggle('mobile-open');
+      });
+      document.addEventListener('click', function(e) {
+        if (!hamburger.contains(e.target) && !navPages.contains(e.target)) {
+          hamburger.classList.remove('open');
+          navPages.classList.remove('mobile-open');
+        }
+      });
+    })();
+
+    /* Scroll progress bar */
+    function updateProgress() {
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      var p = h > 0 ? (window.scrollY / h * 100) : 0;
+      document.querySelector('.nav-progress-bar').style.width = p + '%';
+    }
+    window.addEventListener('scroll', function() { requestAnimationFrame(updateProgress); }, { passive: true });
+
+    /* Intersection observer for animations */
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.animate-in').forEach(function(el) { observer.observe(el); });
+
+    /* Accordion toggle */
+    function toggleAccordion(trigger) {
+      var panel = trigger.nextElementSibling;
+      var expanded = trigger.getAttribute('aria-expanded') === 'true';
+
+      if (expanded) {
+        trigger.setAttribute('aria-expanded', 'false');
+        panel.style.maxHeight = null;
+      } else {
+        /* Close all other panels in the same accordion */
+        var accordion = trigger.closest('.accordion');
+        accordion.querySelectorAll('.accordion-trigger[aria-expanded="true"]').forEach(function(t) {
+          t.setAttribute('aria-expanded', 'false');
+          t.nextElementSibling.style.maxHeight = null;
+        });
+        trigger.setAttribute('aria-expanded', 'true');
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+    }
+
+    /* Source map toggle */
+    function toggleSourceMap(header) {
+      var content = header.nextElementSibling;
+      var expanded = header.getAttribute('aria-expanded') === 'true';
+      if (expanded) {
+        header.setAttribute('aria-expanded', 'false');
+        content.style.maxHeight = null;
+      } else {
+        header.setAttribute('aria-expanded', 'true');
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    }
+
+    /* Copy code block */
+    function copyCode(btn) {
+      var wrapper = btn.closest('.code-block-wrapper, .source-block-wrapper');
+      var pre = wrapper.querySelector('pre');
+      var text = pre.textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    /* Copy as Markdown */
+    function copyPageAsMarkdown() {
+      var md = '# TensorRT-LLM - Implementation Details\n\n'
+        + '## Getting Started\n'
+        + '### Docker (recommended)\n'
+        + '```bash\n'
+        + 'docker run --rm -it --ipc host --gpus all --ulimit memlock=-1 \\\n'
+        + '  --ulimit stack=67108864 -p 8000:8000 \\\n'
+        + '  nvcr.io/nvidia/tensorrt-llm/release:1.3.0rc10\n'
+        + '```\n\n'
+        + '### Pip install\n'
+        + '```bash\npip install tensorrt-llm\n# Requires: Python 3.10/3.12, CUDA 13.1.1+, PyTorch 2.10.0+\n```\n\n'
+        + '## Configuration Essentials\n'
+        + '| Parameter | Default | What It Controls |\n'
+        + '|-----------|---------|------------------|\n'
+        + '| --multiple_profiles | off | Multiple TRT optimization profiles |\n'
+        + '| --use_paged_context_fmha | off | Chunks context across iterations |\n'
+        + '| --gemm_plugin auto | auto | cuBLASLt and custom GEMM kernels |\n'
+        + '| --reduce_fusion enable | off | Fuses ResidualAdd+LayerNorm into AllReduce |\n'
+        + '| max_batch_size | 256 | Max concurrent requests |\n'
+        + '| max_num_tokens | 8192 | Token budget per iteration |\n'
+        + '| enable_chunked_context | off | Splits prefill into chunks |\n'
+        + '| KV cache memory fraction | 0.9 | GPU memory for KV cache |\n'
+        + '| tokens_per_block | 64 | KV cache block size |\n'
+        + '| kv_cache_type | fp16 | KV cache precision |\n\n'
+        + '> Enabling all build-time flags: ~30% throughput + ~54% inter-token latency improvement\n\n'
+        + '## Code Patterns\n'
+        + '- Streaming generation (async)\n'
+        + '- Multi-GPU tensor parallelism (tensor_parallel_size=4)\n'
+        + '- FP8 quantization (QuantConfig, QuantAlgo.FP8)\n'
+        + '- LoRA adapter loading\n\n'
+        + '## Source Code Walkthrough\n'
+        + '1. Engine/Builder (builder.py)\n'
+        + '2. LLM API (llmapi/llm.py)\n'
+        + '3. KV Cache (kvCacheManager.h / kv_cache_manager.py)\n'
+        + '4. In-Flight Batching (scheduler.py)\n'
+        + '5. Quantization (mode.py / layers.py)\n'
+        + '6. Plugins (gptAttentionPlugin.h / tllmPlugin.h)\n'
+        + '7. Executor (executor.h / py_executor.py)\n'
+        + '8. Model Definition (models/__init__.py / llama/model.py)\n\n'
+        + '## Deployment Considerations\n'
+        + '- Hardware: A100/H100/B200, compute capability 8.0+\n'
+        + '- Engine management: per-GPU-arch compilation, ~28min cold start\n'
+        + '- Monitoring: IterationStats, KV cache utilization, TTFT p50/p95/p99\n'
+        + '- Scaling: TP (vertical), PP (horizontal), disaggregated serving\n'
+        + '- Upgrade: recompile engines, pin container versions\n';
+
+      var btn = document.querySelector('.copy-markdown-btn');
+      navigator.clipboard.writeText(md).then(function() {
+        btn.querySelector('.btn-label').textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.querySelector('.btn-label').textContent = 'Copy as Markdown';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

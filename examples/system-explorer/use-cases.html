@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Use Cases &amp; Case Studies — NVIDIA TensorRT-LLM Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system:"NVIDIA TensorRT-LLM" page:"Use Cases" level:"Beginner-Intermediate" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5BAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--ease-out:cubic-bezier(0.16,1,0.3,1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:500ms;--stagger-delay:120ms}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent-hover);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}a[target="_blank"]:hover{text-decoration-color:var(--color-accent)}
+    .content-section p code,.content-section li code{font-family:var(--font-mono);font-size:var(--text-sm);background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px}
+
+    /* Nav */
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}
+    .nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}
+    .nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}
+    .nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}
+    .nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}
+    .nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}
+    .nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent-hover);background:var(--color-accent-light);font-weight:600}
+    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}
+    .nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+    /* Page Header */
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}
+    .page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:1.15}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
+    .page-level-badge.beginner-intermediate{background:linear-gradient(135deg,var(--color-success-light) 0%,var(--color-warning-light) 100%);color:var(--color-success);border:1px solid rgba(45,139,85,0.2)}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}
+    .copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}
+    .copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+
+    /* Content */
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}
+    .content-section{margin-bottom:var(--space-10)}
+    .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}
+    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:var(--space-6) 0 var(--space-3)}
+    .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
+    .content-section ul,.content-section ol{font-family:var(--font-body);font-size:var(--text-base);line-height:1.7;color:var(--color-text);padding-left:var(--space-6);margin:0 0 var(--space-4)}
+    .content-section li{margin-bottom:var(--space-2)}
+
+    /* Use-case decision cards */
+    .decision-cards{display:grid;grid-template-columns:1fr;gap:var(--space-4);margin:var(--space-6) 0}
+    .decision-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-left:4px solid var(--dc-color,var(--color-accent));box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast);opacity:0;transform:translateY(12px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out),box-shadow var(--duration-fast)}
+    .decision-card.visible{opacity:1;transform:translateY(0)}
+    .decision-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .decision-card-header{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)}
+    .decision-card-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+    .decision-card-icon.green{background:var(--color-success-light);color:var(--color-success)}
+    .decision-card-icon.red{background:var(--color-error-light);color:var(--color-error)}
+    .decision-card-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text)}
+    .decision-card-body{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.7}
+    .decision-card-metric{display:inline-block;font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-accent-light);color:var(--color-accent-hover);padding:2px 8px;border-radius:var(--radius-full);margin-top:var(--space-2);font-weight:500}
+    .decision-card-metric.warn{background:var(--color-warning-light);color:#BF9738}
+
+    /* Anti-pattern cards (red themed) */
+    .anti-cards{display:grid;grid-template-columns:1fr;gap:var(--space-4);margin:var(--space-6) 0}
+    .anti-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-left:4px solid var(--color-error);box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast);opacity:0;transform:translateY(12px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out),box-shadow var(--duration-fast)}
+    .anti-card.visible{opacity:1;transform:translateY(0)}
+    .anti-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .anti-card-header{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)}
+    .anti-card-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;background:var(--color-error-light);color:var(--color-error)}
+    .anti-card-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text)}
+    .anti-card-body{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.7}
+    .anti-card-alt{display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-3);padding:var(--space-3);background:var(--color-accent-light);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-accent-hover);font-weight:500}
+    .anti-card-alt-label{font-family:var(--font-display);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:0.05em;color:var(--color-accent);flex-shrink:0;font-weight:700}
+
+    /* Real-world example cards */
+    .example-cards{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);margin:var(--space-6) 0}
+    .example-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);border-top:3px solid var(--color-accent);box-shadow:var(--shadow-sm);transition:transform var(--duration-fast),box-shadow var(--duration-fast);opacity:0;transform:translateY(12px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out),box-shadow var(--duration-fast)}
+    .example-card.visible{opacity:1;transform:translateY(0)}
+    .example-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .example-card-icon{font-size:1.5rem;margin-bottom:var(--space-2)}
+    .example-card-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);color:var(--color-text);margin-bottom:var(--space-2)}
+    .example-card-companies{font-family:var(--font-body);font-size:var(--text-xs);color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)}
+    .example-card-desc{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.6}
+
+    /* Callout */
+    .callout{display:flex;gap:var(--space-4);padding:var(--space-5);border-radius:var(--radius-md);margin:var(--space-6) 0;border-left:4px solid}
+    .callout-warning{background:var(--color-warning-light);border-color:var(--color-warning)}
+    .callout-tip{background:var(--color-success-light);border-color:var(--color-success)}
+    .callout-info{background:var(--color-info-light);border-color:var(--color-info)}
+    .callout-icon{font-size:1.3rem;flex-shrink:0}
+    .callout-content{font-size:var(--text-sm);line-height:var(--leading-normal)}
+    .callout-content strong{color:var(--color-text)}
+
+    /* Glossary */
+    .glossary-term{border-bottom:2px dashed var(--color-accent-muted);cursor:pointer}
+    .glossary-tooltip{position:fixed;background:var(--color-bg-code);color:#CDD6F4;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);max-width:300px;z-index:10000;box-shadow:var(--shadow-lg);line-height:var(--leading-normal);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
+
+    /* References */
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}
+    .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
+    .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
+    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}
+    .reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
+    .reference-content{display:flex;flex-direction:column;gap:var(--space-1)}
+    .reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}
+    .reference-title a{color:var(--color-accent-hover);text-decoration:none}.reference-title a:hover{text-decoration:underline}
+    .reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+
+    /* Page Nav Footer */
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
+    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent-hover);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color .15s}
+    .page-nav-footer a:hover{color:var(--color-accent)}
+    .page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+
+    /* Site Footer */
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+
+    /* Animations */
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
+
+    @media(max-width:768px){:root{--text-3xl:1.5rem;--nav-height:56px}.example-cards{grid-template-columns:1fr}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.page-header h1{font-size:var(--text-2xl)}}
+    @media(max-width:640px){.copy-markdown-btn .btn-label{display:none}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-progress-bar" role="progressbar" aria-valuenow="0"></div>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">TensorRT-LLM</a>
+      <div class="nav-pages" id="navPages">
+        <a href="index.html" class="nav-page-link">Home</a>
+        <a href="concepts.html" class="nav-page-link">Concepts</a>
+        <a href="architecture.html" class="nav-page-link">Architecture</a>
+        <a href="how-it-works.html" class="nav-page-link">How It Works</a>
+        <a href="implementation.html" class="nav-page-link">Implementation</a>
+        <a href="use-cases.html" class="nav-page-link active">Use Cases</a>
+        <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+        <a href="faq.html" class="nav-page-link">FAQ</a>
+        <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <header class="page-header animate-in">
+    <div class="page-header-content">
+      <span class="page-level-badge beginner-intermediate">Beginner &ndash; Intermediate</span>
+      <h1>Use Cases &amp; Case Studies</h1>
+    </div>
+    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()">
+      <span class="btn-icon">&#x1F4CB;</span>
+      <span class="btn-label">Copy as Markdown</span>
+    </button>
+  </header>
+
+  <main class="content-area">
+
+    <!-- Section 1: When to Use It -->
+    <section class="content-section animate-in" data-level="beginner">
+      <h2>When to Use It</h2>
+      <p>TensorRT-LLM shines when your workload is production-scale, latency-sensitive, and running on NVIDIA GPUs. These five scenarios represent the strongest use cases where the compilation overhead pays for itself many times over.</p>
+
+      <div class="decision-cards" id="useCards">
+        <div class="decision-card" style="--dc-color:var(--color-accent);transition-delay:0.1s">
+          <div class="decision-card-header">
+            <div class="decision-card-icon green">&#x26A1;</div>
+            <div class="decision-card-title">High-Throughput Production Serving on NVIDIA GPUs</div>
+          </div>
+          <div class="decision-card-body">When you need maximum tokens-per-second per dollar for a single model (or small set of models) in production. TensorRT-LLM delivers ~15% higher throughput than <span class="glossary-term" data-definition="An open-source, high-throughput LLM serving engine that uses PagedAttention for efficient memory management. Supports many GPU types including AMD ROCm.">vLLM</span> at the same concurrency on H100. The ROI justifies the compilation overhead when the model serves thousands of requests daily.</div>
+          <span class="decision-card-metric">~15% faster than vLLM</span>
+        </div>
+
+        <div class="decision-card" style="--dc-color:#2A7B9B;transition-delay:0.22s">
+          <div class="decision-card-header">
+            <div class="decision-card-icon green">&#x23F1;</div>
+            <div class="decision-card-title">Latency-Critical Applications</div>
+          </div>
+          <div class="decision-card-body">When p95 <span class="glossary-term" data-definition="Time to First Token. The latency from when a request is received to when the first output token is generated. A key metric for interactive applications like chatbots and coding assistants.">TTFT</span> matters: AI coding assistants, real-time chatbots, voice assistants. TensorRT-LLM achieves ~1,280ms p95 TTFT at 100 concurrent requests on H100 vs ~1,450ms for vLLM. Combined with FP8 quantization and chunked context, sub-second TTFT is achievable for most input lengths.</div>
+          <span class="decision-card-metric">p95 TTFT ~1,280ms vs ~1,450ms vLLM</span>
+        </div>
+
+        <div class="decision-card" style="--dc-color:#7B6DAA;transition-delay:0.34s">
+          <div class="decision-card-header">
+            <div class="decision-card-icon green">&#x1F5A7;</div>
+            <div class="decision-card-title">Multi-GPU Deployment of 70B+ Models</div>
+          </div>
+          <div class="decision-card-body">When deploying 70B+ or 405B models across 4&ndash;8 GPUs with tensor or pipeline parallelism. TensorRT-LLM's <span class="glossary-term" data-definition="NVIDIA Collective Communications Library. A library of GPU-optimized collective communication routines (all-reduce, broadcast, etc.) used for multi-GPU and multi-node parallelism.">NCCL</span>-based communication plugins and disaggregated serving support are purpose-built for this scale.</div>
+          <span class="decision-card-metric">NCCL + disaggregated serving</span>
+        </div>
+
+        <div class="decision-card" style="--dc-color:var(--color-warning);transition-delay:0.46s">
+          <div class="decision-card-header">
+            <div class="decision-card-icon green">&#x1F4B0;</div>
+            <div class="decision-card-title">Cost Optimization at Scale</div>
+          </div>
+          <div class="decision-card-body">When you're paying for GPU-hours and want to serve more users per GPU. NVIDIA reports up to 5.3x better total cost of ownership and nearly 6x lower energy consumption versus unoptimized inference, which compounds significantly at datacenter scale.</div>
+          <span class="decision-card-metric">5.3x better TCO &middot; 6x less energy</span>
+        </div>
+
+        <div class="decision-card" style="--dc-color:#C93B3B;transition-delay:0.58s">
+          <div class="decision-card-header">
+            <div class="decision-card-icon green">&#x1F9EA;</div>
+            <div class="decision-card-title">Blackwell/Hopper-Specific Workloads</div>
+          </div>
+          <div class="decision-card-body">When running on latest-generation hardware (B200, GB200, H200) and want to exploit <span class="glossary-term" data-definition="8-bit floating point format. Provides 2x throughput over FP16 with minimal accuracy loss. Supported on Hopper (H100) and newer GPUs.">FP8</span>, <span class="glossary-term" data-definition="NVIDIA 4-bit floating point format. A Blackwell-specific quantization format that provides 50% memory reduction vs FP8 for KV cache and weights.">NVFP4</span>, and hardware-specific kernel optimizations that only TensorRT-LLM provides.</div>
+          <span class="decision-card-metric">FP8 &middot; NVFP4 &middot; HW-specific kernels</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: When NOT to Use It -->
+    <section class="content-section animate-in" data-level="beginner">
+      <h2>When NOT to Use It</h2>
+      <p>TensorRT-LLM's compilation overhead, NVIDIA lock-in, and operational complexity make it a poor fit for these scenarios. Each anti-pattern includes a recommended alternative.</p>
+
+      <div class="anti-cards" id="antiCards">
+        <div class="anti-card" style="transition-delay:0.1s">
+          <div class="anti-card-header">
+            <div class="anti-card-icon">&#x1F6AB;</div>
+            <div class="anti-card-title">Rapid Prototyping or Frequent Model Changes</div>
+          </div>
+          <div class="anti-card-body">If you're swapping models weekly during development, the ~28-minute compilation per model version is prohibitive. vLLM loads in ~62s, <span class="glossary-term" data-definition="An open-source serving framework with RadixAttention for efficient prefix caching. Excels at workloads with shared system prompts and conversation history.">SGLang</span> in ~58s.</div>
+          <div class="anti-card-alt">
+            <span class="anti-card-alt-label">Use instead:</span> vLLM or SGLang for experimentation, then migrate to TensorRT-LLM for production
+          </div>
+        </div>
+
+        <div class="anti-card" style="transition-delay:0.22s">
+          <div class="anti-card-header">
+            <div class="anti-card-icon">&#x1F6AB;</div>
+            <div class="anti-card-title">Blue-Green Deployments or Auto-Scaling from Zero</div>
+          </div>
+          <div class="anti-card-body">The cold start penalty means scaling up takes minutes, not seconds. If your architecture needs instances that spin up on demand, the compilation step doesn't fit.</div>
+          <div class="anti-card-alt">
+            <span class="anti-card-alt-label">Use instead:</span> NIM containers with pre-built engines, or pre-cached engine warm standby instances
+          </div>
+        </div>
+
+        <div class="anti-card" style="transition-delay:0.34s">
+          <div class="anti-card-header">
+            <div class="anti-card-icon">&#x1F6AB;</div>
+            <div class="anti-card-title">Non-NVIDIA Hardware (AMD / Intel)</div>
+          </div>
+          <div class="anti-card-body">TensorRT-LLM is NVIDIA-exclusive. If your fleet includes AMD MI300X or Intel Gaudi, it won't help. It cannot target ROCm or any non-CUDA runtime.</div>
+          <div class="anti-card-alt">
+            <span class="anti-card-alt-label">Use instead:</span> vLLM (supports AMD ROCm), SGLang, or framework-native serving
+          </div>
+        </div>
+
+        <div class="anti-card" style="transition-delay:0.46s">
+          <div class="anti-card-header">
+            <div class="anti-card-icon">&#x1F6AB;</div>
+            <div class="anti-card-title">Small Teams Without GPU Engineering Expertise</div>
+          </div>
+          <div class="anti-card-body">Tuning build flags, managing engine compilation across GPU types, debugging CUDA kernel issues, and configuring Triton backends requires specialized knowledge.</div>
+          <div class="anti-card-alt">
+            <span class="anti-card-alt-label">Use instead:</span> NVIDIA NIM (wraps TensorRT-LLM with pre-optimized configs) or a managed service
+          </div>
+        </div>
+
+        <div class="anti-card" style="transition-delay:0.58s">
+          <div class="anti-card-header">
+            <div class="anti-card-icon">&#x1F6AB;</div>
+            <div class="anti-card-title">Heavy Shared-Prefix Workloads</div>
+          </div>
+          <div class="anti-card-body">Workloads where many requests share system prompts or conversation history benefit from SGLang's <span class="glossary-term" data-definition="A prefix caching mechanism in SGLang that automatically identifies and reuses KV cache blocks for shared prompt prefixes using a radix tree data structure.">RadixAttention</span>, which provides superior prefix caching for this pattern.</div>
+          <div class="anti-card-alt">
+            <span class="anti-card-alt-label">Use instead:</span> SGLang for heavy prefix-sharing workloads
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-icon">&#x1F4A1;</div>
+        <div class="callout-content">
+          <strong>Hybrid strategy:</strong> Many teams use vLLM or SGLang during development and research, then compile production models with TensorRT-LLM once the model is finalized. This avoids the compilation penalty during rapid iteration while capturing the performance gains in production.
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Real-World Examples -->
+    <section class="content-section animate-in" data-level="intermediate">
+      <h2>Real-World Examples</h2>
+      <p>These examples illustrate how organizations deploy TensorRT-LLM in production across different scales and use cases.</p>
+
+      <div class="example-cards" id="exampleCards">
+        <div class="example-card" style="transition-delay:0.1s">
+          <div class="example-card-icon">&#x1F3E2;</div>
+          <div class="example-card-title">Enterprise AI Assistants</div>
+          <div class="example-card-companies">Microsoft &middot; Oracle Cloud</div>
+          <div class="example-card-desc">Companies like Microsoft and Oracle Cloud Infrastructure deploy TensorRT-LLM on GB300 NVL72 systems for internal and customer-facing AI assistants, serving thousands of concurrent users with sub-second response times on models like Llama 3.1 405B.</div>
+        </div>
+
+        <div class="example-card" style="transition-delay:0.22s">
+          <div class="example-card-icon">&#x2601;</div>
+          <div class="example-card-title">Multi-Node AWS Scaling</div>
+          <div class="example-card-companies">AWS &middot; EKS &middot; Triton</div>
+          <div class="example-card-desc">AWS published a reference architecture for multi-node LLM deployment with TensorRT-LLM and Triton on Amazon EKS, demonstrating horizontal scaling of 70B models across multiple GPU instances with pipeline parallelism.</div>
+        </div>
+
+        <div class="example-card" style="transition-delay:0.34s">
+          <div class="example-card-icon">&#x1F4B5;</div>
+          <div class="example-card-title">Cost-Optimized API Services</div>
+          <div class="example-card-companies">Self-hosted &middot; H100 clusters</div>
+          <div class="example-card-desc">Enterprises replacing OpenAI GPT-3.5/GPT-4 API calls with self-hosted open-source models (LLaMA, Mistral) on H100 clusters, using TensorRT-LLM's FP8 quantization and <span class="glossary-term" data-definition="A batching strategy that inserts new requests into available batch slots during generation, rather than waiting for the entire batch to complete. Maximizes GPU utilization.">in-flight batching</span> to achieve comparable quality at a fraction of the per-token cost.</div>
+        </div>
+
+        <div class="example-card" style="transition-delay:0.46s">
+          <div class="example-card-icon">&#x1F4BB;</div>
+          <div class="example-card-title">AI Coding Assistants</div>
+          <div class="example-card-companies">Dev tools &middot; Speculative decoding</div>
+          <div class="example-card-desc">Development tooling companies deploying code completion models with TensorRT-LLM + Triton, leveraging <span class="glossary-term" data-definition="A technique where a small, fast draft model generates candidate tokens that the larger target model validates in a single forward pass. Accepted tokens skip autoregressive steps, improving latency.">speculative decoding</span> (EAGLE) to achieve interactive-speed code suggestions on models that would otherwise be too slow for real-time use.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-tip">
+        <div class="callout-icon">&#x1F680;</div>
+        <div class="callout-content">
+          <strong>Common pattern:</strong> Most production deployments combine TensorRT-LLM with Triton Inference Server for HTTP/gRPC handling, health checks, and metrics &mdash; TensorRT-LLM handles the optimized inference while Triton handles the serving infrastructure.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4F0;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://towardsdatascience.com/deploying-llms-into-production-using-tensorrt-llm-ed36e620dac4/" target="_blank" rel="noopener noreferrer">Deploying LLMs with TensorRT-LLM</a></span>
+          <span class="reference-domain">towardsdatascience.com &middot; blog</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4F0;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://aws.amazon.com/blogs/hpc/scaling-your-llm-inference-workloads-multi-node-deployment-with-tensorrt-llm-and-triton-on-amazon-eks/" target="_blank" rel="noopener noreferrer">AWS Multi-Node Deployment</a></span>
+          <span class="reference-domain">aws.amazon.com &middot; blog</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4F0;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://developer.nvidia.com/blog/turbocharging-meta-llama-3-performance-with-nvidia-tensorrt-llm-and-nvidia-triton-inference-server/" target="_blank" rel="noopener noreferrer">Turbocharging Llama 3 with Triton</a></span>
+          <span class="reference-domain">developer.nvidia.com &middot; blog</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <div class="page-nav-footer">
+    <a href="implementation.html" class="prev">Implementation</a>
+    <a href="ecosystem.html" class="next">Ecosystem</a>
+  </div>
+
+  <footer class="site-footer">
+    <p>Generated by <strong>System Explorer</strong> &mdash; an interactive course built from system analysis</p>
+  </footer>
+
+  <script>
+    document.documentElement.classList.add('js-ready');
+
+    /* Hamburger toggle */
+    (function() {
+      var hamburger = document.getElementById('navHamburger');
+      var navPages = document.getElementById('navPages');
+      hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        hamburger.classList.toggle('open');
+        navPages.classList.toggle('mobile-open');
+      });
+      document.addEventListener('click', function(e) {
+        if (!hamburger.contains(e.target) && !navPages.contains(e.target)) {
+          hamburger.classList.remove('open');
+          navPages.classList.remove('mobile-open');
+        }
+      });
+    })();
+
+    /* Scroll progress bar */
+    function updateProgress() {
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      var p = h > 0 ? (window.scrollY / h * 100) : 0;
+      document.querySelector('.nav-progress-bar').style.width = p + '%';
+    }
+    window.addEventListener('scroll', function() { requestAnimationFrame(updateProgress); }, { passive: true });
+
+    /* Intersection observer for animations + card reveals */
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          /* Animate decision cards */
+          var dCards = e.target.querySelectorAll('.decision-card');
+          dCards.forEach(function(c) { c.classList.add('visible'); });
+          /* Animate anti-pattern cards */
+          var aCards = e.target.querySelectorAll('.anti-card');
+          aCards.forEach(function(c) { c.classList.add('visible'); });
+          /* Animate example cards */
+          var exCards = e.target.querySelectorAll('.example-card');
+          exCards.forEach(function(c) { c.classList.add('visible'); });
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.animate-in').forEach(function(el) { observer.observe(el); });
+
+    /* Glossary tooltips */
+    (function() {
+      var tt = document.createElement('div');
+      tt.className = 'glossary-tooltip';
+      document.body.appendChild(tt);
+
+      document.querySelectorAll('.glossary-term').forEach(function(term) {
+        term.addEventListener('mouseenter', function(e) {
+          var r = e.target.getBoundingClientRect();
+          tt.textContent = e.target.dataset.definition;
+          tt.classList.add('visible');
+          tt.style.left = Math.max(8, Math.min(r.left + r.width / 2 - 150, window.innerWidth - 308)) + 'px';
+          tt.style.top = (r.top - tt.offsetHeight - 8) + 'px';
+          if (r.top - tt.offsetHeight - 8 < 8) {
+            tt.style.top = (r.bottom + 8) + 'px';
+          }
+        });
+        term.addEventListener('mouseleave', function() {
+          tt.classList.remove('visible');
+        });
+      });
+    })();
+
+    /* Copy as Markdown */
+    function copyPageAsMarkdown() {
+      var md = '# TensorRT-LLM - Use Cases & Case Studies\n\n'
+        + '## When to Use It\n'
+        + '1. **High-throughput production serving** - ~15% faster than vLLM on H100\n'
+        + '2. **Latency-critical apps** - p95 TTFT ~1,280ms vs ~1,450ms vLLM\n'
+        + '3. **Multi-GPU 70B+ models** - NCCL, disaggregated serving\n'
+        + '4. **Cost optimization at scale** - 5.3x better TCO, 6x less energy\n'
+        + '5. **Blackwell/Hopper workloads** - FP8, NVFP4, HW-specific kernels\n\n'
+        + '## When NOT to Use It\n'
+        + '1. **Rapid prototyping** - ~28 min compile. Use: vLLM/SGLang\n'
+        + '2. **Blue-green / auto-scaling** - cold start. Use: NIM or pre-cached engines\n'
+        + '3. **Non-NVIDIA hardware** - AMD/Intel. Use: vLLM (ROCm)\n'
+        + '4. **Small teams** - complexity. Use: NIM\n'
+        + '5. **Shared-prefix workloads** - Use: SGLang (RadixAttention)\n\n'
+        + '## Real-World Examples\n'
+        + '1. **Enterprise AI assistants** - Microsoft, Oracle on GB300 NVL72\n'
+        + '2. **Multi-node AWS scaling** - EKS + Triton reference architecture\n'
+        + '3. **Cost-optimized API services** - replacing GPT-3.5/4 API with self-hosted\n'
+        + '4. **AI coding assistants** - speculative decoding (EAGLE)\n';
+
+      var btn = document.querySelector('.copy-markdown-btn');
+      navigator.clipboard.writeText(md).then(function() {
+        btn.querySelector('.btn-label').textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.querySelector('.btn-label').textContent = 'Copy as Markdown';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
