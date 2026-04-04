@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Core Concepts — Ollama Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context:
+    system: "Ollama"
+    description: "the simplest way to run open-source LLMs locally"
+    page: "Core Concepts"
+    level: "Beginner"
+  -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:400ms;--ease-out:cubic-bezier(0.16,1,0.3,1);--stagger-delay:120ms}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}
+    .nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}
+    .nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}
+    .nav-brand:hover{color:var(--color-accent)}
+    .nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}
+    .nav-pages::-webkit-scrollbar{display:none}
+    .nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}
+    .nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}
+    .nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}
+    .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}
+    .nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+    .nav-hamburger.open span:nth-child(2){opacity:0}
+    .nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}
+    .page-header-content{flex:1;min-width:0}
+    .page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-3) 0 0;line-height:1.15}
+    .page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}
+    .page-level-badge.beginner{background:var(--color-success-light);color:var(--color-success)}
+    .page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}
+    .page-level-badge.advanced{background:var(--color-warning-light);color:var(--color-warning)}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast);white-space:nowrap}
+    .copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}
+    .copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}
+    .content-section{margin-bottom:var(--space-10)}
+    .content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:0 0 var(--space-4)}
+    .content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;color:var(--color-text);margin:var(--space-6) 0 var(--space-3)}
+    .content-section p{font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);line-height:1.7;margin:0 0 var(--space-4)}
+    .content-section p code,.content-section li code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 5px;border-radius:4px}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg)}
+
+    .concept-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--space-4);margin:var(--space-6) 0}
+    .concept-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);box-shadow:var(--shadow-sm);border:1px solid var(--color-border-light);cursor:pointer;transition:box-shadow var(--duration-fast),border-color var(--duration-fast)}
+    .concept-card:hover{box-shadow:var(--shadow-md);border-color:var(--color-accent-muted)}
+    .concept-card.expanded{border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-light)}
+    .concept-card .card-icon{font-size:1.5rem;margin-bottom:var(--space-2)}
+    .concept-card .card-title{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);margin-bottom:var(--space-2)}
+    .concept-card .card-desc{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.5}
+    .concept-card .card-expanded{max-height:0;overflow:hidden;opacity:0;transition:max-height var(--duration-normal),opacity var(--duration-normal),margin var(--duration-normal)}
+    .concept-card.expanded .card-expanded{max-height:300px;opacity:1;margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--color-border-light)}
+    .concept-card .card-expanded p{font-size:var(--text-sm);color:var(--color-text);margin:0}
+
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;display:flex;gap:var(--space-3);align-items:flex-start}
+    .callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px}
+    .callout-content{font-size:var(--text-sm);line-height:1.6}
+    .callout-insight{background:var(--color-info-light);border-left:4px solid var(--color-info)}
+    .callout-tip{background:var(--color-success-light);border-left:4px solid var(--color-success)}
+
+    .glossary-term{border-bottom:1px dashed var(--color-accent-muted);cursor:help;position:relative}
+
+    .flow-diagram{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0;overflow-x:auto}
+    .flow-title{font-family:var(--font-display);font-weight:700;text-align:center;margin-bottom:var(--space-5)}
+    .flow-steps{display:flex;flex-direction:column;gap:var(--space-3);align-items:center}
+    .flow-step{display:flex;align-items:center;gap:var(--space-3);background:var(--color-surface-warm);border-radius:var(--radius-md);padding:var(--space-3) var(--space-5);max-width:500px;width:100%;border:1px solid var(--color-border-light)}
+    .flow-step-num{font-family:var(--font-display);font-weight:800;font-size:var(--text-lg);color:var(--color-accent);flex-shrink:0;width:28px;text-align:center}
+    .flow-step-text{font-size:var(--text-sm);line-height:1.5}
+    .flow-arrow{color:var(--color-text-muted);font-size:var(--text-lg)}
+
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}
+    a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}
+
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}
+    .references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:0 0 var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
+    .references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}
+    .reference-item{display:flex;align-items:baseline;gap:var(--space-3)}
+    .reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}
+    .reference-title a{color:var(--color-accent);text-decoration:none;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}
+    .reference-title a:hover{text-decoration:underline}
+    .reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}
+    .page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:var(--space-2);transition:color 0.15s ease}
+    .page-nav-footer a:hover{color:var(--color-accent-hover)}
+    .page-nav-footer .prev::before{content:"\2190\00a0"}
+    .page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.concept-cards{grid-template-columns:1fr}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-inner">
+    <a href="index.html" class="nav-brand">Ollama</a>
+    <div class="nav-pages" id="navPages">
+      <a href="index.html" class="nav-page-link">Home</a>
+      <a href="concepts.html" class="nav-page-link active">Concepts</a>
+      <a href="architecture.html" class="nav-page-link">Architecture</a>
+      <a href="how-it-works.html" class="nav-page-link">How It Works</a>
+      <a href="implementation.html" class="nav-page-link">Implementation</a>
+      <a href="use-cases.html" class="nav-page-link">Use Cases</a>
+      <a href="ecosystem.html" class="nav-page-link">Ecosystem</a>
+      <a href="faq.html" class="nav-page-link">FAQ</a>
+      <a href="tradeoffs.html" class="nav-page-link">Trade-offs</a>
+    </div>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+  </div></nav>
+
+  <header class="page-header animate-in">
+    <div class="page-header-content">
+      <span class="page-level-badge beginner">Beginner</span>
+      <h1>Core Concepts</h1>
+    </div>
+    <button class="copy-markdown-btn" onclick="copyPageAsMarkdown()">
+      <span class="btn-icon">&#x1F4CB;</span>
+      <span class="btn-label">Copy as Markdown</span>
+    </button>
+  </header>
+
+  <main class="content-area">
+    <section class="content-section" data-level="beginner">
+      <h2>The Building Blocks of Ollama</h2>
+      <p>Ollama's power comes from a handful of key concepts working together. Click any card below to learn more about each one.</p>
+
+      <div class="concept-cards">
+        <div class="concept-card" onclick="this.classList.toggle('expanded')">
+          <div class="card-icon">&#x1F4DA;</div>
+          <div class="card-title">Model Library</div>
+          <div class="card-desc">Ollama's curated registry of pre-built models -- like an app store for LLMs.</div>
+          <div class="card-expanded"><p>When you type <code>ollama run llama3.2</code>, Ollama checks the library at ollama.com/library, finds the right model variant for your hardware, and downloads it. Think of it as Docker Hub for language models: a central place where models are published with tags for different sizes and quantization levels (e.g., <code>llama3.2:3b-q4_K_M</code>).</p></div>
+        </div>
+        <div class="concept-card" onclick="this.classList.toggle('expanded')">
+          <div class="card-icon">&#x1F4E6;</div>
+          <div class="card-title">GGUF Format</div>
+          <div class="card-desc">The binary file format that stores model weights and metadata.</div>
+          <div class="card-expanded"><p>GGUF is like a ZIP file specifically designed for neural networks -- it packages the model's weights, vocabulary, architecture parameters, and chat template into a single file that inference engines can memory-map directly. GGUF replaced the older GGML format and is designed for fast loading.</p></div>
+        </div>
+        <div class="concept-card" onclick="this.classList.toggle('expanded')">
+          <div class="card-icon">&#x1F50D;</div>
+          <div class="card-title">Quantization</div>
+          <div class="card-desc">Reduces model precision to use less memory and run faster.</div>
+          <div class="card-expanded"><p>Like compressing a high-resolution photo to a smaller file while keeping it recognizable. A model trained with 16-bit weights might be quantized to 4-bit integers (Q4_K_M), reducing memory usage by roughly 4x with modest quality loss. Common levels: Q4_K_M (good balance), Q5_K_M (higher quality), Q8_0 (near-original).</p></div>
+        </div>
+        <div class="concept-card" onclick="this.classList.toggle('expanded')">
+          <div class="card-icon">&#x1F4DD;</div>
+          <div class="card-title">Modelfile</div>
+          <div class="card-desc">Ollama's recipe file for building custom models -- like a Dockerfile for LLMs.</div>
+          <div class="card-expanded"><p>Uses a simple declarative syntax with instructions like FROM (base model), PARAMETER (inference settings), SYSTEM (system prompt), and TEMPLATE (chat format). Example: <code>FROM llama3.2</code> followed by <code>SYSTEM "You are a helpful coding assistant"</code> creates a coding-focused variant.</p></div>
+        </div>
+        <div class="concept-card" onclick="this.classList.toggle('expanded')">
+          <div class="card-icon">&#x1F310;</div>
+          <div class="card-title">REST API</div>
+          <div class="card-desc">The HTTP interface that applications use to talk to the inference server.</div>
+          <div class="card-expanded"><p>Like a waiter taking orders and bringing back responses from the kitchen. The server listens on localhost:11434 and provides endpoints for generation (/api/generate), chat (/api/chat), embeddings (/api/embed), and an OpenAI-compatible endpoint at /v1/chat/completions.</p></div>
+        </div>
+        <div class="concept-card" onclick="this.classList.toggle('expanded')">
+          <div class="card-icon">&#x1F9E0;</div>
+          <div class="card-title">Scheduler</div>
+          <div class="card-desc">The internal brain managing which models are loaded in memory.</div>
+          <div class="card-expanded"><p>Like an air traffic controller deciding which planes get to land and take off. Since models consume gigabytes of GPU memory, the scheduler tracks loaded models, handles concurrent requests, manages memory pressure, and decides when to evict idle models to make room for new ones.</p></div>
+        </div>
+        <div class="concept-card" onclick="this.classList.toggle('expanded')">
+          <div class="card-icon">&#x26A1;</div>
+          <div class="card-title">Runner</div>
+          <div class="card-desc">The inference subprocess that actually executes model computations.</div>
+          <div class="card-expanded"><p>Like the engine in a car -- the API provides the dashboard, but the Runner does the real work. Ollama spawns a separate process for each loaded model, communicating via local HTTP. Supports two backends: legacy llama.cpp and newer native Ollama engine with MLX support for Apple Silicon.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="beginner">
+      <h2>How They Fit Together</h2>
+      <div class="flow-diagram">
+        <h3 class="flow-title">Request Lifecycle</h3>
+        <div class="flow-steps">
+          <div class="flow-step"><span class="flow-step-num">1</span><span class="flow-step-text">You type <code>ollama run llama3.2</code> -- the CLI sends a chat request to the <strong>REST API</strong> server</span></div>
+          <div class="flow-arrow">&#x2193;</div>
+          <div class="flow-step"><span class="flow-step-num">2</span><span class="flow-step-text">The server asks the <strong>Scheduler</strong> whether the model is already loaded</span></div>
+          <div class="flow-arrow">&#x2193;</div>
+          <div class="flow-step"><span class="flow-step-num">3</span><span class="flow-step-text">If not loaded, the Scheduler checks the local blob store for the <strong>GGUF</strong> model file (downloading from the <strong>Model Library</strong> if needed)</span></div>
+          <div class="flow-arrow">&#x2193;</div>
+          <div class="flow-step"><span class="flow-step-num">4</span><span class="flow-step-text">The Scheduler selects GPUs with enough memory and spawns a <strong>Runner</strong> subprocess</span></div>
+          <div class="flow-arrow">&#x2193;</div>
+          <div class="flow-step"><span class="flow-step-num">5</span><span class="flow-step-text">The Runner loads the <strong>quantized</strong> weights, applies <strong>Modelfile</strong> settings, and starts generating tokens</span></div>
+          <div class="flow-arrow">&#x2193;</div>
+          <div class="flow-step"><span class="flow-step-num">6</span><span class="flow-step-text">Tokens stream back to you in real-time; the Scheduler sets a keep-alive timer for the loaded model</span></div>
+        </div>
+      </div>
+
+      <div class="callout callout-insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content">
+          <strong>Key insight:</strong> Every concept in Ollama has a clear job. The Model Library handles discovery, GGUF handles storage, Quantization handles compression, the Modelfile handles customization, the API handles communication, the Scheduler handles memory, and the Runner handles computation. This separation of concerns is what makes Ollama "just work" for most users.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4C4;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://docs.ollama.com/modelfile" target="_blank" rel="noopener noreferrer">Ollama Modelfile Reference</a></span>
+          <span class="reference-domain">docs.ollama.com</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4BB;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://github.com/ggerganov/ggml/blob/master/docs/gguf.md" target="_blank" rel="noopener noreferrer">GGUF Format Specification</a></span>
+          <span class="reference-domain">github.com</span>
+        </div>
+      </li>
+      <li class="reference-item">
+        <span class="reference-type-icon">&#x1F4C4;</span>
+        <div class="reference-content">
+          <span class="reference-title"><a href="https://docs.ollama.com/api/" target="_blank" rel="noopener noreferrer">Ollama API Reference</a></span>
+          <span class="reference-domain">docs.ollama.com</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <nav class="page-nav-footer">
+    <a href="index.html" class="prev">Home</a>
+    <a href="architecture.html" class="next">Architecture</a>
+  </nav>
+
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+
+  <script>
+    document.documentElement.classList.add('js-ready');
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});
+    document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');
+    if(hamburger&&navPages){hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')})}
+
+    /* Glossary tooltips */
+    document.querySelectorAll('.glossary-term').forEach(function(term){
+      term.addEventListener('mouseenter',function(e){
+        var tip=document.createElement('div');
+        tip.className='glossary-tooltip';
+        tip.textContent=term.dataset.definition;
+        tip.style.cssText='position:fixed;background:#1E1E2E;color:#CDD6F4;padding:8px 12px;border-radius:8px;font-size:0.8rem;max-width:260px;z-index:9999;pointer-events:none;line-height:1.5;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
+        document.body.appendChild(tip);
+        var r=term.getBoundingClientRect();
+        tip.style.left=r.left+'px';tip.style.top=(r.top-tip.offsetHeight-6)+'px';
+        term._tip=tip;
+      });
+      term.addEventListener('mouseleave',function(){if(term._tip){term._tip.remove();term._tip=null}});
+    });
+
+    function copyPageAsMarkdown(){
+      var html=document.documentElement.innerHTML;
+      var ctxMatch=html.match(/<!-- page-context:\s*([\s\S]*?)-->/);
+      var ctx={};
+      if(ctxMatch){ctxMatch[1].split('\n').forEach(function(line){var m=line.match(/(\w+):\s*"(.+)"/);if(m)ctx[m[1]]=m[2]})}
+      var md='# '+( ctx.system||'')+ ': '+(ctx.page||document.title)+'\n';
+      md+='> Source: '+window.location.href+' | Level: '+(ctx.level||'Unknown')+'\n\n';
+      var content=document.querySelector('.content-area');
+      if(content){content.querySelectorAll('h2,h3,p,.concept-card,.callout,.flow-step').forEach(function(el){
+        if(el.tagName==='H2')md+='\n## '+el.textContent.trim()+'\n\n';
+        else if(el.tagName==='H3')md+='\n### '+el.textContent.trim()+'\n\n';
+        else if(el.tagName==='P')md+=el.textContent.trim()+'\n\n';
+        else if(el.classList.contains('concept-card')){var t=el.querySelector('.card-title'),d=el.querySelector('.card-desc');md+='- **'+(t?t.textContent:'')+'**: '+(d?d.textContent:'')+'\n'}
+        else if(el.classList.contains('callout'))md+='> '+el.textContent.trim()+'\n\n';
+        else if(el.classList.contains('flow-step'))md+='- '+el.textContent.trim()+'\n';
+      })}
+      md+='\n---\n*Generated by System Explorer*\n';
+      navigator.clipboard.writeText(md).then(function(){
+        var btn=document.querySelector('.copy-markdown-btn');
+        var label=btn.querySelector('.btn-label');
+        label.textContent='Copied!';btn.classList.add('copied');
+        setTimeout(function(){label.textContent='Copy as Markdown';btn.classList.remove('copied')},2000);
+      });
+    }
+  </script>
+</body>
+</html>

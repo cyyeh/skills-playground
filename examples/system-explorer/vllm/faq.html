@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ — vLLM Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system: "vLLM" description: "A high-throughput LLM inference engine" page: "FAQ" level: "All Levels" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin:var(--space-2) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.all{background:#F0EBE3;color:#6B6560}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin:0 0 var(--space-4)}.content-section p{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4)}.content-section p code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 5px;border-radius:4px}
+    /* Accordion */
+    .accordion{display:flex;flex-direction:column;gap:var(--space-3);margin:var(--space-6) 0}
+    .accordion-item{background:var(--color-surface);border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden;transition:box-shadow var(--duration-fast)}
+    .accordion-item:hover{box-shadow:var(--shadow-sm)}
+    .accordion-header{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-5);cursor:pointer;user-select:none;font-family:var(--font-display);font-weight:600;font-size:var(--text-base);color:var(--color-text);transition:background var(--duration-fast)}
+    .accordion-header:hover{background:var(--color-surface-warm)}
+    .accordion-toggle{font-size:var(--text-sm);color:var(--color-text-muted);transition:transform var(--duration-fast);flex-shrink:0}
+    .accordion-item.open .accordion-toggle{transform:rotate(180deg)}
+    .accordion-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}
+    .accordion-item.open .accordion-body{max-height:600px}
+    .accordion-body-inner{padding:0 var(--space-5) var(--space-5);font-size:var(--text-sm);line-height:1.7;color:var(--color-text-secondary)}
+    .accordion-body-inner code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 4px;border-radius:3px}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;display:flex;gap:var(--space-3);align-items:flex-start}.callout-insight{background:var(--color-info-light);border-left:4px solid var(--color-info)}.callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px}.callout-content{font-size:var(--text-sm);line-height:1.6}.callout-content strong{font-weight:600}
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:0 0 var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-title a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm);font-weight:600}.reference-title a:hover{text-decoration:underline}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    @media(max-width:768px){:root{--nav-height:56px}.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4);flex-direction:column}.nav-pages.mobile-open{display:flex}}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">vLLM</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link active">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+
+  <header class="page-header"><div class="page-header-content"><span class="page-level-badge all">All Levels</span><h1>Common Q&amp;A</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+
+  <main class="content-area">
+    <section class="content-section" data-level="all">
+      <h2>Frequently Asked Questions</h2>
+      <p>Practical questions a senior engineer would ask when evaluating or operating vLLM. Click any question to expand the answer.</p>
+
+      <div class="accordion">
+        <div class="accordion-item" onclick="this.classList.toggle('open')">
+          <div class="accordion-header"><span class="accordion-toggle">&#x25BC;</span>GPU utilization is high but throughput is lower than expected -- what's the diagnostic playbook?</div>
+          <div class="accordion-body"><div class="accordion-body-inner">High GPU utilization doesn't guarantee high throughput. Check these in order: (1) <strong>KV cache contention</strong> -- monitor <code>gpu_cache_usage_perc</code> in Prometheus. If at 100%, requests are queueing for memory. Reduce <code>max-model-len</code> or add GPUs. (2) <strong>Excessive preemption</strong> -- check <code>num_preemptions</code>. Each preemption wastes all KV cache computation for that request. (3) <strong>Prefill bottleneck</strong> -- long prompts tie up the GPU. Enable chunked prefill with <code>--enable-chunked-prefill</code>. (4) <strong>TP communication overhead</strong> -- if using tensor parallelism without NVLink, all-reduce may be the bottleneck.</div></div>
+        </div>
+
+        <div class="accordion-item" onclick="this.classList.toggle('open')">
+          <div class="accordion-header"><span class="accordion-toggle">&#x25BC;</span>How do I right-size the max-model-len parameter?</div>
+          <div class="accordion-body"><div class="accordion-body-inner"><code>max-model-len</code> directly determines max KV cache size per request, which determines concurrent capacity. The formula: <code>num_concurrent = available_kv_memory / (max_model_len * per_token_kv_size * num_layers)</code>. If your workload rarely exceeds 4K tokens, setting this to 4096 instead of the model's 128K max frees enormous memory for additional concurrent requests. Always profile actual prompt + completion lengths first.</div></div>
+        </div>
+
+        <div class="accordion-item" onclick="this.classList.toggle('open')">
+          <div class="accordion-header"><span class="accordion-toggle">&#x25BC;</span>When should I use speculative decoding vs. scaling with more GPUs?</div>
+          <div class="accordion-body"><div class="accordion-body-inner">Speculative decoding reduces <strong>latency</strong> (time per output token) at some throughput cost. More GPUs reduce latency AND increase throughput. Use spec decode when: latency is primary, you have a well-matched draft model with &gt;70% acceptance rates, and your GPU is underutilized during decode. Don't use it when: throughput is the priority, acceptance rate is low (&lt;50%), or you're already compute-bound.</div></div>
+        </div>
+
+        <div class="accordion-item" onclick="this.classList.toggle('open')">
+          <div class="accordion-header"><span class="accordion-toggle">&#x25BC;</span>What happens to the partial KV cache when a request is preempted?</div>
+          <div class="accordion-body"><div class="accordion-body-inner">In the V1 engine, preempted requests <strong>lose their entire partial KV cache</strong>. The blocks are freed and the request moves back to the waiting queue. When rescheduled, the KV cache is recomputed from scratch -- there is no swap-to-CPU mechanism. This means preemption is expensive. Monitor <code>num_preemptions</code>. If non-zero in steady state, you need more KV cache capacity (more GPU memory or lower <code>max-model-len</code>).</div></div>
+        </div>
+
+        <div class="accordion-item" onclick="this.classList.toggle('open')">
+          <div class="accordion-header"><span class="accordion-toggle">&#x25BC;</span>What's the practical limit on concurrent requests for my setup?</div>
+          <div class="accordion-body"><div class="accordion-body-inner">Depends on GPU memory, model size, and average sequence length. Rough examples: Llama-3.1-8B on A100-80GB with <code>max-model-len=4096</code> = 200-400 concurrent requests. 70B model on 4xA100-80GB TP=4 = 50-150 concurrent. To find yours: gradually increase load while monitoring <code>gpu_cache_usage_perc</code> and <code>num_requests_waiting</code>. When cache hits 100% and waiting grows, you've found the ceiling.</div></div>
+        </div>
+
+        <div class="accordion-item" onclick="this.classList.toggle('open')">
+          <div class="accordion-header"><span class="accordion-toggle">&#x25BC;</span>Should I use FP8, AWQ, or GPTQ quantization?</div>
+          <div class="accordion-body"><div class="accordion-body-inner"><strong>FP8:</strong> Simplest -- quantizes at serve-time, works on Hopper GPUs (H100/H200), ~2x memory reduction with minimal quality loss. <strong>AWQ:</strong> Requires pre-quantized model, works on all CUDA GPUs, 4-bit (~4x memory reduction), good quality. <strong>GPTQ:</strong> Similar to AWQ but AWQ generally produces better results. Choose based on: hardware (FP8 for Hopper), available pre-quantized models (check HuggingFace), and quality requirements.</div></div>
+        </div>
+
+        <div class="accordion-item" onclick="this.classList.toggle('open')">
+          <div class="accordion-header"><span class="accordion-toggle">&#x25BC;</span>How do I serve multiple models on the same GPU infrastructure?</div>
+          <div class="accordion-body"><div class="accordion-body-inner">Three approaches: (1) <strong>Separate instances</strong> per model, each bound to specific GPUs. Simple but wastes memory if underutilized. (2) <strong>LoRA adapters</strong> on a shared base with <code>--enable-lora</code>. Most memory-efficient when models share a base architecture. (3) <strong>Ray Serve routing</strong> in front of multiple vLLM instances, with automatic routing and autoscaling per model. Best for production multi-model deployments.</div></div>
+        </div>
+
+        <div class="accordion-item" onclick="this.classList.toggle('open')">
+          <div class="accordion-header"><span class="accordion-toggle">&#x25BC;</span>What happens when vLLM receives more requests than it can handle?</div>
+          <div class="accordion-body"><div class="accordion-body-inner">New requests enter the <code>waiting</code> queue. The scheduler promotes them to <code>running</code> as KV cache blocks free up. If the queue grows unbounded, clients experience increasing latency. There is no hard rejection -- requests wait indefinitely unless the client times out. In production, place a load balancer or rate limiter in front of vLLM to control admission.</div></div>
+        </div>
+      </div>
+
+      <div class="callout callout-insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content"><strong>Monitoring is key:</strong> Most operational issues with vLLM come down to KV cache pressure. The single most important metric to watch is <code>gpu_cache_usage_perc</code> at the <code>/metrics</code> endpoint. If it's consistently at 100%, everything else will suffer.</div>
+      </div>
+    </section>
+  </main>
+
+  <section class="references-footer"><h3>&#x1F4DA; References</h3><ul class="references-list">
+    <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><span class="reference-title"><a href="https://docs.vllm.ai/en/stable/configuration/optimization/" target="_blank" rel="noopener noreferrer">vLLM Optimization and Tuning Guide</a></span></li>
+  </ul></section>
+
+  <nav class="page-nav-footer"><a href="ecosystem.html" class="prev">Ecosystem</a><a href="tradeoffs.html" class="next">Trade-offs</a></nav>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+
+  <script>
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
+    function copyPageAsMarkdown(){var md='# vLLM: FAQ\n> Source: '+window.location.href+'\n\n';document.querySelectorAll('.accordion-item').forEach(function(item){var h=item.querySelector('.accordion-header');var b=item.querySelector('.accordion-body-inner');md+='**Q: '+h.textContent.trim().replace(/^[\u25BC\s]+/,'')+'**\n\n'+b.textContent.trim()+'\n\n---\n\n'});navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');btn.querySelector('.btn-label').textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.querySelector('.btn-label').textContent='Copy as Markdown';btn.classList.remove('copied')},2000)})}
+  </script>
+</body>
+</html>

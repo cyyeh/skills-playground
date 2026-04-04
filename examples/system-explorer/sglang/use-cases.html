@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Use Cases — SGLang Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system: "SGLang" page: "Use Cases" level: "Beginner-Intermediate" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-4xl:2.25rem;--leading-tight:1.15;--leading-snug:1.3;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--space-20:5rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:400ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-progress-bar{position:absolute;top:0;left:0;height:3px;width:0%;background:var(--color-accent);transition:width 100ms linear;z-index:1}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;white-space:nowrap;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast) var(--ease-out),opacity var(--duration-fast) var(--ease-out)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:var(--content-width);margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6)}.page-header h1{font-family:var(--font-display);font-size:var(--text-4xl);font-weight:800;color:var(--color-text);margin:0 0 var(--space-3);line-height:var(--leading-tight)}.level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-xs);font-weight:600;padding:2px var(--space-2);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.level-badge.beginner{background:var(--color-success-light);color:var(--color-level-beginner)}
+    .content-section{max-width:var(--content-width);margin:0 auto var(--space-12);padding:0 var(--space-6)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;color:var(--color-text);margin:var(--space-10) 0 var(--space-4)}.content-section p{margin:0 0 var(--space-4);line-height:var(--leading-normal)}.content-section a{color:var(--color-accent);text-decoration:none}.content-section a:hover{text-decoration:underline}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;line-height:var(--leading-normal)}.callout.insight{background:var(--color-info-light);border-left:4px solid var(--color-info)}.callout.warning{background:var(--color-warning-light);border-left:4px solid var(--color-warning)}.callout strong{display:block;margin-bottom:var(--space-1)}
+    .decision-tree{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0}
+    .decision-tree h3{font-family:var(--font-display);font-weight:700;margin:0 0 var(--space-4);text-align:center}
+    .dt-question{font-family:var(--font-body);font-size:var(--text-lg);font-weight:500;text-align:center;padding:var(--space-4);color:var(--color-text);min-height:60px;display:flex;align-items:center;justify-content:center}
+    .dt-buttons{display:flex;justify-content:center;gap:var(--space-4);margin:var(--space-4) 0}
+    .dt-btn{font-family:var(--font-body);font-size:var(--text-base);font-weight:600;padding:var(--space-3) var(--space-6);border-radius:var(--radius-md);border:2px solid var(--color-border);background:var(--color-surface);cursor:pointer;transition:all var(--duration-fast)}.dt-btn:hover{border-color:var(--color-accent);background:var(--color-accent-light)}
+    .dt-btn.yes{color:var(--color-success)}.dt-btn.no{color:var(--color-error)}
+    .dt-result{font-family:var(--font-body);font-size:var(--text-base);text-align:center;padding:var(--space-4);border-radius:var(--radius-md);margin:var(--space-4) 0;display:none}
+    .dt-result.show{display:block}
+    .dt-result.recommend{background:var(--color-success-light);color:var(--color-success);font-weight:600}
+    .dt-result.alternative{background:var(--color-warning-light);color:var(--color-warning);font-weight:600}
+    .dt-restart{font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-accent);background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:var(--space-2);display:none}
+    .case-card{background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-5);margin:var(--space-4) 0;border-left:4px solid var(--color-accent)}
+    .case-card h4{font-family:var(--font-display);font-weight:700;margin:0 0 var(--space-2);color:var(--color-text)}
+    .case-card p{margin:0;font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.6}
+    .page-nav{max-width:var(--content-width);margin:var(--space-12) auto;padding:0 var(--space-6);display:flex;justify-content:space-between;gap:var(--space-4)}.page-nav a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-accent);text-decoration:none;padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);border:1px solid var(--color-border);transition:all var(--duration-fast)}.page-nav a:hover{background:var(--color-accent-light);border-color:var(--color-accent)}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-12)}
+    @media(max-width:768px){:root{--text-4xl:1.875rem;--nav-height:56px}.nav-pages{display:none}.nav-pages.mobile-open{display:flex;flex-direction:column;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-bg);border-bottom:1px solid var(--color-border-light);padding:var(--space-4) var(--space-6);box-shadow:var(--shadow-md);z-index:999}.nav-hamburger{display:flex}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-progress-bar"></div><div class="nav-inner"><a href="index.html" class="nav-brand">SGLang</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link active">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+
+  <header class="page-header"><h1>Use Cases &amp; Case Studies</h1><span class="level-badge beginner">Beginner &ndash; Intermediate</span></header>
+
+  <div class="content-section">
+    <h2>Should You Use SGLang?</h2>
+    <div class="decision-tree" id="decisionTree">
+      <h3>Decision Tree</h3>
+      <div class="dt-question" id="dtQuestion">Do your requests share common prefixes (system prompts, few-shot examples, multi-turn history)?</div>
+      <div class="dt-buttons" id="dtButtons">
+        <button class="dt-btn yes" onclick="dtAnswer('yes',0)">Yes</button>
+        <button class="dt-btn no" onclick="dtAnswer('no',0)">No</button>
+      </div>
+      <div class="dt-result" id="dtResult"></div>
+      <button class="dt-restart" id="dtRestart" onclick="dtReset()">Start over</button>
+    </div>
+
+    <h2>When to Use It</h2>
+    <div class="case-card"><h4>Multi-turn conversation services</h4><p>RadixAttention caches conversation history. Each new message only processes new tokens, giving ~10% throughput advantage over vLLM, growing larger with longer conversations.</p></div>
+    <div class="case-card"><h4>Structured output at scale</h4><p>Integrated grammar backends (XGrammar, Outlines) enforce JSON, code, or custom formats at the token level with minimal overhead via GPU bitmask operations.</p></div>
+    <div class="case-card"><h4>Few-shot and system-prompt-heavy workloads</h4><p>1,000 requests sharing a 4,000-token system prompt? The prompt is processed once and cached. Subsequent requests skip to the unique portion.</p></div>
+    <div class="case-card"><h4>Agentic AI workflows</h4><p>The SGLang DSL's fork() and gen() primitives express branching logic (ReAct, tree-of-thought) so the runtime can optimize across branches.</p></div>
+    <div class="case-card"><h4>High-throughput batch inference</h4><p>Continuous batching and cache-aware scheduling maximize GPU utilization, delivering up to 45% more value per GPU hour than standard deployments.</p></div>
+
+    <h2>When NOT to Use It</h2>
+    <div class="callout warning">
+      <strong>Not ideal for these scenarios</strong>
+      <strong style="display:inline;font-weight:normal">Single-shot, extreme-TTFT workloads:</strong> vLLM's C++ routing may offer lower TTFT. <strong style="display:inline;font-weight:normal">Small models on CPU:</strong> Use llama.cpp or Ollama instead. <strong style="display:inline;font-weight:normal">Quick prototyping:</strong> transformers + model.generate() is simpler. <strong style="display:inline;font-weight:normal">No prefix reuse:</strong> RadixAttention provides no benefit; consider --disable-radix-cache.
+    </div>
+
+    <h2>Real-World Deployments</h2>
+    <div class="case-card"><h4>xAI (Grok)</h4><p>Uses SGLang to serve Grok models at scale. Leverages efficient multi-GPU serving and RadixAttention for conversational workloads. Expert parallelism support is critical for MoE architectures.</p></div>
+    <div class="case-card"><h4>Cursor (AI Code Editor)</h4><p>Powers real-time code completion. Code editing context creates natural prefix sharing that RadixAttention exploits. Constrained decoding ensures syntactically valid code.</p></div>
+    <div class="case-card"><h4>LinkedIn</h4><p>Deploys SGLang for AI features across the platform. Benefits from production-grade serving and OpenAI-compatible API for drop-in replacement.</p></div>
+    <div class="case-card"><h4>NVIDIA, AMD, Intel</h4><p>All three GPU vendors integrate SGLang. NVIDIA provides official container images; AMD contributes ROCm-optimized kernels.</p></div>
+  </div>
+
+  <nav class="page-nav"><a href="implementation.html">&larr; Implementation</a><a href="ecosystem.html">Ecosystem &rarr;</a></nav>
+  <footer class="site-footer"><p>Generated by <strong>System Explorer</strong></p></footer>
+
+  <script>
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');
+    hamburger.addEventListener('click',function(e){e.stopPropagation();hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
+    document.addEventListener('click',function(e){if(!hamburger.contains(e.target)&&!navPages.contains(e.target)){hamburger.classList.remove('open');navPages.classList.remove('mobile-open')}});
+    window.addEventListener('scroll',function(){var s=window.scrollY,d=document.documentElement.scrollHeight-window.innerHeight;document.querySelector('.nav-progress-bar').style.width=(d>0?(s/d)*100:0)+'%'},{passive:true});
+    /* Decision tree */
+    var dtQuestions=[
+      {q:"Do your requests share common prefixes (system prompts, few-shot examples, multi-turn history)?",yes:1,no:2},
+      {q:"Do you need structured output (JSON, code, regex-constrained)?",yes:"recommend",no:3},
+      {q:"Are you running models on GPUs (not CPU/edge)?",yes:4,no:"alt_cpu"},
+      {q:"Is this a high-throughput production deployment (not prototyping)?",yes:"recommend",no:"alt_simple"},
+      {q:"Do you need the absolute lowest time-to-first-token on unique prompts?",yes:"alt_vllm",no:"recommend"}
+    ];
+    var dtResults={
+      recommend:"SGLang is an excellent choice for your workload. RadixAttention, continuous batching, and constrained decoding will maximize your throughput.",
+      alt_cpu:"Consider llama.cpp or Ollama for CPU/edge deployments. SGLang is optimized for GPU serving.",
+      alt_simple:"For quick prototyping, transformers + model.generate() is simpler. SGLang shines at scale.",
+      alt_vllm:"Consider vLLM for extreme TTFT requirements on unique prompts. Its C++ routing layer avoids Python overhead."
+    };
+    function dtAnswer(ans,idx){
+      var next=dtQuestions[idx][ans];
+      if(typeof next==='string'){
+        document.getElementById('dtQuestion').textContent=dtResults[next];
+        document.getElementById('dtButtons').style.display='none';
+        var r=document.getElementById('dtResult');r.textContent=next.startsWith('alt')?'Consider an alternative':'SGLang recommended!';r.className='dt-result show '+(next==='recommend'?'recommend':'alternative');
+        document.getElementById('dtRestart').style.display='inline';
+      }else{
+        document.getElementById('dtQuestion').textContent=dtQuestions[next].q;
+        document.getElementById('dtButtons').innerHTML='<button class="dt-btn yes" onclick="dtAnswer(\'yes\','+next+')">Yes</button><button class="dt-btn no" onclick="dtAnswer(\'no\','+next+')">No</button>';
+      }
+    }
+    function dtReset(){
+      document.getElementById('dtQuestion').textContent=dtQuestions[0].q;
+      document.getElementById('dtButtons').style.display='flex';
+      document.getElementById('dtButtons').innerHTML='<button class="dt-btn yes" onclick="dtAnswer(\'yes\',0)">Yes</button><button class="dt-btn no" onclick="dtAnswer(\'no\',0)">No</button>';
+      document.getElementById('dtResult').className='dt-result';document.getElementById('dtRestart').style.display='none';
+    }
+  </script>
+</body>
+</html>

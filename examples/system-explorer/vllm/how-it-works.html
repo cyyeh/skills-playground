@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How It Works — vLLM Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system: "vLLM" description: "A high-throughput LLM inference engine" page: "How It Works" level: "Intermediate" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;color:var(--color-text);margin:var(--space-2) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin:0 0 var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;margin:0 0 var(--space-3)}.content-section p{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4)}.content-section p code,.content-section li code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 5px;border-radius:4px}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;display:flex;gap:var(--space-3);align-items:flex-start}.callout-insight{background:var(--color-info-light);border-left:4px solid var(--color-info)}.callout-warning{background:var(--color-warning-light);border-left:4px solid var(--color-warning)}.callout-tip{background:var(--color-success-light);border-left:4px solid var(--color-success)}.callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px}.callout-content{font-size:var(--text-sm);line-height:1.6}.callout-content strong{font-weight:600}
+    .glossary-term{border-bottom:1px dashed var(--color-accent-muted);cursor:help}.glossary-tooltip{position:fixed;z-index:9999;background:var(--color-bg-code);color:#CDD6F4;font-family:var(--font-body);font-size:var(--text-sm);padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);max-width:300px;line-height:1.5;box-shadow:var(--shadow-lg);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
+
+    /* Performance gauges */
+    .perf-gauges{display:flex;flex-direction:column;gap:var(--space-4);margin:var(--space-6) 0;background:var(--color-surface);padding:var(--space-6);border-radius:var(--radius-md);box-shadow:var(--shadow-sm)}
+    .perf-gauge{display:flex;align-items:center;gap:var(--space-4)}
+    .perf-name{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;min-width:160px;color:var(--color-text)}
+    .perf-bar{flex:1;height:24px;background:var(--color-border-light);border-radius:var(--radius-full);overflow:hidden;position:relative}
+    .perf-fill{height:100%;border-radius:var(--radius-full);transition:width 1.5s var(--ease-out);width:0}
+    .perf-fill.green{background:linear-gradient(90deg,#2D8B55,#5AAF7A)}
+    .perf-fill.blue{background:linear-gradient(90deg,#2A7B9B,#5A9DB5)}
+    .perf-fill.amber{background:linear-gradient(90deg,#D4A843,#E0C06A)}
+    .perf-value{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:600;min-width:60px;text-align:right;color:var(--color-text)}
+
+    .flow-diagram{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);margin:var(--space-6) 0;box-shadow:var(--shadow-sm)}
+    .flow-step{display:flex;align-items:flex-start;gap:var(--space-4);padding:var(--space-3) 0;position:relative}
+    .flow-step:not(:last-child)::after{content:'';position:absolute;left:19px;top:42px;bottom:0;width:2px;background:var(--color-border)}
+    .flow-number{width:38px;height:38px;border-radius:50%;background:var(--color-accent);color:white;font-family:var(--font-display);font-weight:700;font-size:var(--text-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1}
+    .flow-content h4{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin:0 0 var(--space-1)}.flow-content p{font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;line-height:1.5}
+
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:0 0 var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-title{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600}.reference-title a{color:var(--color-accent);text-decoration:none}.reference-title a:hover{text-decoration:underline}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none}.page-nav-footer a:hover{color:var(--color-accent-hover)}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    @media(max-width:768px){:root{--nav-height:56px}.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4);flex-direction:column}.nav-pages.mobile-open{display:flex}.perf-gauge{flex-direction:column;align-items:flex-start}.perf-name{min-width:auto}}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">vLLM</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link active">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+
+  <header class="page-header"><div class="page-header-content"><span class="page-level-badge intermediate">Intermediate</span><h1>How It Works</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+
+  <main class="content-area">
+    <section class="content-section" data-level="intermediate">
+      <h2>PagedAttention Memory Management</h2>
+      <p>PagedAttention applies OS virtual memory paging to the <span class="glossary-term" data-definition="KV Cache: Stores key and value vectors from attention computation. Grows with each token and can consume enormous GPU memory for long sequences.">KV cache</span>. Traditional systems allocate one large contiguous chunk per request, wasting 60-80% of memory to fragmentation. PagedAttention breaks the KV cache into fixed-size blocks (16 tokens each), maps them via a block table, and achieves under 4% waste.</p>
+      <div class="flow-diagram">
+        <div class="flow-step"><div class="flow-number">1</div><div class="flow-content"><h4>Block Division</h4><p>KV cache divided into fixed-size blocks, each storing KV data for 16 tokens. At ~800 bytes per token for a 13B model, each block is about 12.8KB.</p></div></div>
+        <div class="flow-step"><div class="flow-number">2</div><div class="flow-content"><h4>Block Table Mapping</h4><p>A block table maps each request's logical token positions to physical block locations -- like a page table mapping virtual to physical addresses.</p></div></div>
+        <div class="flow-step"><div class="flow-number">3</div><div class="flow-content"><h4>Dynamic Allocation</h4><p>New blocks allocated from a free list on demand. Blocks don't need to be contiguous. Only the last block can have internal fragmentation (at most 15 wasted tokens).</p></div></div>
+        <div class="flow-step"><div class="flow-number">4</div><div class="flow-content"><h4>Immediate Reclamation</h4><p>When a request finishes, its blocks return to the free list instantly. New requests can use them on the very next scheduling step.</p></div></div>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="intermediate">
+      <h2>Speculative Decoding Pipeline</h2>
+      <p><span class="glossary-term" data-definition="Speculative Decoding: Uses a small draft model to guess multiple tokens ahead, then verifies them in one pass of the larger model. Correct guesses are kept, wrong ones discarded.">Speculative decoding</span> breaks the autoregressive bottleneck by allowing multiple tokens to be verified in parallel.</p>
+      <div class="flow-diagram">
+        <div class="flow-step"><div class="flow-number">1</div><div class="flow-content"><h4>Draft Proposal</h4><p>A lightweight draft model (EAGLE, Medusa, or n-gram predictor) generates k candidate tokens quickly from the target model's hidden states.</p></div></div>
+        <div class="flow-step"><div class="flow-number">2</div><div class="flow-content"><h4>Batch Verification</h4><p>The full target model runs a single forward pass over all k candidates simultaneously -- efficient because it processes tokens in parallel, not sequentially.</p></div></div>
+        <div class="flow-step"><div class="flow-number">3</div><div class="flow-content"><h4>Accept/Reject</h4><p>Each draft token compared against the target model's output. Correct guesses accepted, first mismatch uses the target model's token, subsequent drafts discarded.</p></div></div>
+        <div class="flow-step"><div class="flow-number">4</div><div class="flow-content"><h4>Repeat</h4><p>Process repeats from the last accepted token. With high acceptance rates (>70%), this can generate 2-3x faster than standard autoregressive decoding.</p></div></div>
+      </div>
+      <div class="callout callout-warning">
+        <span class="callout-icon">&#x26A0;&#xFE0F;</span>
+        <div class="callout-content"><strong>Trade-off:</strong> Speculative decoding reduces latency but consumes GPU compute for the draft model. If the acceptance rate is low (<50%), the overhead can actually slow things down. Best for latency-sensitive workloads where the draft model matches the target model's distribution well.</div>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="intermediate">
+      <h2>Performance Characteristics</h2>
+      <p>How vLLM compares to baselines on key performance dimensions. These are representative ranges -- actual numbers depend on model, hardware, and workload.</p>
+      <div class="perf-gauges" id="perfGauges">
+        <div class="perf-gauge"><span class="perf-name">Throughput Gain</span><div class="perf-bar"><div class="perf-fill green" data-width="85" style="width:0"></div></div><span class="perf-value">2-4x</span></div>
+        <div class="perf-gauge"><span class="perf-name">Memory Efficiency</span><div class="perf-bar"><div class="perf-fill green" data-width="96" style="width:0"></div></div><span class="perf-value">96%+</span></div>
+        <div class="perf-gauge"><span class="perf-name">V1 Engine Improvement</span><div class="perf-bar"><div class="perf-fill blue" data-width="74" style="width:0"></div></div><span class="perf-value">+24%</span></div>
+        <div class="perf-gauge"><span class="perf-name">Spec Decode Speedup</span><div class="perf-bar"><div class="perf-fill amber" data-width="66" style="width:0"></div></div><span class="perf-value">2-3x</span></div>
+        <div class="perf-gauge"><span class="perf-name">CUDA Graph Gain</span><div class="perf-bar"><div class="perf-fill blue" data-width="30" style="width:0"></div></div><span class="perf-value">10-30%</span></div>
+      </div>
+      <div class="callout callout-insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content"><strong>Key insight:</strong> The 2-4x throughput gain comes almost entirely from PagedAttention's memory efficiency. By eliminating fragmentation, vLLM can fit more concurrent requests in the same GPU memory, and continuous batching ensures those requests keep the GPU fully utilized.</div>
+      </div>
+    </section>
+  </main>
+
+  <section class="references-footer">
+    <h3>&#x1F4DA; References</h3>
+    <ul class="references-list">
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4DC;</span><span class="reference-title"><a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener noreferrer">PagedAttention Paper</a></span></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><span class="reference-title"><a href="https://docs.vllm.ai/en/stable/configuration/optimization/" target="_blank" rel="noopener noreferrer">vLLM Optimization Guide</a></span></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><span class="reference-title"><a href="https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/" target="_blank" rel="noopener noreferrer">Automatic Prefix Caching Docs</a></span></li>
+    </ul>
+  </section>
+
+  <nav class="page-nav-footer"><a href="architecture.html" class="prev">Architecture</a><a href="implementation.html" class="next">Implementation</a></nav>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+
+  <script>
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
+    var tooltip=document.createElement('div');tooltip.className='glossary-tooltip';document.body.appendChild(tooltip);
+    document.querySelectorAll('.glossary-term').forEach(function(t){t.addEventListener('mouseenter',function(){var r=t.getBoundingClientRect();tooltip.textContent=t.dataset.definition;tooltip.classList.add('visible');tooltip.style.left=Math.min(r.left,window.innerWidth-320)+'px';tooltip.style.top=(r.bottom+8)+'px'});t.addEventListener('mouseleave',function(){tooltip.classList.remove('visible')})});
+    /* Animate perf bars on scroll */
+    var perfObs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.querySelectorAll('.perf-fill').forEach(function(f){f.style.width=f.dataset.width+'%'});perfObs.unobserve(e.target)}})},{threshold:0.3});
+    var pg=document.getElementById('perfGauges');if(pg)perfObs.observe(pg);
+    function copyPageAsMarkdown(){var md='# vLLM: How It Works\n> Source: '+window.location.href+' | Level: Intermediate\n\n';document.querySelector('.content-area').querySelectorAll('h2,h3,p').forEach(function(el){if(el.tagName==='H2')md+='\n## '+el.textContent.trim()+'\n\n';else if(el.tagName==='H3')md+='\n### '+el.textContent.trim()+'\n\n';else md+=el.textContent.trim()+'\n\n'});navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');btn.querySelector('.btn-label').textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.querySelector('.btn-label').textContent='Copy as Markdown';btn.classList.remove('copied')},2000)})}
+  </script>
+</body>
+</html>

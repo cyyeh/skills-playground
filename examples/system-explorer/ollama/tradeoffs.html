@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trade-offs — Ollama Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system: "Ollama" description: "the simplest way to run open-source LLMs locally" page: "Trade-offs" level: "Intermediate" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:400ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin:var(--space-3) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.intermediate{background:var(--color-info-light);color:var(--color-info)}.copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success)}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin:0 0 var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;margin:var(--space-6) 0 var(--space-3)}.content-section p{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4)}.content-section p code,.content-section li code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 5px;border-radius:4px}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg)}
+    .comparison-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--space-4);margin:var(--space-6) 0}.comp-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);box-shadow:var(--shadow-sm);border-top:4px solid var(--color-accent)}.comp-card h4{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);margin:0 0 var(--space-3)}.comp-card .comp-better,.comp-card .comp-worse{font-size:var(--text-sm);margin:0 0 var(--space-2);padding-left:var(--space-4)}.comp-card .comp-better{color:var(--color-success)}.comp-card .comp-worse{color:var(--color-error)}.comp-card .comp-when{font-size:var(--text-sm);color:var(--color-text-secondary);margin:var(--space-3) 0 0;padding-top:var(--space-3);border-top:1px solid var(--color-border-light)}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;display:flex;gap:var(--space-3)}.callout-icon{font-size:1.2rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:1.6}.callout-insight{background:var(--color-info-light);border-left:4px solid var(--color-info)}.callout-tip{background:var(--color-success-light);border-left:4px solid var(--color-success)}.callout-warning{background:var(--color-warning-light);border-left:4px solid var(--color-warning)}
+    .strength-item,.limitation-item{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-3) 0;box-shadow:var(--shadow-sm)}.strength-item{border-left:4px solid var(--color-success)}.limitation-item{border-left:4px solid var(--color-error)}.strength-item strong,.limitation-item strong{font-family:var(--font-display);font-size:var(--text-base)}.strength-item p,.limitation-item p{font-size:var(--text-sm);color:var(--color-text-secondary);margin:var(--space-2) 0 0}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:0 0 var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-title a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm);font-weight:600}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none}.page-nav-footer .prev::before{content:"\2190\00a0"}.site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.comparison-cards{grid-template-columns:1fr}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Ollama</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link active">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+
+  <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge intermediate">Intermediate</span><h1>Trade-offs & Limitations</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+
+  <main class="content-area">
+    <section class="content-section" data-level="intermediate">
+      <h2>Strengths</h2>
+      <div class="strength-item"><strong>Zero-configuration setup</strong><p>Auto-detects GPU hardware (CUDA, ROCm, Metal, Jetson), selects appropriate model variants, and manages memory allocation. From install to running a model is genuinely one command.</p></div>
+      <div class="strength-item"><strong>Content-addressable model management</strong><p>Docker-inspired storage with blob dedup and layer sharing. Pulling a fine-tuned variant downloads only changed layers. Clean list/copy/delete operations.</p></div>
+      <div class="strength-item"><strong>OpenAI API compatibility</strong><p>The /v1/chat/completions endpoint lets existing applications switch to local inference by changing one URL. This single feature drove massive ecosystem adoption.</p></div>
+      <div class="strength-item"><strong>Automatic model lifecycle management</strong><p>Keep-alive timers, memory-aware eviction, and concurrent request handling. Models load on demand and unload when idle. Users never manually manage GPU memory.</p></div>
+    </section>
+
+    <section class="content-section" data-level="intermediate">
+      <h2>Limitations</h2>
+      <div class="limitation-item"><strong>5-15% performance overhead vs raw llama.cpp</strong><p>Process isolation, Go HTTP server overhead, and template rendering add latency. LM Studio achieved 237 tok/s vs Ollama's 149 tok/s on Gemma 3 1B in one comparison.</p></div>
+      <div class="limitation-item"><strong>No authentication or multi-tenancy</strong><p>No user auth, API keys, rate limiting, or usage tracking. Anyone who can reach the port can use it. Requires a reverse proxy for team/production deployments.</p></div>
+      <div class="limitation-item"><strong>Limited production serving features</strong><p>No Prometheus metrics, no load balancing, no request logging beyond stdout, no horizontal scaling. Designed as a developer tool, not a serving stack.</p></div>
+      <div class="limitation-item"><strong>No distributed inference</strong><p>Supports layer splitting across GPUs on one machine, but cannot distribute across multiple machines. For models needing more VRAM than one machine has, use vLLM with tensor parallelism.</p></div>
+    </section>
+
+    <section class="content-section" data-level="intermediate">
+      <h2>Alternatives Comparison</h2>
+      <div class="comparison-cards">
+        <div class="comp-card">
+          <h4>llama.cpp</h4>
+          <p class="comp-better">&#x2705; Better: Max performance, full control, speculative decoding, custom quantization</p>
+          <p class="comp-worse">&#x274C; Worse: No model management, manual GPU config, no persistent server by default</p>
+          <p class="comp-when"><strong>Choose when:</strong> You need every token/second and are comfortable with manual setup</p>
+        </div>
+        <div class="comp-card">
+          <h4>LM Studio</h4>
+          <p class="comp-better">&#x2705; Better: GUI interface, model browser, slightly faster raw performance</p>
+          <p class="comp-worse">&#x274C; Worse: No Docker-style model management, less scriptable, not open-source</p>
+          <p class="comp-when"><strong>Choose when:</strong> You prefer a visual interface and quick model experimentation</p>
+        </div>
+        <div class="comp-card">
+          <h4>vLLM</h4>
+          <p class="comp-better">&#x2705; Better: High-throughput serving, PagedAttention, tensor parallelism, production metrics</p>
+          <p class="comp-worse">&#x274C; Worse: Harder setup, heavier resource footprint, overkill for single-user local use</p>
+          <p class="comp-when"><strong>Choose when:</strong> You need to serve many concurrent users in production</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="intermediate">
+      <h2>The Honest Take</h2>
+      <div class="callout callout-insight">
+        <span class="callout-icon">&#x1F3AF;</span>
+        <div class="callout-content">Ollama is the right choice when you want to run LLMs locally with minimal friction -- for development, prototyping, privacy-sensitive applications, or personal use. Its "Docker for LLMs" philosophy genuinely delivers. If you are building an LLM-powered application and want a local development environment, Ollama should be your first choice. However, do not deploy it as a production inference server without understanding its limitations -- no auth, no metrics, no horizontal scaling. For production serving, use vLLM or a managed API. For maximum single-machine performance, consider llama.cpp directly.</div>
+      </div>
+    </section>
+  </main>
+
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://www.roosmaa.net/blog/2025/ollama-lmstudio-llamacpp/" target="_blank" rel="noopener noreferrer">Ollama, LM Studio vs llama.cpp</a></span><span class="reference-domain">roosmaa.net</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://sider.ai/blog/ai-tools/is-ollama-the-best-local-llm-runner-in-2025-a-no-hype-review" target="_blank" rel="noopener noreferrer">Is Ollama the Best Local LLM Runner?</a></span><span class="reference-domain">sider.ai</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><div class="reference-content"><span class="reference-title"><a href="https://dev.to/synsun/running-local-llms-in-2026-ollama-lm-studio-and-jan-compared-5dii" target="_blank" rel="noopener noreferrer">Running Local LLMs in 2026: Compared</a></span><span class="reference-domain">dev.to</span></div></li>
+    </ul>
+  </section>
+
+  <nav class="page-nav-footer"><a href="faq.html" class="prev">FAQ</a></nav>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+
+  <script>
+    document.documentElement.classList.add('js-ready');
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});
+    document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');
+    if(hamburger&&navPages){hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')})}
+    function copyPageAsMarkdown(){var md='# Ollama: Trade-offs\n> Source: '+window.location.href+'\n\n';document.querySelectorAll('.content-area h2,.content-area p,.content-area .strength-item,.content-area .limitation-item,.content-area .callout').forEach(function(el){if(el.tagName==='H2')md+='\n## '+el.textContent.trim()+'\n\n';else if(el.tagName==='P')md+=el.textContent.trim()+'\n\n';else if(el.classList.contains('strength-item')||el.classList.contains('limitation-item')){var s=el.querySelector('strong'),p=el.querySelector('p');md+='- **'+(s?s.textContent:'')+'**: '+(p?p.textContent:'')+'\n'}else if(el.classList.contains('callout'))md+='> '+el.textContent.trim()+'\n\n'});navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');btn.querySelector('.btn-label').textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.querySelector('.btn-label').textContent='Copy as Markdown';btn.classList.remove('copied')},2000)})}
+  </script>
+</body>
+</html>

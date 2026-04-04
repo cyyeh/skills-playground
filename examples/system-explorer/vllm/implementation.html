@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Implementation — vLLM Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system: "vLLM" description: "A high-throughput LLM inference engine" page: "Implementation Details" level: "Advanced" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:300ms;--duration-slow:500ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1;min-width:0}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin:var(--space-2) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.advanced{background:var(--color-warning-light);color:var(--color-warning)}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin:0 0 var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;margin:var(--space-6) 0 var(--space-3)}.content-section p{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4)}.content-section p code,.content-section li code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 5px;border-radius:4px}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
+    .code-block{position:relative;background:var(--color-bg-code);border-radius:var(--radius-md);margin:var(--space-6) 0;overflow:hidden}
+    .code-block-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-4);background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.08)}
+    .code-lang-badge{font-family:var(--font-mono);font-size:var(--text-xs);font-weight:600;color:#CDD6F4;text-transform:uppercase;letter-spacing:0.05em}
+    .code-copy-btn{font-family:var(--font-mono);font-size:var(--text-xs);color:#6C7086;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-2);cursor:pointer;transition:all var(--duration-fast)}.code-copy-btn:hover{color:#CDD6F4;border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.05)}.code-copy-btn.copied{color:#A6E3A1;border-color:rgba(166,227,161,0.3)}
+    .code-block pre{margin:0;padding:var(--space-4);overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.6;color:#CDD6F4;tab-size:2}
+    .code-block-sourced .code-block-header{justify-content:flex-start;gap:var(--space-3)}
+    .code-source-path{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .code-source-link{font-family:var(--font-mono);font-size:var(--text-xs);color:#6C7086;text-decoration:none;padding:2px var(--space-2);border:1px solid #45475A;border-radius:var(--radius-sm);white-space:nowrap;transition:all var(--duration-fast);display:flex;align-items:center;gap:var(--space-1)}.code-source-link:hover{color:#CDD6F4;border-color:#CDD6F4}
+    .source-map{max-width:var(--content-width);margin:var(--space-6) auto;border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden}
+    .source-map-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);background:var(--color-surface);cursor:pointer;user-select:none;transition:background var(--duration-fast)}.source-map-header:hover{background:var(--color-bg-warm)}.source-map-header h3{font-family:var(--font-display);font-size:var(--text-base);font-weight:600;margin:0;display:flex;align-items:center;gap:var(--space-2)}.source-map-toggle{font-size:var(--text-sm);color:var(--color-text-muted);transition:transform var(--duration-fast)}.source-map.open .source-map-toggle{transform:rotate(180deg)}
+    .source-map-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}.source-map.open .source-map-body{max-height:500px}
+    .source-map-list{list-style:none;padding:var(--space-3) var(--space-4);margin:0;border-top:1px solid var(--color-border-light)}.source-map-item{display:flex;justify-content:space-between;padding:var(--space-2) 0;font-family:var(--font-mono);font-size:var(--text-xs)}.source-map-item a{color:var(--color-accent);text-decoration:none}.source-map-item a:hover{text-decoration:underline}
+    .ck{color:#CBA6F7}.cv{color:#89B4FA}.cf{color:#A6E3A1}.cc{color:#6C7086;font-style:italic}.cs{color:#F9E2AF}.ct{color:#89DCEB}.cn{color:#FAB387}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;display:flex;gap:var(--space-3);align-items:flex-start}.callout-tip{background:var(--color-success-light);border-left:4px solid var(--color-success)}.callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px}.callout-content{font-size:var(--text-sm);line-height:1.6}.callout-content strong{font-weight:600}
+    .glossary-term{border-bottom:1px dashed var(--color-accent-muted);cursor:help}.glossary-tooltip{position:fixed;z-index:9999;background:var(--color-bg-code);color:#CDD6F4;font-family:var(--font-body);font-size:var(--text-sm);padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);max-width:300px;line-height:1.5;box-shadow:var(--shadow-lg);pointer-events:none;opacity:0;transition:opacity var(--duration-fast)}.glossary-tooltip.visible{opacity:1}
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:0 0 var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-title a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm);font-weight:600}.reference-title a:hover{text-decoration:underline}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    @media(max-width:768px){:root{--nav-height:56px}.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4);flex-direction:column}.nav-pages.mobile-open{display:flex}}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">vLLM</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link active">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+
+  <header class="page-header"><div class="page-header-content"><span class="page-level-badge advanced">Advanced</span><h1>Implementation Details</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+
+  <main class="content-area">
+    <section class="content-section" data-level="advanced">
+      <div class="source-map" id="sourceMap">
+        <div class="source-map-header" onclick="this.parentElement.classList.toggle('open')">
+          <h3>&#x1F4C2; Source Files Referenced</h3>
+          <span class="source-map-toggle">&#x25BC;</span>
+        </div>
+        <div class="source-map-body">
+          <ul class="source-map-list">
+            <li class="source-map-item"><a href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/core/block_pool.py" target="_blank" rel="noopener noreferrer">vllm/v1/core/block_pool.py</a><span class="line-range">BlockPool</span></li>
+            <li class="source-map-item"><a href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/core/kv_cache_manager.py" target="_blank" rel="noopener noreferrer">vllm/v1/core/kv_cache_manager.py</a><span class="line-range">KVCacheManager</span></li>
+            <li class="source-map-item"><a href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/core/sched/scheduler.py" target="_blank" rel="noopener noreferrer">vllm/v1/core/sched/scheduler.py</a><span class="line-range">Scheduler</span></li>
+            <li class="source-map-item"><a href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/executor/multiproc_executor.py" target="_blank" rel="noopener noreferrer">vllm/v1/executor/multiproc_executor.py</a><span class="line-range">MultiprocExecutor</span></li>
+            <li class="source-map-item"><a href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/spec_decode/eagle.py" target="_blank" rel="noopener noreferrer">vllm/v1/spec_decode/eagle.py</a><span class="line-range">EAGLE Proposer</span></li>
+            <li class="source-map-item"><a href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/engine/core.py" target="_blank" rel="noopener noreferrer">vllm/v1/engine/core.py</a><span class="line-range">EngineCore</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="advanced">
+      <h2>Getting Started</h2>
+      <div class="code-block"><div class="code-block-header"><span class="code-lang-badge">bash</span><button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><code><span class="cc"># Install vLLM (requires Python 3.9+ and CUDA 12.1+)</span>
+pip install vllm
+
+<span class="cc"># Start OpenAI-compatible API server</span>
+vllm serve meta-llama/Llama-3.1-8B-Instruct
+
+<span class="cc"># With tensor parallelism and prefix caching</span>
+vllm serve meta-llama/Llama-3.1-70B-Instruct \
+  --tensor-parallel-size <span class="cn">4</span> \
+  --enable-prefix-caching</code></pre>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="advanced">
+      <h2>Source Code Walkthrough</h2>
+      <p>The following annotated source excerpts show how vLLM's core concepts are implemented. Each block maps to a concept from the <a href="concepts.html">Core Concepts</a> page.</p>
+
+      <h3>PagedAttention -- BlockPool</h3>
+      <p>The <span class="glossary-term" data-definition="BlockPool: Low-level block allocator that manages KV cache blocks with a doubly-linked free list and hash table for prefix cache lookups.">BlockPool</span> class manages fixed-size KV cache blocks using a free list and hash table -- the foundation of PagedAttention.</p>
+      <div class="code-block code-block-sourced"><div class="code-block-header"><span class="code-source-path">vllm/v1/core/block_pool.py</span><a class="code-source-link" href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/core/block_pool.py" target="_blank" rel="noopener noreferrer">GitHub</a><button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><code><span class="ck">class</span> <span class="ct">BlockPool</span>:
+    <span class="cs">"""Pool of KV cache blocks with prefix caching support."""</span>
+
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cv">self</span>, <span class="cv">num_gpu_blocks</span>, <span class="cv">enable_caching</span>,
+                 <span class="cv">hash_block_size</span>, ...):
+        <span class="cv">self</span>.num_gpu_blocks = num_gpu_blocks
+        <span class="cv">self</span>.enable_caching = enable_caching
+
+        <span class="cc"># All KV cache blocks -- one per physical GPU block</span>
+        <span class="cv">self</span>.blocks = [
+            KVCacheBlock(block_id=i)
+            <span class="ck">for</span> i <span class="ck">in</span> <span class="cf">range</span>(num_gpu_blocks)
+        ]
+
+        <span class="cc"># Free block queue: doubly-linked list for O(1) alloc</span>
+        <span class="cv">self</span>.free_block_queue = FreeKVCacheBlockQueue(
+            <span class="cv">self</span>.blocks
+        )
+
+        <span class="cc"># Hash table for prefix cache lookups</span>
+        <span class="cv">self</span>.cached_block_hash_to_block = BlockHashToBlockMap()
+
+        <span class="cc"># Null block: reserved placeholder (never evicted)</span>
+        <span class="cv">self</span>.null_block = <span class="cv">self</span>.blocks[<span class="cn">0</span>]
+        <span class="cv">self</span>.null_block.ref_cnt = <span class="cn">1</span></code></pre>
+      </div>
+
+      <h3>Continuous Batching -- Scheduler</h3>
+      <p>The Scheduler maintains separate queues for waiting and running requests, promoting at every step to keep the GPU fully utilized.</p>
+      <div class="code-block code-block-sourced"><div class="code-block-header"><span class="code-source-path">vllm/v1/core/sched/scheduler.py</span><a class="code-source-link" href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/core/sched/scheduler.py" target="_blank" rel="noopener noreferrer">GitHub</a><button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><code><span class="ck">class</span> <span class="ct">Scheduler</span>:
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cv">self</span>, <span class="cv">scheduler_config</span>, ...):
+        <span class="cc"># Request queues: waiting and running</span>
+        <span class="cv">self</span>.waiting = create_request_queue(<span class="cv">self</span>.policy)
+        <span class="cv">self</span>.running: <span class="ct">list</span>[Request] = []
+
+        <span class="cc"># Resource constraints</span>
+        <span class="cv">self</span>.max_num_running_reqs = (
+            scheduler_config.max_num_seqs
+        )
+        <span class="cv">self</span>.max_num_scheduled_tokens = (
+            scheduler_config.max_num_batched_tokens
+        )
+
+        <span class="cc"># KV cache manager for block allocation</span>
+        <span class="cv">self</span>.kv_cache_manager = KVCacheManager(
+            kv_cache_config=kv_cache_config,
+            enable_caching=cache_config.enable_prefix_caching,
+        )</code></pre>
+      </div>
+
+      <h3>Tensor Parallelism -- MultiprocExecutor</h3>
+      <p>Spawns one worker process per GPU rank and uses shared-memory message queues for low-latency RPC dispatch.</p>
+      <div class="code-block code-block-sourced"><div class="code-block-header"><span class="code-source-path">vllm/v1/executor/multiproc_executor.py</span><a class="code-source-link" href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/executor/multiproc_executor.py" target="_blank" rel="noopener noreferrer">GitHub</a><button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><code><span class="ck">class</span> <span class="ct">MultiprocExecutor</span>(<span class="ct">Executor</span>):
+    supports_pp: <span class="ct">bool</span> = <span class="cn">True</span>
+
+    <span class="ck">def</span> <span class="cf">__init__</span>(<span class="cv">self</span>, <span class="cv">vllm_config</span>, ...):
+        tp_size, pp_size, pcp_size = (
+            <span class="cv">self</span>._get_parallel_sizes()
+        )
+        <span class="ck">assert</span> <span class="cv">self</span>.world_size == (
+            tp_size * pp_size * pcp_size
+        )
+
+        <span class="cc"># Shared-memory broadcast queue</span>
+        <span class="cv">self</span>.rpc_broadcast_mq = MessageQueue(
+            tp_size * pp_size * pcp_size
+        )
+
+        <span class="cc"># Spawn one worker per GPU rank</span>
+        <span class="ck">for</span> rank <span class="ck">in</span> <span class="cf">range</span>(<span class="cv">self</span>.local_world_size):
+            worker = WorkerProc.make_worker_process(
+                vllm_config=vllm_config,
+                local_rank=rank,
+                rank=rank,
+            )
+            <span class="cv">self</span>.workers.append(worker)</code></pre>
+      </div>
+
+      <h3>Speculative Decoding -- EAGLE Proposer</h3>
+      <p>The EAGLE proposer uses target model hidden states to predict draft tokens via a lightweight head.</p>
+      <div class="code-block code-block-sourced"><div class="code-block-header"><span class="code-source-path">vllm/v1/spec_decode/eagle.py</span><a class="code-source-link" href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/spec_decode/eagle.py" target="_blank" rel="noopener noreferrer">GitHub</a><button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><code><span class="ck">class</span> <span class="ct">SpecDecodeBaseProposer</span>:
+    <span class="ck">def</span> <span class="cf">_greedy_sample</span>(<span class="cv">self</span>, <span class="cv">hidden_states</span>):
+        <span class="cs">"""Greedy-sample draft tokens from hidden states."""</span>
+        <span class="ck">if</span> <span class="cv">self</span>.use_local_argmax_reduction:
+            <span class="ck">return</span> <span class="cv">self</span>.model.get_top_tokens(
+                hidden_states
+            )
+        <span class="ck">return</span> <span class="cv">self</span>.model.compute_logits(
+            hidden_states
+        ).argmax(dim=-<span class="cn">1</span>)
+
+    <span class="ck">def</span> <span class="cf">propose</span>(<span class="cv">self</span>, <span class="cv">target_token_ids</span>,
+               <span class="cv">target_hidden_states</span>, ...):
+        <span class="cc"># First pass: run draft model</span>
+        <span class="cv">self</span>.set_inputs_first_pass(...)
+        hidden = <span class="cv">self</span>.model.forward(
+            <span class="cv">self</span>.draft_token_ids, ...
+        )
+        draft_tokens = <span class="cv">self</span>._greedy_sample(hidden)
+
+        <span class="cc"># Iteratively generate remaining tokens</span>
+        <span class="ck">for</span> i <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">1</span>, <span class="cv">self</span>.num_speculative_tokens):
+            <span class="cv">self</span>.set_inputs_subsequent_pass(
+                draft_tokens, i
+            )
+            hidden = <span class="cv">self</span>.model.forward(...)
+            draft_tokens = <span class="cv">self</span>._greedy_sample(hidden)</code></pre>
+      </div>
+
+      <h3>Engine Core -- Main Loop</h3>
+      <p>The <code>step()</code> method orchestrates one iteration: schedule, execute, sample, update.</p>
+      <div class="code-block code-block-sourced"><div class="code-block-header"><span class="code-source-path">vllm/v1/engine/core.py</span><a class="code-source-link" href="https://github.com/vllm-project/vllm/blob/v0.19.0/vllm/v1/engine/core.py" target="_blank" rel="noopener noreferrer">GitHub</a><button class="code-copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><code><span class="ck">def</span> <span class="cf">step</span>(<span class="cv">self</span>) -> <span class="ct">EngineCoreOutputs</span>:
+    <span class="cs">"""Execute one iteration of the engine loop."""</span>
+    <span class="ck">if not</span> <span class="cv">self</span>.scheduler.has_requests():
+        <span class="ck">return</span> EngineCoreOutputs.empty()
+
+    scheduler_output = <span class="cv">self</span>.scheduler.schedule()
+    executor_future = <span class="cv">self</span>.model_executor.execute_model(
+        scheduler_output, non_block=<span class="cn">True</span>
+    )
+    grammar_bitmask = (
+        <span class="cv">self</span>.scheduler.get_grammar_bitmask()
+    )
+
+    model_output = executor_future.result()
+    <span class="cv">self</span>._process_aborts_queue()
+    outputs = <span class="cv">self</span>.scheduler.update_from_output(
+        model_output
+    )
+    <span class="ck">return</span> outputs</code></pre>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">&#x1F527;</span>
+        <div class="callout-content"><strong>Production tip:</strong> Monitor <code>gpu_cache_usage_perc</code> at the <code>/metrics</code> endpoint. When it consistently hits 100%, reduce <code>--max-model-len</code> or add GPU capacity. The <a href="https://github.com/vllm-project/production-stack" target="_blank" rel="noopener noreferrer">vLLM Production Stack</a> provides Helm charts with built-in Prometheus integration.</div>
+      </div>
+    </section>
+  </main>
+
+  <section class="references-footer"><h3>&#x1F4DA; References</h3><ul class="references-list">
+    <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><span class="reference-title"><a href="https://docs.vllm.ai/en/latest/" target="_blank" rel="noopener noreferrer">vLLM Quickstart Guide</a></span></li>
+    <li class="reference-item"><span class="reference-type-icon">&#x1F4BB;</span><span class="reference-title"><a href="https://github.com/vllm-project/vllm" target="_blank" rel="noopener noreferrer">vLLM GitHub Repository</a></span></li>
+  </ul></section>
+
+  <nav class="page-nav-footer"><a href="how-it-works.html" class="prev">How It Works</a><a href="use-cases.html" class="next">Use Cases</a></nav>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+
+  <script>
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
+    var tooltip=document.createElement('div');tooltip.className='glossary-tooltip';document.body.appendChild(tooltip);
+    document.querySelectorAll('.glossary-term').forEach(function(t){t.addEventListener('mouseenter',function(){var r=t.getBoundingClientRect();tooltip.textContent=t.dataset.definition;tooltip.classList.add('visible');tooltip.style.left=Math.min(r.left,window.innerWidth-320)+'px';tooltip.style.top=(r.bottom+8)+'px'});t.addEventListener('mouseleave',function(){tooltip.classList.remove('visible')})});
+    function copyCode(btn){var code=btn.closest('.code-block').querySelector('pre').textContent;navigator.clipboard.writeText(code).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},2000)})}
+    function copyPageAsMarkdown(){var md='# vLLM: Implementation Details\n> Source: '+window.location.href+' | Level: Advanced\n\n';document.querySelector('.content-area').querySelectorAll('h2,h3,p').forEach(function(el){if(el.tagName==='H2')md+='\n## '+el.textContent.trim()+'\n\n';else if(el.tagName==='H3')md+='\n### '+el.textContent.trim()+'\n\n';else md+=el.textContent.trim()+'\n\n'});navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');btn.querySelector('.btn-label').textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.querySelector('.btn-label').textContent='Copy as Markdown';btn.classList.remove('copied')},2000)})}
+  </script>
+</body>
+</html>

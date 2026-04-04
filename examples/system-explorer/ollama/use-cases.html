@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Use Cases — Ollama Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system: "Ollama" description: "the simplest way to run open-source LLMs locally" page: "Use Cases" level: "Beginner-Intermediate" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:400ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin:var(--space-3) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.beginner{background:var(--color-success-light);color:var(--color-success)}.copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success)}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin:0 0 var(--space-4)}.content-section p{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4)}.content-section p code,.content-section li code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 5px;border-radius:4px}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg)}
+    .decision-tree{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-md);margin:var(--space-8) 0}.dt-title{font-family:var(--font-display);font-weight:700;text-align:center;margin-bottom:var(--space-5)}.dt-node{background:var(--color-surface-warm);border:2px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);margin:var(--space-3) auto;max-width:500px;text-align:center;cursor:pointer;transition:border-color var(--duration-fast),box-shadow var(--duration-fast)}.dt-node:hover{border-color:var(--color-accent-muted);box-shadow:var(--shadow-sm)}.dt-node.active{border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-light)}.dt-question{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin-bottom:var(--space-2)}.dt-options{display:flex;gap:var(--space-3);justify-content:center;margin-top:var(--space-3)}.dt-option{padding:var(--space-2) var(--space-4);border-radius:var(--radius-sm);font-size:var(--text-sm);font-weight:600;cursor:pointer;border:1px solid var(--color-border);transition:all var(--duration-fast)}.dt-option.yes{color:var(--color-success);border-color:var(--color-success)}.dt-option.yes:hover{background:var(--color-success-light)}.dt-option.no{color:var(--color-error);border-color:var(--color-error)}.dt-option.no:hover{background:var(--color-error-light)}.dt-result{display:none;background:var(--color-accent-light);border:2px solid var(--color-accent);border-radius:var(--radius-md);padding:var(--space-4);margin:var(--space-3) auto;max-width:500px;text-align:center;font-weight:600}.dt-result.show{display:block}
+    .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--space-4);margin:var(--space-6) 0}.use-case-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);box-shadow:var(--shadow-sm);border-left:4px solid var(--color-accent)}.use-case-card h3{font-family:var(--font-display);font-weight:700;font-size:var(--text-base);margin:0 0 var(--space-2)}.use-case-card p{font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;line-height:1.5}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;display:flex;gap:var(--space-3)}.callout-icon{font-size:1.2rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:1.6}.callout-warning{background:var(--color-warning-light);border-left:4px solid var(--color-warning)}.callout-tip{background:var(--color-success-light);border-left:4px solid var(--color-success)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}.site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}.card-grid{grid-template-columns:1fr}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Ollama</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link active">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+
+  <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge beginner">Beginner-Intermediate</span><h1>Use Cases</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+
+  <main class="content-area">
+    <section class="content-section" data-level="beginner">
+      <h2>When to Use Ollama</h2>
+      <div class="card-grid">
+        <div class="use-case-card"><h3>&#x1F6E0; Local Development</h3><p>Iterate on LLM-powered apps without API costs or rate limits. The OpenAI-compatible API means your production code switches between Ollama (dev) and cloud APIs (prod) by changing one URL.</p></div>
+        <div class="use-case-card"><h3>&#x1F512; Privacy-Sensitive Apps</h3><p>Healthcare records, legal documents, proprietary code -- when data cannot leave the premises. No data sent to external servers. Essential for GDPR, HIPAA compliance.</p></div>
+        <div class="use-case-card"><h3>&#x1F4BB; AI Coding Tools</h3><p>Power local code completion with Continue, Cline, or VS Code extensions. Low-latency local inference (no network round-trip) makes real-time coding assistance practical.</p></div>
+        <div class="use-case-card"><h3>&#x1F50D; RAG Pipelines</h3><p>Generate embeddings locally with nomic-embed-text for retrieval-augmented generation. The entire vector search + generation pipeline runs locally.</p></div>
+        <div class="use-case-card"><h3>&#x1F916; Edge Deployments</h3><p>Run on NVIDIA Jetson and edge devices for on-device content moderation, smart assistants, or text analysis where cloud connectivity is unreliable.</p></div>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="intermediate">
+      <h2>Should You Use Ollama?</h2>
+      <p>Use this interactive decision tree to determine if Ollama is the right fit for your use case.</p>
+
+      <div class="decision-tree" id="decisionTree">
+        <h3 class="dt-title">Is Ollama Right for You?</h3>
+        <div class="dt-node active" id="q1">
+          <div class="dt-question">Do you need to run LLMs locally (not via cloud APIs)?</div>
+          <div class="dt-options">
+            <span class="dt-option yes" onclick="showNode('q2')">Yes</span>
+            <span class="dt-option no" onclick="showResult('cloud')">No</span>
+          </div>
+        </div>
+        <div class="dt-node" id="q2" style="display:none">
+          <div class="dt-question">Is this for development/prototyping or production serving?</div>
+          <div class="dt-options">
+            <span class="dt-option yes" onclick="showResult('ollama')">Dev / Prototype</span>
+            <span class="dt-option no" onclick="showNode('q3')">Production</span>
+          </div>
+        </div>
+        <div class="dt-node" id="q3" style="display:none">
+          <div class="dt-question">Do you need high-throughput multi-user serving?</div>
+          <div class="dt-options">
+            <span class="dt-option yes" onclick="showResult('vllm')">Yes, many users</span>
+            <span class="dt-option no" onclick="showResult('ollama')">No, single/few users</span>
+          </div>
+        </div>
+        <div class="dt-result" id="r-ollama">&#x2705; <strong>Ollama is a great fit!</strong> Simple setup, automatic GPU management, OpenAI-compatible API.</div>
+        <div class="dt-result" id="r-cloud">&#x2601; Consider cloud APIs (OpenAI, Anthropic) for your use case. No hardware management needed.</div>
+        <div class="dt-result" id="r-vllm">&#x1F680; Consider <strong>vLLM</strong> or <strong>TensorRT-LLM</strong> for production serving. Use Ollama for your development environment.</div>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="intermediate">
+      <h2>When NOT to Use Ollama</h2>
+      <div class="callout callout-warning">
+        <span class="callout-icon">&#x26A0;</span>
+        <div class="callout-content"><strong>Not for production serving at scale.</strong> No built-in load balancing, authentication, rate limiting, or metrics. Use vLLM, TensorRT-LLM, or managed APIs for serving hundreds of concurrent users.</div>
+      </div>
+      <div class="callout callout-warning">
+        <span class="callout-icon">&#x26A0;</span>
+        <div class="callout-content"><strong>Not for training or fine-tuning.</strong> Ollama is inference-only. For fine-tuning, use Unsloth, Axolotl, or Hugging Face, then import the result into Ollama.</div>
+      </div>
+      <div class="callout callout-warning">
+        <span class="callout-icon">&#x26A0;</span>
+        <div class="callout-content"><strong>Not for maximum performance.</strong> Ollama adds ~5-15% overhead over raw llama.cpp. If you need every token/second, use llama.cpp directly.</div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="page-nav-footer"><a href="implementation.html" class="prev">Implementation</a><a href="ecosystem.html" class="next">Ecosystem</a></nav>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+
+  <script>
+    document.documentElement.classList.add('js-ready');
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});
+    document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');
+    if(hamburger&&navPages){hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')})}
+
+    function showNode(id){document.querySelectorAll('.dt-node').forEach(function(n){n.style.display='none';n.classList.remove('active')});document.querySelectorAll('.dt-result').forEach(function(r){r.classList.remove('show')});document.getElementById(id).style.display='block';document.getElementById(id).classList.add('active')}
+    function showResult(id){document.querySelectorAll('.dt-result').forEach(function(r){r.classList.remove('show')});document.getElementById('r-'+id).classList.add('show')}
+    function copyPageAsMarkdown(){var md='# Ollama: Use Cases\n> Source: '+window.location.href+'\n\n';document.querySelectorAll('.content-area h2,.content-area p,.content-area .use-case-card,.content-area .callout').forEach(function(el){if(el.tagName==='H2')md+='\n## '+el.textContent.trim()+'\n\n';else if(el.tagName==='P')md+=el.textContent.trim()+'\n\n';else if(el.classList.contains('use-case-card')){var h=el.querySelector('h3'),p=el.querySelector('p');md+='- **'+(h?h.textContent:'')+  '**: '+(p?p.textContent:'')+'\n'}else if(el.classList.contains('callout'))md+='> '+el.textContent.trim()+'\n\n'});navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');btn.querySelector('.btn-label').textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.querySelector('.btn-label').textContent='Copy as Markdown';btn.classList.remove('copied')},2000)})}
+  </script>
+</body>
+</html>

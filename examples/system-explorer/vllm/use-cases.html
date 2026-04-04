@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Use Cases — vLLM Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system: "vLLM" description: "A high-throughput LLM inference engine" page: "Use Cases" level: "Beginner" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--shadow-lg:0 8px 24px rgba(44,42,40,0.1);--duration-fast:150ms;--duration-normal:300ms;--ease-out:cubic-bezier(0.16,1,0.3,1);--content-width-wide:1000px;--duration-slow:500ms}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px;transition:transform var(--duration-fast),opacity var(--duration-fast)}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin:var(--space-2) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.beginner{background:var(--color-success-light);color:var(--color-success)}
+    .copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-light)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success);background:var(--color-success-light)}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin:0 0 var(--space-4)}.content-section p{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4)}.content-section p code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 5px;border-radius:4px}
+    .content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1 * var(--space-6));margin-right:calc(-1 * var(--space-6));border-radius:var(--radius-lg)}
+    /* Decision tree */
+    .decision-tree{background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-6);margin:var(--space-6) 0;box-shadow:var(--shadow-sm)}
+    .dt-question{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);text-align:center;margin-bottom:var(--space-4);color:var(--color-text)}
+    .dt-options{display:flex;gap:var(--space-4);justify-content:center;flex-wrap:wrap}
+    .dt-option{flex:1;min-width:200px;max-width:350px;border:2px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-5);cursor:pointer;transition:all var(--duration-fast);text-align:center}
+    .dt-option:hover{border-color:var(--color-accent);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .dt-option.selected{border-color:var(--color-accent);background:var(--color-accent-light)}
+    .dt-option h4{font-family:var(--font-display);font-weight:600;margin:0 0 var(--space-2);font-size:var(--text-base)}
+    .dt-option p{font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;line-height:1.5}
+    .dt-result{display:none;margin-top:var(--space-4);padding:var(--space-4);border-radius:var(--radius-md);text-align:center;font-size:var(--text-sm);line-height:1.6}
+    .dt-result.show{display:block}
+    .dt-result.yes{background:var(--color-success-light);color:var(--color-success)}
+    .dt-result.no{background:var(--color-error-light);color:var(--color-error)}
+    .dt-result.maybe{background:var(--color-warning-light);color:#8B7020}
+    /* Case study cards */
+    .case-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--space-4);margin:var(--space-6) 0}
+    .case-card{background:var(--color-surface);border-radius:var(--radius-md);padding:var(--space-5);box-shadow:var(--shadow-sm);border-left:4px solid var(--color-accent)}
+    .case-card h4{font-family:var(--font-display);font-weight:700;margin:0 0 var(--space-2)}.case-card .metric{font-family:var(--font-mono);font-size:var(--text-sm);color:var(--color-accent);font-weight:600;margin-bottom:var(--space-2)}.case-card p{font-size:var(--text-sm);color:var(--color-text-secondary);margin:0;line-height:1.5}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;display:flex;gap:var(--space-3);align-items:flex-start}.callout-insight{background:var(--color-info-light);border-left:4px solid var(--color-info)}.callout-warning{background:var(--color-warning-light);border-left:4px solid var(--color-warning)}.callout-icon{font-size:1.2rem;flex-shrink:0;margin-top:2px}.callout-content{font-size:var(--text-sm);line-height:1.6}.callout-content strong{font-weight:600}
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:0 0 var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-title a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm);font-weight:600}.reference-title a:hover{text-decoration:underline}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}
+    .site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    @media(max-width:768px){:root{--nav-height:56px}.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4);flex-direction:column}.nav-pages.mobile-open{display:flex}.case-cards{grid-template-columns:1fr}.dt-options{flex-direction:column}}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">vLLM</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link active">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+
+  <header class="page-header"><div class="page-header-content"><span class="page-level-badge beginner">Beginner</span><h1>Use Cases</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+
+  <main class="content-area">
+    <section class="content-section" data-level="beginner">
+      <h2>Should You Use vLLM?</h2>
+      <p>Use the interactive decision tree below to figure out if vLLM is the right choice for your workload. Click an option to see the recommendation.</p>
+      <div class="decision-tree" id="decisionTree">
+        <div class="dt-question">What best describes your workload?</div>
+        <div class="dt-options">
+          <div class="dt-option" onclick="showResult('yes','High-concurrency API serving is vLLM\'s sweet spot. PagedAttention and continuous batching will deliver 2-4x better throughput than naive serving.',this)">
+            <h4>Multi-user API / Chatbot</h4>
+            <p>50+ concurrent users, need high throughput and low latency</p>
+          </div>
+          <div class="dt-option" onclick="showResult('yes','Batch inference benefits enormously from vLLM\'s memory efficiency -- more concurrent requests means faster completion of large datasets.',this)">
+            <h4>Batch Processing</h4>
+            <p>Millions of prompts, optimize for throughput and cost</p>
+          </div>
+          <div class="dt-option" onclick="showResult('no','For single-user local inference, Ollama or llama.cpp provides a simpler experience. vLLM\'s overhead is designed for multi-user serving.',this)">
+            <h4>Local / Single User</h4>
+            <p>Personal use on a laptop or single workstation</p>
+          </div>
+          <div class="dt-option" onclick="showResult('no','vLLM requires CUDA-capable GPUs. For CPU-only or edge deployments, look at llama.cpp, ONNX Runtime, or MLC LLM.',this)">
+            <h4>Edge / CPU Only</h4>
+            <p>No GPU available, mobile or embedded deployment</p>
+          </div>
+        </div>
+        <div class="dt-result" id="dtResult"></div>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="beginner-intermediate">
+      <h2>Real-World Deployments</h2>
+      <div class="case-cards">
+        <div class="case-card">
+          <h4>Roblox</h4>
+          <div class="metric">1B+ tokens/week</div>
+          <p>Powers the AI Assistant feature for millions of concurrent users, keeping inference costs manageable at massive scale.</p>
+        </div>
+        <div class="case-card">
+          <h4>Stripe</h4>
+          <div class="metric">73% cost reduction</div>
+          <p>Migrated LLM inference to vLLM, handling 50M daily API calls on one-third of its previous GPU fleet.</p>
+        </div>
+        <div class="case-card">
+          <h4>IBM watsonx</h4>
+          <div class="metric">Enterprise-scale</div>
+          <p>Integrates vLLM for enterprise LLM serving, leveraging multi-model support and quantization for diverse workloads.</p>
+        </div>
+        <div class="case-card">
+          <h4>Meta</h4>
+          <div class="metric">Core contributor</div>
+          <p>Uses vLLM for internal LLM serving and contributes as a key maintainer of the project.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="beginner">
+      <h2>When NOT to Use vLLM</h2>
+      <div class="callout callout-warning">
+        <span class="callout-icon">&#x26A0;&#xFE0F;</span>
+        <div class="callout-content"><strong>Very short prompts and responses (< 50 tokens):</strong> When both input and output are tiny, scheduling overhead becomes a larger fraction of total latency. Simpler frameworks may have lower per-request overhead.</div>
+      </div>
+      <div class="callout callout-warning">
+        <span class="callout-icon">&#x26A0;&#xFE0F;</span>
+        <div class="callout-content"><strong>Strict per-request GPU isolation:</strong> vLLM batches multiple requests onto the same GPU for throughput. If you need strict isolation between requests for security or billing, you need a different approach.</div>
+      </div>
+    </section>
+  </main>
+
+  <section class="references-footer"><h3>&#x1F4DA; References</h3><ul class="references-list">
+    <li class="reference-item"><span class="reference-type-icon">&#x1F4F0;</span><span class="reference-title"><a href="https://www.redhat.com/en/topics/ai/how-vllm-accelerates-ai-inference-3-enterprise-use-cases" target="_blank" rel="noopener noreferrer">How vLLM Accelerates AI Inference: 3 Enterprise Use Cases</a></span></li>
+    <li class="reference-item"><span class="reference-type-icon">&#x1F4BB;</span><span class="reference-title"><a href="https://github.com/vllm-project/production-stack" target="_blank" rel="noopener noreferrer">vLLM Production Stack</a></span></li>
+  </ul></section>
+
+  <nav class="page-nav-footer"><a href="implementation.html" class="prev">Implementation</a><a href="ecosystem.html" class="next">Ecosystem</a></nav>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+
+  <script>
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')});
+    function showResult(type,text,el){document.querySelectorAll('.dt-option').forEach(function(o){o.classList.remove('selected')});el.classList.add('selected');var r=document.getElementById('dtResult');r.className='dt-result show '+type;r.textContent=text}
+    function copyPageAsMarkdown(){var md='# vLLM: Use Cases\n> Source: '+window.location.href+'\n\n';document.querySelector('.content-area').querySelectorAll('h2,p').forEach(function(el){if(el.tagName==='H2')md+='\n## '+el.textContent.trim()+'\n\n';else md+=el.textContent.trim()+'\n\n'});navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');btn.querySelector('.btn-label').textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.querySelector('.btn-label').textContent='Copy as Markdown';btn.classList.remove('copied')},2000)})}
+  </script>
+</body>
+</html>

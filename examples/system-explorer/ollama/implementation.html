@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Implementation Details — Ollama Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system: "Ollama" description: "the simplest way to run open-source LLMs locally" page: "Implementation Details" level: "Advanced" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-tight:1.15;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:400ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin:var(--space-3) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.advanced{background:var(--color-warning-light);color:var(--color-warning)}.copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success)}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin:0 0 var(--space-4)}.content-section h3{font-family:var(--font-display);font-size:var(--text-xl);font-weight:600;margin:var(--space-6) 0 var(--space-3)}.content-section p{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4)}.content-section p code,.content-section li code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 5px;border-radius:4px}.content-section:nth-child(even){background:var(--color-bg-warm);padding:var(--space-8) var(--space-6);margin-left:calc(-1*var(--space-6));margin-right:calc(-1*var(--space-6));border-radius:var(--radius-lg)}
+    .code-block{background:#1E1E2E;border-radius:var(--radius-md);overflow:hidden;margin:var(--space-6) 0;box-shadow:var(--shadow-md)}.code-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-4);background:#181825;border-bottom:1px solid #313244}.code-lang{font-family:var(--font-mono);font-size:var(--text-xs);color:#CDD6F4;background:#313244;padding:2px var(--space-2);border-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:0.05em}.code-source-path{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 var(--space-3)}.code-source-link{font-family:var(--font-mono);font-size:var(--text-xs);color:#6C7086;text-decoration:none;padding:2px var(--space-2);border:1px solid #45475A;border-radius:var(--radius-sm);white-space:nowrap;transition:all var(--duration-fast)}.code-source-link:hover{color:#CDD6F4;border-color:#CDD6F4}.code-copy{font-family:var(--font-mono);font-size:var(--text-xs);color:#A6ADC8;background:none;border:1px solid #45475A;border-radius:var(--radius-sm);padding:2px var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.code-copy:hover{color:#CDD6F4;border-color:#CDD6F4}.code-copy.copied{color:#A6E3A1;border-color:#A6E3A1}.code-pre{padding:var(--space-4) var(--space-5);margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:var(--text-sm);line-height:1.7;color:#CDD6F4}
+    .code-keyword{color:#CBA6F7}.code-string{color:#F9E2AF}.code-comment{color:#6C7086;font-style:italic}.code-function{color:#A6E3A1}.code-number{color:#FAB387}.code-variable{color:#89B4FA}.code-type{color:#89DCEB}.code-operator{color:#94E2D5}
+    .source-map{max-width:var(--content-width);margin:var(--space-6) auto;border:1px solid var(--color-border-light);border-radius:var(--radius-md);overflow:hidden}.source-map-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);background:var(--color-surface);cursor:pointer;user-select:none;transition:background var(--duration-fast)}.source-map-header:hover{background:var(--color-bg-warm)}.source-map-header h3{font-family:var(--font-display);font-size:var(--text-base);font-weight:600;margin:0;display:flex;align-items:center;gap:var(--space-2)}.source-map-toggle{font-size:var(--text-sm);color:var(--color-text-muted);transition:transform var(--duration-fast)}.source-map.open .source-map-toggle{transform:rotate(180deg)}.source-map-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}.source-map.open .source-map-body{max-height:500px}.source-map-list{list-style:none;padding:var(--space-3) var(--space-4);margin:0;border-top:1px solid var(--color-border-light)}.source-map-item{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) 0;font-family:var(--font-mono);font-size:var(--text-xs)}.source-map-item a{color:var(--color-accent);text-decoration:none}.source-map-item a:hover{text-decoration:underline}.source-map-item .line-range{color:var(--color-text-muted)}.source-map-repo{padding:var(--space-2) var(--space-4) var(--space-3);font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);border-top:1px solid var(--color-border-light)}.source-map-repo a{color:var(--color-accent);text-decoration:none}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;display:flex;gap:var(--space-3);align-items:flex-start}.callout-icon{font-size:1.2rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:1.6}.callout-insight{background:var(--color-info-light);border-left:4px solid var(--color-info)}.callout-tip{background:var(--color-success-light);border-left:4px solid var(--color-success)}
+    a[target="_blank"]::after{content:" \2197";font-size:0.75em;vertical-align:super;color:var(--color-text-muted)}a[target="_blank"]{color:var(--color-accent);text-decoration:underline;text-decoration-color:var(--color-accent-light);text-underline-offset:2px}
+    .references-footer{max-width:var(--content-width);margin:var(--space-10) auto var(--space-4);padding:var(--space-6);background:var(--color-bg-warm);border-left:3px solid var(--color-accent);border-radius:var(--radius-md)}.references-footer h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;margin:0 0 var(--space-4)}.references-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:var(--space-3)}.reference-item{display:flex;align-items:baseline;gap:var(--space-3)}.reference-type-icon{font-size:var(--text-base);flex-shrink:0;width:1.5em;text-align:center}.reference-title a{color:var(--color-accent);text-decoration:none;font-size:var(--text-sm);font-weight:600}.reference-title a:hover{text-decoration:underline}.reference-domain{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}.site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Ollama</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link active">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+
+  <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge advanced">Advanced</span><h1>Implementation Details</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+
+  <div class="source-map" id="source-map">
+    <div class="source-map-header" onclick="this.parentElement.classList.toggle('open')">
+      <h3>&#x1F5C2; Source Map</h3><span class="source-map-toggle">&#x25BC;</span>
+    </div>
+    <div class="source-map-body">
+      <ul class="source-map-list">
+        <li class="source-map-item"><a href="#source-name">types/model/name.go</a><span class="line-range">Name type</span></li>
+        <li class="source-map-item"><a href="#source-types">api/types.go</a><span class="line-range">Options, Runner</span></li>
+        <li class="source-map-item"><a href="#source-routes">server/routes.go</a><span class="line-range">GenerateRoutes</span></li>
+        <li class="source-map-item"><a href="#source-sched">server/sched.go</a><span class="line-range">Scheduler</span></li>
+        <li class="source-map-item"><a href="#source-llm">llm/server.go</a><span class="line-range">LlamaServer</span></li>
+        <li class="source-map-item"><a href="#source-convert">convert/convert.go</a><span class="line-range">ConvertModel</span></li>
+      </ul>
+      <div class="source-map-repo">Repository: <a href="https://github.com/ollama/ollama" target="_blank" rel="noopener noreferrer">ollama/ollama</a> @ v0.20.0</div>
+    </div>
+  </div>
+
+  <main class="content-area">
+    <section class="content-section" data-level="advanced">
+      <h2>Getting Started</h2>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">Bash</span><button class="code-copy" onclick="copyCode(this)">Copy</button></div>
+        <pre class="code-pre"><code><span class="code-comment"># Install Ollama (macOS)</span>
+<span class="code-function">brew</span> install ollama
+
+<span class="code-comment"># Install Ollama (Linux)</span>
+<span class="code-function">curl</span> -fsSL https://ollama.com/install.sh | sh
+
+<span class="code-comment"># Start the server and run a model</span>
+<span class="code-function">ollama</span> serve &amp;
+<span class="code-function">ollama</span> run llama3.2
+
+<span class="code-comment"># Use the API</span>
+<span class="code-function">curl</span> http://localhost:11434/api/chat \
+  -d <span class="code-string">'{"model":"llama3.2","messages":[{"role":"user","content":"Hello"}]}'</span></code></pre>
+      </div>
+    </section>
+
+    <section class="content-section" data-level="advanced">
+      <h2>Source Code Walkthrough</h2>
+      <p>Each core concept maps to specific source files in the Ollama codebase. Below are annotated excerpts from the actual repository.</p>
+
+      <h3>Model Library -- Name Parsing</h3>
+      <p>The <code>Name</code> type is the entry point for all model operations. Every <code>ollama run</code> or API call starts by parsing the model name into its components.</p>
+      <div class="code-block code-block-sourced" id="source-name">
+        <div class="code-header">
+          <span class="code-lang">Go</span>
+          <span class="code-source-path">types/model/name.go</span>
+          <a class="code-source-link" href="https://github.com/ollama/ollama/blob/v0.20.0/types/model/name.go" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">type</span> <span class="code-type">Name</span> <span class="code-keyword">struct</span> {
+    <span class="code-variable">Host</span>           <span class="code-type">string</span>
+    <span class="code-variable">Namespace</span>      <span class="code-type">string</span>
+    <span class="code-variable">Model</span>          <span class="code-type">string</span>
+    <span class="code-variable">Tag</span>            <span class="code-type">string</span>
+    <span class="code-variable">ProtocolScheme</span> <span class="code-type">string</span>
+}
+
+<span class="code-comment">// ParseName parses a model reference string</span>
+<span class="code-comment">// Format: [host/][namespace/]model[:tag]</span>
+<span class="code-comment">// Defaults: registry.ollama.ai / library / latest</span>
+<span class="code-keyword">func</span> <span class="code-function">ParseName</span>(<span class="code-variable">s</span> <span class="code-type">string</span>, <span class="code-variable">fill</span> <span class="code-type">FillKind</span>) <span class="code-type">Name</span> {
+    <span class="code-keyword">var</span> <span class="code-variable">r</span> <span class="code-type">Name</span>
+    <span class="code-comment">// Parsing works backward through the string:</span>
+    <span class="code-comment">// 1. Last colon separates the tag</span>
+    <span class="code-comment">// 2. Slashes separate host, namespace, model</span>
+    <span class="code-comment">// 3. "://" detects protocol scheme</span>
+    <span class="code-keyword">return</span> <span class="code-variable">r</span>
+}
+
+<span class="code-comment">// DisplayShortest omits default components</span>
+<span class="code-comment">// "registry.ollama.ai/library/llama3.2:latest" -> "llama3.2"</span>
+<span class="code-keyword">func</span> (<span class="code-variable">n</span> <span class="code-type">Name</span>) <span class="code-function">DisplayShortest</span>() <span class="code-type">string</span> { <span class="code-comment">/* ... */</span> }</code></pre>
+      </div>
+
+      <h3>REST API -- Route Registration</h3>
+      <p>The <code>GenerateRoutes</code> method wires up all HTTP endpoints, including both Ollama-native and OpenAI-compatible APIs.</p>
+      <div class="code-block code-block-sourced" id="source-routes">
+        <div class="code-header">
+          <span class="code-lang">Go</span>
+          <span class="code-source-path">server/routes.go</span>
+          <a class="code-source-link" href="https://github.com/ollama/ollama/blob/v0.20.0/server/routes.go" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-comment">// GenerateRoutes sets up all HTTP endpoints</span>
+<span class="code-keyword">func</span> (<span class="code-variable">s</span> *<span class="code-type">Server</span>) <span class="code-function">GenerateRoutes</span>(<span class="code-variable">rc</span> *<span class="code-type">ollama.Registry</span>) (<span class="code-type">http.Handler</span>, <span class="code-type">error</span>) {
+    <span class="code-comment">// Ollama-native endpoints</span>
+    <span class="code-comment">// POST /api/generate  -> GenerateHandler</span>
+    <span class="code-comment">// POST /api/chat      -> ChatHandler</span>
+    <span class="code-comment">// POST /api/embed     -> EmbedHandler</span>
+    <span class="code-comment">// POST /api/pull      -> PullHandler</span>
+    <span class="code-comment">// GET  /api/tags      -> ListHandler</span>
+    <span class="code-comment">// POST /api/show      -> ShowHandler</span>
+    <span class="code-comment">// DELETE /api/delete   -> DeleteHandler</span>
+
+    <span class="code-comment">// OpenAI-compatible endpoints</span>
+    <span class="code-comment">// POST /v1/chat/completions  -> wraps ChatHandler</span>
+    <span class="code-comment">// POST /v1/completions       -> wraps GenerateHandler</span>
+    <span class="code-comment">// POST /v1/embeddings        -> wraps EmbedHandler</span>
+}</code></pre>
+      </div>
+
+      <h3>Quantization -- Options and Runner Config</h3>
+      <p>The <code>Options</code> struct controls how inference runs, including GPU allocation and sampling parameters.</p>
+      <div class="code-block code-block-sourced" id="source-types">
+        <div class="code-header">
+          <span class="code-lang">Go</span>
+          <span class="code-source-path">api/types.go</span>
+          <a class="code-source-link" href="https://github.com/ollama/ollama/blob/v0.20.0/api/types.go" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">type</span> <span class="code-type">Options</span> <span class="code-keyword">struct</span> {
+    <span class="code-type">Runner</span>
+    <span class="code-variable">NumKeep</span>          <span class="code-type">int</span>      <span class="code-string">`json:"num_keep,omitempty"`</span>
+    <span class="code-variable">Seed</span>             <span class="code-type">int</span>      <span class="code-string">`json:"seed,omitempty"`</span>
+    <span class="code-variable">NumPredict</span>       <span class="code-type">int</span>      <span class="code-string">`json:"num_predict,omitempty"`</span>
+    <span class="code-variable">TopK</span>             <span class="code-type">int</span>      <span class="code-string">`json:"top_k,omitempty"`</span>
+    <span class="code-variable">TopP</span>             <span class="code-type">float32</span>  <span class="code-string">`json:"top_p,omitempty"`</span>
+    <span class="code-variable">Temperature</span>      <span class="code-type">float32</span>  <span class="code-string">`json:"temperature,omitempty"`</span>
+    <span class="code-variable">RepeatPenalty</span>    <span class="code-type">float32</span>  <span class="code-string">`json:"repeat_penalty,omitempty"`</span>
+    <span class="code-variable">Stop</span>             []<span class="code-type">string</span> <span class="code-string">`json:"stop,omitempty"`</span>
+}
+
+<span class="code-keyword">type</span> <span class="code-type">Runner</span> <span class="code-keyword">struct</span> {
+    <span class="code-variable">NumCtx</span>    <span class="code-type">int</span>   <span class="code-string">`json:"num_ctx,omitempty"`</span>    <span class="code-comment">// Context window size</span>
+    <span class="code-variable">NumBatch</span>  <span class="code-type">int</span>   <span class="code-string">`json:"num_batch,omitempty"`</span>  <span class="code-comment">// Batch size</span>
+    <span class="code-variable">NumGPU</span>    <span class="code-type">int</span>   <span class="code-string">`json:"num_gpu,omitempty"`</span>    <span class="code-comment">// GPU layers</span>
+    <span class="code-variable">MainGPU</span>   <span class="code-type">int</span>   <span class="code-string">`json:"main_gpu,omitempty"`</span>   <span class="code-comment">// Primary GPU</span>
+    <span class="code-variable">UseMMap</span>   *<span class="code-type">bool</span> <span class="code-string">`json:"use_mmap,omitempty"`</span>   <span class="code-comment">// Memory-map model</span>
+    <span class="code-variable">NumThread</span> <span class="code-type">int</span>   <span class="code-string">`json:"num_thread,omitempty"`</span> <span class="code-comment">// CPU threads</span>
+}</code></pre>
+      </div>
+
+      <h3>Scheduler -- Model Lifecycle Management</h3>
+      <p>The Scheduler manages loaded models with reference counting, keep-alive timers, and memory-aware eviction.</p>
+      <div class="code-block code-block-sourced" id="source-sched">
+        <div class="code-header">
+          <span class="code-lang">Go</span>
+          <span class="code-source-path">server/sched.go</span>
+          <a class="code-source-link" href="https://github.com/ollama/ollama/blob/v0.20.0/server/sched.go" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">type</span> <span class="code-type">Scheduler</span> <span class="code-keyword">struct</span> {
+    <span class="code-variable">pendingReqCh</span>  <span class="code-keyword">chan</span> *<span class="code-type">LlmRequest</span>   <span class="code-comment">// Incoming load requests</span>
+    <span class="code-variable">finishedReqCh</span> <span class="code-keyword">chan</span> *<span class="code-type">LlmRequest</span>   <span class="code-comment">// Completed notifications</span>
+    <span class="code-variable">expiredCh</span>     <span class="code-keyword">chan</span> *<span class="code-type">runnerRef</span>    <span class="code-comment">// Expired model timers</span>
+    <span class="code-variable">unloadedCh</span>    <span class="code-keyword">chan</span> <span class="code-keyword">any</span>           <span class="code-comment">// VRAM recovery confirms</span>
+
+    <span class="code-variable">loadedMu</span> <span class="code-type">sync.Mutex</span>
+    <span class="code-variable">loaded</span>   <span class="code-keyword">map</span>[<span class="code-type">string</span>]*<span class="code-type">runnerRef</span>  <span class="code-comment">// Currently loaded models</span>
+}
+
+<span class="code-keyword">type</span> <span class="code-type">runnerRef</span> <span class="code-keyword">struct</span> {
+    <span class="code-variable">refCount</span>        <span class="code-type">uint</span>              <span class="code-comment">// Active requests (prevents unload)</span>
+    <span class="code-variable">llama</span>           <span class="code-type">llm.LlamaServer</span>   <span class="code-comment">// Inference subprocess</span>
+    <span class="code-variable">gpus</span>            []<span class="code-type">ml.DeviceID</span>     <span class="code-comment">// Assigned GPUs</span>
+    <span class="code-variable">vramSize</span>        <span class="code-type">uint64</span>            <span class="code-comment">// VRAM consumption</span>
+    <span class="code-variable">sessionDuration</span> <span class="code-type">time.Duration</span>     <span class="code-comment">// Keep-alive timeout</span>
+    <span class="code-variable">expireTimer</span>     *<span class="code-type">time.Timer</span>       <span class="code-comment">// Unload timer</span>
+}</code></pre>
+      </div>
+
+      <h3>Runner -- Inference Backend Interface</h3>
+      <p>The <code>LlamaServer</code> interface abstracts over two backends: legacy llama.cpp and the newer Ollama/MLX engine.</p>
+      <div class="code-block code-block-sourced" id="source-llm">
+        <div class="code-header">
+          <span class="code-lang">Go</span>
+          <span class="code-source-path">llm/server.go</span>
+          <a class="code-source-link" href="https://github.com/ollama/ollama/blob/v0.20.0/llm/server.go" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">type</span> <span class="code-type">LlamaServer</span> <span class="code-keyword">interface</span> {
+    <span class="code-function">Load</span>(<span class="code-variable">ctx</span> <span class="code-type">context.Context</span>, <span class="code-variable">systemInfo</span> <span class="code-type">ml.SystemInfo</span>,
+        <span class="code-variable">gpus</span> []<span class="code-type">ml.DeviceInfo</span>, <span class="code-variable">requireFull</span> <span class="code-type">bool</span>) ([]<span class="code-type">ml.DeviceID</span>, <span class="code-type">error</span>)
+    <span class="code-function">Ping</span>(<span class="code-variable">ctx</span> <span class="code-type">context.Context</span>) <span class="code-type">error</span>
+    <span class="code-function">WaitUntilRunning</span>(<span class="code-variable">ctx</span> <span class="code-type">context.Context</span>) <span class="code-type">error</span>
+    <span class="code-function">Completion</span>(<span class="code-variable">ctx</span> <span class="code-type">context.Context</span>, <span class="code-variable">req</span> <span class="code-type">CompletionRequest</span>,
+        <span class="code-variable">fn</span> <span class="code-keyword">func</span>(<span class="code-type">CompletionResponse</span>)) <span class="code-type">error</span>
+    <span class="code-function">Embedding</span>(<span class="code-variable">ctx</span> <span class="code-type">context.Context</span>, <span class="code-variable">input</span> <span class="code-type">string</span>) ([]<span class="code-type">float32</span>, <span class="code-type">int</span>, <span class="code-type">error</span>)
+    <span class="code-function">Close</span>() <span class="code-type">error</span>
+    <span class="code-function">MemorySize</span>() (<span class="code-variable">total</span>, <span class="code-variable">vram</span> <span class="code-type">uint64</span>)
+    <span class="code-function">Pid</span>() <span class="code-type">int</span>
+}</code></pre>
+      </div>
+
+      <h3>GGUF Format -- Model Conversion</h3>
+      <p>The <code>ConvertModel</code> function transforms models from training formats (SafeTensors) to GGUF for inference.</p>
+      <div class="code-block code-block-sourced" id="source-convert">
+        <div class="code-header">
+          <span class="code-lang">Go</span>
+          <span class="code-source-path">convert/convert.go</span>
+          <a class="code-source-link" href="https://github.com/ollama/ollama/blob/v0.20.0/convert/convert.go" target="_blank" rel="noopener noreferrer">View on GitHub &#x2197;</a>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-pre"><code><span class="code-keyword">func</span> <span class="code-function">ConvertModel</span>(<span class="code-variable">fsys</span> <span class="code-type">fs.FS</span>, <span class="code-variable">ws</span> <span class="code-type">io.WriteSeeker</span>) <span class="code-type">error</span> {
+    <span class="code-comment">// 1. Read config.json to identify architecture</span>
+    <span class="code-variable">bts</span>, <span class="code-variable">err</span> := <span class="code-variable">fs</span>.<span class="code-function">ReadFile</span>(<span class="code-variable">fsys</span>, <span class="code-string">"config.json"</span>)
+
+    <span class="code-comment">// 2. Route to architecture-specific converter</span>
+    <span class="code-comment">// Supports 25+ architectures: Llama, Mistral,</span>
+    <span class="code-comment">// Gemma, Qwen, Phi, and more</span>
+
+    <span class="code-comment">// 3. Parse tensors with name remapping</span>
+    <span class="code-variable">ts</span>, <span class="code-variable">err</span> := <span class="code-function">parseTensors</span>(<span class="code-variable">fsys</span>,
+        <span class="code-variable">strings</span>.<span class="code-function">NewReplacer</span>(<span class="code-variable">conv</span>.<span class="code-function">Replacements</span>()...))
+
+    <span class="code-comment">// 4. Load tokenizer vocabulary</span>
+    <span class="code-comment">// 5. Write GGUF binary output</span>
+    <span class="code-keyword">return</span> <span class="code-variable">ggml</span>.<span class="code-function">WriteGGUF</span>(<span class="code-variable">ws</span>, <span class="code-variable">kv</span>, <span class="code-variable">ts</span>)
+}</code></pre>
+      </div>
+
+      <div class="callout callout-insight">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content"><strong>Every core concept maps to source code.</strong> Model Library to <code>types/model/name.go</code>, REST API to <code>server/routes.go</code>, Scheduler to <code>server/sched.go</code>, Runner to <code>llm/server.go</code>, GGUF to <code>convert/convert.go</code>, and Quantization/Modelfile config to <code>api/types.go</code>.</div>
+      </div>
+    </section>
+  </main>
+
+  <section class="references-footer">
+    <h3>&#x1F4DA; References &amp; Resources</h3>
+    <ul class="references-list">
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4BB;</span><div class="reference-content"><span class="reference-title"><a href="https://github.com/ollama/ollama" target="_blank" rel="noopener noreferrer">Ollama GitHub Repository</a></span><span class="reference-domain">github.com</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4C4;</span><div class="reference-content"><span class="reference-title"><a href="https://docs.ollama.com/api/" target="_blank" rel="noopener noreferrer">Ollama API Reference</a></span><span class="reference-domain">docs.ollama.com</span></div></li>
+      <li class="reference-item"><span class="reference-type-icon">&#x1F4BB;</span><div class="reference-content"><span class="reference-title"><a href="https://github.com/ggerganov/ggml/blob/master/docs/gguf.md" target="_blank" rel="noopener noreferrer">GGUF Format Specification</a></span><span class="reference-domain">github.com</span></div></li>
+    </ul>
+  </section>
+
+  <nav class="page-nav-footer"><a href="how-it-works.html" class="prev">How It Works</a><a href="use-cases.html" class="next">Use Cases</a></nav>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+
+  <script>
+    document.documentElement.classList.add('js-ready');
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});
+    document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');
+    if(hamburger&&navPages){hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')})}
+    function copyCode(btn){var pre=btn.closest('.code-block').querySelector('.code-pre');navigator.clipboard.writeText(pre.textContent).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},2000)})}
+    function copyPageAsMarkdown(){var md='# Ollama: Implementation Details\n> Source: '+window.location.href+'\n\n';document.querySelectorAll('.content-area h2,.content-area h3,.content-area p,.content-area .code-block').forEach(function(el){if(el.tagName==='H2')md+='\n## '+el.textContent.trim()+'\n\n';else if(el.tagName==='H3')md+='\n### '+el.textContent.trim()+'\n\n';else if(el.tagName==='P')md+=el.textContent.trim()+'\n\n';else if(el.classList.contains('code-block')){var lang=el.querySelector('.code-lang');var pre=el.querySelector('.code-pre');md+='```'+(lang?lang.textContent.toLowerCase():'')+'\n'+(pre?pre.textContent.trim():'')+'\n```\n\n'}});navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');btn.querySelector('.btn-label').textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.querySelector('.btn-label').textContent='Copy as Markdown';btn.classList.remove('copied')},2000)})}
+  </script>
+</body>
+</html>

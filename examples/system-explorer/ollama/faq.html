@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ — Ollama Course</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- page-context: system: "Ollama" description: "the simplest way to run open-source LLMs locally" page: "FAQ" level: "All Levels" -->
+  <style>
+    :root{--color-bg:#FAF7F2;--color-bg-warm:#F5F0E8;--color-bg-code:#1E1E2E;--color-text:#2C2A28;--color-text-secondary:#6B6560;--color-text-muted:#9E9790;--color-border:#E5DFD6;--color-border-light:#EEEBE5;--color-surface:#FFFFFF;--color-surface-warm:#FDF9F3;--color-accent:#2D8B55;--color-accent-hover:#257548;--color-accent-light:#E8F5EE;--color-accent-muted:#5AAF7A;--color-success:#2D8B55;--color-success-light:#E8F5EE;--color-error:#C93B3B;--color-error-light:#FDE8E8;--color-info:#2A7B9B;--color-info-light:#E4F2F7;--color-warning:#D4A843;--color-warning-light:#FDF6E4;--color-level-beginner:#2D8B55;--color-level-intermediate:#D4A843;--color-level-advanced:#C93B3B;--font-display:'Bricolage Grotesque',Georgia,serif;--font-body:'DM Sans',-apple-system,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Consolas',monospace;--text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--leading-normal:1.6;--space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;--content-width:800px;--content-width-wide:1000px;--nav-height:60px;--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-full:9999px;--shadow-sm:0 1px 2px rgba(44,42,40,0.05);--shadow-md:0 4px 12px rgba(44,42,40,0.08);--duration-fast:150ms;--duration-normal:250ms;--duration-slow:400ms;--ease-out:cubic-bezier(0.16,1,0.3,1)}
+    *,*::before,*::after{box-sizing:border-box}html{scroll-behavior:smooth}body{background:var(--color-bg);background-image:radial-gradient(ellipse at 20% 50%,rgba(45,139,85,0.04) 0%,transparent 50%);font-family:var(--font-body);color:var(--color-text);line-height:var(--leading-normal);margin:0;-webkit-font-smoothing:antialiased}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:var(--radius-full)}
+    .site-nav{position:sticky;top:0;z-index:1000;height:var(--nav-height);background:rgba(250,247,242,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border-light)}.nav-inner{max-width:var(--content-width-wide);margin:0 auto;height:100%;display:flex;align-items:center;gap:var(--space-4);padding:0 var(--space-6)}.nav-brand{font-family:var(--font-display);font-weight:700;font-size:var(--text-lg);color:var(--color-text);text-decoration:none;flex-shrink:0}.nav-brand:hover{color:var(--color-accent)}.nav-pages{display:flex;align-items:center;gap:var(--space-1);flex:1;overflow-x:auto;scrollbar-width:none}.nav-pages::-webkit-scrollbar{display:none}.nav-page-link{font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);text-decoration:none;padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);white-space:nowrap;transition:color var(--duration-fast),background var(--duration-fast)}.nav-page-link:hover{color:var(--color-text);background:var(--color-border-light)}.nav-page-link.active{color:var(--color-accent);background:var(--color-accent-light);font-weight:600}.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:36px;height:36px;padding:var(--space-2);background:none;border:none;cursor:pointer;flex-shrink:0}.nav-hamburger span{display:block;width:20px;height:2px;background:var(--color-text);border-radius:1px}.nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}.nav-hamburger.open span:nth-child(2){opacity:0}.nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+    .page-header{max-width:800px;margin:var(--space-12) auto var(--space-8);padding:0 var(--space-6);display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}.page-header-content{flex:1}.page-header h1{font-family:var(--font-display);font-size:var(--text-3xl);font-weight:800;margin:var(--space-3) 0 0;line-height:1.15}.page-level-badge{display:inline-block;font-family:var(--font-body);font-size:var(--text-sm);font-weight:600;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:0.05em}.page-level-badge.all{background:var(--color-info-light);color:var(--color-info)}.copy-markdown-btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-body);font-size:var(--text-sm);font-weight:500;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-1) var(--space-3);cursor:pointer;transition:all var(--duration-fast)}.copy-markdown-btn:hover{color:var(--color-accent);border-color:var(--color-accent)}.copy-markdown-btn.copied{color:var(--color-success);border-color:var(--color-success)}
+    .content-area{max-width:800px;margin:0 auto;padding:0 var(--space-6)}.content-section{margin-bottom:var(--space-10)}.content-section h2{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:700;margin:0 0 var(--space-4)}.content-section p{font-size:var(--text-base);line-height:1.7;margin:0 0 var(--space-4)}.content-section p code,.content-section li code{font-family:var(--font-mono);font-size:var(--text-sm);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 5px;border-radius:4px}
+    .accordion-item{border:1px solid var(--color-border-light);border-radius:var(--radius-md);margin-bottom:var(--space-3);overflow:hidden;transition:box-shadow var(--duration-fast)}
+    .accordion-item:hover{box-shadow:var(--shadow-sm)}
+    .accordion-header{display:flex;justify-content:space-between;align-items:center;padding:var(--space-4) var(--space-5);background:var(--color-surface);cursor:pointer;user-select:none;gap:var(--space-3)}
+    .accordion-header h3{font-family:var(--font-display);font-weight:600;font-size:var(--text-base);margin:0;flex:1;line-height:1.4}
+    .accordion-toggle{font-size:var(--text-lg);color:var(--color-text-muted);transition:transform var(--duration-fast);flex-shrink:0}
+    .accordion-item.open .accordion-toggle{transform:rotate(180deg)}
+    .accordion-body{max-height:0;overflow:hidden;transition:max-height var(--duration-normal) var(--ease-out)}
+    .accordion-item.open .accordion-body{max-height:600px}
+    .accordion-body-inner{padding:0 var(--space-5) var(--space-5);font-size:var(--text-sm);line-height:1.7;color:var(--color-text-secondary)}
+    .accordion-body-inner code{font-family:var(--font-mono);font-size:var(--text-xs);background:var(--color-surface-warm);border:1px solid var(--color-border-light);padding:1px 4px;border-radius:3px}
+    .callout{border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);margin:var(--space-6) 0;display:flex;gap:var(--space-3)}.callout-icon{font-size:1.2rem;flex-shrink:0}.callout-content{font-size:var(--text-sm);line-height:1.6}.callout-tip{background:var(--color-success-light);border-left:4px solid var(--color-success)}
+    .page-nav-footer{display:flex;justify-content:space-between;align-items:center;max-width:800px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6);border-top:1px solid var(--color-border-light)}.page-nav-footer a{font-size:var(--text-sm);font-weight:600;color:var(--color-accent);text-decoration:none}.page-nav-footer .prev::before{content:"\2190\00a0"}.page-nav-footer .next::after{content:"\00a0\2192"}.site-footer{text-align:center;padding:var(--space-8) var(--space-6);font-size:var(--text-sm);color:var(--color-text-muted);border-top:1px solid var(--color-border-light);margin-top:var(--space-4)}
+    .animate-in{opacity:1;transform:none}.js-ready .animate-in{opacity:0;transform:translateY(20px);transition:opacity var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out)}.js-ready .animate-in.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:640px){.page-header h1{font-size:var(--text-2xl)}.page-nav-footer{flex-direction:column;gap:var(--space-4)}}
+    @media(max-width:480px){.nav-hamburger{display:flex}.nav-pages{display:none;position:absolute;top:var(--nav-height);left:0;right:0;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-md);padding:var(--space-4)}.nav-pages.mobile-open{display:flex;flex-direction:column;gap:var(--space-1)}}
+  </style>
+</head>
+<body>
+  <nav class="site-nav"><div class="nav-inner"><a href="index.html" class="nav-brand">Ollama</a><div class="nav-pages" id="navPages"><a href="index.html" class="nav-page-link">Home</a><a href="concepts.html" class="nav-page-link">Concepts</a><a href="architecture.html" class="nav-page-link">Architecture</a><a href="how-it-works.html" class="nav-page-link">How It Works</a><a href="implementation.html" class="nav-page-link">Implementation</a><a href="use-cases.html" class="nav-page-link">Use Cases</a><a href="ecosystem.html" class="nav-page-link">Ecosystem</a><a href="faq.html" class="nav-page-link active">FAQ</a><a href="tradeoffs.html" class="nav-page-link">Trade-offs</a></div><button class="nav-hamburger" id="navHamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></div></nav>
+
+  <header class="page-header animate-in"><div class="page-header-content"><span class="page-level-badge all">All Levels</span><h1>Common Q&A</h1></div><button class="copy-markdown-btn" onclick="copyPageAsMarkdown()"><span class="btn-icon">&#x1F4CB;</span><span class="btn-label">Copy as Markdown</span></button></header>
+
+  <main class="content-area">
+    <section class="content-section" data-level="beginner intermediate advanced">
+      <h2>Frequently Asked Questions</h2>
+      <p>Real questions engineers ask when evaluating and operating Ollama. Click a question to expand the answer.</p>
+
+      <div class="accordion-item open">
+        <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+          <h3>How much RAM/VRAM do I actually need to run a model?</h3>
+          <span class="accordion-toggle">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner">A Q4_K_M quantized model needs roughly <strong>0.6 GB per billion parameters</strong> for weights alone. So a 7B model needs ~4.5 GB, a 13B model needs ~8 GB, and a 70B model needs ~40 GB. Add 10-20% for KV cache at default context lengths. On Apple Silicon, Ollama uses unified memory, so your total system RAM is your VRAM budget. For a practical minimum: 8 GB RAM lets you run 7B models, 16 GB handles 13B, and 32 GB can run some 30B models.</div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+          <h3>What happens if a model is too large for my GPU memory?</h3>
+          <span class="accordion-toggle">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner">Ollama gracefully handles this with "partial offload." The Scheduler's layer assignment uses binary search to find the optimal split between GPU and CPU. Layers that fit in VRAM run on the GPU; the rest run on CPU. This is slower than full GPU (typically 2-5x for CPU-bound layers) but faster than pure CPU. Monitor with <code>ollama ps</code>, which shows the GPU/CPU percentage. Force full CPU mode with <code>OLLAMA_NUM_GPU=0</code>.</div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+          <h3>Why is the first request slow but subsequent requests fast?</h3>
+          <span class="accordion-toggle">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner">The first request triggers model loading: reading the GGUF file, allocating GPU memory, and loading weights. This "cold start" takes 2-10 seconds for 7B models and up to 60 seconds for 70B. Once loaded, the model stays in memory for the keep-alive duration (default: 5 minutes). Set <code>OLLAMA_KEEP_ALIVE=-1</code> to keep models permanently loaded.</div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+          <h3>Can I run multiple models simultaneously?</h3>
+          <span class="accordion-toggle">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner">Yes. Ollama's Scheduler supports multiple loaded models. By default, it auto-detects how many fit based on available memory. Models load on demand and the least-recently-used is evicted when memory is needed. Each model gets its own Runner subprocess. The Scheduler also supports parallel requests to the same model via <code>OLLAMA_NUM_PARALLEL</code>. Watch memory: two 7B models need ~9 GB, tight on 16 GB.</div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+          <h3>How do I use Ollama as a drop-in replacement for OpenAI?</h3>
+          <span class="accordion-toggle">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner">Set base URL to <code>http://localhost:11434/v1</code> and use any API key (Ollama ignores it). With the Python OpenAI SDK: <code>client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")</code>. The /v1/chat/completions, /v1/completions, and /v1/embeddings endpoints implement the OpenAI specification. Most features work -- streaming, tool calling, structured outputs, system messages.</div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+          <h3>How does Ollama compare to running llama.cpp directly?</h3>
+          <span class="accordion-toggle">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner">Ollama wraps llama.cpp and adds model management, auto GPU detection, a persistent server, model scheduling, and the OpenAI-compatible API. Trade-off: ~5-15% performance overhead and less control over low-level settings. Use raw llama.cpp if you need max tokens/second, custom CUDA kernels, or speculative decoding. Use Ollama if you value convenience or need an API server.</div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="this.parentElement.classList.toggle('open')">
+          <h3>What's the diagnostic approach for unexpectedly slow generation?</h3>
+          <span class="accordion-toggle">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner">Start with <code>ollama ps</code> to check GPU vs CPU layer split. Then check <code>OLLAMA_NUM_PARALLEL</code> for contention. Verify no other process is consuming GPU memory (<code>nvidia-smi</code> on NVIDIA, Activity Monitor on macOS). Try enabling flash attention with <code>OLLAMA_FLASH_ATTENTION=1</code> and reducing context length. On Linux, ensure you're using the proprietary NVIDIA driver, not nouveau.</div></div>
+      </div>
+
+      <div class="callout callout-tip">
+        <span class="callout-icon">&#x1F4A1;</span>
+        <div class="callout-content"><strong>Pro tip:</strong> Create a custom model with your preferred settings using a Modelfile: <code>FROM llama3.2</code>, <code>PARAMETER temperature 0.3</code>, <code>SYSTEM "Your persona here"</code>. Then run <code>ollama create my-model -f Modelfile</code>. Custom models share base weights, consuming minimal extra disk space.</div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="page-nav-footer"><a href="ecosystem.html" class="prev">Ecosystem</a><a href="tradeoffs.html" class="next">Trade-offs</a></nav>
+  <footer class="site-footer"><p>Generated by System Explorer &mdash; an interactive course built from system analysis</p></footer>
+
+  <script>
+    document.documentElement.classList.add('js-ready');
+    var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{rootMargin:'0px 0px -10% 0px',threshold:0.1});
+    document.querySelectorAll('.animate-in').forEach(function(el){observer.observe(el)});
+    var hamburger=document.getElementById('navHamburger'),navPages=document.getElementById('navPages');
+    if(hamburger&&navPages){hamburger.addEventListener('click',function(){hamburger.classList.toggle('open');navPages.classList.toggle('mobile-open')})}
+    function copyPageAsMarkdown(){var md='# Ollama: FAQ\n> Source: '+window.location.href+'\n\n';document.querySelectorAll('.accordion-item').forEach(function(item){var h=item.querySelector('h3'),b=item.querySelector('.accordion-body-inner');md+='**'+( h?h.textContent:'')+  '**\n\n'+(b?b.textContent.trim():'')+'\n\n'});navigator.clipboard.writeText(md).then(function(){var btn=document.querySelector('.copy-markdown-btn');btn.querySelector('.btn-label').textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.querySelector('.btn-label').textContent='Copy as Markdown';btn.classList.remove('copied')},2000)})}
+  </script>
+</body>
+</html>
