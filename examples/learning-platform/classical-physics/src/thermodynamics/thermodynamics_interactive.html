@@ -57,10 +57,15 @@
   .tab-nav {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     margin-bottom: 24px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  .tab-nav::-webkit-scrollbar { display: none; }
   .tab-btn {
     padding: 10px 20px;
     border: 2px solid var(--border);

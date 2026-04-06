@@ -10,7 +10,8 @@
   .container { max-width: 920px; margin: 0 auto; }
   h1 { text-align: center; font-size: 26px; color: #1e293b; margin-bottom: 4px; }
   .subtitle { text-align: center; font-size: 14px; color: #94a3b8; margin-bottom: 18px; }
-  .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 18px; }
+  .tabs { display: flex; flex-wrap: nowrap; justify-content: center; gap: 8px; margin-bottom: 18px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
   .tab-btn { padding: 8px 20px; border-radius: 20px; border: 1px solid #cbd5e1; background: #fff; color: #64748b; font-size: 14px; cursor: pointer; transition: all .2s; }
   .tab-btn:hover { border-color: #94a3b8; }
   .tab-btn.active { background: #1e293b; color: #fff; border-color: #1e293b; }
