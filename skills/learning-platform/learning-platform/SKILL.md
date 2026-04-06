@@ -55,6 +55,7 @@ Ask the user (skip what's already clear from their request):
 4. **External sources**: Any specific materials (URLs, papers, textbooks) to incorporate? Or all from general knowledge?
 5. **Scope**: How many initial topics? (suggest 5-8 for a solid start)
 6. **Project name**: Platform directory name — a kebab-case slug derived from the subject (e.g., "psychology-101", "wine-tasting-guide"). This becomes the new directory created inside the current working directory to hold all platform content.
+7. **Author info** (optional): Ask for the user's name and contact info (e.g., email, website, or social link). Explain that this will be displayed in the footer of the platform's `index.html` page to credit the course creator. The user can skip this — if skipped, the footer will use a generic credit or omit author info entirely.
 
 ### Step 2: Present Curriculum Plan for Approval
 
@@ -92,7 +93,7 @@ Once the plan is approved, create a new directory named after the project (e.g.,
    - Color scheme (warm for humanities, cool for sciences, earthy for nature topics, etc.)
    - All language strings (tab labels, search placeholder, loading text, error text, disclaimer, badges)
    - Content type detection keywords in `CONFIG.keywords` matching the language
-   - Footer links
+   - Footer links — if the user provided author name/contact info, include it in the `__FOOTER_HTML__` (e.g., "Created by Name — contact@example.com"). If skipped, use a generic footer without author attribution.
    - Section headers matching what you'll use in README.md
 
 2. **Makefile**:
