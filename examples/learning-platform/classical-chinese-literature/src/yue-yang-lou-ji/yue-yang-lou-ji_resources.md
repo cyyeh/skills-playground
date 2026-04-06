@@ -59,13 +59,13 @@
 - **網址：** [https://www.ehanlin.com.tw/](https://www.ehanlin.com.tw/)
 - **推薦理由：** 提供高中國文課程的線上教學影片，包含《岳陽樓記》的逐段講解、修辭分析、對比結構解析和考試重點整理。適合準備學測的高中生。
 
-### 3. Coursera — Chinese Classics: Ancient Thought Today
+### 3. Coursera — 中國哲學與文化相關課程
 - **平台：** Coursera
 - **難度：** 進階
 - **語言：** 英文
 - **費用：** 可免費旁聽
-- **網址：** [https://www.coursera.org/learn/chinese-philosophy](https://www.coursera.org/learn/chinese-philosophy)
-- **推薦理由：** 探討中國古典思想與現代生活的關聯。雖然不專門講《岳陽樓記》，但對理解儒家「以天下為己任」的核心思想以及「先憂後樂」的哲學基礎非常有幫助。
+- **網址：** [https://www.coursera.org/search?query=chinese+philosophy](https://www.coursera.org/search?query=chinese+philosophy)
+- **推薦理由：** Coursera 上有多門探討中國古典思想的課程，可搜尋 "Chinese philosophy" 或 "Confucianism" 找到相關內容。這些課程對理解儒家「以天下為己任」的核心思想以及「先憂後樂」的哲學基礎非常有幫助。
 
 ### 4. 國家教育研究院——愛學網
 - **平台：** 國家教育研究院

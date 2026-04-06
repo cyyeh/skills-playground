@@ -59,13 +59,13 @@
 - **推薦理由：** 配合課本進度的教學影片，對《愛蓮說》等經典篇章有詳細的講解和考試重點整理。適合需要配合學校進度學習的同學。
 - **連結：** [https://www.ehanlin.com.tw/](https://www.ehanlin.com.tw/)
 
-### 3. Coursera — Chinese Classics: Ancient Thinkers and Their Relevance Today
+### 3. Coursera — 中國哲學與文化相關課程
 - **平台：** Coursera
 - **難度：** 中階
 - **語言：** 英文（適合想用英文理解中國古典思想的同學）
 - **費用：** 免費旁聽，取得證書需付費
-- **推薦理由：** 由國際知名大學開設，從哲學角度解讀中國古典思想。雖然不是專門講《愛蓮說》，但對理解周敦頤所屬的宋代理學傳統非常有幫助。
-- **連結：** [https://www.coursera.org/](https://www.coursera.org/)
+- **推薦理由：** Coursera 上有多門探討中國古典思想的課程，可搜尋 "Chinese philosophy" 或 "Neo-Confucianism" 找到相關內容。這些課程對理解周敦頤所屬的宋代理學傳統非常有幫助。
+- **連結：** [https://www.coursera.org/search?query=chinese+philosophy](https://www.coursera.org/search?query=chinese+philosophy)
 
 ---
 
@@ -76,7 +76,7 @@
 - **難度：** 初階
 - **語言：** 繁體中文
 - **推薦理由：** 公視製作的經典文學影片，以戲劇化的方式呈現古代文人的生平與創作背景。影片品質高，敘事生動有趣，適合作為課前預習或課後複習的輔助材料。
-- **連結：** [https://www.youtube.com/@ptsvideo](https://www.youtube.com/@ptsvideo)
+- **連結：** [https://www.youtube.com/@pts](https://www.youtube.com/@pts)
 
 ### 2. 國家教育研究院 — 國語文教學影片
 - **平台：** 愛學網
@@ -93,12 +93,12 @@
 - **推薦理由：** 中國中央電視台的經典人文講座節目，多位知名學者深入解讀宋代文學與理學。雖然是簡體中文環境，但學術水準高，對深入理解周敦頤的時代背景和思想體系非常有幫助。
 - **連結：** [https://www.youtube.com/results?search_query=百家講壇+宋代](https://www.youtube.com/results?search_query=%E7%99%BE%E5%AE%B6%E8%AC%9B%E5%A3%87+%E5%AE%8B%E4%BB%A3)
 
-### 4. 李永樂老師 — 古文賞析系列
+### 4. CrashCourse — Chinese History（英文）
 - **平台：** YouTube
-- **難度：** 初階至中階
-- **語言：** 中文
-- **推薦理由：** 李永樂老師的講解風格清晰、邏輯性強，善於將複雜的知識點拆解成易於理解的部分。他的古文賞析影片適合在考前做重點複習。
-- **連結：** [https://www.youtube.com/@liyongle](https://www.youtube.com/@liyongle)
+- **難度：** 中階
+- **語言：** 英文
+- **推薦理由：** 著名教育頻道，以動畫和快節奏的方式介紹世界歷史。其中國歷史相關影片有助於理解宋代的政治文化背景，以及理學興起的時代脈絡。適合想用英文學習中國歷史的同學。
+- **連結：** [https://www.youtube.com/@crashcourse](https://www.youtube.com/@crashcourse)
 
 ---
 

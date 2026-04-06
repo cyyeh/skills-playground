@@ -33,10 +33,10 @@
 - **推薦理由：** 收錄劉禹錫全部詩文作品，是研究劉禹錫文學成就的權威版本。通過閱讀劉禹錫的其他作品（如《竹枝詞》《秋詞》《酬樂天揚州初逢席上見贈》），可以更全面地理解他的文學風格和人格精神。
 - **購買連結：** [博客來——劉禹錫集](https://www.books.com.tw/products/CN11097489)
 
-### 5.Erta's Classical Chinese: A Primer (英文)
+### 5. Classical Chinese: A Basic Reader（英文）
 - **作者：** Naiying Yuan, Haitao Tang
 - **難度：** 中階
-- **推薦理由：** 專為英文讀者設計的文言文入門教材，以雙語方式講解經典篇章。適合想從中英對照角度理解文言文的學習者。
+- **推薦理由：** 普林斯頓大學出版的文言文入門教材，以雙語方式講解經典篇章。適合想從中英對照角度理解文言文的學習者。
 - **購買連結：** [Amazon — Classical Chinese: A Basic Reader](https://www.amazon.com/Classical-Chinese-Basic-Reader-Volumes/dp/0691174571)
 
 ---
@@ -59,13 +59,13 @@
 - **網址：** [https://www.ehanlin.com.tw/](https://www.ehanlin.com.tw/)
 - **推薦理由：** 提供高中國文課程的線上教學影片，包含文言文篇章的詳細講解、修辭分析和考試重點整理。適合準備學測的高中生。
 
-### 3. Coursera — Chinese Classics: Ancient Thought Today
+### 3. Coursera — 中國哲學與文化相關課程
 - **平台：** Coursera
 - **難度：** 進階
 - **語言：** 英文
 - **費用：** 可免費旁聽
-- **網址：** [https://www.coursera.org/learn/chinese-philosophy](https://www.coursera.org/learn/chinese-philosophy)
-- **推薦理由：** 探討中國古典思想與現代生活的關聯，雖然不專門講《陋室銘》，但對理解儒家「安貧樂道」等核心思想的哲學基礎非常有幫助。
+- **網址：** [https://www.coursera.org/search?query=chinese+philosophy](https://www.coursera.org/search?query=chinese+philosophy)
+- **推薦理由：** Coursera 上有多門探討中國古典思想的課程，可搜尋 "Chinese philosophy" 或 "Chinese culture" 找到相關內容。這些課程對理解儒家「安貧樂道」等核心思想的哲學基礎非常有幫助。
 
 ### 4. 國家教育研究院——愛學網
 - **平台：** 國家教育研究院
