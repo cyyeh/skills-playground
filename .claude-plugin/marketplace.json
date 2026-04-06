@@ -10,7 +10,7 @@
     {
       "name": "null",
       "description": "null",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "source": "./skills/learning-platform/",
       "strict": false,
       "skills": [
