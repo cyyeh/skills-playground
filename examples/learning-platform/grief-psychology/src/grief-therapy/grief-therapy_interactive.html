@@ -170,8 +170,11 @@
 
   /* ============ Tool 3: Worden Tasks ============ */
   .task-nav {
-    display: flex; gap: .4rem; margin-bottom: 1.25rem; flex-wrap: wrap;
+    display: flex; gap: .4rem; margin-bottom: 1.25rem; flex-wrap: nowrap;
+    overflow-x: auto; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
   }
+  .task-nav::-webkit-scrollbar { display: none; }
   .task-nav-btn {
     padding: .5rem 1rem; border: 2px solid var(--border); border-radius: 8px;
     background: var(--card-bg); cursor: pointer; font-size: .85rem;

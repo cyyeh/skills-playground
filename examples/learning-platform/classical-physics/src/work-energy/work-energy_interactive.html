@@ -45,8 +45,10 @@
   .tabs {
     display: flex; gap: 2px; background: var(--border);
     border-radius: var(--radius) var(--radius) 0 0;
-    overflow: hidden; margin-top: 1.5rem; flex-wrap: wrap;
+    overflow-x: auto; overflow-y: hidden; margin-top: 1.5rem; flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
   }
+  .tabs::-webkit-scrollbar { display: none; }
   .tab-btn {
     flex: 1; min-width: 120px; padding: .85rem .5rem; border: none; background: #edf2f7;
     cursor: pointer; font-size: .85rem; font-weight: 600;
