@@ -67,13 +67,13 @@
 - **網址：** [https://stv.naer.edu.tw/](https://stv.naer.edu.tw/)
 - **推薦理由：** 提供配合台灣國中小課程的教學影片，包含文言文篇章的基礎導讀。影片由現職教師錄製，講解清晰易懂，適合需要基礎引導的學生。
 
-### 4. Coursera — Chinese Literature and Culture
+### 4. Coursera — 中國哲學與文化相關課程
 - **平台：** Coursera
 - **難度：** 進階
 - **語言：** 英文
 - **費用：** 可免費旁聽
-- **網址：** [https://www.coursera.org/learn/chinese-culture](https://www.coursera.org/learn/chinese-culture)
-- **推薦理由：** 從文化角度探討中國文學經典。雖然不專門講《醉翁亭記》，但對理解宋代文人的精神世界、士大夫的社會角色等背景知識非常有幫助。適合想用英文視角理解中國文學的學習者。
+- **網址：** [https://www.coursera.org/search?query=chinese+literature+culture](https://www.coursera.org/search?query=chinese+literature+culture)
+- **推薦理由：** Coursera 上有多門探討中國文學與文化的課程，可搜尋 "Chinese literature" 或 "Chinese culture" 找到相關內容。這些課程對理解宋代文人的精神世界、士大夫的社會角色等背景知識非常有幫助。適合想用英文視角理解中國文學的學習者。
 
 ---
 
@@ -132,7 +132,7 @@
 ### 4. 全宋詩文檢索系統
 - **難度：** 中階至進階
 - **語言：** 繁體中文
-- **網址：** [https://cls.lib.ntu.edu.tw/](https://cls.lib.ntu.edu.tw/)
+- **網址：** [https://cls.lib.ntu.edu.tw/song/](https://cls.lib.ntu.edu.tw/song/)
 - **推薦理由：** 台灣大學中國文學系建置的宋代詩文全文檢索系統，可以搜索歐陽修的全部詩文作品，包括他在滁州時期寫下的其他文章（如《豐樂亭記》）。適合想深入了解歐陽修文學全貌的進階學習者。
 
 ### 5. Pleco Chinese Dictionary App (英文/中文)
