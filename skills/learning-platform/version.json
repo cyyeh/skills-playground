@@ -1,6 +1,5 @@
 {
+  "name": "learning-platform",
   "version": "0.1.3",
-  "skills": [
-    "learning-platform"
-  ]
+  "description": "Create structured interactive learning platforms for any field or subject"
 }
