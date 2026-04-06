@@ -42,13 +42,18 @@
     .nav-tabs {
       display: flex; justify-content: center; gap: .5rem;
       padding: 1.25rem 2rem 0; max-width: 1400px; margin: 0 auto;
+      overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+      scrollbar-width: none;
     }
+    .nav-tabs::-webkit-scrollbar { display: none; }
     .nav-tab {
       padding: .75rem 2rem; border: none; background: var(--card-bg); cursor: pointer;
       font-size: 1.05rem; font-weight: 600; color: var(--text-light);
       border-radius: var(--radius) var(--radius) 0 0;
       border: 1px solid var(--border); border-bottom: none;
       transition: color .2s, background .2s; font-family: inherit;
+      white-space: nowrap; flex-shrink: 0;
       position: relative; top: 1px;
     }
     .nav-tab.active { color: var(--primary); background: var(--bg); border-bottom: 2px solid var(--bg); }
@@ -56,7 +61,8 @@
     .nav-tab.active.roadmap { color: var(--accent); }
     .nav-tab.active.glossary { color: #38a169; }
     .nav-tab:hover:not(.active) { color: var(--primary); background: #edf2f7; }
-    .nav-tab .count { font-size: .8rem; font-weight: 400; color: var(--text-light); margin-left: .35rem; }
+    .nav-tab .count { display: none; }
+    @media (min-width: 641px) { .nav-tab .count { display: inline; font-size: .8rem; font-weight: 400; color: var(--text-light); margin-left: .35rem; } }
     .home { max-width: 1400px; margin: 0 auto; padding: 0 2rem 2rem; min-height: 60vh; }
     .section-divider { border-top: 2px solid var(--border); padding-top: 1.5rem; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
@@ -190,7 +196,7 @@
       header { padding: 1.5rem 1rem; }
       header h1 { font-size: 1.35rem; }
       header .subtitle { font-size: .95rem; }
-      .nav-tabs { padding: .75rem .75rem 0; gap: .25rem; }
+      .nav-tabs { padding: .75rem .75rem 0; gap: .25rem; justify-content: flex-start; }
       .nav-tab { padding: .6rem 1rem; font-size: .95rem; }
       .home { padding: .75rem; }
       .grid { grid-template-columns: 1fr; gap: .75rem; }
@@ -210,7 +216,6 @@
       .content-disclaimer { margin: 0 .75rem; padding: .75rem 1rem; font-size: .78rem; }
       .search-wrapper { padding: 0 .75rem; margin-top: .75rem; }
       .search-results-dropdown { left: .75rem; right: .75rem; max-height: 320px; }
-      .nav-tab .count { display: none; }
     }
   </style>
 </head>
@@ -401,7 +406,7 @@
       const cc = crossSections.map(t => { const desc=stripMdLinks(t.links[0]?.description||''); return `<a class="card cross-topic" href="#${encodeURIComponent(t.title)}"><h2>${t.title}</h2><p>${desc}</p></a>`; }).join('');
       const isT=activeHomeTab==='topics', isR=activeHomeTab==='roadmap', isG=activeHomeTab==='glossary';
       let main; if (isR) main=`<main class="reader section-divider"><div class="content-box loading" id="roadmap-content">${CONFIG.strings.loadingText}</div></main>`; else if (isG) main=`<main class="reader section-divider"><div class="content-box loading" id="glossary-content">${CONFIG.strings.loadingText}</div></main>`; else main=`<main class="home section-divider"><div class="grid">${isT?tc:cc}</div></main>`;
-      document.getElementById('app').innerHTML = `<header><h1>⚛️ 古典物理學</h1><p class="subtitle">適合高中生的互動學習平台</p>${searchBarHTML()}</header><div class="nav-tabs"><button class="nav-tab${isR?' active roadmap':' roadmap'}" data-tab="roadmap">學習路線</button><button class="nav-tab${isT?' active':''}" data-tab="topics">主題課程<span class="count">${topicSections.length}</span></button><button class="nav-tab${activeHomeTab==='cross'?' active cross':' cross'}" data-tab="cross">跨主題分析<span class="count">${crossSections.length}</span></button><button class="nav-tab${isG?' active glossary':' glossary'}" data-tab="glossary">詞彙表</button></div>${main}<div class="content-disclaimer">本平台內容由 AI 生成，僅供學習參考。如有疑問，請以教科書或專業教師的說明為準。</div><footer>以 ❤️ 打造的古典物理學學習平台 · 內容由 AI 輔助生成</footer>`;
+      document.getElementById('app').innerHTML = `<header><h1>⚛️ 古典物理學</h1><p class="subtitle">適合高中生的互動學習平台</p>${searchBarHTML()}</header><div class="nav-tabs"><button class="nav-tab${isR?' active roadmap':' roadmap'}" data-tab="roadmap">學習路線</button><button class="nav-tab${isT?' active':''}" data-tab="topics">主題課程${window.innerWidth>=641?`<span class="count">${topicSections.length}</span>`:''}</button><button class="nav-tab${activeHomeTab==='cross'?' active cross':' cross'}" data-tab="cross">跨主題分析${window.innerWidth>=641?`<span class="count">${crossSections.length}</span>`:''}</button><button class="nav-tab${isG?' active glossary':' glossary'}" data-tab="glossary">詞彙表</button></div>${main}<div class="content-disclaimer">本平台內容由 AI 生成，僅供學習參考。如有疑問，請以教科書或專業教師的說明為準。</div><footer>以 ❤️ 打造的古典物理學學習平台 · 內容由 AI 輔助生成</footer>`;
       document.querySelectorAll('.nav-tab').forEach(b => b.addEventListener('click', () => { activeHomeTab=b.dataset.tab; renderHome(); }));
       bindSearchEvents(); if (isR) loadRoadmap(); if (isG) loadGlossary();
     }
