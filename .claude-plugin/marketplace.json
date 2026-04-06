@@ -8,6 +8,16 @@
   },
   "plugins": [
     {
+      "name": "null",
+      "description": "null",
+      "version": "0.1.1",
+      "source": "./skills/learning-platform/",
+      "strict": false,
+      "skills": [
+        "./learning-platform"
+      ]
+    },
+    {
       "name": "paper-to-course",
       "description": "Turn research papers into interactive HTML courses",
       "version": "0.1.1",
@@ -28,16 +38,6 @@
         "./system-explorer",
         "./system-finder",
         "./system-to-course"
-      ]
-    },
-    {
-      "name": "learning-platform",
-      "description": "Create structured interactive learning platforms for any field or subject",
-      "version": "0.1.0",
-      "source": "./skills/learning-platform/",
-      "strict": false,
-      "skills": [
-        "./learning-platform"
       ]
     }
   ]
