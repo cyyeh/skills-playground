@@ -5,4 +5,4 @@ codex-skills
 .claude/settings.local.json
 .claude/commands/
 .claude/skills/
-dist
+dist__pycache__/
