@@ -1,5 +1,7 @@
 # Skills Playground
 
+[GitHub Pages](https://cyyeh.github.io/skills-playground/)
+
 ## Installation
 
 ### Claude Code (Marketplace)
