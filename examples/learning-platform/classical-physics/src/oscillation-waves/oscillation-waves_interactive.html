@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>簡諧運動與波動 — 互動工具</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2D6A9F;
+    --primary-light: #4A8EC7;
+    --primary-dark: #1B4F7A;
+    --accent: #E08A3C;
+    --accent-light: #F0A85C;
+    --accent-dark: #C06E20;
+    --bg: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --text: #1E2A3A;
+    --text-light: #4A5568;
+    --text-muted: #8899AA;
+    --border: #D8DEE6;
+    --success: #38A169;
+    --warning: #D69E2E;
+    --danger: #E53E3E;
+    --shadow-sm: 0 1px 3px rgba(30,42,58,0.08);
+    --shadow-md: 0 4px 12px rgba(30,42,58,0.1);
+    --shadow-lg: 0 8px 24px rgba(30,42,58,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6em;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.92em;
+    margin-bottom: 24px;
+  }
+
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+    background: #E8F0F8;
+  }
+  .tab-btn.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #fff;
+  }
+
+  .tab-panel {
+    display: none;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 28px;
+    animation: fadeIn 0.3s ease;
+  }
+  .tab-panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tool-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+  }
+  .tool-desc {
+    color: var(--text-muted);
+    font-size: 0.88em;
+    margin-bottom: 20px;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: var(--radius);
+    background: #FAFBFD;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .control-group {
+    flex: 1 1 200px;
+    min-width: 180px;
+  }
+  .control-group label {
+    display: block;
+    font-size: 0.82em;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+  .control-group input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary);
+  }
+  .val {
+    font-size: 0.82em;
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-accent:hover { background: var(--accent-dark); }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--border);
+    color: var(--text-light);
+  }
+  .btn-outline:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .info-box {
+    background: #EBF5FF;
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 0.88em;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+  .info-box strong { color: var(--primary-dark); }
+
+  .hint-toggle {
+    display: inline-block;
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-top: 8px;
+  }
+  .hint-content {
+    display: none;
+    margin-top: 6px;
+    padding: 10px 14px;
+    background: #FFFBE6;
+    border-left: 4px solid var(--warning);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 0.85em;
+    color: var(--text-light);
+  }
+  .hint-content.show { display: block; }
+
+  .readout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .readout-item {
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    font-size: 0.85em;
+    flex: 1 1 120px;
+    text-align: center;
+  }
+  .readout-item .label { color: var(--text-muted); font-size: 0.78em; }
+  .readout-item .value { color: var(--primary-dark); font-weight: 700; font-size: 1.1em; }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 8px 0;
+    font-size: 0.82em;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-color {
+    width: 16px;
+    height: 4px;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    .tab-panel { padding: 16px; }
+    .tab-btn { padding: 8px 14px; font-size: 0.82em; }
+    .controls { gap: 10px; }
+    .control-group { flex: 1 1 140px; min-width: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>簡諧運動與波動 — 互動工具</h1>
+<p class="subtitle">透過模擬和視覺化來探索振盪與波的世界</p>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('superposition')">波的疊加</button>
+  <button class="tab-btn" onclick="showTab('spring')">彈簧振動</button>
+  <button class="tab-btn" onclick="showTab('pendulum')">單擺模擬</button>
+  <button class="tab-btn" onclick="showTab('standing')">駐波產生器</button>
+</div>
+
+<!-- ===================== Tool 1: Wave Superposition ===================== -->
+<div id="panel-superposition" class="tab-panel active">
+  <div class="tool-title">波的疊加模擬器</div>
+  <div class="tool-desc">調整兩列波的頻率、振幅與相位差，觀察建設性干涉與破壞性干涉</div>
+
+  <canvas id="cvs-sup" height="360"></canvas>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-color" style="background:#4A8EC7"></span>波 1</div>
+    <div class="legend-item"><span class="legend-color" style="background:#E08A3C"></span>波 2</div>
+    <div class="legend-item"><span class="legend-color" style="background:#38A169;height:5px"></span>疊加結果</div>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>波 1 頻率：<span class="val" id="sup-f1-val">1.0</span> Hz</label>
+      <input type="range" id="sup-f1" min="0.5" max="5" step="0.1" value="1.0" oninput="updateSupLabel()">
+    </div>
+    <div class="control-group">
+      <label>波 1 振幅：<span class="val" id="sup-a1-val">1.0</span></label>
+      <input type="range" id="sup-a1" min="0.1" max="2" step="0.1" value="1.0" oninput="updateSupLabel()">
+    </div>
+    <div class="control-group">
+      <label>波 2 頻率：<span class="val" id="sup-f2-val">1.0</span> Hz</label>
+      <input type="range" id="sup-f2" min="0.5" max="5" step="0.1" value="1.0" oninput="updateSupLabel()">
+    </div>
+    <div class="control-group">
+      <label>波 2 振幅：<span class="val" id="sup-a2-val">1.0</span></label>
+      <input type="range" id="sup-a2" min="0.1" max="2" step="0.1" value="1.0" oninput="updateSupLabel()">
+    </div>
+    <div class="control-group">
+      <label>相位差：<span class="val" id="sup-phase-val">0</span> 度</label>
+      <input type="range" id="sup-phase" min="0" max="360" step="5" value="0" oninput="updateSupLabel()">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="setSupPreset('constructive')">建設性干涉（同相）</button>
+    <button class="btn btn-accent" onclick="setSupPreset('destructive')">破壞性干涉（反相）</button>
+    <button class="btn btn-outline" onclick="setSupPreset('beats')">拍頻效果</button>
+  </div>
+
+  <div class="info-box">
+    <strong>原理說明：</strong>根據疊加原理，兩列波在同一點的合位移等於各波位移的代數和。當兩波同相（相位差 = 0 度），波峰對波峰，產生<strong>建設性干涉</strong>，合振幅最大。當兩波反相（相位差 = 180 度），波峰對波谷，產生<strong>破壞性干涉</strong>，合振幅最小。
+  </div>
+
+  <button class="hint-toggle" onclick="toggleHint('sup-hint')">試試看的小提示</button>
+  <div id="sup-hint" class="hint-content">
+    將兩波設為相同頻率和振幅，然後慢慢調整相位差從 0 度到 180 度，觀察疊加波的振幅如何從最大變到最小。也可以設定微小的頻率差（例如 1.0 Hz 和 1.1 Hz），觀察「拍頻」現象——合成波的振幅會週期性地變大變小。
+  </div>
+</div>
+
+<!-- ===================== Tool 2: Spring Mass ===================== -->
+<div id="panel-spring" class="tab-panel">
+  <div class="tool-title">彈簧振動模擬</div>
+  <div class="tool-desc">調整質量與彈簧常數，觀察即時位置、速度、加速度圖形與能量分布</div>
+
+  <canvas id="cvs-spring" height="400"></canvas>
+
+  <div class="readout" id="spring-readout">
+    <div class="readout-item"><div class="label">位移 x</div><div class="value" id="sp-x">0.00 m</div></div>
+    <div class="readout-item"><div class="label">速度 v</div><div class="value" id="sp-v">0.00 m/s</div></div>
+    <div class="readout-item"><div class="label">加速度 a</div><div class="value" id="sp-a">0.00 m/s²</div></div>
+    <div class="readout-item"><div class="label">週期 T</div><div class="value" id="sp-T">0.00 s</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>質量 m：<span class="val" id="sp-m-val">1.0</span> kg</label>
+      <input type="range" id="sp-m" min="0.2" max="5" step="0.1" value="1.0" oninput="updateSpringLabel()">
+    </div>
+    <div class="control-group">
+      <label>彈簧常數 k：<span class="val" id="sp-k-val">10</span> N/m</label>
+      <input type="range" id="sp-k" min="1" max="50" step="1" value="10" oninput="updateSpringLabel()">
+    </div>
+    <div class="control-group">
+      <label>初始位移 A：<span class="val" id="sp-A-val">1.0</span> m</label>
+      <input type="range" id="sp-A" min="0.2" max="2" step="0.1" value="1.0" oninput="updateSpringLabel()">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="sp-playbtn" onclick="toggleSpring()">開始</button>
+    <button class="btn btn-outline" onclick="resetSpring()">重設</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-color" style="background:#4A8EC7"></span>位移</div>
+    <div class="legend-item"><span class="legend-color" style="background:#38A169"></span>速度</div>
+    <div class="legend-item"><span class="legend-color" style="background:#E53E3E"></span>加速度</div>
+    <div class="legend-item"><span class="legend-color" style="background:#4A8EC7;width:12px;height:12px;border-radius:3px"></span>位能 PE</div>
+    <div class="legend-item"><span class="legend-color" style="background:#E08A3C;width:12px;height:12px;border-radius:3px"></span>動能 KE</div>
+  </div>
+
+  <div class="info-box">
+    <strong>原理說明：</strong>彈簧系統的週期 T = 2π√(m/k)。質量越大、彈簧越軟（k 越小），週期越長。注意觀察：位移最大時速度為零（動能 = 0），通過平衡位置時速度最大（位能 = 0），而總能量始終不變。
+  </div>
+
+  <button class="hint-toggle" onclick="toggleHint('sp-hint')">試試看的小提示</button>
+  <div id="sp-hint" class="hint-content">
+    先固定彈簧常數，只改變質量，觀察週期如何變化。然後固定質量，改變彈簧常數。你會發現振幅不影響週期——這就是「等時性」。
+  </div>
+</div>
+
+<!-- ===================== Tool 3: Pendulum ===================== -->
+<div id="panel-pendulum" class="tab-panel">
+  <div class="tool-title">單擺模擬器</div>
+  <div class="tool-desc">調整擺長與初始角度，測量實際週期並與公式預測比較</div>
+
+  <canvas id="cvs-pend" height="420"></canvas>
+
+  <div class="readout" id="pend-readout">
+    <div class="readout-item"><div class="label">當前角度</div><div class="value" id="pd-angle">10.0°</div></div>
+    <div class="readout-item"><div class="label">實測週期</div><div class="value" id="pd-measured">-- s</div></div>
+    <div class="readout-item"><div class="label">公式預測</div><div class="value" id="pd-formula">-- s</div></div>
+    <div class="readout-item"><div class="label">誤差</div><div class="value" id="pd-error">--%</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>擺長 L：<span class="val" id="pd-L-val">1.0</span> m</label>
+      <input type="range" id="pd-L" min="0.2" max="3" step="0.1" value="1.0" oninput="updatePendLabel()">
+    </div>
+    <div class="control-group">
+      <label>初始角度 θ：<span class="val" id="pd-th-val">10</span> 度</label>
+      <input type="range" id="pd-th" min="5" max="80" step="1" value="10" oninput="updatePendLabel()">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="pd-playbtn" onclick="togglePend()">開始</button>
+    <button class="btn btn-outline" onclick="resetPend()">重設</button>
+  </div>
+
+  <div class="info-box">
+    <strong>原理說明：</strong>單擺週期公式 T = 2π√(L/g) 只在小角度（通常 < 15 度）下精確。當初始角度增大時，實際週期會比公式預測的稍微長一些。試著增大角度，觀察「實測週期」和「公式預測」的差距如何變化。
+  </div>
+
+  <button class="hint-toggle" onclick="toggleHint('pd-hint')">試試看的小提示</button>
+  <div id="pd-hint" class="hint-content">
+    先設定小角度（10 度），看看實測週期和公式預測幾乎一致。然後把角度加大到 60 度甚至 80 度，觀察誤差變大。這就是為什麼我們說公式只在「小角度近似」下成立。另外試試改變擺長——擺越長，週期越長。
+  </div>
+</div>
+
+<!-- ===================== Tool 4: Standing Waves ===================== -->
+<div id="panel-standing" class="tab-panel">
+  <div class="tool-title">駐波產生器</div>
+  <div class="tool-desc">調整頻率來產生不同諧波，觀察節點與腹點</div>
+
+  <canvas id="cvs-stand" height="340"></canvas>
+
+  <div class="readout" id="stand-readout">
+    <div class="readout-item"><div class="label">諧波</div><div class="value" id="sw-harmonic">第 1 諧波</div></div>
+    <div class="readout-item"><div class="label">頻率</div><div class="value" id="sw-freq">1.0 f₁</div></div>
+    <div class="readout-item"><div class="label">節點數</div><div class="value" id="sw-nodes">2</div></div>
+    <div class="readout-item"><div class="label">腹點數</div><div class="value" id="sw-antinodes">1</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>頻率倍數：<span class="val" id="sw-n-val">1</span> × 基頻</label>
+      <input type="range" id="sw-n" min="1" max="8" step="1" value="1" oninput="updateStandLabel()">
+    </div>
+    <div class="control-group">
+      <label>振幅：<span class="val" id="sw-amp-val">1.0</span></label>
+      <input type="range" id="sw-amp" min="0.3" max="2" step="0.1" value="1.0" oninput="updateStandLabel()">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="setHarmonic(1)">基頻（第1）</button>
+    <button class="btn btn-outline" onclick="setHarmonic(2)">第2諧波</button>
+    <button class="btn btn-outline" onclick="setHarmonic(3)">第3諧波</button>
+    <button class="btn btn-outline" onclick="setHarmonic(5)">第5諧波</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-color" style="background:#4A8EC7;height:5px"></span>駐波</div>
+    <div class="legend-item"><span class="legend-color" style="background:#4A8EC7;opacity:0.25;height:3px"></span>振動範圍</div>
+    <div class="legend-item"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#E53E3E"></span> 節點</div>
+    <div class="legend-item"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38A169"></span> 腹點</div>
+  </div>
+
+  <div class="info-box">
+    <strong>原理說明：</strong>兩端固定的弦只能產生特定頻率的駐波。第 n 諧波的弦上有 n+1 個節點和 n 個腹點。頻率 fₙ = n × f₁，其中 f₁ 是基頻。觀察隨著諧波數增加，節點和腹點的數量如何變化。
+  </div>
+
+  <button class="hint-toggle" onclick="toggleHint('sw-hint')">試試看的小提示</button>
+  <div id="sw-hint" class="hint-content">
+    從基頻（第 1 諧波）開始，慢慢增加頻率倍數。注意觀察：第 n 諧波恰好有 n 個「肚子」（腹點）。弦的兩端永遠是節點（不動）。第 2 諧波的正中間多了一個節點，把弦分成兩段。
+  </div>
+</div>
+
+<script>
+// ─── Utilities ───
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+function toggleHint(id) {
+  document.getElementById(id).classList.toggle('show');
+}
+function getV(id) { return parseFloat(document.getElementById(id).value); }
+function setV(id, v) {
+  const el = document.getElementById(id);
+  el.value = v;
+  el.dispatchEvent(new Event('input'));
+}
+
+// ─── Tool 1: Wave Superposition ───
+const cvsSup = document.getElementById('cvs-sup');
+const ctxSup = cvsSup.getContext('2d');
+let supTime = 0;
+let supAnim;
+
+function updateSupLabel() {
+  document.getElementById('sup-f1-val').textContent = getV('sup-f1').toFixed(1);
+  document.getElementById('sup-a1-val').textContent = getV('sup-a1').toFixed(1);
+  document.getElementById('sup-f2-val').textContent = getV('sup-f2').toFixed(1);
+  document.getElementById('sup-a2-val').textContent = getV('sup-a2').toFixed(1);
+  document.getElementById('sup-phase-val').textContent = getV('sup-phase').toFixed(0);
+}
+
+function setSupPreset(type) {
+  if (type === 'constructive') {
+    setV('sup-f1', 1.5); setV('sup-f2', 1.5);
+    setV('sup-a1', 1.0); setV('sup-a2', 1.0);
+    setV('sup-phase', 0);
+  } else if (type === 'destructive') {
+    setV('sup-f1', 1.5); setV('sup-f2', 1.5);
+    setV('sup-a1', 1.0); setV('sup-a2', 1.0);
+    setV('sup-phase', 180);
+  } else if (type === 'beats') {
+    setV('sup-f1', 2.0); setV('sup-f2', 2.3);
+    setV('sup-a1', 1.0); setV('sup-a2', 1.0);
+    setV('sup-phase', 0);
+  }
+}
+
+function drawSuperposition() {
+  const W = cvsSup.width = cvsSup.clientWidth * (window.devicePixelRatio || 1);
+  const H = cvsSup.height = 360 * (window.devicePixelRatio || 1);
+  ctxSup.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+  const w = cvsSup.clientWidth, h = 360;
+
+  const f1 = getV('sup-f1'), a1 = getV('sup-a1');
+  const f2 = getV('sup-f2'), a2 = getV('sup-a2');
+  const phase = getV('sup-phase') * Math.PI / 180;
+
+  ctxSup.clearRect(0, 0, w, h);
+
+  const sections = [
+    { label: '波 1', yCenter: h * 0.17, hRange: h * 0.13, color: '#4A8EC7' },
+    { label: '波 2', yCenter: h * 0.43, hRange: h * 0.13, color: '#E08A3C' },
+    { label: '疊加結果', yCenter: h * 0.75, hRange: h * 0.18, color: '#38A169' }
+  ];
+
+  const pad = 30;
+
+  sections.forEach((sec, si) => {
+    // axis
+    ctxSup.strokeStyle = '#D8DEE6';
+    ctxSup.lineWidth = 1;
+    ctxSup.beginPath();
+    ctxSup.moveTo(pad, sec.yCenter);
+    ctxSup.lineTo(w - pad, sec.yCenter);
+    ctxSup.stroke();
+
+    // label
+    ctxSup.fillStyle = '#8899AA';
+    ctxSup.font = '12px sans-serif';
+    ctxSup.fillText(sec.label, pad, sec.yCenter - sec.hRange - 4);
+
+    // wave
+    ctxSup.strokeStyle = sec.color;
+    ctxSup.lineWidth = si === 2 ? 2.5 : 1.8;
+    ctxSup.beginPath();
+    for (let px = pad; px <= w - pad; px++) {
+      const x = (px - pad) / (w - 2 * pad); // 0..1
+      let y;
+      if (si === 0) {
+        y = a1 * Math.sin(2 * Math.PI * (f1 * 3 * x - f1 * supTime));
+      } else if (si === 1) {
+        y = a2 * Math.sin(2 * Math.PI * (f2 * 3 * x - f2 * supTime) + phase);
+      } else {
+        const y1 = a1 * Math.sin(2 * Math.PI * (f1 * 3 * x - f1 * supTime));
+        const y2 = a2 * Math.sin(2 * Math.PI * (f2 * 3 * x - f2 * supTime) + phase);
+        y = y1 + y2;
+      }
+      const maxAmp = si === 2 ? (a1 + a2) : Math.max(a1, a2, 1);
+      const py = sec.yCenter - (y / maxAmp) * sec.hRange;
+      if (px === pad) ctxSup.moveTo(px, py); else ctxSup.lineTo(px, py);
+    }
+    ctxSup.stroke();
+  });
+
+  // separator lines
+  ctxSup.strokeStyle = '#E8ECF0';
+  ctxSup.setLineDash([4, 4]);
+  ctxSup.beginPath();
+  ctxSup.moveTo(pad, h * 0.3); ctxSup.lineTo(w - pad, h * 0.3);
+  ctxSup.moveTo(pad, h * 0.57); ctxSup.lineTo(w - pad, h * 0.57);
+  ctxSup.stroke();
+  ctxSup.setLineDash([]);
+
+  supTime += 0.016;
+  supAnim = requestAnimationFrame(drawSuperposition);
+}
+drawSuperposition();
+
+// ─── Tool 2: Spring Mass ───
+const cvsSpring = document.getElementById('cvs-spring');
+const ctxSpring = cvsSpring.getContext('2d');
+let spRunning = false, spTime = 0, spHistory = [];
+
+function updateSpringLabel() {
+  document.getElementById('sp-m-val').textContent = getV('sp-m').toFixed(1);
+  document.getElementById('sp-k-val').textContent = getV('sp-k').toFixed(0);
+  document.getElementById('sp-A-val').textContent = getV('sp-A').toFixed(1);
+  const m = getV('sp-m'), k = getV('sp-k');
+  const T = 2 * Math.PI * Math.sqrt(m / k);
+  document.getElementById('sp-T').textContent = T.toFixed(3) + ' s';
+}
+updateSpringLabel();
+
+function toggleSpring() {
+  spRunning = !spRunning;
+  document.getElementById('sp-playbtn').textContent = spRunning ? '暫停' : '繼續';
+  if (spRunning) animSpring();
+}
+
+function resetSpring() {
+  spRunning = false;
+  spTime = 0;
+  spHistory = [];
+  document.getElementById('sp-playbtn').textContent = '開始';
+  drawSpring();
+}
+
+function drawSpring() {
+  const W = cvsSpring.width = cvsSpring.clientWidth * (window.devicePixelRatio || 1);
+  const H = cvsSpring.height = 400 * (window.devicePixelRatio || 1);
+  const dpr = window.devicePixelRatio || 1;
+  ctxSpring.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const w = cvsSpring.clientWidth, h = 400;
+
+  const m = getV('sp-m'), k = getV('sp-k'), A = getV('sp-A');
+  const omega = Math.sqrt(k / m);
+  const x = A * Math.cos(omega * spTime);
+  const v = -A * omega * Math.sin(omega * spTime);
+  const a = -A * omega * omega * Math.cos(omega * spTime);
+
+  document.getElementById('sp-x').textContent = x.toFixed(2) + ' m';
+  document.getElementById('sp-v').textContent = v.toFixed(2) + ' m/s';
+  document.getElementById('sp-a').textContent = a.toFixed(2) + ' m/s\u00B2';
+
+  if (spRunning) {
+    spHistory.push({ x, v, a });
+    if (spHistory.length > 300) spHistory.shift();
+  }
+
+  ctxSpring.clearRect(0, 0, w, h);
+
+  // ---- Left panel: Spring animation ----
+  const springX = w * 0.18;
+  const anchorY = 40;
+  const eqY = h * 0.28;
+  const massY = eqY + x * 60;
+  const massR = 16 + m * 4;
+
+  // wall
+  ctxSpring.fillStyle = '#D8DEE6';
+  ctxSpring.fillRect(springX - 25, anchorY - 8, 50, 8);
+
+  // spring zigzag
+  const coils = 12;
+  const springLen = massY - anchorY - massR;
+  ctxSpring.strokeStyle = '#4A5568';
+  ctxSpring.lineWidth = 2;
+  ctxSpring.beginPath();
+  ctxSpring.moveTo(springX, anchorY);
+  for (let i = 0; i <= coils; i++) {
+    const cy = anchorY + (springLen * i) / coils;
+    const cx = springX + (i % 2 === 0 ? -12 : 12);
+    ctxSpring.lineTo(cx, cy);
+  }
+  ctxSpring.lineTo(springX, massY - massR);
+  ctxSpring.stroke();
+
+  // mass
+  ctxSpring.fillStyle = '#2D6A9F';
+  ctxSpring.beginPath();
+  ctxSpring.arc(springX, massY, massR, 0, Math.PI * 2);
+  ctxSpring.fill();
+  ctxSpring.fillStyle = '#fff';
+  ctxSpring.font = 'bold 11px sans-serif';
+  ctxSpring.textAlign = 'center';
+  ctxSpring.fillText(m.toFixed(1) + 'kg', springX, massY + 4);
+  ctxSpring.textAlign = 'start';
+
+  // eq line
+  ctxSpring.strokeStyle = '#D69E2E';
+  ctxSpring.setLineDash([4, 4]);
+  ctxSpring.beginPath();
+  ctxSpring.moveTo(springX - 35, eqY);
+  ctxSpring.lineTo(springX + 35, eqY);
+  ctxSpring.stroke();
+  ctxSpring.setLineDash([]);
+  ctxSpring.fillStyle = '#D69E2E';
+  ctxSpring.font = '10px sans-serif';
+  ctxSpring.fillText('平衡', springX + 38, eqY + 4);
+
+  // ---- Energy bars ----
+  const PE = 0.5 * k * x * x;
+  const KE = 0.5 * m * v * v;
+  const E = 0.5 * k * A * A;
+  const barX = springX - 30;
+  const barBot = h * 0.55;
+  const barH = 80;
+
+  ctxSpring.fillStyle = '#8899AA';
+  ctxSpring.font = '11px sans-serif';
+  ctxSpring.textAlign = 'center';
+  ctxSpring.fillText('能量', springX, barBot - barH - 10);
+
+  // PE bar
+  const peH = (PE / E) * barH;
+  ctxSpring.fillStyle = '#4A8EC7';
+  ctxSpring.fillRect(barX, barBot - peH, 25, peH);
+  ctxSpring.fillStyle = '#4A5568';
+  ctxSpring.font = '9px sans-serif';
+  ctxSpring.fillText('PE', barX + 12, barBot + 14);
+
+  // KE bar
+  const keH = (KE / E) * barH;
+  ctxSpring.fillStyle = '#E08A3C';
+  ctxSpring.fillRect(barX + 35, barBot - keH, 25, keH);
+  ctxSpring.fillText('KE', barX + 47, barBot + 14);
+
+  // bar border
+  ctxSpring.strokeStyle = '#D8DEE6';
+  ctxSpring.lineWidth = 1;
+  ctxSpring.strokeRect(barX, barBot - barH, 25, barH);
+  ctxSpring.strokeRect(barX + 35, barBot - barH, 25, barH);
+  ctxSpring.textAlign = 'start';
+
+  // ---- Right panel: Graphs ----
+  const gLeft = w * 0.38, gRight = w - 20;
+  const gW = gRight - gLeft;
+  const graphs = [
+    { label: '位移 x', color: '#4A8EC7', key: 'x', yc: h * 0.12, hh: h * 0.08 },
+    { label: '速度 v', color: '#38A169', key: 'v', yc: h * 0.33, hh: h * 0.08 },
+    { label: '加速度 a', color: '#E53E3E', key: 'a', yc: h * 0.54, hh: h * 0.08 }
+  ];
+
+  const maxVals = {
+    x: A || 1,
+    v: A * omega || 1,
+    a: A * omega * omega || 1
+  };
+
+  graphs.forEach(g => {
+    // axis
+    ctxSpring.strokeStyle = '#E8ECF0';
+    ctxSpring.lineWidth = 1;
+    ctxSpring.beginPath();
+    ctxSpring.moveTo(gLeft, g.yc);
+    ctxSpring.lineTo(gRight, g.yc);
+    ctxSpring.stroke();
+
+    // label
+    ctxSpring.fillStyle = '#8899AA';
+    ctxSpring.font = '11px sans-serif';
+    ctxSpring.fillText(g.label, gLeft, g.yc - g.hh - 5);
+
+    // trace
+    if (spHistory.length > 1) {
+      ctxSpring.strokeStyle = g.color;
+      ctxSpring.lineWidth = 1.8;
+      ctxSpring.beginPath();
+      const n = spHistory.length;
+      for (let i = 0; i < n; i++) {
+        const px = gLeft + (i / 300) * gW;
+        const py = g.yc - (spHistory[i][g.key] / maxVals[g.key]) * g.hh;
+        if (i === 0) ctxSpring.moveTo(px, py); else ctxSpring.lineTo(px, py);
+      }
+      ctxSpring.stroke();
+
+      // dot
+      const lastPx = gLeft + ((n - 1) / 300) * gW;
+      const lastPy = g.yc - (spHistory[n - 1][g.key] / maxVals[g.key]) * g.hh;
+      ctxSpring.fillStyle = g.color;
+      ctxSpring.beginPath();
+      ctxSpring.arc(lastPx, lastPy, 4, 0, Math.PI * 2);
+      ctxSpring.fill();
+    }
+  });
+
+  // ---- Bottom: energy over time ----
+  const eBot = h * 0.72;
+  const eH = h * 0.08;
+  ctxSpring.fillStyle = '#8899AA';
+  ctxSpring.font = '11px sans-serif';
+  ctxSpring.fillText('能量隨時間變化', gLeft, eBot - eH - 5);
+
+  ctxSpring.strokeStyle = '#E8ECF0';
+  ctxSpring.beginPath();
+  ctxSpring.moveTo(gLeft, eBot);
+  ctxSpring.lineTo(gRight, eBot);
+  ctxSpring.stroke();
+
+  if (spHistory.length > 1) {
+    const n = spHistory.length;
+    // PE line
+    ctxSpring.strokeStyle = '#4A8EC7';
+    ctxSpring.lineWidth = 1.5;
+    ctxSpring.beginPath();
+    for (let i = 0; i < n; i++) {
+      const px = gLeft + (i / 300) * gW;
+      const pe = 0.5 * k * spHistory[i].x * spHistory[i].x;
+      const py = eBot - (pe / E) * eH * 2;
+      if (i === 0) ctxSpring.moveTo(px, py); else ctxSpring.lineTo(px, py);
+    }
+    ctxSpring.stroke();
+
+    // KE line
+    ctxSpring.strokeStyle = '#E08A3C';
+    ctxSpring.lineWidth = 1.5;
+    ctxSpring.beginPath();
+    for (let i = 0; i < n; i++) {
+      const px = gLeft + (i / 300) * gW;
+      const ke = 0.5 * m * spHistory[i].v * spHistory[i].v;
+      const py = eBot - (ke / E) * eH * 2;
+      if (i === 0) ctxSpring.moveTo(px, py); else ctxSpring.lineTo(px, py);
+    }
+    ctxSpring.stroke();
+
+    // total
+    ctxSpring.strokeStyle = '#8899AA';
+    ctxSpring.setLineDash([4, 3]);
+    ctxSpring.lineWidth = 1;
+    ctxSpring.beginPath();
+    ctxSpring.moveTo(gLeft, eBot - eH * 2);
+    ctxSpring.lineTo(gLeft + (n / 300) * gW, eBot - eH * 2);
+    ctxSpring.stroke();
+    ctxSpring.setLineDash([]);
+    ctxSpring.fillStyle = '#8899AA';
+    ctxSpring.font = '9px sans-serif';
+    const textXe = gLeft + (n / 300) * gW + 4;
+    ctxSpring.fillText('總能量', Math.min(textXe, gRight - 30), eBot - eH * 2 + 3);
+  }
+}
+
+function animSpring() {
+  if (!spRunning) return;
+  spTime += 0.03;
+  drawSpring();
+  requestAnimationFrame(animSpring);
+}
+drawSpring();
+
+// ─── Tool 3: Pendulum ───
+const cvsPend = document.getElementById('cvs-pend');
+const ctxPend = cvsPend.getContext('2d');
+let pdRunning = false, pdAngle, pdAngVel, pdTime, pdLastCross, pdPeriodMeasured;
+const g = 9.8;
+
+function updatePendLabel() {
+  document.getElementById('pd-L-val').textContent = getV('pd-L').toFixed(1);
+  document.getElementById('pd-th-val').textContent = getV('pd-th').toFixed(0);
+  const L = getV('pd-L');
+  const Tf = 2 * Math.PI * Math.sqrt(L / g);
+  document.getElementById('pd-formula').textContent = Tf.toFixed(3) + ' s';
+}
+updatePendLabel();
+
+function resetPend() {
+  pdRunning = false;
+  const th0 = getV('pd-th') * Math.PI / 180;
+  pdAngle = th0;
+  pdAngVel = 0;
+  pdTime = 0;
+  pdLastCross = -1;
+  pdPeriodMeasured = null;
+  document.getElementById('pd-playbtn').textContent = '開始';
+  document.getElementById('pd-measured').textContent = '-- s';
+  document.getElementById('pd-error').textContent = '--%';
+  drawPend();
+}
+
+function togglePend() {
+  pdRunning = !pdRunning;
+  document.getElementById('pd-playbtn').textContent = pdRunning ? '暫停' : '繼續';
+  if (pdRunning) animPend();
+}
+
+let pdCrossCount = 0;
+let pdFirstCrossTime = null;
+
+function drawPend() {
+  const W = cvsPend.width = cvsPend.clientWidth * (window.devicePixelRatio || 1);
+  const H = cvsPend.height = 420 * (window.devicePixelRatio || 1);
+  const dpr = window.devicePixelRatio || 1;
+  ctxPend.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const w = cvsPend.clientWidth, h = 420;
+  ctxPend.clearRect(0, 0, w, h);
+
+  const L = getV('pd-L');
+  const pivotX = w * 0.5, pivotY = 60;
+  const scale = Math.min(130, (h - 140) / 3);
+  const visL = L * scale;
+
+  const angle = pdAngle !== undefined ? pdAngle : getV('pd-th') * Math.PI / 180;
+  const bobX = pivotX + visL * Math.sin(angle);
+  const bobY = pivotY + visL * Math.cos(angle);
+
+  // pivot
+  ctxPend.fillStyle = '#4A5568';
+  ctxPend.fillRect(pivotX - 30, pivotY - 8, 60, 8);
+  ctxPend.beginPath();
+  ctxPend.arc(pivotX, pivotY, 5, 0, Math.PI * 2);
+  ctxPend.fill();
+
+  // string
+  ctxPend.strokeStyle = '#4A5568';
+  ctxPend.lineWidth = 2;
+  ctxPend.beginPath();
+  ctxPend.moveTo(pivotX, pivotY);
+  ctxPend.lineTo(bobX, bobY);
+  ctxPend.stroke();
+
+  // bob
+  ctxPend.fillStyle = '#2D6A9F';
+  ctxPend.beginPath();
+  ctxPend.arc(bobX, bobY, 18, 0, Math.PI * 2);
+  ctxPend.fill();
+
+  // angle arc
+  if (Math.abs(angle) > 0.02) {
+    ctxPend.strokeStyle = '#E08A3C';
+    ctxPend.lineWidth = 1.5;
+    ctxPend.beginPath();
+    const arcR = 40;
+    const startA = Math.PI / 2;
+    const endA = Math.PI / 2 - angle;
+    if (angle > 0) {
+      ctxPend.arc(pivotX, pivotY, arcR, startA, endA, true);
+    } else {
+      ctxPend.arc(pivotX, pivotY, arcR, startA, endA, false);
+    }
+    ctxPend.stroke();
+
+    ctxPend.fillStyle = '#E08A3C';
+    ctxPend.font = '12px sans-serif';
+    ctxPend.textAlign = 'center';
+    const labelAngle = (angle * 180 / Math.PI).toFixed(1);
+    ctxPend.fillText(labelAngle + '°', pivotX + 55 * Math.sin(angle / 2), pivotY + 55 * Math.cos(angle / 2));
+    ctxPend.textAlign = 'start';
+  }
+
+  // vertical dashed
+  ctxPend.strokeStyle = '#D8DEE6';
+  ctxPend.setLineDash([4, 4]);
+  ctxPend.beginPath();
+  ctxPend.moveTo(pivotX, pivotY);
+  ctxPend.lineTo(pivotX, pivotY + visL + 30);
+  ctxPend.stroke();
+  ctxPend.setLineDash([]);
+
+  document.getElementById('pd-angle').textContent = (angle * 180 / Math.PI).toFixed(1) + '°';
+}
+
+function animPend() {
+  if (!pdRunning) return;
+  const L = getV('pd-L');
+  const dt = 0.01;
+  // Euler-Cromer integration for accuracy
+  const alpha = -(g / L) * Math.sin(pdAngle);
+  pdAngVel += alpha * dt;
+  const prevAngle = pdAngle;
+  pdAngle += pdAngVel * dt;
+  pdTime += dt;
+
+  // detect zero crossing going from negative to positive angle
+  if (prevAngle < 0 && pdAngle >= 0 && pdAngVel > 0) {
+    if (pdFirstCrossTime === null) {
+      pdFirstCrossTime = pdTime;
+      pdCrossCount = 0;
+    } else {
+      pdCrossCount++;
+      if (pdCrossCount >= 1) {
+        pdPeriodMeasured = (pdTime - pdFirstCrossTime) / pdCrossCount;
+        document.getElementById('pd-measured').textContent = pdPeriodMeasured.toFixed(3) + ' s';
+        const Tf = 2 * Math.PI * Math.sqrt(L / g);
+        const err = Math.abs(pdPeriodMeasured - Tf) / Tf * 100;
+        document.getElementById('pd-error').textContent = err.toFixed(2) + '%';
+      }
+    }
+  }
+
+  drawPend();
+  requestAnimationFrame(animPend);
+}
+resetPend();
+
+// ─── Tool 4: Standing Waves ───
+const cvsStand = document.getElementById('cvs-stand');
+const ctxStand = cvsStand.getContext('2d');
+let swTime = 0;
+let swAnim;
+
+function updateStandLabel() {
+  const n = getV('sw-n');
+  document.getElementById('sw-n-val').textContent = n.toFixed(0);
+  document.getElementById('sw-amp-val').textContent = getV('sw-amp').toFixed(1);
+  document.getElementById('sw-harmonic').textContent = '第 ' + n.toFixed(0) + ' 諧波';
+  document.getElementById('sw-freq').textContent = n.toFixed(0) + '.0 f\u2081';
+  document.getElementById('sw-nodes').textContent = (n + 1).toFixed(0);
+  document.getElementById('sw-antinodes').textContent = n.toFixed(0);
+}
+updateStandLabel();
+
+function setHarmonic(n) {
+  setV('sw-n', n);
+}
+
+function drawStanding() {
+  const W = cvsStand.width = cvsStand.clientWidth * (window.devicePixelRatio || 1);
+  const H = cvsStand.height = 340 * (window.devicePixelRatio || 1);
+  const dpr = window.devicePixelRatio || 1;
+  ctxStand.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const w = cvsStand.clientWidth, h = 340;
+  ctxStand.clearRect(0, 0, w, h);
+
+  const n = Math.round(getV('sw-n'));
+  const amp = getV('sw-amp');
+  const pad = 40;
+  const strW = w - 2 * pad;
+  const yCenter = h * 0.45;
+  const maxDisp = h * 0.25 * amp;
+
+  // fixed ends
+  ctxStand.fillStyle = '#4A5568';
+  ctxStand.fillRect(pad - 6, yCenter - 25, 6, 50);
+  ctxStand.fillRect(w - pad, yCenter - 25, 6, 50);
+
+  // axis
+  ctxStand.strokeStyle = '#E8ECF0';
+  ctxStand.lineWidth = 1;
+  ctxStand.beginPath();
+  ctxStand.moveTo(pad, yCenter);
+  ctxStand.lineTo(w - pad, yCenter);
+  ctxStand.stroke();
+
+  // envelope (max amplitude shape)
+  ctxStand.strokeStyle = 'rgba(74,142,199,0.2)';
+  ctxStand.lineWidth = 1;
+  ctxStand.setLineDash([4, 3]);
+  ctxStand.beginPath();
+  for (let px = 0; px <= strW; px++) {
+    const x = px / strW;
+    const env = Math.abs(Math.sin(n * Math.PI * x));
+    const py = yCenter - env * maxDisp;
+    if (px === 0) ctxStand.moveTo(pad + px, py); else ctxStand.lineTo(pad + px, py);
+  }
+  ctxStand.stroke();
+  ctxStand.beginPath();
+  for (let px = 0; px <= strW; px++) {
+    const x = px / strW;
+    const env = Math.abs(Math.sin(n * Math.PI * x));
+    const py = yCenter + env * maxDisp;
+    if (px === 0) ctxStand.moveTo(pad + px, py); else ctxStand.lineTo(pad + px, py);
+  }
+  ctxStand.stroke();
+  ctxStand.setLineDash([]);
+
+  // standing wave
+  const timeOsc = Math.cos(2 * Math.PI * n * 0.3 * swTime);
+  ctxStand.strokeStyle = '#2D6A9F';
+  ctxStand.lineWidth = 3;
+  ctxStand.beginPath();
+  for (let px = 0; px <= strW; px++) {
+    const x = px / strW;
+    const spatial = Math.sin(n * Math.PI * x);
+    const y = spatial * timeOsc * maxDisp;
+    const py = yCenter - y;
+    if (px === 0) ctxStand.moveTo(pad + px, py); else ctxStand.lineTo(pad + px, py);
+  }
+  ctxStand.stroke();
+
+  // nodes
+  for (let i = 0; i <= n; i++) {
+    const nx = pad + (i / n) * strW;
+    ctxStand.fillStyle = '#E53E3E';
+    ctxStand.beginPath();
+    ctxStand.arc(nx, yCenter, 6, 0, Math.PI * 2);
+    ctxStand.fill();
+    ctxStand.fillStyle = '#fff';
+    ctxStand.font = 'bold 8px sans-serif';
+    ctxStand.textAlign = 'center';
+    ctxStand.fillText('N', nx, yCenter + 3);
+  }
+
+  // antinodes
+  for (let i = 0; i < n; i++) {
+    const ax = pad + ((i + 0.5) / n) * strW;
+    ctxStand.fillStyle = '#38A169';
+    ctxStand.beginPath();
+    ctxStand.arc(ax, yCenter, 6, 0, Math.PI * 2);
+    ctxStand.fill();
+    ctxStand.fillStyle = '#fff';
+    ctxStand.font = 'bold 8px sans-serif';
+    ctxStand.fillText('A', ax, yCenter + 3);
+  }
+  ctxStand.textAlign = 'start';
+
+  // harmonic info at bottom
+  const infoY = h * 0.82;
+  ctxStand.fillStyle = '#8899AA';
+  ctxStand.font = '12px sans-serif';
+  ctxStand.textAlign = 'center';
+  ctxStand.fillText('L = ' + (n === 1 ? '' : n + ' \u00d7 ') + '\u03bb/2    \u2192    \u03bb = 2L' + (n === 1 ? '' : '/' + n) + '    \u2192    f = ' + n + ' \u00d7 f\u2081', w / 2, infoY);
+
+  // wavelength marker
+  if (n <= 6) {
+    const wlPx = strW / n;
+    const markerY = yCenter + maxDisp + 25;
+    ctxStand.strokeStyle = '#E08A3C';
+    ctxStand.lineWidth = 1.5;
+    ctxStand.beginPath();
+    ctxStand.moveTo(pad, markerY);
+    ctxStand.lineTo(pad + wlPx, markerY);
+    ctxStand.stroke();
+    // arrows
+    ctxStand.beginPath();
+    ctxStand.moveTo(pad, markerY - 5); ctxStand.lineTo(pad, markerY + 5);
+    ctxStand.moveTo(pad + wlPx, markerY - 5); ctxStand.lineTo(pad + wlPx, markerY + 5);
+    ctxStand.stroke();
+
+    ctxStand.fillStyle = '#E08A3C';
+    ctxStand.font = '11px sans-serif';
+    ctxStand.textAlign = 'center';
+    ctxStand.fillText('\u03bb', pad + wlPx / 2, markerY - 6);
+  }
+  ctxStand.textAlign = 'start';
+
+  swTime += 0.016;
+  swAnim = requestAnimationFrame(drawStanding);
+}
+drawStanding();
+</script>
+
+</body>
+</html>

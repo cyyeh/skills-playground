@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>功與能量 — 互動工具</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #60a5fa;
+    --primary-dark: #1d4ed8;
+    --accent: #f59e0b;
+    --accent-light: #fbbf24;
+    --bg: #f8fafc;
+    --card-bg: #fff;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+    --success: #22c55e;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --ke-color: #ef4444;
+    --pe-color: #3b82f6;
+    --total-color: #8b5cf6;
+    --friction-color: #f97316;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7;
+    -webkit-font-smoothing: antialiased; min-height: 100vh;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: #fff; padding: 2rem 1.5rem; text-align: center;
+  }
+  .header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: .3rem; }
+  .header p { opacity: .85; font-size: .95rem; }
+
+  .tabs {
+    display: flex; gap: 2px; background: var(--border);
+    border-radius: var(--radius) var(--radius) 0 0;
+    overflow: hidden; margin-top: 1.5rem; flex-wrap: wrap;
+  }
+  .tab-btn {
+    flex: 1; min-width: 120px; padding: .85rem .5rem; border: none; background: #edf2f7;
+    cursor: pointer; font-size: .85rem; font-weight: 600;
+    color: var(--text-light); transition: all .2s; font-family: inherit;
+    text-align: center; line-height: 1.3;
+  }
+  .tab-btn:hover { background: #e2e8f0; color: var(--text); }
+  .tab-btn.active { background: var(--card-bg); color: var(--primary); }
+  .tab-content {
+    display: none; background: var(--card-bg); padding: 1.5rem;
+    border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .tab-content.active { display: block; }
+  .tab-content h2 { font-size: 1.2rem; color: var(--primary); margin-bottom: .3rem; }
+  .tab-content .subtitle { color: var(--text-light); font-size: .9rem; margin-bottom: 1.25rem; }
+
+  .controls-row {
+    display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1rem;
+    align-items: flex-end;
+  }
+  .control-group { display: flex; flex-direction: column; gap: .25rem; }
+  .control-group label {
+    font-size: .8rem; font-weight: 600; color: var(--text-light);
+  }
+  .control-group input[type="range"] { width: 140px; }
+  .control-group input[type="number"] {
+    width: 90px; padding: .35rem .5rem; border: 1px solid var(--border);
+    border-radius: 6px; font-size: .85rem; font-family: inherit;
+  }
+  .control-group select {
+    padding: .35rem .5rem; border: 1px solid var(--border);
+    border-radius: 6px; font-size: .85rem; font-family: inherit;
+  }
+  .value-display {
+    font-size: .85rem; font-weight: 700; color: var(--primary);
+    min-width: 40px; text-align: right;
+  }
+  .btn {
+    padding: .5rem 1.2rem; border: none; border-radius: 6px;
+    font-size: .85rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: all .2s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #d97706; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-sm { padding: .35rem .8rem; font-size: .8rem; }
+
+  canvas {
+    width: 100%; border: 1px solid var(--border); border-radius: var(--radius);
+    background: #fff; display: block;
+  }
+
+  .result-box {
+    background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius);
+    padding: 1rem 1.25rem; margin-top: 1rem; font-size: .9rem;
+  }
+  .result-box h4 { color: var(--primary); margin-bottom: .5rem; font-size: .95rem; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 1rem; margin: .75rem 0;
+    font-size: .82rem;
+  }
+  .legend-item { display: flex; align-items: center; gap: .3rem; }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+  }
+
+  .hint {
+    background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px;
+    padding: .6rem .9rem; font-size: .82rem; color: #92400e; margin-top: .75rem;
+  }
+  .hint::before { content: "💡 提示："; font-weight: 600; }
+
+  .energy-bars {
+    display: flex; gap: .5rem; align-items: flex-end;
+    height: 120px; margin: 1rem 0; padding: .5rem;
+    background: #f8fafc; border-radius: var(--radius); border: 1px solid var(--border);
+  }
+  .energy-bar-group {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    height: 100%; justify-content: flex-end;
+  }
+  .energy-bar {
+    width: 40px; border-radius: 4px 4px 0 0; transition: height .3s ease;
+    min-height: 2px;
+  }
+  .energy-bar-label { font-size: .72rem; font-weight: 600; margin-top: .25rem; }
+  .energy-bar-value { font-size: .72rem; color: var(--text-light); }
+
+  .slider-row {
+    display: flex; align-items: center; gap: .75rem; margin: .5rem 0;
+  }
+  .slider-row label { font-size: .85rem; font-weight: 600; min-width: 80px; }
+  .slider-row input[type="range"] { flex: 1; }
+  .slider-row .value-display { min-width: 60px; }
+
+  .toggle-row {
+    display: flex; align-items: center; gap: .5rem; margin: .5rem 0;
+  }
+  .toggle {
+    position: relative; width: 44px; height: 24px;
+    background: #cbd5e1; border-radius: 12px; cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle.active { background: var(--primary); }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; background: #fff; border-radius: 50%;
+    transition: transform .2s;
+  }
+  .toggle.active::after { transform: translateX(20px); }
+
+  .comparison-table {
+    width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: 1rem;
+  }
+  .comparison-table th {
+    background: var(--primary); color: #fff; padding: .6rem; text-align: left;
+  }
+  .comparison-table td {
+    padding: .5rem .6rem; border-bottom: 1px solid var(--border);
+  }
+  .comparison-table tr:hover td { background: #f0f4f8; }
+  .power-bar-container {
+    height: 20px; background: #f1f5f9; border-radius: 4px; overflow: hidden;
+  }
+  .power-bar-fill {
+    height: 100%; border-radius: 4px; transition: width .5s ease;
+  }
+
+  @media (max-width: 600px) {
+    .tab-btn { font-size: .78rem; padding: .65rem .3rem; min-width: 80px; }
+    .controls-row { flex-direction: column; }
+    .control-group input[type="range"] { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>功與能量 — 互動學習工具</h1>
+  <p>透過模擬與計算，親手探索功、動能、位能與能量守恆</p>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(0)">雲霄飛車模擬器</button>
+    <button class="tab-btn" onclick="switchTab(1)">功的計算器</button>
+    <button class="tab-btn" onclick="switchTab(2)">能量守恆驗證器</button>
+    <button class="tab-btn" onclick="switchTab(3)">功率比較器</button>
+  </div>
+
+  <!-- Tool 1: Roller Coaster Simulator -->
+  <div class="tab-content active" id="tab0">
+    <h2>雲霄飛車能量模擬器</h2>
+    <p class="subtitle">設計軌道高度，觀察小球在不同位置的動能與位能即時變化</p>
+
+    <div class="controls-row">
+      <div class="control-group">
+        <label>山丘 1 高度 (m)</label>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <input type="range" id="hill1" min="20" max="100" value="80" oninput="updateCoasterUI()">
+          <span class="value-display" id="hill1Val">80</span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>山丘 2 高度 (m)</label>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <input type="range" id="hill2" min="10" max="80" value="50" oninput="updateCoasterUI()">
+          <span class="value-display" id="hill2Val">50</span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>山丘 3 高度 (m)</label>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <input type="range" id="hill3" min="5" max="60" value="30" oninput="updateCoasterUI()">
+          <span class="value-display" id="hill3Val">30</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="startCoaster()">▶ 開始模擬</button>
+      <button class="btn btn-danger btn-sm" onclick="resetCoaster()">重置</button>
+    </div>
+
+    <canvas id="coasterCanvas" height="350"></canvas>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--ke-color)"></div>動能 (KE)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--pe-color)"></div>位能 (PE)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--total-color)"></div>總機械能 (E)</div>
+    </div>
+
+    <div id="coasterInfo" class="result-box">
+      <h4>即時數據</h4>
+      <div>位置高度：<strong id="cHeight">80.0</strong> m　｜　速度：<strong id="cSpeed">0.0</strong> m/s</div>
+      <div>動能：<strong id="cKE" style="color:var(--ke-color)">0</strong> J　｜　位能：<strong id="cPE" style="color:var(--pe-color)">0</strong> J　｜　總能：<strong id="cTotal" style="color:var(--total-color)">0</strong> J</div>
+    </div>
+    <div class="hint">調整三座山丘的高度後按「開始模擬」。觀察小球經過不同位置時，動能和位能如何互相轉換，而總機械能保持不變。</div>
+  </div>
+
+  <!-- Tool 2: Work Calculator -->
+  <div class="tab-content" id="tab1">
+    <h2>功的計算器</h2>
+    <p class="subtitle">輸入力、位移和夾角，觀察力的分量並計算功</p>
+
+    <div class="controls-row">
+      <div class="control-group">
+        <label>施力大小 F (N)</label>
+        <input type="number" id="workForce" value="100" min="0" max="1000" step="10">
+      </div>
+      <div class="control-group">
+        <label>位移大小 d (m)</label>
+        <input type="number" id="workDisp" value="5" min="0" max="100" step="1">
+      </div>
+      <div class="control-group">
+        <label>夾角 θ (度)</label>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <input type="range" id="workAngle" min="0" max="180" value="30" oninput="updateWorkUI()">
+          <span class="value-display" id="workAngleVal">30°</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="calcWork()">計算</button>
+    </div>
+
+    <canvas id="workCanvas" height="280"></canvas>
+
+    <div id="workResult" class="result-box" style="display:none;">
+      <h4>計算結果</h4>
+      <div id="workResultContent"></div>
+    </div>
+    <div class="hint">改變夾角觀察力的分量如何變化。當 θ = 90° 時功為零，當 θ > 90° 時功為負值。</div>
+  </div>
+
+  <!-- Tool 3: Energy Conservation Verifier -->
+  <div class="tab-content" id="tab2">
+    <h2>能量守恆驗證器</h2>
+    <p class="subtitle">從不同高度釋放小球，驗證動能與位能之和是否為常數</p>
+
+    <div class="controls-row">
+      <div class="control-group">
+        <label>釋放高度 (m)</label>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <input type="range" id="dropHeight" min="5" max="100" value="50" oninput="updateDropUI()">
+          <span class="value-display" id="dropHeightVal">50</span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>質量 (kg)</label>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <input type="range" id="dropMass" min="1" max="20" value="5" oninput="updateDropUI()">
+          <span class="value-display" id="dropMassVal">5</span>
+        </div>
+      </div>
+      <div class="toggle-row">
+        <label style="font-size:.85rem;font-weight:600;">摩擦力</label>
+        <div class="toggle" id="frictionToggle" onclick="toggleFriction()"></div>
+        <span style="font-size:.82rem;color:var(--text-light);" id="frictionLabel">關閉</span>
+      </div>
+      <button class="btn btn-primary" onclick="startDrop()">▶ 釋放</button>
+      <button class="btn btn-danger btn-sm" onclick="resetDrop()">重置</button>
+    </div>
+
+    <canvas id="dropCanvas" height="350"></canvas>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--ke-color)"></div>動能 (KE)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--pe-color)"></div>位能 (PE)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--total-color)"></div>總機械能 (E)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--friction-color)"></div>摩擦損耗</div>
+    </div>
+
+    <div id="dropInfo" class="result-box">
+      <h4>即時數據</h4>
+      <div>高度：<strong id="dHeight">50.0</strong> m　｜　速度：<strong id="dSpeed">0.0</strong> m/s</div>
+      <div>KE：<strong id="dKE" style="color:var(--ke-color)">0</strong> J　｜　PE：<strong id="dPE" style="color:var(--pe-color)">0</strong> J　｜　總能：<strong id="dTotal" style="color:var(--total-color)">0</strong> J</div>
+      <div id="dFrictionInfo" style="display:none;">摩擦損耗：<strong id="dFriction" style="color:var(--friction-color)">0</strong> J</div>
+    </div>
+    <div class="hint">切換「摩擦力」開關，比較有無摩擦力時的能量變化。注意在有摩擦的情況下，總機械能會逐漸減少。</div>
+  </div>
+
+  <!-- Tool 4: Power Comparator -->
+  <div class="tab-content" id="tab3">
+    <h2>功率比較器</h2>
+    <p class="subtitle">比較不同情境下的功率輸出，建立功率大小的直觀感受</p>
+
+    <h3 style="font-size:.95rem;margin-bottom:.75rem;">情境一：爬樓梯</h3>
+    <div class="controls-row">
+      <div class="control-group">
+        <label>體重 (kg)</label>
+        <input type="number" id="stairMass" value="60" min="30" max="120" step="5">
+      </div>
+      <div class="control-group">
+        <label>樓高 (m)</label>
+        <input type="number" id="stairHeight" value="10" min="3" max="50" step="1">
+      </div>
+      <div class="control-group">
+        <label>花費時間 (s)</label>
+        <input type="number" id="stairTime" value="20" min="5" max="120" step="5">
+      </div>
+    </div>
+
+    <h3 style="font-size:.95rem;margin-bottom:.75rem;margin-top:1rem;">情境二：汽車加速</h3>
+    <div class="controls-row">
+      <div class="control-group">
+        <label>車重 (kg)</label>
+        <input type="number" id="carMass" value="1500" min="800" max="3000" step="100">
+      </div>
+      <div class="control-group">
+        <label>加速到 (km/h)</label>
+        <input type="number" id="carSpeed" value="100" min="20" max="200" step="10">
+      </div>
+      <div class="control-group">
+        <label>花費時間 (s)</label>
+        <input type="number" id="carTime" value="10" min="3" max="30" step="1">
+      </div>
+    </div>
+
+    <h3 style="font-size:.95rem;margin-bottom:.75rem;margin-top:1rem;">情境三：自訂情境</h3>
+    <div class="controls-row">
+      <div class="control-group">
+        <label>名稱</label>
+        <input type="text" id="customName" value="舉重" style="width:100px;padding:.35rem .5rem;border:1px solid var(--border);border-radius:6px;font-size:.85rem;">
+      </div>
+      <div class="control-group">
+        <label>做功量 (J)</label>
+        <input type="number" id="customWork" value="2000" min="1" max="1000000" step="100">
+      </div>
+      <div class="control-group">
+        <label>花費時間 (s)</label>
+        <input type="number" id="customTime" value="3" min="1" max="600" step="1">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="calcPower()" style="margin-top:.75rem;">計算與比較</button>
+
+    <div id="powerResult" style="display:none;">
+      <table class="comparison-table" id="powerTable">
+        <thead>
+          <tr><th>情境</th><th>做功量 (J)</th><th>時間 (s)</th><th>功率 (W)</th><th>功率圖</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="result-box" style="margin-top:1rem;">
+        <h4>常見功率參考</h4>
+        <div style="font-size:.85rem;line-height:2;">
+          人體靜息代謝 ≈ 80 W　｜　騎自行車 ≈ 75 W　｜　60W 燈泡 = 60 W<br>
+          微波爐 ≈ 1,000 W　｜　小汽車引擎 ≈ 100,000 W　｜　高鐵列車 ≈ 10,000,000 W
+        </div>
+      </div>
+    </div>
+    <div class="hint">試試不同的參數組合。注意汽車加速的功率遠大於爬樓梯——引擎的功率是人體的數百倍！</div>
+  </div>
+</div>
+
+<script>
+// ===== TAB NAVIGATION =====
+function switchTab(idx) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', i===idx));
+  if (idx === 0) drawCoasterTrack();
+  if (idx === 1) { updateWorkUI(); drawWorkDiagram(); }
+  if (idx === 2) drawDropScene();
+}
+
+// ===== UTILITY =====
+const g = 9.8;
+function lerp(a,b,t){ return a+(b-a)*t; }
+
+// ===== TOOL 1: ROLLER COASTER =====
+let coasterAnim = null;
+let coasterBall = { t: 0, running: false };
+let trackPoints = [];
+
+function getHills() {
+  return [
+    parseFloat(document.getElementById('hill1').value),
+    parseFloat(document.getElementById('hill2').value),
+    parseFloat(document.getElementById('hill3').value)
+  ];
+}
+
+function updateCoasterUI() {
+  const h = getHills();
+  document.getElementById('hill1Val').textContent = h[0];
+  document.getElementById('hill2Val').textContent = h[1];
+  document.getElementById('hill3Val').textContent = h[2];
+  drawCoasterTrack();
+}
+
+function buildTrack(canvas) {
+  const w = canvas.width, ht = canvas.height;
+  const hills = getHills();
+  const maxH = 110;
+  const pad = 40;
+  const bottom = ht - pad;
+  const top = pad;
+  const scaleY = (bottom - top) / maxH;
+
+  const points = [];
+  const segments = 200;
+  const segW = (w - 2*pad) / segments;
+
+  // Track profile: start at hill1 height, dip, hill2, dip, hill3, end low
+  for (let i = 0; i <= segments; i++) {
+    const frac = i / segments;
+    let h;
+    if (frac < 0.05) {
+      h = lerp(hills[0], hills[0], frac / 0.05);
+    } else if (frac < 0.25) {
+      const t = (frac - 0.05) / 0.20;
+      h = hills[0] * (1 - Math.sin(t * Math.PI / 2)) * 0.98 + 2;
+    } else if (frac < 0.35) {
+      const t = (frac - 0.25) / 0.10;
+      const base = 5;
+      h = base + (hills[1] - base) * Math.sin(t * Math.PI / 2);
+    } else if (frac < 0.5) {
+      const t = (frac - 0.35) / 0.15;
+      h = hills[1] * (1 - Math.sin(t * Math.PI / 2)) * 0.95 + 3;
+    } else if (frac < 0.6) {
+      const t = (frac - 0.5) / 0.10;
+      const base = 3;
+      h = base + (hills[2] - base) * Math.sin(t * Math.PI / 2);
+    } else if (frac < 0.75) {
+      const t = (frac - 0.6) / 0.15;
+      h = hills[2] * (1 - Math.sin(t * Math.PI / 2)) * 0.90 + 2;
+    } else {
+      const t = (frac - 0.75) / 0.25;
+      h = lerp(5, 2, t);
+    }
+
+    points.push({
+      x: pad + i * segW,
+      y: bottom - h * scaleY,
+      h: h
+    });
+  }
+  return points;
+}
+
+function drawCoasterTrack() {
+  const canvas = document.getElementById('coasterCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.clientWidth * dpr;
+  canvas.height = 350 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  canvas.style.height = '350px';
+
+  const cw = canvas.clientWidth, ch = 350;
+  trackPoints = buildTrack({ width: cw, height: ch });
+
+  // Background
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, cw, ch);
+
+  // Ground
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fillRect(0, ch - 38, cw, 38);
+
+  // Track
+  ctx.beginPath();
+  ctx.moveTo(trackPoints[0].x, trackPoints[0].y);
+  for (let i = 1; i < trackPoints.length; i++) {
+    ctx.lineTo(trackPoints[i].x, trackPoints[i].y);
+  }
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Track supports
+  const supportInterval = 20;
+  const bottom = ch - 38;
+  for (let i = 0; i < trackPoints.length; i += supportInterval) {
+    const p = trackPoints[i];
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x, bottom);
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Draw ball at current position
+  if (coasterBall.running || coasterBall.t > 0) {
+    const idx = Math.min(Math.floor(coasterBall.t * (trackPoints.length - 1)), trackPoints.length - 1);
+    const p = trackPoints[idx];
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 8, 8, 0, Math.PI * 2);
+    ctx.fillStyle = var_ke;
+    ctx.fill();
+    ctx.strokeStyle = '#991b1b';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Energy bars on right side
+    const hills = getHills();
+    const maxE = 1 * g * hills[0]; // normalized
+    const pe = g * p.h;
+    const ke = Math.max(0, g * hills[0] - pe);
+    const barX = cw - 80;
+    const barMaxH = 100;
+    const barBottom = 160;
+
+    const peH = (pe / maxE) * barMaxH;
+    const keH = (ke / maxE) * barMaxH;
+    const totalH = ((pe + ke) / maxE) * barMaxH;
+
+    // PE bar
+    ctx.fillStyle = 'rgba(59,130,246,0.8)';
+    ctx.fillRect(barX, barBottom - peH, 18, peH);
+    // KE bar
+    ctx.fillStyle = 'rgba(239,68,68,0.8)';
+    ctx.fillRect(barX + 22, barBottom - keH, 18, keH);
+    // Total bar
+    ctx.fillStyle = 'rgba(139,92,246,0.8)';
+    ctx.fillRect(barX + 44, barBottom - totalH, 18, totalH);
+
+    // Labels
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = '#3b82f6';
+    ctx.textAlign = 'center';
+    ctx.fillText('PE', barX + 9, barBottom + 14);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillText('KE', barX + 31, barBottom + 14);
+    ctx.fillStyle = '#8b5cf6';
+    ctx.fillText('E', barX + 53, barBottom + 14);
+  } else {
+    // Ball at start
+    const p = trackPoints[0];
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 8, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#ef4444';
+    ctx.fill();
+    ctx.strokeStyle = '#991b1b';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+var var_ke = '#ef4444';
+
+function startCoaster() {
+  if (coasterAnim) cancelAnimationFrame(coasterAnim);
+  coasterBall = { t: 0, running: true };
+  const hills = getHills();
+  const mass = 1; // normalized
+  const totalE = mass * g * hills[0];
+  const startTime = performance.now();
+  const duration = 6000; // 6 seconds
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    coasterBall.t = Math.min(elapsed / duration, 1);
+
+    const idx = Math.min(Math.floor(coasterBall.t * (trackPoints.length - 1)), trackPoints.length - 1);
+    const p = trackPoints[idx];
+
+    const pe = mass * g * p.h;
+    const ke = Math.max(0, totalE - pe);
+    const v = Math.sqrt(2 * ke / mass);
+
+    document.getElementById('cHeight').textContent = p.h.toFixed(1);
+    document.getElementById('cSpeed').textContent = v.toFixed(1);
+    document.getElementById('cKE').textContent = ke.toFixed(0);
+    document.getElementById('cPE').textContent = pe.toFixed(0);
+    document.getElementById('cTotal').textContent = (ke + pe).toFixed(0);
+
+    drawCoasterTrack();
+
+    if (coasterBall.t < 1) {
+      coasterAnim = requestAnimationFrame(animate);
+    } else {
+      coasterBall.running = false;
+    }
+  }
+  coasterAnim = requestAnimationFrame(animate);
+}
+
+function resetCoaster() {
+  if (coasterAnim) cancelAnimationFrame(coasterAnim);
+  coasterBall = { t: 0, running: false };
+  document.getElementById('cHeight').textContent = getHills()[0].toFixed(1);
+  document.getElementById('cSpeed').textContent = '0.0';
+  document.getElementById('cKE').textContent = '0';
+  document.getElementById('cPE').textContent = (1 * g * getHills()[0]).toFixed(0);
+  document.getElementById('cTotal').textContent = (1 * g * getHills()[0]).toFixed(0);
+  drawCoasterTrack();
+}
+
+// ===== TOOL 2: WORK CALCULATOR =====
+function updateWorkUI() {
+  const angle = parseFloat(document.getElementById('workAngle').value);
+  document.getElementById('workAngleVal').textContent = angle + '°';
+  drawWorkDiagram();
+}
+
+function drawWorkDiagram() {
+  const canvas = document.getElementById('workCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.clientWidth * dpr;
+  canvas.height = 280 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  canvas.style.height = '280px';
+
+  const cw = canvas.clientWidth, ch = 280;
+  const angle = parseFloat(document.getElementById('workAngle').value) * Math.PI / 180;
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, cw, ch);
+
+  // Ground line
+  const groundY = ch - 60;
+  ctx.beginPath();
+  ctx.moveTo(40, groundY);
+  ctx.lineTo(cw - 40, groundY);
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Box
+  const boxX = cw * 0.35, boxY = groundY - 40;
+  const boxW = 50, boxH = 40;
+  ctx.fillStyle = '#fbbf24';
+  ctx.strokeStyle = '#d97706';
+  ctx.lineWidth = 2;
+  ctx.fillRect(boxX, boxY, boxW, boxH);
+  ctx.strokeRect(boxX, boxY, boxW, boxH);
+  ctx.fillStyle = '#92400e';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('m', boxX + boxW/2, boxY + boxH/2 + 4);
+
+  // Displacement arrow
+  const dispLen = 150;
+  const dispStartX = boxX + boxW + 10;
+  const dispEndX = dispStartX + dispLen;
+  ctx.beginPath();
+  ctx.moveTo(dispStartX, groundY - 20);
+  ctx.lineTo(dispEndX, groundY - 20);
+  ctx.strokeStyle = '#22c55e';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  // Arrowhead
+  ctx.beginPath();
+  ctx.moveTo(dispEndX, groundY - 20);
+  ctx.lineTo(dispEndX - 10, groundY - 27);
+  ctx.lineTo(dispEndX - 10, groundY - 13);
+  ctx.closePath();
+  ctx.fillStyle = '#22c55e';
+  ctx.fill();
+  ctx.fillStyle = '#16a34a';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('d (位移)', (dispStartX + dispEndX)/2, groundY - 30);
+
+  // Force arrow from box center
+  const forceLen = 120;
+  const fStartX = boxX + boxW/2;
+  const fStartY = boxY + boxH/2;
+  const fEndX = fStartX + forceLen * Math.cos(-angle);
+  const fEndY = fStartY + forceLen * Math.sin(-angle);
+
+  ctx.beginPath();
+  ctx.moveTo(fStartX, fStartY);
+  ctx.lineTo(fEndX, fEndY);
+  ctx.strokeStyle = var_ke;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  // Arrowhead
+  const aAngle = Math.atan2(fEndY - fStartY, fEndX - fStartX);
+  ctx.beginPath();
+  ctx.moveTo(fEndX, fEndY);
+  ctx.lineTo(fEndX - 12*Math.cos(aAngle-0.3), fEndY - 12*Math.sin(aAngle-0.3));
+  ctx.lineTo(fEndX - 12*Math.cos(aAngle+0.3), fEndY - 12*Math.sin(aAngle+0.3));
+  ctx.closePath();
+  ctx.fillStyle = var_ke;
+  ctx.fill();
+  ctx.fillStyle = '#dc2626';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('F (力)', fEndX + 5, fEndY - 5);
+
+  // Force component along displacement (horizontal)
+  const fCompX = fStartX + forceLen * Math.cos(-angle);
+  const compLen = forceLen * Math.cos(angle);
+  if (Math.abs(compLen) > 5) {
+    ctx.beginPath();
+    ctx.setLineDash([5, 5]);
+    ctx.moveTo(fStartX, fStartY);
+    ctx.lineTo(fStartX + compLen, fStartY);
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Dashed line from force tip to component
+    ctx.beginPath();
+    ctx.setLineDash([3, 3]);
+    ctx.moveTo(fEndX, fEndY);
+    ctx.lineTo(fStartX + compLen, fStartY);
+    ctx.strokeStyle = '#a78bfa';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#7c3aed';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('F cosθ', fStartX + compLen/2, fStartY + 18);
+  }
+
+  // Angle arc
+  const arcR = 30;
+  ctx.beginPath();
+  ctx.arc(fStartX, fStartY, arcR, -angle, 0);
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  const angleDeg = parseFloat(document.getElementById('workAngle').value);
+  ctx.fillStyle = '#d97706';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('θ=' + angleDeg + '°', fStartX + arcR + 5, fStartY - 5);
+
+  // Work sign indicator
+  let signText, signColor;
+  if (angleDeg < 90) { signText = '正功 (W > 0)'; signColor = '#22c55e'; }
+  else if (angleDeg === 90) { signText = '零功 (W = 0)'; signColor = '#f59e0b'; }
+  else { signText = '負功 (W < 0)'; signColor = '#ef4444'; }
+
+  ctx.fillStyle = signColor;
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(signText, cw/2, 30);
+}
+
+function calcWork() {
+  const F = parseFloat(document.getElementById('workForce').value) || 0;
+  const d = parseFloat(document.getElementById('workDisp').value) || 0;
+  const angleDeg = parseFloat(document.getElementById('workAngle').value);
+  const angleRad = angleDeg * Math.PI / 180;
+  const cosA = Math.cos(angleRad);
+  const W = F * d * cosA;
+  const Fcomp = F * cosA;
+
+  let signLabel;
+  if (W > 0.01) signLabel = '正功——力促進物體運動';
+  else if (W < -0.01) signLabel = '負功——力阻礙物體運動';
+  else signLabel = '零功——力不影響沿位移方向的運動';
+
+  const html = `
+    <div style="margin-bottom:.5rem;">
+      <strong>W = F × d × cos θ</strong><br>
+      W = ${F} × ${d} × cos ${angleDeg}°<br>
+      W = ${F} × ${d} × ${cosA.toFixed(4)}<br>
+      <strong style="font-size:1.1rem;color:var(--primary);">W = ${W.toFixed(2)} J</strong>
+    </div>
+    <div style="font-size:.85rem;">
+      力在位移方向的分量：F cos θ = ${F} × ${cosA.toFixed(4)} = <strong>${Fcomp.toFixed(2)} N</strong><br>
+      判定：<strong style="color:${W>0?'#22c55e':W<0?'#ef4444':'#f59e0b'}">${signLabel}</strong>
+    </div>
+  `;
+  document.getElementById('workResult').style.display = 'block';
+  document.getElementById('workResultContent').innerHTML = html;
+  drawWorkDiagram();
+}
+
+// ===== TOOL 3: ENERGY CONSERVATION =====
+let dropAnim = null;
+let dropBall = { y: 0, v: 0, running: false };
+let frictionOn = false;
+
+function updateDropUI() {
+  document.getElementById('dropHeightVal').textContent = document.getElementById('dropHeight').value;
+  document.getElementById('dropMassVal').textContent = document.getElementById('dropMass').value;
+  drawDropScene();
+}
+
+function toggleFriction() {
+  frictionOn = !frictionOn;
+  const toggle = document.getElementById('frictionToggle');
+  toggle.classList.toggle('active', frictionOn);
+  document.getElementById('frictionLabel').textContent = frictionOn ? '開啟' : '關閉';
+  document.getElementById('dFrictionInfo').style.display = frictionOn ? 'block' : 'none';
+}
+
+function drawDropScene() {
+  const canvas = document.getElementById('dropCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.clientWidth * dpr;
+  canvas.height = 350 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  canvas.style.height = '350px';
+
+  const cw = canvas.clientWidth, ch = 350;
+  const H = parseFloat(document.getElementById('dropHeight').value);
+  const m = parseFloat(document.getElementById('dropMass').value);
+  const pad = 40;
+  const groundY = ch - pad;
+  const topY = pad + 20;
+  const scaleY = (groundY - topY) / H;
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, cw, ch);
+
+  // Ground
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fillRect(0, groundY, cw, ch - groundY);
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  ctx.lineTo(cw, groundY);
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Height scale
+  const scaleX = 60;
+  ctx.beginPath();
+  ctx.moveTo(scaleX, topY);
+  ctx.lineTo(scaleX, groundY);
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  for (let i = 0; i <= 5; i++) {
+    const frac = i / 5;
+    const y = groundY - frac * (groundY - topY);
+    const hVal = (frac * H).toFixed(0);
+    ctx.beginPath();
+    ctx.moveTo(scaleX - 5, y);
+    ctx.lineTo(scaleX + 5, y);
+    ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(hVal + 'm', scaleX - 8, y + 3);
+  }
+
+  // Ball
+  const currentH = dropBall.running ? (H - dropBall.y) : H;
+  const ballScreenY = groundY - (currentH / H) * (groundY - topY);
+  const ballX = cw * 0.35;
+  const ballR = Math.max(8, Math.min(15, m * 1.5));
+
+  ctx.beginPath();
+  ctx.arc(ballX, ballScreenY - ballR, ballR, 0, Math.PI * 2);
+  const gradient = ctx.createRadialGradient(ballX - 3, ballScreenY - ballR - 3, 2, ballX, ballScreenY - ballR, ballR);
+  gradient.addColorStop(0, '#60a5fa');
+  gradient.addColorStop(1, '#2563eb');
+  ctx.fillStyle = gradient;
+  ctx.fill();
+  ctx.strokeStyle = '#1d4ed8';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Energy bars
+  const totalE = m * g * H;
+  const pe = m * g * Math.max(0, currentH);
+  const frictionLoss = frictionOn ? (dropBall.running ? totalE - (m * g * currentH + 0.5 * m * dropBall.v * dropBall.v) : 0) : 0;
+  const ke = Math.max(0, totalE - pe - Math.max(0, frictionLoss));
+
+  const barArea = cw * 0.35;
+  const barStartX = cw - barArea;
+  const barMaxH = 200;
+  const barBottom = groundY - 10;
+  const barW = 35;
+  const gap = 15;
+
+  const bars = [
+    { val: ke, max: totalE, color: 'rgba(239,68,68,0.8)', label: 'KE' },
+    { val: pe, max: totalE, color: 'rgba(59,130,246,0.8)', label: 'PE' },
+    { val: ke + pe + Math.max(0, frictionLoss), max: totalE, color: 'rgba(139,92,246,0.8)', label: '總能' },
+  ];
+  if (frictionOn) {
+    bars.push({ val: Math.max(0, frictionLoss), max: totalE, color: 'rgba(249,115,22,0.8)', label: '損耗' });
+  }
+
+  bars.forEach((bar, i) => {
+    const x = barStartX + 20 + i * (barW + gap);
+    const h = (bar.val / bar.max) * barMaxH;
+    ctx.fillStyle = bar.color;
+    ctx.fillRect(x, barBottom - h, barW, h);
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, barBottom - h, barW, h);
+    ctx.fillStyle = '#475569';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(bar.label, x + barW/2, barBottom + 16);
+    ctx.font = '10px sans-serif';
+    ctx.fillText(bar.val.toFixed(0) + 'J', x + barW/2, barBottom - h - 6);
+  });
+}
+
+function startDrop() {
+  if (dropAnim) cancelAnimationFrame(dropAnim);
+  const H = parseFloat(document.getElementById('dropHeight').value);
+  const m = parseFloat(document.getElementById('dropMass').value);
+  const totalE = m * g * H;
+  const friction = frictionOn ? 0.05 * m * g : 0; // friction force
+  dropBall = { y: 0, v: 0, running: true };
+
+  let lastTime = null;
+  function animate(now) {
+    if (!lastTime) lastTime = now;
+    const dt = Math.min((now - lastTime) / 1000, 0.05);
+    lastTime = now;
+
+    const accel = g - (frictionOn ? 0.05 * g : 0); // slight drag
+    dropBall.v += accel * dt;
+    dropBall.y += dropBall.v * dt;
+
+    const currentH = Math.max(0, H - dropBall.y);
+    const pe = m * g * currentH;
+    const ke = 0.5 * m * dropBall.v * dropBall.v;
+    const frictionLoss = Math.max(0, totalE - pe - ke);
+
+    document.getElementById('dHeight').textContent = currentH.toFixed(1);
+    document.getElementById('dSpeed').textContent = dropBall.v.toFixed(1);
+    document.getElementById('dKE').textContent = ke.toFixed(0);
+    document.getElementById('dPE').textContent = pe.toFixed(0);
+    document.getElementById('dTotal').textContent = (ke + pe).toFixed(0);
+    if (frictionOn) {
+      document.getElementById('dFriction').textContent = frictionLoss.toFixed(0);
+    }
+
+    drawDropScene();
+
+    if (dropBall.y < H) {
+      dropAnim = requestAnimationFrame(animate);
+    } else {
+      dropBall.y = H;
+      dropBall.running = false;
+      drawDropScene();
+    }
+  }
+  dropAnim = requestAnimationFrame(animate);
+}
+
+function resetDrop() {
+  if (dropAnim) cancelAnimationFrame(dropAnim);
+  const H = parseFloat(document.getElementById('dropHeight').value);
+  const m = parseFloat(document.getElementById('dropMass').value);
+  dropBall = { y: 0, v: 0, running: false };
+  document.getElementById('dHeight').textContent = H.toFixed(1);
+  document.getElementById('dSpeed').textContent = '0.0';
+  document.getElementById('dKE').textContent = '0';
+  document.getElementById('dPE').textContent = (m * g * H).toFixed(0);
+  document.getElementById('dTotal').textContent = (m * g * H).toFixed(0);
+  if (frictionOn) document.getElementById('dFriction').textContent = '0';
+  drawDropScene();
+}
+
+// ===== TOOL 4: POWER COMPARATOR =====
+function calcPower() {
+  const stairM = parseFloat(document.getElementById('stairMass').value) || 60;
+  const stairH = parseFloat(document.getElementById('stairHeight').value) || 10;
+  const stairT = parseFloat(document.getElementById('stairTime').value) || 20;
+  const stairW = stairM * g * stairH;
+  const stairP = stairW / stairT;
+
+  const carM = parseFloat(document.getElementById('carMass').value) || 1500;
+  const carV = (parseFloat(document.getElementById('carSpeed').value) || 100) / 3.6;
+  const carT = parseFloat(document.getElementById('carTime').value) || 10;
+  const carW = 0.5 * carM * carV * carV;
+  const carP = carW / carT;
+
+  const customName = document.getElementById('customName').value || '自訂';
+  const customW = parseFloat(document.getElementById('customWork').value) || 2000;
+  const customT = parseFloat(document.getElementById('customTime').value) || 3;
+  const customP = customW / customT;
+
+  const scenarios = [
+    { name: '爬樓梯', work: stairW, time: stairT, power: stairP },
+    { name: '汽車加速', work: carW, time: carT, power: carP },
+    { name: customName, work: customW, time: customT, power: customP },
+  ];
+
+  const maxP = Math.max(...scenarios.map(s => s.power));
+  const colors = ['#3b82f6', '#ef4444', '#22c55e'];
+
+  let tbody = '';
+  scenarios.forEach((s, i) => {
+    const pct = (s.power / maxP) * 100;
+    tbody += `<tr>
+      <td style="font-weight:600;">${s.name}</td>
+      <td>${s.work.toFixed(0)}</td>
+      <td>${s.time}</td>
+      <td><strong>${s.power.toFixed(1)} W</strong><br><span style="font-size:.78rem;color:#64748b;">(${(s.power/1000).toFixed(2)} kW)</span></td>
+      <td style="width:200px;">
+        <div class="power-bar-container">
+          <div class="power-bar-fill" style="width:${pct}%;background:${colors[i]};"></div>
+        </div>
+      </td>
+    </tr>`;
+  });
+
+  document.getElementById('powerTable').querySelector('tbody').innerHTML = tbody;
+  document.getElementById('powerResult').style.display = 'block';
+}
+
+// ===== INIT =====
+window.addEventListener('load', () => {
+  drawCoasterTrack();
+  updateWorkUI();
+  updateDropUI();
+});
+window.addEventListener('resize', () => {
+  const activeIdx = [...document.querySelectorAll('.tab-content')].findIndex(c => c.classList.contains('active'));
+  if (activeIdx === 0) drawCoasterTrack();
+  else if (activeIdx === 1) drawWorkDiagram();
+  else if (activeIdx === 2) drawDropScene();
+});
+</script>
+
+</body>
+</html>

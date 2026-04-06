@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>動量與衝量 — 互動工具</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2D6A9F;
+    --primary-light: #4A8EC7;
+    --primary-dark: #1B4F7A;
+    --accent: #E08A3C;
+    --accent-light: #F0A85C;
+    --accent-dark: #C06E20;
+    --bg: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --text: #1E2A3A;
+    --text-light: #4A5568;
+    --text-muted: #8899AA;
+    --border: #D8DEE6;
+    --success: #38A169;
+    --warning: #D69E2E;
+    --danger: #E53E3E;
+    --shadow-sm: 0 1px 3px rgba(30,42,58,0.08);
+    --shadow-md: 0 4px 12px rgba(30,42,58,0.1);
+    --shadow-lg: 0 8px 24px rgba(30,42,58,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6em;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.92em;
+    margin-bottom: 24px;
+  }
+
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+    background: #E8F0F8;
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.35s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    font-size: 1.15em;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+  }
+  .card .card-desc {
+    color: var(--text-muted);
+    font-size: 0.88em;
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.88em;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    margin: 4px 0 8px 0;
+    accent-color: var(--primary);
+  }
+
+  input[type="number"], select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.92em;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+  input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .control-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 500px) {
+    .control-row { grid-template-columns: 1fr; }
+  }
+
+  .val-display {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.95em;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--primary-dark); box-shadow: var(--shadow-md); }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-accent:hover { background: var(--accent-dark); box-shadow: var(--shadow-md); }
+  .btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .btn-outline:hover { background: var(--primary); color: #fff; }
+  .btn-danger {
+    background: var(--danger);
+    color: #fff;
+  }
+  .btn-danger:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: #FAFBFC;
+    margin-bottom: 12px;
+  }
+
+  .info-box {
+    background: linear-gradient(135deg, #EBF4FF 0%, #F0F4F8 100%);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    font-size: 0.88em;
+    color: var(--text);
+    border-left: 4px solid var(--primary);
+    margin-bottom: 12px;
+    line-height: 1.8;
+  }
+  .info-box strong { color: var(--primary-dark); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .result-item {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .result-item .result-label {
+    font-size: 0.78em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .result-item .result-value {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-top: 2px;
+  }
+
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    color: var(--primary);
+    font-weight: 600;
+    border-bottom: 1px dashed var(--primary);
+  }
+  .tooltip .tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.82em;
+    font-weight: 400;
+    white-space: normal;
+    z-index: 10;
+    transition: opacity 0.2s;
+    max-width: 260px;
+    text-align: left;
+  }
+  .tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .collision-type-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .collision-type-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .collision-type-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .collision-type-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.78em;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+  .status-badge.conserved { background: #C6F6D5; color: #276749; }
+  .status-badge.not-conserved { background: #FED7D7; color: #9B2C2C; }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.88em;
+  }
+  .comparison-table th {
+    background: var(--primary);
+    color: #fff;
+    padding: 8px 12px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .comparison-table td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .comparison-table tr:nth-child(even) { background: var(--bg); }
+
+  .ft-graph-area {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .newton-cradle-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .ball-count-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ball-count-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .ball-count-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .rocket-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  @media (max-width: 500px) {
+    .rocket-stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h1>動量與衝量 — 互動工具</h1>
+<p class="subtitle">透過模擬和互動操作，深入理解碰撞、衝量和動量守恆</p>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('collision')">一維碰撞模擬器</button>
+  <button class="tab-btn" onclick="switchTab('impulse')">衝量計算器</button>
+  <button class="tab-btn" onclick="switchTab('cradle')">牛頓擺模擬</button>
+  <button class="tab-btn" onclick="switchTab('rocket')">火箭推進模擬</button>
+</div>
+
+<!-- Tab 1: Collision Simulator -->
+<div id="tab-collision" class="tab-panel active">
+  <div class="card">
+    <h2>一維碰撞模擬器</h2>
+    <p class="card-desc">設定兩個球的質量和初速度，觀察碰撞前後的動量和動能變化。</p>
+
+    <div class="info-box">
+      <strong>操作說明：</strong> 選擇碰撞類型，調整兩球的質量和速度，然後點擊「開始碰撞」。動畫會顯示碰撞前後的狀態，下方的數據表會呈現動量和動能是否守恆。
+      <span class="tooltip">什麼是恢復係數？<span class="tooltip-text">恢復係數 e = 碰後分離速率 / 碰前靠近速率。e=1 為彈性碰撞，e=0 為完全非彈性碰撞。</span></span>
+    </div>
+
+    <div class="collision-type-selector">
+      <button class="collision-type-btn active" onclick="setCollisionType('elastic')">彈性碰撞 (e=1)</button>
+      <button class="collision-type-btn" onclick="setCollisionType('inelastic')">非彈性 (e=0.5)</button>
+      <button class="collision-type-btn" onclick="setCollisionType('perfect')">完全非彈性 (e=0)</button>
+    </div>
+
+    <div class="control-row">
+      <div>
+        <label style="color: #D32F2F;">球 A（紅色）</label>
+        <label>質量 (kg): <span class="val-display" id="col-ma-val">2</span></label>
+        <input type="range" id="col-ma" min="0.5" max="10" step="0.5" value="2" oninput="updateCollisionVal()">
+        <label>初速度 (m/s): <span class="val-display" id="col-va-val">5</span></label>
+        <input type="range" id="col-va" min="-10" max="10" step="0.5" value="5" oninput="updateCollisionVal()">
+      </div>
+      <div>
+        <label style="color: #1565C0;">球 B（藍色）</label>
+        <label>質量 (kg): <span class="val-display" id="col-mb-val">2</span></label>
+        <input type="range" id="col-mb" min="0.5" max="10" step="0.5" value="2" oninput="updateCollisionVal()">
+        <label>初速度 (m/s): <span class="val-display" id="col-vb-val">-3</span></label>
+        <input type="range" id="col-vb" min="-10" max="10" step="0.5" value="-3" oninput="updateCollisionVal()">
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="startCollision()">開始碰撞</button>
+      <button class="btn btn-outline" onclick="resetCollision()">重置</button>
+    </div>
+
+    <canvas id="collisionCanvas" height="200"></canvas>
+
+    <div id="collision-results" style="display:none;">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>球 A</th>
+            <th>球 B</th>
+            <th>系統總和</th>
+            <th>狀態</th>
+          </tr>
+        </thead>
+        <tbody id="collision-table-body">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 2: Impulse Calculator -->
+<div id="tab-impulse" class="tab-panel">
+  <div class="card">
+    <h2>衝量計算器</h2>
+    <p class="card-desc">比較不同的力-時間組合如何產生相同的衝量，理解「大力短時間 vs 小力長時間」的差異。</p>
+
+    <div class="info-box">
+      <strong>核心概念：</strong>衝量 J = FΔt = Δp。相同的動量變化量可以由<strong>大力×短時間</strong>或<strong>小力×長時間</strong>來實現。F-t 圖下方的面積就是衝量。
+    </div>
+
+    <h3 style="font-size:0.95em; margin-bottom:10px; color:var(--primary-dark);">情境設定</h3>
+    <div class="control-row">
+      <div>
+        <label>物體質量 (kg): <span class="val-display" id="imp-mass-val">1</span></label>
+        <input type="range" id="imp-mass" min="0.1" max="10" step="0.1" value="1" oninput="updateImpulseVal()">
+      </div>
+      <div>
+        <label>速度變化 Δv (m/s): <span class="val-display" id="imp-dv-val">10</span></label>
+        <input type="range" id="imp-dv" min="1" max="50" step="1" value="10" oninput="updateImpulseVal()">
+      </div>
+    </div>
+
+    <div id="impulse-result-summary" class="result-grid" style="margin-bottom: 16px;"></div>
+
+    <h3 style="font-size:0.95em; margin-bottom:10px; color:var(--primary-dark);">力-時間圖比較</h3>
+    <p style="font-size:0.85em; color:var(--text-muted); margin-bottom: 10px;">兩種情境產生相同的衝量（相同面積），但力和時間不同。</p>
+
+    <div class="control-row">
+      <div>
+        <label style="color:#D32F2F;">情境 A — 短時間大力</label>
+        <label>作用時間 (s): <span class="val-display" id="imp-ta-val">0.01</span></label>
+        <input type="range" id="imp-ta" min="0.005" max="1" step="0.005" value="0.01" oninput="updateImpulseVal()">
+      </div>
+      <div>
+        <label style="color:#1565C0;">情境 B — 長時間小力</label>
+        <label>作用時間 (s): <span class="val-display" id="imp-tb-val">0.2</span></label>
+        <input type="range" id="imp-tb" min="0.01" max="2" step="0.01" value="0.2" oninput="updateImpulseVal()">
+      </div>
+    </div>
+
+    <canvas id="impulseCanvas" height="260"></canvas>
+
+    <div id="impulse-comparison" class="result-grid"></div>
+
+    <div class="info-box" style="margin-top:12px;">
+      <strong>生活應用：</strong>安全氣囊將碰撞時間從 ~0.01 秒延長到 ~0.2 秒，力降低約 20 倍。同樣的原理：跳遠屈膝落地、棒球接球時手往後收、包裹裡的泡棉緩衝。
+    </div>
+  </div>
+</div>
+
+<!-- Tab 3: Newton's Cradle -->
+<div id="tab-cradle" class="tab-panel">
+  <div class="card">
+    <h2>牛頓擺模擬</h2>
+    <p class="card-desc">選擇釋放的球數，觀察等質量彈性碰撞中動量和動能如何同時守恆。</p>
+
+    <div class="info-box">
+      <strong>為什麼拉起 2 顆球，另一端也會飛出 2 顆？</strong>因為動量和動能必須<strong>同時</strong>守恆。如果只飛出 1 顆球以 2 倍速度，動量守恆但動能會是原來的 2 倍——不守恆！唯一的解就是數量匹配。
+    </div>
+
+    <div class="newton-cradle-controls">
+      <span style="font-size:0.9em; font-weight:600; color:var(--text-light);">釋放球數：</span>
+      <button class="ball-count-btn active" onclick="setCradleBalls(1)">1</button>
+      <button class="ball-count-btn" onclick="setCradleBalls(2)">2</button>
+      <button class="ball-count-btn" onclick="setCradleBalls(3)">3</button>
+    </div>
+
+    <div class="btn-group" style="margin-top:0; margin-bottom:16px;">
+      <button class="btn btn-accent" onclick="startCradle()">釋放！</button>
+      <button class="btn btn-outline" onclick="resetCradle()">重置</button>
+    </div>
+
+    <canvas id="cradleCanvas" height="320"></canvas>
+
+    <div id="cradle-data" class="result-grid"></div>
+  </div>
+</div>
+
+<!-- Tab 4: Rocket Propulsion -->
+<div id="tab-rocket" class="tab-panel">
+  <div class="card">
+    <h2>火箭推進模擬</h2>
+    <p class="card-desc">觀察火箭如何靠動量守恆（反衝效應）在太空中前進。調整排氣速度和質量比，看看火箭能達到多快。</p>
+
+    <div class="info-box">
+      <strong>齊奧爾科夫斯基火箭方程式：</strong>Δv = v_e × ln(m_i / m_f)。排氣速度越高、質量比越大，火箭最終速度越大。點擊「點火」觀看動畫！
+    </div>
+
+    <div class="control-row">
+      <div>
+        <label>初始質量 m_i (kg): <span class="val-display" id="rkt-mi-val">10000</span></label>
+        <input type="range" id="rkt-mi" min="1000" max="50000" step="500" value="10000" oninput="updateRocketVal()">
+        <label>排氣速度 v_e (m/s): <span class="val-display" id="rkt-ve-val">3000</span></label>
+        <input type="range" id="rkt-ve" min="500" max="10000" step="100" value="3000" oninput="updateRocketVal()">
+      </div>
+      <div>
+        <label>燃料佔比 (%): <span class="val-display" id="rkt-fuel-val">70</span></label>
+        <input type="range" id="rkt-fuel" min="10" max="95" step="1" value="70" oninput="updateRocketVal()">
+        <label>最終質量 m_f: <span class="val-display" id="rkt-mf-val">3000</span> kg</label>
+      </div>
+    </div>
+
+    <div class="btn-group" style="margin-bottom:16px;">
+      <button class="btn btn-danger" onclick="startRocket()">點火！</button>
+      <button class="btn btn-outline" onclick="resetRocket()">重置</button>
+    </div>
+
+    <canvas id="rocketCanvas" height="280"></canvas>
+
+    <div id="rocket-results" class="rocket-stats"></div>
+
+    <div class="info-box" style="margin-top:12px;">
+      <strong>想一想：</strong>為什麼大型火箭通常採用多級設計？因為火箭方程式中 Δv 與 ln(m_i/m_f) 成正比——每多載一點燃料的效益是遞減的。把已用完的空殼拋棄，等於重新「啟動」一枚質量比更大的小火箭，效率更高！
+    </div>
+  </div>
+</div>
+
+<script>
+/* =============================================================
+   Tab Navigation
+   ============================================================= */
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const tabs = ['collision','impulse','cradle','rocket'];
+  const idx = tabs.indexOf(id);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+}
+
+/* =============================================================
+   Tool 1: Collision Simulator
+   ============================================================= */
+let collisionType = 'elastic';
+let collisionAnim = null;
+let collisionState = 'ready'; // ready, running, done
+
+function setCollisionType(type) {
+  collisionType = type;
+  document.querySelectorAll('.collision-type-btn').forEach(b => b.classList.remove('active'));
+  const labels = {'elastic': 0, 'inelastic': 1, 'perfect': 2};
+  document.querySelectorAll('.collision-type-btn')[labels[type]].classList.add('active');
+  resetCollision();
+}
+
+function updateCollisionVal() {
+  document.getElementById('col-ma-val').textContent = document.getElementById('col-ma').value;
+  document.getElementById('col-va-val').textContent = document.getElementById('col-va').value;
+  document.getElementById('col-mb-val').textContent = document.getElementById('col-mb').value;
+  document.getElementById('col-vb-val').textContent = document.getElementById('col-vb').value;
+}
+
+function computeCollision(ma, va, mb, vb, type) {
+  let vaf, vbf;
+  if (type === 'elastic') {
+    vaf = ((ma - mb) * va + 2 * mb * vb) / (ma + mb);
+    vbf = ((mb - ma) * vb + 2 * ma * va) / (ma + mb);
+  } else if (type === 'perfect') {
+    vaf = vbf = (ma * va + mb * vb) / (ma + mb);
+  } else {
+    const e = 0.5;
+    vaf = (ma * va + mb * vb + mb * e * (vb - va)) / (ma + mb);
+    vbf = (ma * va + mb * vb + ma * e * (va - vb)) / (ma + mb);
+  }
+  return { vaf, vbf };
+}
+
+function resetCollision() {
+  if (collisionAnim) cancelAnimationFrame(collisionAnim);
+  collisionState = 'ready';
+  document.getElementById('collision-results').style.display = 'none';
+  drawCollisionScene(null);
+}
+
+function drawCollisionScene(state) {
+  const canvas = document.getElementById('collisionCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth * 2;
+  const H = canvas.height = 400;
+  ctx.scale(1, 1);
+  ctx.clearRect(0, 0, W, H);
+
+  const ma = parseFloat(document.getElementById('col-ma').value);
+  const mb = parseFloat(document.getElementById('col-mb').value);
+  const rA = Math.max(15, Math.min(40, 10 + ma * 4));
+  const rB = Math.max(15, Math.min(40, 10 + mb * 4));
+  const cy = H / 2;
+  const trackY = cy + 50;
+
+  // Track
+  ctx.strokeStyle = '#D8DEE6';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(40, trackY);
+  ctx.lineTo(W - 40, trackY);
+  ctx.stroke();
+
+  // Center line
+  ctx.setLineDash([6, 6]);
+  ctx.strokeStyle = '#C0C8D4';
+  ctx.beginPath();
+  ctx.moveTo(W / 2, 20);
+  ctx.lineTo(W / 2, H - 20);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  let xA, xB;
+  if (!state) {
+    xA = W * 0.25;
+    xB = W * 0.75;
+  } else {
+    xA = state.xA;
+    xB = state.xB;
+  }
+
+  // Ball A
+  ctx.beginPath();
+  ctx.arc(xA, cy, rA, 0, Math.PI * 2);
+  ctx.fillStyle = '#EF5350';
+  ctx.fill();
+  ctx.strokeStyle = '#C62828';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold ' + Math.max(12, rA * 0.6) + 'px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('A', xA, cy);
+
+  // Ball B
+  ctx.beginPath();
+  ctx.arc(xB, cy, rB, 0, Math.PI * 2);
+  ctx.fillStyle = '#42A5F5';
+  ctx.fill();
+  ctx.strokeStyle = '#1565C0';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold ' + Math.max(12, rB * 0.6) + 'px sans-serif';
+  ctx.fillText('B', xB, cy);
+
+  // Velocity arrows
+  if (state) {
+    drawArrow(ctx, xA, cy - rA - 15, state.vA * 12, '#C62828');
+    drawArrow(ctx, xB, cy - rB - 15, state.vB * 12, '#1565C0');
+  } else {
+    const va = parseFloat(document.getElementById('col-va').value);
+    const vb = parseFloat(document.getElementById('col-vb').value);
+    drawArrow(ctx, xA, cy - rA - 15, va * 12, '#C62828');
+    drawArrow(ctx, xB, cy - rB - 15, vb * 12, '#1565C0');
+  }
+}
+
+function drawArrow(ctx, x, y, len, color) {
+  if (Math.abs(len) < 2) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + len, y);
+  ctx.stroke();
+  // Arrowhead
+  const dir = len > 0 ? 1 : -1;
+  ctx.beginPath();
+  ctx.moveTo(x + len, y);
+  ctx.lineTo(x + len - dir * 10, y - 5);
+  ctx.lineTo(x + len - dir * 10, y + 5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function startCollision() {
+  if (collisionState === 'running') return;
+  if (collisionAnim) cancelAnimationFrame(collisionAnim);
+
+  const ma = parseFloat(document.getElementById('col-ma').value);
+  const va = parseFloat(document.getElementById('col-va').value);
+  const mb = parseFloat(document.getElementById('col-mb').value);
+  const vb = parseFloat(document.getElementById('col-vb').value);
+
+  if (va <= vb) {
+    alert('球 A 的速度必須大於球 B 的速度才能碰撞（球 A 必須追上球 B）。');
+    return;
+  }
+
+  const { vaf, vbf } = computeCollision(ma, va, mb, vb, collisionType);
+
+  const canvas = document.getElementById('collisionCanvas');
+  const W = canvas.offsetWidth * 2;
+  const rA = Math.max(15, Math.min(40, 10 + ma * 4));
+  const rB = Math.max(15, Math.min(40, 10 + mb * 4));
+
+  let xA = W * 0.25;
+  let xB = W * 0.75;
+  let phase = 'approach'; // approach, separate
+  let curVA = va;
+  let curVB = vb;
+  collisionState = 'running';
+
+  const speed = 2.5;
+
+  function animate() {
+    if (phase === 'approach') {
+      xA += curVA * speed;
+      xB += curVB * speed;
+      if (xA + rA >= xB - rB) {
+        xA = xB - rB - rA;
+        phase = 'separate';
+        curVA = vaf;
+        curVB = vbf;
+      }
+    } else {
+      xA += curVA * speed;
+      xB += curVB * speed;
+      if (xA < -100 || xA > W + 100 || xB < -100 || xB > W + 100) {
+        if (Math.abs(curVA) < 0.01 && Math.abs(curVB) < 0.01) {
+          // both stopped
+        }
+        // Check if both are in-bounds or timeout
+        const steps = Math.abs(xB - xA);
+        if (steps > W * 1.5) {
+          collisionState = 'done';
+          showCollisionResults(ma, va, mb, vb, vaf, vbf);
+          return;
+        }
+      }
+    }
+
+    drawCollisionScene({ xA, xB, vA: curVA, vB: curVB });
+
+    // End condition: enough frames after collision
+    if (phase === 'separate') {
+      const dist = Math.abs(xB - xA);
+      if (dist > W * 0.5 || (Math.abs(curVA) < 0.01 && Math.abs(curVB) < 0.01 && collisionType === 'perfect')) {
+        collisionState = 'done';
+        showCollisionResults(ma, va, mb, vb, vaf, vbf);
+        drawCollisionScene({ xA, xB, vA: curVA, vB: curVB });
+        return;
+      }
+    }
+
+    collisionAnim = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function showCollisionResults(ma, va, mb, vb, vaf, vbf) {
+  const pAi = ma * va, pBi = mb * vb;
+  const pAf = ma * vaf, pBf = mb * vbf;
+  const kAi = 0.5 * ma * va * va, kBi = 0.5 * mb * vb * vb;
+  const kAf = 0.5 * ma * vaf * vaf, kBf = 0.5 * mb * vbf * vbf;
+
+  const pTotal_i = pAi + pBi;
+  const pTotal_f = pAf + pBf;
+  const kTotal_i = kAi + kBi;
+  const kTotal_f = kAf + kBf;
+
+  const pConserved = Math.abs(pTotal_i - pTotal_f) < 0.01;
+  const kConserved = Math.abs(kTotal_i - kTotal_f) < 0.01;
+
+  const r = (n) => Math.round(n * 100) / 100;
+
+  const html = `
+    <tr>
+      <td><strong>碰前動量 (kg·m/s)</strong></td>
+      <td>${r(pAi)}</td><td>${r(pBi)}</td><td>${r(pTotal_i)}</td>
+      <td rowspan="2"><span class="status-badge conserved">守恆 ✓</span></td>
+    </tr>
+    <tr>
+      <td><strong>碰後動量 (kg·m/s)</strong></td>
+      <td>${r(pAf)}</td><td>${r(pBf)}</td><td>${r(pTotal_f)}</td>
+    </tr>
+    <tr>
+      <td><strong>碰前動能 (J)</strong></td>
+      <td>${r(kAi)}</td><td>${r(kBi)}</td><td>${r(kTotal_i)}</td>
+      <td rowspan="2"><span class="status-badge ${kConserved ? 'conserved' : 'not-conserved'}">${kConserved ? '守恆 ✓' : '不守恆 ✗'}</span></td>
+    </tr>
+    <tr>
+      <td><strong>碰後動能 (J)</strong></td>
+      <td>${r(kAf)}</td><td>${r(kBf)}</td><td>${r(kTotal_f)}</td>
+    </tr>
+    <tr>
+      <td><strong>碰後速度 (m/s)</strong></td>
+      <td>${r(vaf)}</td><td>${r(vbf)}</td>
+      <td colspan="2">動能損失: ${r(kTotal_i - kTotal_f)} J (${r((1 - kTotal_f / kTotal_i) * 100)}%)</td>
+    </tr>
+  `;
+
+  document.getElementById('collision-table-body').innerHTML = html;
+  document.getElementById('collision-results').style.display = 'block';
+}
+
+/* =============================================================
+   Tool 2: Impulse Calculator
+   ============================================================= */
+function updateImpulseVal() {
+  const mass = parseFloat(document.getElementById('imp-mass').value);
+  const dv = parseFloat(document.getElementById('imp-dv').value);
+  const tA = parseFloat(document.getElementById('imp-ta').value);
+  const tB = parseFloat(document.getElementById('imp-tb').value);
+
+  document.getElementById('imp-mass-val').textContent = mass;
+  document.getElementById('imp-dv-val').textContent = dv;
+  document.getElementById('imp-ta-val').textContent = tA;
+  document.getElementById('imp-tb-val').textContent = tB;
+
+  const impulse = mass * dv;
+  const fA = impulse / tA;
+  const fB = impulse / tB;
+
+  document.getElementById('impulse-result-summary').innerHTML = `
+    <div class="result-item">
+      <div class="result-label">動量變化 Δp</div>
+      <div class="result-value">${(impulse).toFixed(1)} kg·m/s</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">衝量 J = Δp</div>
+      <div class="result-value">${(impulse).toFixed(1)} N·s</div>
+    </div>
+  `;
+
+  document.getElementById('impulse-comparison').innerHTML = `
+    <div class="result-item" style="border-left: 3px solid #D32F2F;">
+      <div class="result-label">情境 A 力</div>
+      <div class="result-value" style="color:#D32F2F;">${fA.toFixed(0)} N</div>
+    </div>
+    <div class="result-item" style="border-left: 3px solid #D32F2F;">
+      <div class="result-label">情境 A 時間</div>
+      <div class="result-value">${tA} s</div>
+    </div>
+    <div class="result-item" style="border-left: 3px solid #1565C0;">
+      <div class="result-label">情境 B 力</div>
+      <div class="result-value" style="color:#1565C0;">${fB.toFixed(0)} N</div>
+    </div>
+    <div class="result-item" style="border-left: 3px solid #1565C0;">
+      <div class="result-label">情境 B 時間</div>
+      <div class="result-value">${tB} s</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">力的比值 F_A / F_B</div>
+      <div class="result-value">${(fA / fB).toFixed(1)}x</div>
+    </div>
+  `;
+
+  drawImpulseGraph(tA, fA, tB, fB, impulse);
+}
+
+function drawImpulseGraph(tA, fA, tB, fB, impulse) {
+  const canvas = document.getElementById('impulseCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth * 2;
+  const H = canvas.height = 520;
+  ctx.clearRect(0, 0, W, H);
+
+  const pad = { left: 80, right: 40, top: 40, bottom: 60 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  const maxT = Math.max(tA, tB) * 1.3;
+  const maxF = Math.max(fA, fB) * 1.2;
+
+  // Axes
+  ctx.strokeStyle = '#4A5568';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top);
+  ctx.lineTo(pad.left, pad.top + plotH);
+  ctx.lineTo(pad.left + plotW, pad.top + plotH);
+  ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = '#4A5568';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('時間 (s)', pad.left + plotW / 2, H - 10);
+  ctx.save();
+  ctx.translate(20, pad.top + plotH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('力 (N)', 0, 0);
+  ctx.restore();
+
+  // Grid lines
+  ctx.strokeStyle = '#E2E8F0';
+  ctx.lineWidth = 1;
+  for (let i = 1; i <= 4; i++) {
+    const y = pad.top + plotH * (1 - i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(pad.left + plotW, y);
+    ctx.stroke();
+    ctx.fillStyle = '#8899AA';
+    ctx.font = '18px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText((maxF * i / 4).toFixed(0), pad.left - 10, y + 5);
+  }
+  for (let i = 1; i <= 5; i++) {
+    const x = pad.left + plotW * i / 5;
+    ctx.beginPath();
+    ctx.moveTo(x, pad.top);
+    ctx.lineTo(x, pad.top + plotH);
+    ctx.stroke();
+    ctx.fillStyle = '#8899AA';
+    ctx.textAlign = 'center';
+    ctx.fillText((maxT * i / 5).toFixed(2), x, pad.top + plotH + 25);
+  }
+
+  function tToX(t) { return pad.left + (t / maxT) * plotW; }
+  function fToY(f) { return pad.top + plotH - (f / maxF) * plotH; }
+
+  // Scenario A - filled area
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = '#EF5350';
+  ctx.beginPath();
+  ctx.moveTo(tToX(0), fToY(0));
+  ctx.lineTo(tToX(0), fToY(fA));
+  ctx.lineTo(tToX(tA), fToY(fA));
+  ctx.lineTo(tToX(tA), fToY(0));
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.strokeStyle = '#D32F2F';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(tToX(0), fToY(0));
+  ctx.lineTo(tToX(0), fToY(fA));
+  ctx.lineTo(tToX(tA), fToY(fA));
+  ctx.lineTo(tToX(tA), fToY(0));
+  ctx.stroke();
+
+  // Scenario B - filled area
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = '#42A5F5';
+  ctx.beginPath();
+  ctx.moveTo(tToX(0), fToY(0));
+  ctx.lineTo(tToX(0), fToY(fB));
+  ctx.lineTo(tToX(tB), fToY(fB));
+  ctx.lineTo(tToX(tB), fToY(0));
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.strokeStyle = '#1565C0';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(tToX(0), fToY(0));
+  ctx.lineTo(tToX(0), fToY(fB));
+  ctx.lineTo(tToX(tB), fToY(fB));
+  ctx.lineTo(tToX(tB), fToY(0));
+  ctx.stroke();
+
+  // Labels
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#D32F2F';
+  ctx.textAlign = 'left';
+  ctx.fillText('A: ' + fA.toFixed(0) + ' N × ' + tA + ' s', tToX(tA) + 10, fToY(fA) + 5);
+  ctx.fillStyle = '#1565C0';
+  ctx.fillText('B: ' + fB.toFixed(0) + ' N × ' + tB + ' s', tToX(tB) + 10, fToY(fB) + 5);
+
+  // Same area label
+  ctx.fillStyle = '#4A5568';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('兩者面積相同 = ' + impulse.toFixed(1) + ' N·s', pad.left + plotW / 2, pad.top + 20);
+}
+
+/* =============================================================
+   Tool 3: Newton's Cradle
+   ============================================================= */
+let cradleBalls = 1;
+let cradleAnim = null;
+let cradlePhase = 'ready';
+
+function setCradleBalls(n) {
+  cradleBalls = n;
+  document.querySelectorAll('.ball-count-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === n - 1);
+  });
+  resetCradle();
+}
+
+function resetCradle() {
+  if (cradleAnim) cancelAnimationFrame(cradleAnim);
+  cradlePhase = 'ready';
+  drawCradle(null);
+  document.getElementById('cradle-data').innerHTML = '';
+}
+
+function drawCradle(state) {
+  const canvas = document.getElementById('cradleCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth * 2;
+  const H = canvas.height = 640;
+  ctx.clearRect(0, 0, W, H);
+
+  const numBalls = 5;
+  const ballR = 28;
+  const stringLen = 200;
+  const pivotY = 60;
+  const spacing = ballR * 2 + 4;
+  const centerX = W / 2;
+  const startX = centerX - (numBalls - 1) * spacing / 2;
+
+  // Frame
+  ctx.strokeStyle = '#6B7280';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(startX - 60, pivotY - 20);
+  ctx.lineTo(startX + (numBalls - 1) * spacing + 60, pivotY - 20);
+  ctx.stroke();
+  // Frame legs
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(startX - 50, pivotY - 20);
+  ctx.lineTo(startX - 70, pivotY + stringLen + ballR + 60);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(startX + (numBalls - 1) * spacing + 50, pivotY - 20);
+  ctx.lineTo(startX + (numBalls - 1) * spacing + 70, pivotY + stringLen + ballR + 60);
+  ctx.stroke();
+
+  // Calculate ball positions
+  let angles = [0, 0, 0, 0, 0]; // angle from vertical for each ball
+  if (state) {
+    angles = state.angles.slice();
+  }
+
+  for (let i = 0; i < numBalls; i++) {
+    const pivotX = startX + i * spacing;
+    const angle = angles[i];
+    const bx = pivotX + Math.sin(angle) * stringLen;
+    const by = pivotY + Math.cos(angle) * stringLen;
+
+    // String
+    ctx.strokeStyle = '#9CA3AF';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pivotX, pivotY);
+    ctx.lineTo(bx, by);
+    ctx.stroke();
+
+    // Ball
+    const gradient = ctx.createRadialGradient(bx - 6, by - 6, 2, bx, by, ballR);
+    gradient.addColorStop(0, '#E5E7EB');
+    gradient.addColorStop(0.5, '#9CA3AF');
+    gradient.addColorStop(1, '#4B5563');
+    ctx.beginPath();
+    ctx.arc(bx, by, ballR, 0, Math.PI * 2);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Info text
+  if (cradlePhase === 'ready') {
+    ctx.fillStyle = '#8899AA';
+    ctx.font = '22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('點擊「釋放！」開始模擬', centerX, H - 30);
+  }
+}
+
+function startCradle() {
+  if (cradlePhase === 'running') return;
+  if (cradleAnim) cancelAnimationFrame(cradleAnim);
+  cradlePhase = 'running';
+
+  const n = cradleBalls;
+  const maxAngle = 0.55; // radians (~31 deg)
+  const g = 9.8;
+  const L = 200; // string length in pixels = conceptual length
+  const omega = Math.sqrt(g / (L / 100)); // angular frequency
+
+  let t = 0;
+  let phase = 'left-swing'; // left-swing, right-swing
+  let swingCount = 0;
+  const maxSwings = 12;
+
+  function animate() {
+    t += 0.035;
+    let angles = [0, 0, 0, 0, 0];
+
+    // Simple pendulum motion
+    const angle = maxAngle * Math.cos(omega * t);
+
+    if (phase === 'left-swing') {
+      // Left n balls are swinging
+      if (angle <= 0 && t > 0.1) {
+        // Transition: left balls hit, right balls swing out
+        phase = 'right-swing';
+        t = 0;
+        swingCount++;
+      } else {
+        for (let i = 0; i < n; i++) {
+          angles[i] = -Math.abs(angle); // swing left (negative angle)
+        }
+      }
+    }
+
+    if (phase === 'right-swing') {
+      const angle2 = maxAngle * Math.cos(omega * t);
+      if (angle2 <= 0 && t > 0.1) {
+        phase = 'left-swing';
+        t = 0;
+        swingCount++;
+      } else {
+        for (let i = 5 - n; i < 5; i++) {
+          angles[i] = Math.abs(angle2); // swing right (positive angle)
+        }
+      }
+    }
+
+    drawCradle({ angles });
+
+    if (swingCount < maxSwings) {
+      cradleAnim = requestAnimationFrame(animate);
+    } else {
+      cradlePhase = 'done';
+    }
+  }
+
+  // Show data
+  const v0 = 2.0; // conceptual initial speed
+  const p0 = n * 1 * v0; // n balls, each mass=1, speed=v0
+  const ke0 = n * 0.5 * 1 * v0 * v0;
+  document.getElementById('cradle-data').innerHTML = `
+    <div class="result-item">
+      <div class="result-label">釋放球數</div>
+      <div class="result-value">${n}</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">飛出球數</div>
+      <div class="result-value">${n}</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">碰前總動量</div>
+      <div class="result-value">${p0.toFixed(1)} kg·m/s</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">碰後總動量</div>
+      <div class="result-value">${p0.toFixed(1)} kg·m/s</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">碰前動能</div>
+      <div class="result-value">${ke0.toFixed(1)} J</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">碰後動能</div>
+      <div class="result-value">${ke0.toFixed(1)} J</div>
+    </div>
+  `;
+
+  animate();
+}
+
+/* =============================================================
+   Tool 4: Rocket Propulsion Simulator
+   ============================================================= */
+let rocketAnim = null;
+let rocketPhase = 'ready';
+
+function updateRocketVal() {
+  const mi = parseFloat(document.getElementById('rkt-mi').value);
+  const ve = parseFloat(document.getElementById('rkt-ve').value);
+  const fuelPct = parseFloat(document.getElementById('rkt-fuel').value);
+  const mf = mi * (1 - fuelPct / 100);
+
+  document.getElementById('rkt-mi-val').textContent = mi;
+  document.getElementById('rkt-ve-val').textContent = ve;
+  document.getElementById('rkt-fuel-val').textContent = fuelPct;
+  document.getElementById('rkt-mf-val').textContent = Math.round(mf);
+}
+
+function resetRocket() {
+  if (rocketAnim) cancelAnimationFrame(rocketAnim);
+  rocketPhase = 'ready';
+  drawRocketScene(null);
+  document.getElementById('rocket-results').innerHTML = '';
+}
+
+function drawRocketScene(state) {
+  const canvas = document.getElementById('rocketCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth * 2;
+  const H = canvas.height = 560;
+  ctx.clearRect(0, 0, W, H);
+
+  // Stars background
+  ctx.fillStyle = '#0D1B2A';
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  const seed = 42;
+  for (let i = 0; i < 80; i++) {
+    const sx = ((seed * (i + 1) * 17) % W);
+    const sy = ((seed * (i + 1) * 31) % H);
+    const sr = 0.5 + (i % 3) * 0.5;
+    ctx.beginPath();
+    ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${0.3 + (i % 5) * 0.15})`;
+    ctx.fill();
+  }
+
+  let rocketX = W / 2;
+  let rocketY = H * 0.6;
+  let fuelRatio = 1;
+  let showFlame = false;
+  let particles = [];
+
+  if (state) {
+    rocketX = state.x;
+    rocketY = state.y;
+    fuelRatio = state.fuelRatio;
+    showFlame = state.showFlame;
+    particles = state.particles || [];
+  }
+
+  // Exhaust particles
+  for (const p of particles) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${p.c}, ${p.a})`;
+    ctx.fill();
+  }
+
+  // Rocket body
+  const rw = 36;
+  const rh = 80;
+  const rx = rocketX - rw / 2;
+  const ry = rocketY - rh / 2;
+
+  // Nose cone
+  ctx.beginPath();
+  ctx.moveTo(rocketX, ry - 30);
+  ctx.lineTo(rx + rw, ry);
+  ctx.lineTo(rx, ry);
+  ctx.closePath();
+  ctx.fillStyle = '#EF5350';
+  ctx.fill();
+
+  // Body
+  ctx.fillStyle = '#E0E0E0';
+  ctx.fillRect(rx, ry, rw, rh);
+
+  // Fuel indicator
+  const fuelH = rh * 0.6 * fuelRatio;
+  ctx.fillStyle = '#FF8A65';
+  ctx.fillRect(rx + 4, ry + rh - 4 - fuelH, rw - 8, fuelH);
+
+  // Fins
+  ctx.fillStyle = '#1565C0';
+  ctx.beginPath();
+  ctx.moveTo(rx, ry + rh);
+  ctx.lineTo(rx - 14, ry + rh + 20);
+  ctx.lineTo(rx + 8, ry + rh);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(rx + rw, ry + rh);
+  ctx.lineTo(rx + rw + 14, ry + rh + 20);
+  ctx.lineTo(rx + rw - 8, ry + rh);
+  ctx.closePath();
+  ctx.fill();
+
+  // Flame
+  if (showFlame) {
+    const flameH = 20 + Math.random() * 30;
+    const gradient = ctx.createLinearGradient(rocketX, ry + rh, rocketX, ry + rh + flameH);
+    gradient.addColorStop(0, '#FFD54F');
+    gradient.addColorStop(0.4, '#FF8A65');
+    gradient.addColorStop(1, 'rgba(255,87,34,0)');
+    ctx.beginPath();
+    ctx.moveTo(rx + 6, ry + rh);
+    ctx.quadraticCurveTo(rocketX, ry + rh + flameH, rx + rw - 6, ry + rh);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+  }
+
+  // Speed display
+  if (state && state.speed !== undefined) {
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('速度: ' + state.speed.toFixed(0) + ' m/s', 30, 40);
+    ctx.fillText('質量: ' + state.mass.toFixed(0) + ' kg', 30, 70);
+    ctx.fillText('已噴出: ' + state.ejected.toFixed(0) + ' kg', 30, 100);
+  }
+
+  if (rocketPhase === 'ready') {
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('點擊「點火！」開始模擬', W / 2, H - 30);
+  }
+}
+
+function startRocket() {
+  if (rocketPhase === 'running') return;
+  if (rocketAnim) cancelAnimationFrame(rocketAnim);
+  rocketPhase = 'running';
+
+  const mi = parseFloat(document.getElementById('rkt-mi').value);
+  const ve = parseFloat(document.getElementById('rkt-ve').value);
+  const fuelPct = parseFloat(document.getElementById('rkt-fuel').value);
+  const mf = mi * (1 - fuelPct / 100);
+  const fuelMass = mi - mf;
+
+  const canvas = document.getElementById('rocketCanvas');
+  const W = canvas.offsetWidth * 2;
+  const H = 560;
+
+  let currentMass = mi;
+  let speed = 0;
+  let rocketY = H * 0.6;
+  let rocketX = W / 2;
+  let t = 0;
+  let particles = [];
+  const burnRate = fuelMass / 120; // burn over ~120 frames
+
+  function animate() {
+    t++;
+
+    if (currentMass > mf) {
+      const dm = Math.min(burnRate, currentMass - mf);
+      currentMass -= dm;
+      speed += ve * (dm / currentMass);
+      rocketY -= speed * 0.003;
+
+      // Add exhaust particles
+      for (let i = 0; i < 3; i++) {
+        particles.push({
+          x: rocketX + (Math.random() - 0.5) * 20,
+          y: rocketY + 50,
+          vx: (Math.random() - 0.5) * 3,
+          vy: 2 + Math.random() * 4,
+          r: 3 + Math.random() * 5,
+          a: 0.8,
+          c: Math.random() > 0.5 ? '255,165,0' : '255,87,34',
+          life: 40
+        });
+      }
+    } else {
+      rocketY -= speed * 0.003;
+    }
+
+    // Update particles
+    particles = particles.filter(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.a -= 0.02;
+      p.r *= 0.98;
+      p.life--;
+      return p.life > 0 && p.a > 0;
+    });
+
+    const fuelRatio = Math.max(0, (currentMass - mf) / fuelMass);
+
+    drawRocketScene({
+      x: rocketX,
+      y: Math.max(-40, rocketY),
+      fuelRatio,
+      showFlame: currentMass > mf,
+      particles,
+      speed: speed,
+      mass: currentMass,
+      ejected: mi - currentMass
+    });
+
+    if (rocketY > -100 && t < 300) {
+      rocketAnim = requestAnimationFrame(animate);
+    } else {
+      rocketPhase = 'done';
+      showRocketResults(mi, mf, ve, speed);
+    }
+  }
+
+  animate();
+}
+
+function showRocketResults(mi, mf, ve, actualSpeed) {
+  const theoreticalDv = ve * Math.log(mi / mf);
+  const massRatio = mi / mf;
+
+  document.getElementById('rocket-results').innerHTML = `
+    <div class="result-item">
+      <div class="result-label">理論 Δv（火箭方程式）</div>
+      <div class="result-value">${theoreticalDv.toFixed(0)} m/s</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">模擬最終速度</div>
+      <div class="result-value">${actualSpeed.toFixed(0)} m/s</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">質量比 m_i/m_f</div>
+      <div class="result-value">${massRatio.toFixed(2)}</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">排氣速度 v_e</div>
+      <div class="result-value">${ve} m/s</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">燃料質量</div>
+      <div class="result-value">${(mi - mf).toFixed(0)} kg</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">ln(m_i/m_f)</div>
+      <div class="result-value">${Math.log(mi / mf).toFixed(3)}</div>
+    </div>
+  `;
+}
+
+/* =============================================================
+   Initialization
+   ============================================================= */
+window.addEventListener('load', function() {
+  updateCollisionVal();
+  drawCollisionScene(null);
+  updateImpulseVal();
+  resetCradle();
+  updateRocketVal();
+  drawRocketScene(null);
+});
+
+window.addEventListener('resize', function() {
+  const activeTab = document.querySelector('.tab-panel.active');
+  if (activeTab.id === 'tab-collision') drawCollisionScene(null);
+  else if (activeTab.id === 'tab-impulse') updateImpulseVal();
+  else if (activeTab.id === 'tab-cradle') drawCradle(null);
+  else if (activeTab.id === 'tab-rocket') drawRocketScene(null);
+});
+</script>
+
+</body>
+</html>

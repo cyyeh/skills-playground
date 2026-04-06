@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>運動學 — 互動工具</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2D6A9F;
+    --primary-light: #4A8EC7;
+    --primary-dark: #1B4F7A;
+    --accent: #E08A3C;
+    --accent-light: #F0A85C;
+    --accent-dark: #C06E20;
+    --bg: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --text: #1E2A3A;
+    --text-light: #4A5568;
+    --text-muted: #8899AA;
+    --border: #D8DEE6;
+    --success: #38A169;
+    --warning: #D69E2E;
+    --danger: #E53E3E;
+    --shadow-sm: 0 1px 3px rgba(30,42,58,0.08);
+    --shadow-md: 0 4px 12px rgba(30,42,58,0.1);
+    --shadow-lg: 0 8px 24px rgba(30,42,58,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6em;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.92em;
+    margin-bottom: 24px;
+  }
+
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+    background: #E8F0F8;
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.35s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    font-size: 1.15em;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+  }
+  .card .card-desc {
+    color: var(--text-muted);
+    font-size: 0.88em;
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.88em;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    margin: 4px 0 8px 0;
+    accent-color: var(--primary);
+  }
+
+  input[type="number"], select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.92em;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+  input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .control-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 500px) {
+    .control-row { grid-template-columns: 1fr; }
+  }
+
+  .val-display {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.95em;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--primary-dark); box-shadow: var(--shadow-md); }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-accent:hover { background: var(--accent-dark); box-shadow: var(--shadow-md); }
+  .btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .btn-outline:hover { background: var(--primary); color: #fff; }
+  .btn-danger {
+    background: var(--danger);
+    color: #fff;
+  }
+  .btn-danger:hover { opacity: 0.85; }
+  .btn-group { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: #FAFBFC;
+    margin-bottom: 12px;
+  }
+
+  .info-box {
+    background: linear-gradient(135deg, #EBF4FF 0%, #F0F4F8 100%);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    font-size: 0.88em;
+    color: var(--text);
+    border-left: 4px solid var(--primary);
+    margin-bottom: 12px;
+    line-height: 1.8;
+  }
+  .info-box strong { color: var(--primary-dark); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .result-item {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .result-item .result-label {
+    font-size: 0.78em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .result-item .result-value {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-top: 2px;
+  }
+
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    color: var(--primary);
+    font-weight: 600;
+    border-bottom: 1px dashed var(--primary);
+  }
+  .tooltip .tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.82em;
+    font-weight: 400;
+    white-space: nowrap;
+    z-index: 10;
+    transition: opacity 0.2s;
+    max-width: 260px;
+    white-space: normal;
+    text-align: left;
+  }
+  .tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 600px) {
+    .calc-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .calc-field {
+    position: relative;
+  }
+  .calc-field label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .calc-field input[type="checkbox"] {
+    accent-color: var(--primary);
+  }
+  .calc-field input[type="number"] {
+    margin-top: 4px;
+  }
+  .calc-field input[type="number"]:disabled {
+    background: #EDF2F7;
+    color: var(--text-muted);
+  }
+
+  .vt-graph-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .vt-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .vt-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .vt-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .free-fall-objects {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .ff-object-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-light);
+  }
+  .ff-object-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ff-object-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>運動學 — 互動工具</h1>
+<p class="subtitle">透過模擬與計算，直觀理解運動學的核心概念</p>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('projectile')">拋體運動模擬</button>
+  <button class="tab-btn" onclick="switchTab('calculator')">等加速運動計算器</button>
+  <button class="tab-btn" onclick="switchTab('vtgraph')">速度-時間圖分析</button>
+  <button class="tab-btn" onclick="switchTab('freefall')">自由落體模擬</button>
+</div>
+
+<!-- Tab 1: Projectile Motion Simulator -->
+<div id="tab-projectile" class="tab-panel active">
+  <div class="card">
+    <h2>拋體運動模擬器</h2>
+    <p class="card-desc">調整發射角度與初速度，觀察拋體軌跡的變化。點擊「發射」開始動畫。</p>
+
+    <div class="control-row">
+      <div>
+        <label>發射角度：<span class="val-display" id="angle-val">45</span>°</label>
+        <input type="range" id="proj-angle" min="5" max="85" value="45" step="1" oninput="updateProjLabels()">
+      </div>
+      <div>
+        <label>初速度：<span class="val-display" id="vel-val">30</span> m/s</label>
+        <input type="range" id="proj-vel" min="5" max="60" value="30" step="1" oninput="updateProjLabels()">
+      </div>
+    </div>
+
+    <canvas id="proj-canvas" width="900" height="400"></canvas>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="launchProjectile()">發射</button>
+      <button class="btn btn-outline" onclick="resetProjectile()">重置</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.88em;color:var(--text-light);margin-left:8px;cursor:pointer;">
+        <input type="checkbox" id="proj-trace" checked style="accent-color:var(--primary);"> 顯示軌跡
+      </label>
+    </div>
+
+    <div class="result-grid" id="proj-results">
+      <div class="result-item"><div class="result-label">水平射程</div><div class="result-value" id="proj-range">--</div></div>
+      <div class="result-item"><div class="result-label">最高高度</div><div class="result-value" id="proj-height">--</div></div>
+      <div class="result-item"><div class="result-label">飛行時間</div><div class="result-value" id="proj-time">--</div></div>
+      <div class="result-item"><div class="result-label">目前速度</div><div class="result-value" id="proj-curvel">--</div></div>
+    </div>
+
+    <div class="info-box" style="margin-top:12px;">
+      <strong>提示：</strong>嘗試比較 <span class="tooltip">30° 和 60°<span class="tooltip-text">互補角（相加 = 90°）的射程相同，但軌跡形狀不同</span></span> 的軌跡差異。45° 時射程最遠。
+    </div>
+  </div>
+</div>
+
+<!-- Tab 2: Kinematic Calculator -->
+<div id="tab-calculator" class="tab-panel">
+  <div class="card">
+    <h2>等加速運動計算器</h2>
+    <p class="card-desc">勾選並輸入任意 3 個已知變數，系統自動計算其餘 2 個。</p>
+
+    <div class="info-box">
+      <strong>使用方式：</strong>勾選你知道的 3 個變數並輸入數值，然後點擊「計算」。系統會使用 <span class="tooltip">等加速運動公式<span class="tooltip-text">v = v₀ + at、d = v₀t + ½at²、v² = v₀² + 2ad 等五大公式</span></span> 來計算未知量。
+    </div>
+
+    <div class="calc-grid" id="calc-fields">
+      <div class="calc-field">
+        <label><input type="checkbox" id="chk-v0" onchange="updateCalcFields()"> 初速度 v₀ (m/s)</label>
+        <input type="number" id="val-v0" step="any" disabled>
+      </div>
+      <div class="calc-field">
+        <label><input type="checkbox" id="chk-v" onchange="updateCalcFields()"> 末速度 v (m/s)</label>
+        <input type="number" id="val-v" step="any" disabled>
+      </div>
+      <div class="calc-field">
+        <label><input type="checkbox" id="chk-a" onchange="updateCalcFields()"> 加速度 a (m/s²)</label>
+        <input type="number" id="val-a" step="any" disabled>
+      </div>
+      <div class="calc-field">
+        <label><input type="checkbox" id="chk-t" onchange="updateCalcFields()"> 時間 t (s)</label>
+        <input type="number" id="val-t" step="any" min="0" disabled>
+      </div>
+      <div class="calc-field">
+        <label><input type="checkbox" id="chk-d" onchange="updateCalcFields()"> 位移 d (m)</label>
+        <input type="number" id="val-d" step="any" disabled>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="calculate()">計算</button>
+      <button class="btn btn-outline" onclick="resetCalc()">清除</button>
+    </div>
+
+    <div id="calc-result" style="display:none; margin-top:16px;">
+      <div class="info-box" id="calc-result-text"></div>
+      <div class="result-grid" id="calc-result-grid"></div>
+    </div>
+
+    <div id="calc-error" style="display:none; margin-top:16px;">
+      <div class="info-box" style="border-left-color:var(--danger);">
+        <strong style="color:var(--danger);">錯誤：</strong><span id="calc-error-text"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 3: V-T Graph Analyzer -->
+<div id="tab-vtgraph" class="tab-panel">
+  <div class="card">
+    <h2>速度-時間圖分析器</h2>
+    <p class="card-desc">選擇不同的運動類型，觀察 v-t 圖形及其面積（= 位移）的變化。</p>
+
+    <div class="vt-graph-controls">
+      <button class="vt-btn active" onclick="setVtType('constant', this)">等速運動</button>
+      <button class="vt-btn" onclick="setVtType('accelerate', this)">等加速運動</button>
+      <button class="vt-btn" onclick="setVtType('decelerate', this)">等減速運動</button>
+      <button class="vt-btn" onclick="setVtType('updown', this)">先加速後減速</button>
+    </div>
+
+    <div class="control-row">
+      <div>
+        <label>初速度：<span class="val-display" id="vt-v0-val">10</span> m/s</label>
+        <input type="range" id="vt-v0" min="0" max="40" value="10" step="1" oninput="updateVtGraph()">
+      </div>
+      <div>
+        <label>加速度：<span class="val-display" id="vt-a-val">2</span> m/s²</label>
+        <input type="range" id="vt-a" min="-10" max="10" value="2" step="0.5" oninput="updateVtGraph()">
+      </div>
+    </div>
+    <div class="control-row">
+      <div>
+        <label>觀察時間：<span class="val-display" id="vt-t-val">8</span> 秒</label>
+        <input type="range" id="vt-t" min="2" max="15" value="8" step="1" oninput="updateVtGraph()">
+      </div>
+      <div></div>
+    </div>
+
+    <canvas id="vt-canvas" width="900" height="400"></canvas>
+
+    <div class="result-grid" id="vt-results">
+      <div class="result-item"><div class="result-label">末速度</div><div class="result-value" id="vt-vf">--</div></div>
+      <div class="result-item"><div class="result-label">位移 (面積)</div><div class="result-value" id="vt-disp">--</div></div>
+      <div class="result-item"><div class="result-label">平均速度</div><div class="result-value" id="vt-avg">--</div></div>
+    </div>
+
+    <div class="info-box" style="margin-top:12px;">
+      <strong>記住：</strong>v-t 圖的 <span class="tooltip">斜率 = 加速度<span class="tooltip-text">直線越陡，加速度越大；水平線表示等速運動（加速度 = 0）</span></span>，<span class="tooltip">面積 = 位移<span class="tooltip-text">圖線下方的面積就是物體移動的位移。在 x 軸下方的面積表示反向位移。</span></span>。
+    </div>
+  </div>
+</div>
+
+<!-- Tab 4: Free Fall Simulator -->
+<div id="tab-freefall" class="tab-panel">
+  <div class="card">
+    <h2>自由落體模擬</h2>
+    <p class="card-desc">從不同高度釋放物體，觀察下落過程的高度與速度變化。可比較有無空氣阻力的差異。</p>
+
+    <div class="control-row">
+      <div>
+        <label>下落高度：<span class="val-display" id="ff-h-val">50</span> m</label>
+        <input type="range" id="ff-height" min="10" max="200" value="50" step="5" oninput="updateFfLabels()">
+      </div>
+      <div>
+        <label>模式</label>
+        <select id="ff-mode" onchange="updateFfLabels()">
+          <option value="vacuum">真空（無空氣阻力）</option>
+          <option value="air">空氣中（有空氣阻力）</option>
+          <option value="compare">比較兩者</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label style="margin-bottom:8px;">選擇物體：</label>
+      <div class="free-fall-objects" id="ff-objects">
+        <button class="ff-object-btn active" onclick="selectFfObject(this,'ball')" data-obj="ball">鐵球 (7.8 kg)</button>
+        <button class="ff-object-btn" onclick="selectFfObject(this,'feather')" data-obj="feather">羽毛 (0.005 kg)</button>
+        <button class="ff-object-btn" onclick="selectFfObject(this,'basketball')" data-obj="basketball">籃球 (0.6 kg)</button>
+      </div>
+    </div>
+
+    <canvas id="ff-canvas" width="900" height="420"></canvas>
+
+    <div class="btn-group">
+      <button class="btn btn-accent" onclick="startFreeFall()">釋放</button>
+      <button class="btn btn-outline" onclick="resetFreeFall()">重置</button>
+    </div>
+
+    <div class="result-grid" id="ff-results">
+      <div class="result-item"><div class="result-label">經過時間</div><div class="result-value" id="ff-time">--</div></div>
+      <div class="result-item"><div class="result-label">目前高度</div><div class="result-value" id="ff-cur-h">--</div></div>
+      <div class="result-item"><div class="result-label">目前速度</div><div class="result-value" id="ff-cur-v">--</div></div>
+      <div class="result-item"><div class="result-label">理論落地時間</div><div class="result-value" id="ff-theory-t">--</div></div>
+    </div>
+
+    <div class="info-box" style="margin-top:12px;">
+      <strong>觀察：</strong>在「比較」模式中，注意 <span class="tooltip">羽毛和鐵球<span class="tooltip-text">在真空中兩者同時落地；在空氣中，羽毛因為空氣阻力大而落得慢很多</span></span> 在不同環境下的差異。這就是伽利略自由落體實驗的核心發現。
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ TAB SWITCHING ============
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  event.target.classList.add('active');
+
+  if (tabId === 'vtgraph') updateVtGraph();
+  if (tabId === 'projectile') drawProjBackground();
+  if (tabId === 'freefall') drawFfBackground();
+}
+
+// ============ TAB 1: PROJECTILE MOTION ============
+const projCanvas = document.getElementById('proj-canvas');
+const projCtx = projCanvas.getContext('2d');
+let projAnim = null;
+let projTraces = [];
+
+function getCanvasSize(canvas) {
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * (window.devicePixelRatio || 1);
+  canvas.height = rect.height * (window.devicePixelRatio || 1);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  return { w: rect.width, h: rect.height };
+}
+
+function updateProjLabels() {
+  document.getElementById('angle-val').textContent = document.getElementById('proj-angle').value;
+  document.getElementById('vel-val').textContent = document.getElementById('proj-vel').value;
+}
+
+function drawProjBackground() {
+  const { w, h } = getCanvasSize(projCanvas);
+  const ctx = projCtx;
+  const pad = { l: 50, r: 20, t: 20, b: 40 };
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Ground
+  ctx.fillStyle = '#E8F5E9';
+  ctx.fillRect(pad.l, h - pad.b, w - pad.l - pad.r, pad.b);
+  ctx.fillStyle = '#81C784';
+  ctx.fillRect(pad.l, h - pad.b, w - pad.l - pad.r, 3);
+
+  // Grid
+  ctx.strokeStyle = '#E2E8F0';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 10; i++) {
+    const x = pad.l + (w - pad.l - pad.r) * i / 10;
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, h - pad.b); ctx.stroke();
+  }
+  for (let i = 1; i < 6; i++) {
+    const y = pad.t + (h - pad.t - pad.b) * i / 6;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = var_text_muted();
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b);
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = var_text_muted();
+  ctx.font = '12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('水平距離 (m)', w / 2, h - 5);
+  ctx.save();
+  ctx.translate(14, (h - pad.t - pad.b) / 2 + pad.t);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('高度 (m)', 0, 0);
+  ctx.restore();
+
+  // Draw previous traces
+  if (document.getElementById('proj-trace').checked) {
+    projTraces.forEach((trace, idx) => {
+      ctx.strokeStyle = `hsla(${210 + idx * 40}, 60%, 55%, 0.4)`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      trace.forEach((p, i) => {
+        const px = pad.l + p.x / trace.scaleX * (w - pad.l - pad.r);
+        const py = (h - pad.b) - p.y / trace.scaleY * (h - pad.t - pad.b);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  }
+}
+
+function var_text_muted() { return '#8899AA'; }
+
+function launchProjectile() {
+  if (projAnim) cancelAnimationFrame(projAnim);
+
+  const angle = parseFloat(document.getElementById('proj-angle').value);
+  const v0 = parseFloat(document.getElementById('proj-vel').value);
+  const g = 9.8;
+  const rad = angle * Math.PI / 180;
+  const v0x = v0 * Math.cos(rad);
+  const v0y = v0 * Math.sin(rad);
+  const totalTime = 2 * v0y / g;
+  const maxRange = v0x * totalTime;
+  const maxHeight = v0y * v0y / (2 * g);
+
+  const scaleX = maxRange * 1.15;
+  const scaleY = Math.max(maxHeight * 1.3, scaleX * 0.4);
+
+  const trace = [];
+  trace.scaleX = scaleX;
+  trace.scaleY = scaleY;
+
+  const { w, h } = { w: projCanvas.getBoundingClientRect().width, h: projCanvas.getBoundingClientRect().height };
+  const pad = { l: 50, r: 20, t: 20, b: 40 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+
+  let t = 0;
+  const dt = 0.02;
+  const speed = 1.0;
+
+  function animate() {
+    t += dt * speed;
+    if (t > totalTime) t = totalTime;
+
+    const x = v0x * t;
+    const y = v0y * t - 0.5 * g * t * t;
+    const vy = v0y - g * t;
+    const curVel = Math.sqrt(v0x * v0x + vy * vy);
+
+    trace.push({ x, y });
+
+    drawProjBackground();
+    const ctx = projCtx;
+
+    // Scale ticks
+    ctx.fillStyle = var_text_muted();
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 5; i++) {
+      const xv = scaleX * i / 5;
+      const px = pad.l + (xv / scaleX) * plotW;
+      ctx.fillText(xv.toFixed(0), px, h - pad.b + 16);
+    }
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+      const yv = scaleY * i / 4;
+      const py = (h - pad.b) - (yv / scaleY) * plotH;
+      ctx.fillText(yv.toFixed(0), pad.l - 6, py + 4);
+    }
+
+    // Draw trace line
+    ctx.strokeStyle = var_primary();
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    trace.forEach((p, i) => {
+      const px = pad.l + p.x / scaleX * plotW;
+      const py = (h - pad.b) - p.y / scaleY * plotH;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+
+    // Fill area under curve
+    ctx.fillStyle = 'rgba(45,106,159,0.08)';
+    ctx.beginPath();
+    ctx.moveTo(pad.l, h - pad.b);
+    trace.forEach(p => {
+      const px = pad.l + p.x / scaleX * plotW;
+      const py = (h - pad.b) - p.y / scaleY * plotH;
+      ctx.lineTo(px, py);
+    });
+    ctx.lineTo(pad.l + trace[trace.length - 1].x / scaleX * plotW, h - pad.b);
+    ctx.closePath();
+    ctx.fill();
+
+    // Ball
+    const bx = pad.l + x / scaleX * plotW;
+    const by = (h - pad.b) - y / scaleY * plotH;
+    ctx.beginPath();
+    ctx.arc(bx, by, 7, 0, 2 * Math.PI);
+    ctx.fillStyle = var_accent();
+    ctx.fill();
+    ctx.strokeStyle = '#C06E20';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Velocity arrow
+    const arrLen = 30;
+    const velAngle = Math.atan2(-vy, v0x);
+    ctx.strokeStyle = var_danger();
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.lineTo(bx + arrLen * Math.cos(velAngle), by + arrLen * Math.sin(velAngle));
+    ctx.stroke();
+
+    // Update results
+    document.getElementById('proj-range').textContent = x.toFixed(1) + ' m';
+    document.getElementById('proj-height').textContent = Math.max(0, y).toFixed(1) + ' m';
+    document.getElementById('proj-time').textContent = t.toFixed(2) + ' s';
+    document.getElementById('proj-curvel').textContent = curVel.toFixed(1) + ' m/s';
+
+    if (t < totalTime) {
+      projAnim = requestAnimationFrame(animate);
+    } else {
+      projAnim = null;
+      if (document.getElementById('proj-trace').checked) {
+        projTraces.push([...trace]);
+        projTraces[projTraces.length - 1].scaleX = scaleX;
+        projTraces[projTraces.length - 1].scaleY = scaleY;
+        if (projTraces.length > 5) projTraces.shift();
+      }
+    }
+  }
+
+  animate();
+}
+
+function var_primary() { return '#2D6A9F'; }
+function var_accent() { return '#E08A3C'; }
+function var_danger() { return '#E53E3E'; }
+
+function resetProjectile() {
+  if (projAnim) { cancelAnimationFrame(projAnim); projAnim = null; }
+  projTraces = [];
+  ['proj-range', 'proj-height', 'proj-time', 'proj-curvel'].forEach(id => {
+    document.getElementById(id).textContent = '--';
+  });
+  drawProjBackground();
+}
+
+// ============ TAB 2: KINEMATIC CALCULATOR ============
+function updateCalcFields() {
+  const vars = ['v0', 'v', 'a', 't', 'd'];
+  const checked = vars.filter(v => document.getElementById('chk-' + v).checked);
+
+  vars.forEach(v => {
+    const inp = document.getElementById('val-' + v);
+    inp.disabled = !document.getElementById('chk-' + v).checked;
+    if (!document.getElementById('chk-' + v).checked) inp.value = '';
+  });
+
+  if (checked.length > 3) {
+    const last = vars.find(v => document.getElementById('chk-' + v).checked && !checked.slice(0, 3).includes(v));
+    if (last) {
+      document.getElementById('chk-' + last).checked = false;
+      document.getElementById('val-' + last).disabled = true;
+      document.getElementById('val-' + last).value = '';
+    }
+  }
+
+  document.getElementById('calc-result').style.display = 'none';
+  document.getElementById('calc-error').style.display = 'none';
+}
+
+function calculate() {
+  const vars = ['v0', 'v', 'a', 't', 'd'];
+  const known = {};
+  let knownCount = 0;
+
+  vars.forEach(v => {
+    if (document.getElementById('chk-' + v).checked) {
+      const val = parseFloat(document.getElementById('val-' + v).value);
+      if (!isNaN(val)) {
+        known[v] = val;
+        knownCount++;
+      }
+    }
+  });
+
+  if (knownCount < 3) {
+    showCalcError('請至少勾選並輸入 3 個已知變數的數值。');
+    return;
+  }
+
+  const unknowns = vars.filter(v => !(v in known));
+  const result = { ...known };
+
+  try {
+    if (!('v0' in known) && !('v' in known)) {
+      // Known: a, t, d
+      const { a, t, d } = known;
+      result.v0 = (d - 0.5 * a * t * t) / t;
+      result.v = result.v0 + a * t;
+    } else if (!('v0' in known) && !('a' in known)) {
+      // Known: v, t, d
+      const { v, t, d } = known;
+      result.v0 = 2 * d / t - v;
+      result.a = (v - result.v0) / t;
+    } else if (!('v0' in known) && !('t' in known)) {
+      // Known: v, a, d
+      const { v, a, d } = known;
+      const v0sq = v * v - 2 * a * d;
+      if (v0sq < 0) throw new Error('無實數解：v² - 2ad < 0，請檢查輸入值。');
+      result.v0 = Math.sqrt(v0sq);
+      if (a !== 0) result.t = (v - result.v0) / a;
+      else if (v === result.v0) result.t = d / v;
+      else throw new Error('加速度為零但初速不等於末速，矛盾。');
+    } else if (!('v0' in known) && !('d' in known)) {
+      // Known: v, a, t
+      const { v, a, t } = known;
+      result.v0 = v - a * t;
+      result.d = result.v0 * t + 0.5 * a * t * t;
+    } else if (!('v' in known) && !('a' in known)) {
+      // Known: v0, t, d
+      const { v0, t, d } = known;
+      result.a = 2 * (d - v0 * t) / (t * t);
+      result.v = v0 + result.a * t;
+    } else if (!('v' in known) && !('t' in known)) {
+      // Known: v0, a, d
+      const { v0, a, d } = known;
+      const vsq = v0 * v0 + 2 * a * d;
+      if (vsq < 0) throw new Error('無實數解：v₀² + 2ad < 0，請檢查輸入值。');
+      result.v = Math.sqrt(vsq);
+      if (a !== 0) result.t = (result.v - v0) / a;
+      else result.t = d / v0;
+    } else if (!('v' in known) && !('d' in known)) {
+      // Known: v0, a, t
+      const { v0, a, t } = known;
+      result.v = v0 + a * t;
+      result.d = v0 * t + 0.5 * a * t * t;
+    } else if (!('a' in known) && !('t' in known)) {
+      // Known: v0, v, d
+      const { v0, v, d } = known;
+      if (v * v - v0 * v0 === 0 && d === 0) {
+        result.a = 0; result.t = 0;
+      } else {
+        result.a = (v * v - v0 * v0) / (2 * d);
+        result.t = 2 * d / (v0 + v);
+      }
+    } else if (!('a' in known) && !('d' in known)) {
+      // Known: v0, v, t
+      const { v0, v, t } = known;
+      result.a = (v - v0) / t;
+      result.d = (v0 + v) / 2 * t;
+    } else if (!('t' in known) && !('d' in known)) {
+      // Known: v0, v, a
+      const { v0, v, a } = known;
+      if (a !== 0) result.t = (v - v0) / a;
+      else result.t = 0;
+      result.d = (v0 + v) / 2 * result.t;
+    }
+
+    showCalcResult(result, unknowns);
+  } catch (e) {
+    showCalcError(e.message);
+  }
+}
+
+function showCalcResult(result, unknowns) {
+  document.getElementById('calc-error').style.display = 'none';
+  const el = document.getElementById('calc-result');
+  el.style.display = 'block';
+
+  const names = { v0: '初速度 v₀', v: '末速度 v', a: '加速度 a', t: '時間 t', d: '位移 d' };
+  const units = { v0: 'm/s', v: 'm/s', a: 'm/s²', t: 's', d: 'm' };
+
+  let html = unknowns.map(u =>
+    `<div class="result-item"><div class="result-label">${names[u]}</div><div class="result-value" style="color:var(--accent-dark)">${result[u].toFixed(3)} ${units[u]}</div></div>`
+  ).join('');
+
+  const allHtml = ['v0', 'v', 'a', 't', 'd'].map(v =>
+    `<div class="result-item"><div class="result-label">${names[v]}</div><div class="result-value" style="${unknowns.includes(v) ? 'color:var(--accent-dark)' : ''}">${result[v].toFixed(3)} ${units[v]}</div></div>`
+  ).join('');
+
+  document.getElementById('calc-result-grid').innerHTML = allHtml;
+  document.getElementById('calc-result-text').innerHTML =
+    `<strong>計算完成！</strong>未知量：${unknowns.map(u => `<strong style="color:var(--accent-dark)">${names[u]} = ${result[u].toFixed(3)} ${units[u]}</strong>`).join('、')}`;
+}
+
+function showCalcError(msg) {
+  document.getElementById('calc-result').style.display = 'none';
+  document.getElementById('calc-error').style.display = 'block';
+  document.getElementById('calc-error-text').textContent = msg;
+}
+
+function resetCalc() {
+  ['v0', 'v', 'a', 't', 'd'].forEach(v => {
+    document.getElementById('chk-' + v).checked = false;
+    document.getElementById('val-' + v).disabled = true;
+    document.getElementById('val-' + v).value = '';
+  });
+  document.getElementById('calc-result').style.display = 'none';
+  document.getElementById('calc-error').style.display = 'none';
+}
+
+// ============ TAB 3: V-T GRAPH ANALYZER ============
+let vtType = 'constant';
+const vtCanvas = document.getElementById('vt-canvas');
+const vtCtx = vtCanvas.getContext('2d');
+
+function setVtType(type, btn) {
+  vtType = type;
+  document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Set appropriate defaults
+  const v0Slider = document.getElementById('vt-v0');
+  const aSlider = document.getElementById('vt-a');
+  switch (type) {
+    case 'constant': v0Slider.value = 15; aSlider.value = 0; break;
+    case 'accelerate': v0Slider.value = 5; aSlider.value = 3; break;
+    case 'decelerate': v0Slider.value = 30; aSlider.value = -4; break;
+    case 'updown': v0Slider.value = 0; aSlider.value = 5; break;
+  }
+
+  updateVtGraph();
+}
+
+function updateVtGraph() {
+  const v0 = parseFloat(document.getElementById('vt-v0').value);
+  const a = parseFloat(document.getElementById('vt-a').value);
+  const T = parseFloat(document.getElementById('vt-t').value);
+
+  document.getElementById('vt-v0-val').textContent = v0;
+  document.getElementById('vt-a-val').textContent = a;
+  document.getElementById('vt-t-val').textContent = T;
+
+  const { w, h } = getCanvasSize(vtCanvas);
+  const ctx = vtCtx;
+  const pad = { l: 55, r: 20, t: 20, b: 45 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Generate velocity data
+  let points = [];
+  const dt = 0.1;
+  if (vtType === 'updown') {
+    // Accelerate first half, decelerate second half
+    for (let t = 0; t <= T; t += dt) {
+      let v;
+      if (t <= T / 2) {
+        v = v0 + a * t;
+      } else {
+        const vMid = v0 + a * (T / 2);
+        v = vMid - a * (t - T / 2);
+      }
+      points.push({ t, v });
+    }
+  } else {
+    for (let t = 0; t <= T; t += dt) {
+      let v = v0 + a * t;
+      points.push({ t, v });
+    }
+  }
+
+  // Find scale
+  let maxV = Math.max(...points.map(p => Math.abs(p.v)), 1);
+  maxV = Math.ceil(maxV / 5) * 5;
+  const minV = Math.min(...points.map(p => p.v));
+  const showNeg = minV < 0;
+  const vRange = showNeg ? maxV * 2 : maxV;
+  const vOffset = showNeg ? maxV : 0;
+
+  // Grid
+  ctx.strokeStyle = '#E2E8F0';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 10; i++) {
+    const x = pad.l + plotW * i / 10;
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, h - pad.b); ctx.stroke();
+  }
+  for (let i = 0; i <= 8; i++) {
+    const y = pad.t + plotH * i / 8;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+  }
+
+  // Zero line
+  const zeroY = pad.t + (vOffset / vRange) * plotH;
+  ctx.strokeStyle = '#A0AEC0';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath(); ctx.moveTo(pad.l, zeroY); ctx.lineTo(w - pad.r, zeroY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Axes
+  ctx.strokeStyle = var_text_muted();
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b);
+  ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = var_text_muted();
+  ctx.font = '12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('時間 t (s)', w / 2, h - 5);
+  ctx.save();
+  ctx.translate(14, (h - pad.t - pad.b) / 2 + pad.t);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('速度 v (m/s)', 0, 0);
+  ctx.restore();
+
+  // Tick labels
+  ctx.textAlign = 'center';
+  ctx.font = '11px sans-serif';
+  for (let i = 0; i <= 5; i++) {
+    const tv = T * i / 5;
+    const px = pad.l + (tv / T) * plotW;
+    ctx.fillText(tv.toFixed(1), px, h - pad.b + 16);
+  }
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const vv = showNeg ? maxV - (vRange * i / 4) : maxV * (1 - i / 4);
+    const py = pad.t + plotH * i / 4;
+    ctx.fillText(vv.toFixed(0), pad.l - 6, py + 4);
+  }
+
+  // Fill area under curve (displacement)
+  ctx.beginPath();
+  ctx.moveTo(pad.l, zeroY);
+  let displacement = 0;
+  points.forEach((p, i) => {
+    const px = pad.l + (p.t / T) * plotW;
+    const py = pad.t + ((vOffset - p.v) / vRange) * plotH;
+    ctx.lineTo(px, py);
+    if (i > 0) {
+      displacement += (points[i - 1].v + p.v) / 2 * dt;
+    }
+  });
+  const lastPx = pad.l + (points[points.length - 1].t / T) * plotW;
+  ctx.lineTo(lastPx, zeroY);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(45,106,159,0.12)';
+  ctx.fill();
+
+  // Draw v-t line
+  ctx.strokeStyle = var_primary();
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const px = pad.l + (p.t / T) * plotW;
+    const py = pad.t + ((vOffset - p.v) / vRange) * plotH;
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  });
+  ctx.stroke();
+
+  // "Area = displacement" label
+  const midT = T / 2;
+  const midV = points[Math.floor(points.length / 2)].v;
+  const labelX = pad.l + 0.5 * plotW;
+  const labelY = pad.t + ((vOffset - midV / 2) / vRange) * plotH;
+  ctx.fillStyle = 'rgba(45,106,159,0.6)';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'center';
+  if (Math.abs(displacement) > 1) {
+    ctx.fillText('面積 = 位移 = ' + displacement.toFixed(1) + ' m', labelX, Math.min(Math.max(labelY, pad.t + 30), h - pad.b - 10));
+  }
+
+  // Results
+  const vf = points[points.length - 1].v;
+  const avgV = displacement / T;
+  document.getElementById('vt-vf').textContent = vf.toFixed(1) + ' m/s';
+  document.getElementById('vt-disp').textContent = displacement.toFixed(1) + ' m';
+  document.getElementById('vt-avg').textContent = avgV.toFixed(1) + ' m/s';
+}
+
+// ============ TAB 4: FREE FALL SIMULATOR ============
+const ffCanvas = document.getElementById('ff-canvas');
+const ffCtx = ffCanvas.getContext('2d');
+let ffAnim = null;
+let ffObject = 'ball';
+
+const ffObjects = {
+  ball: { name: '鐵球', mass: 7.8, radius: 0.05, cd: 0.47, color: '#4A5568', emoji: '' },
+  feather: { name: '羽毛', mass: 0.005, radius: 0.03, cd: 1.5, color: '#A0AEC0', emoji: '' },
+  basketball: { name: '籃球', mass: 0.6, radius: 0.12, cd: 0.47, color: '#E08A3C', emoji: '' }
+};
+
+function selectFfObject(btn, obj) {
+  ffObject = obj;
+  document.querySelectorAll('.ff-object-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  resetFreeFall();
+}
+
+function updateFfLabels() {
+  document.getElementById('ff-h-val').textContent = document.getElementById('ff-height').value;
+  const h = parseFloat(document.getElementById('ff-height').value);
+  const t = Math.sqrt(2 * h / 9.8);
+  document.getElementById('ff-theory-t').textContent = t.toFixed(2) + ' s';
+  drawFfBackground();
+}
+
+function drawFfBackground() {
+  const { w, h } = getCanvasSize(ffCanvas);
+  const ctx = ffCtx;
+  ctx.clearRect(0, 0, w, h);
+
+  const buildingW = 80;
+  const buildingX = 60;
+  const groundY = h - 50;
+  const buildingTop = 40;
+
+  // Sky gradient
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
+  skyGrad.addColorStop(0, '#D4E7F7');
+  skyGrad.addColorStop(1, '#EDF2F8');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, w, groundY);
+
+  // Ground
+  ctx.fillStyle = '#C6E4B8';
+  ctx.fillRect(0, groundY, w, h - groundY);
+  ctx.fillStyle = '#7CB068';
+  ctx.fillRect(0, groundY, w, 3);
+
+  // Building
+  ctx.fillStyle = '#B0BEC5';
+  ctx.fillRect(buildingX, buildingTop, buildingW, groundY - buildingTop);
+  ctx.strokeStyle = '#90A4AE';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(buildingX, buildingTop, buildingW, groundY - buildingTop);
+
+  // Windows
+  for (let row = 0; row < 6; row++) {
+    for (let col = 0; col < 3; col++) {
+      const wx = buildingX + 10 + col * 25;
+      const wy = buildingTop + 15 + row * ((groundY - buildingTop - 20) / 6);
+      ctx.fillStyle = '#E3F2FD';
+      ctx.fillRect(wx, wy, 15, 20);
+    }
+  }
+
+  // Height scale on right side
+  const scaleX = w - 60;
+  const totalH = parseFloat(document.getElementById('ff-height').value);
+  const dropAreaH = groundY - buildingTop;
+
+  ctx.strokeStyle = var_text_muted();
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(scaleX, buildingTop);
+  ctx.lineTo(scaleX, groundY);
+  ctx.stroke();
+
+  ctx.fillStyle = var_text_muted();
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'left';
+  for (let i = 0; i <= 5; i++) {
+    const hv = totalH * (1 - i / 5);
+    const sy = buildingTop + dropAreaH * i / 5;
+    ctx.beginPath();
+    ctx.moveTo(scaleX - 4, sy);
+    ctx.lineTo(scaleX + 4, sy);
+    ctx.stroke();
+    ctx.fillText(hv.toFixed(0) + ' m', scaleX + 8, sy + 4);
+  }
+
+  // Graph area (right portion)
+  const graphL = 200;
+  const graphR = w - 80;
+  const graphT = buildingTop;
+  const graphB = groundY;
+  const graphW = graphR - graphL;
+  const graphH = graphB - graphT;
+
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.fillRect(graphL, graphT, graphW, graphH);
+  ctx.strokeStyle = '#CBD5E0';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(graphL, graphT, graphW, graphH);
+
+  // Graph labels
+  ctx.fillStyle = var_text_muted();
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('速度 (m/s)', graphL + graphW / 2, graphB + 18);
+  ctx.save();
+  ctx.translate(graphL - 15, graphT + graphH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('高度 (m)', 0, 0);
+  ctx.restore();
+
+  return { buildingX, buildingW, buildingTop, groundY, graphL, graphR, graphT, graphB };
+}
+
+function startFreeFall() {
+  if (ffAnim) { cancelAnimationFrame(ffAnim); ffAnim = null; }
+
+  const H = parseFloat(document.getElementById('ff-height').value);
+  const mode = document.getElementById('ff-mode').value;
+  const g = 9.8;
+  const obj = ffObjects[ffObject];
+  const rho = 1.225; // air density
+  const A = Math.PI * obj.radius * obj.radius;
+
+  let t = 0;
+  const dt = 0.016;
+
+  // State for vacuum
+  let yVac = H, vVac = 0;
+  // State for air resistance
+  let yAir = H, vAir = 0;
+
+  const traceVac = [];
+  const traceAir = [];
+
+  function animate() {
+    t += dt;
+
+    // Vacuum physics
+    if (yVac > 0) {
+      vVac += g * dt;
+      yVac -= vVac * dt;
+      if (yVac < 0) { yVac = 0; vVac = Math.sqrt(2 * g * H); }
+      traceVac.push({ y: yVac, v: vVac });
+    }
+
+    // Air resistance physics
+    if (yAir > 0) {
+      const Fd = 0.5 * rho * obj.cd * A * vAir * vAir;
+      const aNet = g - Fd / obj.mass;
+      vAir += aNet * dt;
+      yAir -= vAir * dt;
+      if (yAir < 0) { yAir = 0; }
+      traceAir.push({ y: yAir, v: vAir });
+    }
+
+    // Draw
+    const layout = drawFfBackground();
+    const { buildingX, buildingW, buildingTop, groundY, graphL, graphR, graphT, graphB } = layout;
+    const ctx = ffCtx;
+    const dropH = groundY - buildingTop;
+    const graphW = graphR - graphL;
+    const graphH = graphB - graphT;
+
+    // Max velocity for graph scale
+    const maxVTheory = Math.sqrt(2 * g * H);
+    const maxV = Math.max(maxVTheory * 1.1, 10);
+
+    // Draw graph traces
+    function drawTrace(trace, color) {
+      if (trace.length < 2) return;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      trace.forEach((p, i) => {
+        const px = graphL + (p.v / maxV) * graphW;
+        const py = graphT + ((H - p.y) / H) * graphH;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+    }
+
+    // Graph tick labels
+    ctx.fillStyle = var_text_muted();
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 4; i++) {
+      const vv = maxV * i / 4;
+      const px = graphL + graphW * i / 4;
+      ctx.fillText(vv.toFixed(0), px, graphB + 30);
+    }
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+      const hv = H * (1 - i / 4);
+      const py = graphT + graphH * i / 4;
+      ctx.fillText(hv.toFixed(0), graphL - 4, py + 4);
+    }
+
+    if (mode === 'vacuum' || mode === 'compare') {
+      drawTrace(traceVac, '#2D6A9F');
+      // Ball in vacuum
+      const byVac = buildingTop + ((H - yVac) / H) * dropH;
+      ctx.beginPath();
+      ctx.arc(buildingX + buildingW + 35, byVac, 10, 0, 2 * Math.PI);
+      ctx.fillStyle = '#2D6A9F';
+      ctx.fill();
+      ctx.strokeStyle = '#1B4F7A';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // Label
+      ctx.fillStyle = '#2D6A9F';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('真空', buildingX + buildingW + 50, byVac + 4);
+    }
+
+    if (mode === 'air' || mode === 'compare') {
+      drawTrace(traceAir, '#E08A3C');
+      // Ball in air
+      const byAir = buildingTop + ((H - yAir) / H) * dropH;
+      const bxAir = mode === 'compare' ? buildingX + buildingW + 80 : buildingX + buildingW + 35;
+      ctx.beginPath();
+      ctx.arc(bxAir, byAir, 10, 0, 2 * Math.PI);
+      ctx.fillStyle = '#E08A3C';
+      ctx.fill();
+      ctx.strokeStyle = '#C06E20';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // Label
+      ctx.fillStyle = '#E08A3C';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('空氣', bxAir + 15, byAir + 4);
+    }
+
+    // Graph legend
+    ctx.font = 'bold 11px sans-serif';
+    if (mode === 'compare' || mode === 'vacuum') {
+      ctx.fillStyle = '#2D6A9F';
+      ctx.fillText('-- 真空', graphL + 10, graphT + 18);
+    }
+    if (mode === 'compare' || mode === 'air') {
+      ctx.fillStyle = '#E08A3C';
+      ctx.fillText('-- 空氣中', graphL + 10, graphT + 34);
+    }
+
+    // Update info
+    const dispY = mode === 'air' ? yAir : yVac;
+    const dispV = mode === 'air' ? vAir : vVac;
+    document.getElementById('ff-time').textContent = t.toFixed(2) + ' s';
+    document.getElementById('ff-cur-h').textContent = Math.max(0, dispY).toFixed(1) + ' m';
+    document.getElementById('ff-cur-v').textContent = dispV.toFixed(1) + ' m/s';
+    document.getElementById('ff-theory-t').textContent = Math.sqrt(2 * H / g).toFixed(2) + ' s';
+
+    // Continue?
+    const running = (mode === 'vacuum' && yVac > 0) ||
+                    (mode === 'air' && yAir > 0) ||
+                    (mode === 'compare' && (yVac > 0 || yAir > 0));
+    if (running) {
+      ffAnim = requestAnimationFrame(animate);
+    } else {
+      ffAnim = null;
+    }
+  }
+
+  animate();
+}
+
+function resetFreeFall() {
+  if (ffAnim) { cancelAnimationFrame(ffAnim); ffAnim = null; }
+  ['ff-time', 'ff-cur-h', 'ff-cur-v'].forEach(id => {
+    document.getElementById(id).textContent = '--';
+  });
+  updateFfLabels();
+}
+
+// ============ INIT ============
+window.addEventListener('load', () => {
+  drawProjBackground();
+  updateFfLabels();
+  updateVtGraph();
+});
+
+window.addEventListener('resize', () => {
+  const activeTab = document.querySelector('.tab-panel.active');
+  if (activeTab.id === 'tab-projectile') drawProjBackground();
+  if (activeTab.id === 'tab-vtgraph') updateVtGraph();
+  if (activeTab.id === 'tab-freefall') drawFfBackground();
+});
+</script>
+
+</body>
+</html>

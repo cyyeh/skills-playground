@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>牛頓運動定律 — 互動實驗室</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #3b82f6;
+    --primary-dark: #1d4ed8;
+    --secondary: #7c3aed;
+    --accent: #f59e0b;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --success: #10b981;
+    --danger: #ef4444;
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 0.9rem; opacity: 0.9; }
+
+  /* Tab Navigation */
+  .tab-nav {
+    display: flex;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 14px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-light);
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--primary); background: #f1f5f9; }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* Tab Content */
+  .tab-content { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+  .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .tool-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .tool-card h2 {
+    font-size: 1.25rem;
+    margin-bottom: 6px;
+    color: var(--primary-dark);
+  }
+  .tool-card .subtitle {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 20px;
+  }
+
+  /* Form Controls */
+  .control-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .control-item { display: flex; flex-direction: column; gap: 6px; }
+  .control-item label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .control-item label .hint-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--border);
+    font-size: 0.7rem;
+    color: var(--text-light);
+    cursor: help;
+    position: relative;
+  }
+  .control-item label .hint-icon:hover::after {
+    content: attr(data-hint);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 400;
+    white-space: nowrap;
+    z-index: 10;
+    margin-bottom: 4px;
+  }
+  input[type="number"] {
+    padding: 10px 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  input[type="number"]:focus { outline: none; border-color: var(--primary); }
+
+  .slider-group { display: flex; flex-direction: column; gap: 4px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  input[type="range"] { flex: 1; accent-color: var(--primary); height: 6px; }
+  .slider-val {
+    min-width: 60px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--primary);
+  }
+
+  /* Canvas */
+  .canvas-wrap {
+    background: #f1f5f9;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Results */
+  .result-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 4px solid var(--primary);
+  }
+  .result-box h3 { font-size: 0.95rem; margin-bottom: 8px; color: var(--primary-dark); }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.9rem;
+  }
+  .result-row .label { color: var(--text-light); }
+  .result-row .value { font-weight: 600; color: var(--text); }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn-secondary:hover { background: #cbd5e1; }
+  .btn-group { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+  /* Animation indicator */
+  .anim-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 8px;
+  }
+  .anim-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.3rem; }
+    .tab-btn { font-size: 0.78rem; padding: 12px 8px; min-width: 90px; }
+    .control-group { grid-template-columns: 1fr; }
+    .tool-card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>牛頓運動定律 — 互動實驗室</h1>
+  <p>透過模擬與計算，直觀理解力學原理</p>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('tab1')">力的分解</button>
+  <button class="tab-btn" onclick="switchTab('tab2')">斜面模擬</button>
+  <button class="tab-btn" onclick="switchTab('tab3')">F=ma 實驗</button>
+  <button class="tab-btn" onclick="switchTab('tab4')">連接體求解</button>
+</nav>
+
+<!-- Tool 1: 力的分解計算器 -->
+<div id="tab1" class="tab-content active">
+  <div class="tool-card">
+    <h2>力的分解計算器</h2>
+    <p class="subtitle">輸入力的大小與角度，觀察 x、y 分量的向量動畫</p>
+
+    <div class="control-group">
+      <div class="control-item">
+        <label>力的大小 (N)
+          <span class="hint-icon" data-hint="力的量值，單位為牛頓">?</span>
+        </label>
+        <input type="number" id="fd-force" value="100" min="1" max="500" step="1">
+      </div>
+      <div class="control-item">
+        <label>角度 (度)
+          <span class="hint-icon" data-hint="力與 x 軸正方向的夾角">?</span>
+        </label>
+        <input type="number" id="fd-angle" value="30" min="0" max="360" step="1">
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="calcDecompose()">計算並顯示</button>
+      <button class="btn btn-secondary" onclick="resetDecompose()">重置</button>
+    </div>
+
+    <div class="canvas-wrap" style="margin-top:16px;">
+      <canvas id="canvas-decompose" width="800" height="500"></canvas>
+    </div>
+
+    <div class="result-box" id="fd-results">
+      <h3>計算結果</h3>
+      <div class="result-row"><span class="label">Fx (x 分量)</span><span class="value" id="fd-fx">—</span></div>
+      <div class="result-row"><span class="label">Fy (y 分量)</span><span class="value" id="fd-fy">—</span></div>
+      <div class="result-row"><span class="label">驗算 |F|</span><span class="value" id="fd-check">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tool 2: 斜面受力模擬 -->
+<div id="tab2" class="tab-content">
+  <div class="tool-card">
+    <h2>斜面受力模擬</h2>
+    <p class="subtitle">調整斜面角度、質量與摩擦係數，觀察各力的變化</p>
+
+    <div class="control-group">
+      <div class="control-item slider-group">
+        <label>斜面角度 (θ)
+          <span class="hint-icon" data-hint="斜面與水平面的夾角">?</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="ip-angle" min="5" max="85" value="30" oninput="updateIncline()">
+          <span class="slider-val" id="ip-angle-val">30°</span>
+        </div>
+      </div>
+      <div class="control-item slider-group">
+        <label>質量 (kg)
+          <span class="hint-icon" data-hint="物體的質量">?</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="ip-mass" min="1" max="50" value="10" step="0.5" oninput="updateIncline()">
+          <span class="slider-val" id="ip-mass-val">10 kg</span>
+        </div>
+      </div>
+      <div class="control-item slider-group">
+        <label>動摩擦係數 (μk)
+          <span class="hint-icon" data-hint="物體與斜面之間的動摩擦係數">?</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="ip-mu" min="0" max="1" value="0.2" step="0.01" oninput="updateIncline()">
+          <span class="slider-val" id="ip-mu-val">0.20</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="canvas-incline" width="800" height="520"></canvas>
+    </div>
+
+    <div class="result-box" id="ip-results">
+      <h3>計算結果</h3>
+      <div class="result-row"><span class="label">重力 (mg)</span><span class="value" id="ip-w">—</span></div>
+      <div class="result-row"><span class="label">沿斜面分力 (mg sinθ)</span><span class="value" id="ip-par">—</span></div>
+      <div class="result-row"><span class="label">垂直斜面分力 (mg cosθ)</span><span class="value" id="ip-perp">—</span></div>
+      <div class="result-row"><span class="label">正向力 (N)</span><span class="value" id="ip-normal">—</span></div>
+      <div class="result-row"><span class="label">摩擦力 (f)</span><span class="value" id="ip-friction">—</span></div>
+      <div class="result-row"><span class="label">合力 (沿斜面)</span><span class="value" id="ip-net">—</span></div>
+      <div class="result-row"><span class="label">加速度 (a)</span><span class="value" id="ip-accel">—</span></div>
+      <div class="result-row"><span class="label">運動狀態</span><span class="value" id="ip-state">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tool 3: 牛頓第二定律實驗室 -->
+<div id="tab3" class="tab-content">
+  <div class="tool-card">
+    <h2>牛頓第二定律實驗室</h2>
+    <p class="subtitle">施加力於物塊，調整質量，觀察加速度與運動動畫</p>
+
+    <div class="control-group">
+      <div class="control-item slider-group">
+        <label>施加力 (N)
+          <span class="hint-icon" data-hint="向右施加的水平力">?</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="f2-force" min="-100" max="100" value="20" step="1" oninput="updateF2()">
+          <span class="slider-val" id="f2-force-val">20 N</span>
+        </div>
+      </div>
+      <div class="control-item slider-group">
+        <label>質量 (kg)
+          <span class="hint-icon" data-hint="物塊的質量，影響慣性大小">?</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="f2-mass" min="1" max="50" value="5" step="0.5" oninput="updateF2()">
+          <span class="slider-val" id="f2-mass-val">5 kg</span>
+        </div>
+      </div>
+      <div class="control-item slider-group">
+        <label>摩擦係數 (μ)
+          <span class="hint-icon" data-hint="地面的動摩擦係數，設 0 為光滑面">?</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="f2-mu" min="0" max="0.8" value="0" step="0.01" oninput="updateF2()">
+          <span class="slider-val" id="f2-mu-val">0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="startF2Anim()">開始模擬</button>
+      <button class="btn btn-secondary" onclick="resetF2()">重置</button>
+    </div>
+
+    <div class="canvas-wrap" style="margin-top:16px;">
+      <canvas id="canvas-f2" width="800" height="350"></canvas>
+    </div>
+    <div class="anim-status" id="f2-status" style="display:none;">
+      <span class="anim-dot"></span> 模擬進行中...
+    </div>
+
+    <div class="result-box" id="f2-results" style="margin-top:12px;">
+      <h3>計算結果</h3>
+      <div class="result-row"><span class="label">施加力</span><span class="value" id="f2-fval">—</span></div>
+      <div class="result-row"><span class="label">摩擦力</span><span class="value" id="f2-frval">—</span></div>
+      <div class="result-row"><span class="label">合力</span><span class="value" id="f2-netval">—</span></div>
+      <div class="result-row"><span class="label">加速度</span><span class="value" id="f2-aval">—</span></div>
+      <div class="result-row"><span class="label">目前速度</span><span class="value" id="f2-vval">0 m/s</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tool 4: 連接體問題求解器 -->
+<div id="tab4" class="tab-content">
+  <div class="tool-card">
+    <h2>連接體問題求解器（阿特伍德機）</h2>
+    <p class="subtitle">兩個質量透過輕繩連接並跨過定滑輪，計算加速度與張力</p>
+
+    <div class="control-group">
+      <div class="control-item slider-group">
+        <label>質量 m₁ (kg)
+          <span class="hint-icon" data-hint="較重的物體（左側），會下降">?</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="at-m1" min="1" max="50" value="8" step="0.5" oninput="updateAtwood()">
+          <span class="slider-val" id="at-m1-val">8.0 kg</span>
+        </div>
+      </div>
+      <div class="control-item slider-group">
+        <label>質量 m₂ (kg)
+          <span class="hint-icon" data-hint="較輕的物體（右側），會上升">?</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="at-m2" min="1" max="50" value="3" step="0.5" oninput="updateAtwood()">
+          <span class="slider-val" id="at-m2-val">3.0 kg</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="startAtwoodAnim()">開始模擬</button>
+      <button class="btn btn-secondary" onclick="resetAtwood()">重置</button>
+    </div>
+
+    <div class="canvas-wrap" style="margin-top:16px;">
+      <canvas id="canvas-atwood" width="800" height="500"></canvas>
+    </div>
+    <div class="anim-status" id="at-status" style="display:none;">
+      <span class="anim-dot"></span> 模擬進行中...
+    </div>
+
+    <div class="result-box" id="at-results" style="margin-top:12px;">
+      <h3>計算結果</h3>
+      <div class="result-row"><span class="label">m₁ 的重力</span><span class="value" id="at-w1">—</span></div>
+      <div class="result-row"><span class="label">m₂ 的重力</span><span class="value" id="at-w2">—</span></div>
+      <div class="result-row"><span class="label">系統加速度 (a)</span><span class="value" id="at-a">—</span></div>
+      <div class="result-row"><span class="label">繩中張力 (T)</span><span class="value" id="at-t">—</span></div>
+      <div class="result-row"><span class="label">公式 a = (m₁-m₂)g/(m₁+m₂)</span><span class="value" id="at-formula-a">—</span></div>
+      <div class="result-row"><span class="label">公式 T = 2m₁m₂g/(m₁+m₂)</span><span class="value" id="at-formula-t">—</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const G = 9.8;
+
+// ========================
+// Tab Switching
+// ========================
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  const idx = ['tab1','tab2','tab3','tab4'].indexOf(tabId);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+
+  if (tabId === 'tab2') updateIncline();
+  if (tabId === 'tab3') { updateF2(); drawF2Static(); }
+  if (tabId === 'tab4') updateAtwood();
+}
+
+// ========================
+// Tool 1: 力的分解
+// ========================
+let fdAnimId = null;
+function calcDecompose() {
+  const F = parseFloat(document.getElementById('fd-force').value) || 0;
+  const deg = parseFloat(document.getElementById('fd-angle').value) || 0;
+  const rad = deg * Math.PI / 180;
+  const fx = F * Math.cos(rad);
+  const fy = F * Math.sin(rad);
+
+  document.getElementById('fd-fx').textContent = fx.toFixed(2) + ' N';
+  document.getElementById('fd-fy').textContent = fy.toFixed(2) + ' N';
+  document.getElementById('fd-check').textContent = Math.sqrt(fx*fx + fy*fy).toFixed(2) + ' N';
+
+  animateDecompose(F, deg, fx, fy);
+}
+
+function animateDecompose(F, deg, fx, fy) {
+  if (fdAnimId) cancelAnimationFrame(fdAnimId);
+  const canvas = document.getElementById('canvas-decompose');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const ox = W * 0.35, oy = H * 0.6;
+  const scale = Math.min(150, (Math.min(W,H)*0.35)) / Math.max(Math.abs(F), 1);
+  let progress = 0;
+
+  function draw() {
+    progress = Math.min(progress + 0.03, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    for (let x = ox % 40; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = oy % 40; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+    // Axes
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, oy); ctx.lineTo(W-20, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, H-20); ctx.lineTo(ox, 20); ctx.stroke();
+    ctx.fillStyle = '#64748b'; ctx.font = '14px sans-serif';
+    ctx.fillText('x', W-30, oy-8);
+    ctx.fillText('y', ox+8, 30);
+
+    const rad = deg * Math.PI / 180;
+    const endX = ox + fx * scale * ease;
+    const endY = oy - fy * scale * ease;
+    const fEndX = ox + F * Math.cos(rad) * scale * ease;
+    const fEndY = oy - F * Math.sin(rad) * scale * ease;
+
+    // Dashed projections
+    ctx.setLineDash([6,4]);
+    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(fEndX, fEndY); ctx.lineTo(fEndX, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(fEndX, fEndY); ctx.lineTo(ox, fEndY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Fx component
+    drawArrow(ctx, ox, oy, endX, oy, '#ef4444', 3 * ease);
+    // Fy component
+    drawArrow(ctx, ox, oy, ox, oy - fy * scale * ease, '#10b981', 3 * ease);
+    // F vector
+    drawArrow(ctx, ox, oy, fEndX, fEndY, '#2563eb', 3.5 * ease);
+
+    // Angle arc
+    if (Math.abs(deg) > 1) {
+      ctx.beginPath();
+      ctx.arc(ox, oy, 40, -rad * ease, 0, deg > 0);
+      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+      ctx.stroke();
+      const midA = -rad * ease / 2;
+      ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 14px sans-serif';
+      ctx.fillText(deg.toFixed(0) + '°', ox + 48 * Math.cos(midA), oy + 48 * Math.sin(midA) + 5);
+    }
+
+    // Labels
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillStyle = '#2563eb';
+    ctx.fillText('F = ' + F.toFixed(1) + ' N', fEndX + 8, fEndY - 8);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillText('Fx = ' + (fx * ease).toFixed(1) + ' N', (ox + endX)/2, oy + 25);
+    ctx.fillStyle = '#10b981';
+    const fyLabel = 'Fy = ' + (fy * ease).toFixed(1) + ' N';
+    ctx.fillText(fyLabel, ox - ctx.measureText(fyLabel).width - 12, (oy + oy - fy*scale*ease)/2 + 5);
+
+    // Legend
+    const lx = W - 200, ly = 30;
+    ctx.font = '13px sans-serif';
+    ctx.fillStyle = '#2563eb'; ctx.fillRect(lx, ly, 16, 4); ctx.fillText(' F（合力）', lx+20, ly+6);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(lx, ly+20, 16, 4); ctx.fillText(' Fx（x 分量）', lx+20, ly+26);
+    ctx.fillStyle = '#10b981'; ctx.fillRect(lx, ly+40, 16, 4); ctx.fillText(' Fy（y 分量）', lx+20, ly+46);
+
+    if (progress < 1) fdAnimId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function resetDecompose() {
+  document.getElementById('fd-force').value = 100;
+  document.getElementById('fd-angle').value = 30;
+  document.getElementById('fd-fx').textContent = '—';
+  document.getElementById('fd-fy').textContent = '—';
+  document.getElementById('fd-check').textContent = '—';
+  if (fdAnimId) cancelAnimationFrame(fdAnimId);
+  const c = document.getElementById('canvas-decompose');
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color, lw) {
+  const dx = x2-x1, dy = y2-y1;
+  const len = Math.sqrt(dx*dx+dy*dy);
+  if (len < 2) return;
+  const headLen = Math.min(14, len*0.3);
+  const angle = Math.atan2(dy, dx);
+
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - headLen*Math.cos(angle-0.4), y2 - headLen*Math.sin(angle-0.4));
+  ctx.lineTo(x2 - headLen*Math.cos(angle+0.4), y2 - headLen*Math.sin(angle+0.4));
+  ctx.closePath(); ctx.fill();
+}
+
+// Initial draw
+setTimeout(() => calcDecompose(), 100);
+
+// ========================
+// Tool 2: 斜面受力模擬
+// ========================
+function updateIncline() {
+  const angle = parseFloat(document.getElementById('ip-angle').value);
+  const mass = parseFloat(document.getElementById('ip-mass').value);
+  const mu = parseFloat(document.getElementById('ip-mu').value);
+
+  document.getElementById('ip-angle-val').textContent = angle + '°';
+  document.getElementById('ip-mass-val').textContent = mass.toFixed(1) + ' kg';
+  document.getElementById('ip-mu-val').textContent = mu.toFixed(2);
+
+  const rad = angle * Math.PI / 180;
+  const W = mass * G;
+  const par = W * Math.sin(rad);
+  const perp = W * Math.cos(rad);
+  const N = perp;
+  const friction = mu * N;
+  const net = par - friction;
+  const accel = net / mass;
+
+  document.getElementById('ip-w').textContent = W.toFixed(2) + ' N';
+  document.getElementById('ip-par').textContent = par.toFixed(2) + ' N';
+  document.getElementById('ip-perp').textContent = perp.toFixed(2) + ' N';
+  document.getElementById('ip-normal').textContent = N.toFixed(2) + ' N';
+  document.getElementById('ip-friction').textContent = friction.toFixed(2) + ' N';
+  document.getElementById('ip-net').textContent = net.toFixed(2) + ' N';
+  document.getElementById('ip-accel').textContent = accel.toFixed(2) + ' m/s²';
+
+  let state = '等速或靜止';
+  if (net > 0.01) state = '沿斜面加速下滑';
+  else if (net < -0.01) state = '沿斜面減速（或靜止）';
+  else state = '平衡（等速或靜止）';
+  // Check if static friction can hold
+  const maxStaticFriction = mu * 1.2 * N; // assume μs ≈ 1.2 μk
+  if (par <= maxStaticFriction && net <= 0.01) state = '靜止不動（靜摩擦力足夠）';
+  document.getElementById('ip-state').textContent = state;
+
+  drawIncline(angle, mass, W, par, perp, N, friction, net);
+}
+
+function drawIncline(angle, mass, W, par, perp, N, friction, net) {
+  const canvas = document.getElementById('canvas-incline');
+  const ctx = canvas.getContext('2d');
+  const cW = canvas.width, cH = canvas.height;
+  ctx.clearRect(0, 0, cW, cH);
+
+  const rad = angle * Math.PI / 180;
+  const baseLen = 400;
+  const baseX = 120, baseY = cH - 60;
+  const topX = baseX + baseLen * Math.cos(rad);
+  const topY = baseY - baseLen * Math.sin(rad);
+
+  // Draw incline surface
+  ctx.fillStyle = '#e2e8f0';
+  ctx.beginPath();
+  ctx.moveTo(baseX, baseY);
+  ctx.lineTo(baseX + baseLen, baseY);
+  ctx.lineTo(topX, topY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Angle arc
+  ctx.beginPath();
+  ctx.arc(baseX + baseLen, baseY, 40, Math.PI, Math.PI + rad, true);
+  ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('θ=' + angle + '°', baseX + baseLen - 70, baseY - 10);
+
+  // Block position (midway up the incline)
+  const blockFrac = 0.45;
+  const bx = baseX + (topX - baseX) * blockFrac + (baseLen * (1-blockFrac) * (1-Math.cos(rad))) * 0;
+  const bxCalc = baseX + baseLen * (1-blockFrac) * Math.cos(rad) * (1) + (topX-baseX)*blockFrac;
+  const blockCenterX = baseX + (baseLen * Math.cos(rad)) * blockFrac + (baseLen * (1-Math.cos(rad))*0);
+  // Simpler: place block along the slope
+  const slopeFrac = 0.45;
+  const bcx = baseX + baseLen * (1-slopeFrac) + (baseLen * slopeFrac - baseLen*(1-slopeFrac)) * 0;
+  // Let's just place it simply
+  const px = baseX + baseLen * Math.cos(rad) * 0.5 + (baseLen * (1 - Math.cos(rad))) * 0.45;
+  const py = baseY - baseLen * Math.sin(rad) * 0.5 - (baseLen * (1 - Math.sin(rad))) * 0;
+
+  // Recalculate: point along slope at 50%
+  const sx = (baseX + baseLen + topX) / 2 * 0 + baseX + baseLen - (baseLen * 0.5) * Math.cos(rad) * 0;
+  // Simplest approach: parameterize slope from bottom-right to top
+  const t = 0.5; // midway along slope
+  const slopeStartX = baseX + baseLen; // bottom right of triangle
+  const slopeStartY = baseY;
+  const cx = slopeStartX + (topX - slopeStartX) * t;
+  const cy = slopeStartY + (topY - slopeStartY) * t;
+
+  // Draw block (rotated)
+  const blockSize = 36;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-rad);
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(-blockSize/2, -blockSize, blockSize, blockSize);
+  ctx.strokeStyle = '#1d4ed8'; ctx.lineWidth = 2;
+  ctx.strokeRect(-blockSize/2, -blockSize, blockSize, blockSize);
+  ctx.fillStyle = 'white'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(mass.toFixed(0) + 'kg', 0, -blockSize/2 + 5);
+  ctx.restore();
+
+  // Force scale
+  const maxForce = Math.max(W, N, par, friction, 1);
+  const fScale = 100 / maxForce;
+
+  // Draw forces from center of block (top surface center)
+  const blockTopX = cx - blockSize * Math.sin(rad);
+  const blockTopY = cy - blockSize * Math.cos(rad);
+  const blockMidX = cx - (blockSize/2) * Math.sin(rad);
+  const blockMidY = cy - (blockSize/2) * Math.cos(rad);
+
+  // Weight (straight down from center)
+  drawArrow(ctx, blockMidX, blockMidY, blockMidX, blockMidY + W * fScale, '#ef4444', 3);
+  ctx.fillStyle = '#ef4444'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('mg=' + W.toFixed(1) + 'N', blockMidX + 8, blockMidY + W*fScale + 5);
+
+  // Normal force (perpendicular to surface, away from surface)
+  const nLen = N * fScale;
+  const nDx = -nLen * Math.sin(rad);
+  const nDy = -nLen * Math.cos(rad);
+  drawArrow(ctx, blockMidX, blockMidY, blockMidX - nLen * Math.sin(rad) * 0 + nDx * 0 - N*fScale*(-Math.sin(rad))*0, blockMidY + nDy * 0, '#10b981', 3);
+  // Normal: perpendicular to incline, pointing away from surface
+  const normEndX = blockMidX + N * fScale * Math.sin(rad) * 0 - nLen * Math.sin(rad);
+  // Correct normal direction: rotate (0,-1) by -rad => (-sin(-rad), -cos(-rad)) = (sinrad, -cosrad)...
+  // Surface direction along slope going up: (-cosrad, sinrad) rotated...
+  // Normal to slope pointing away from surface (upward-left): perpendicular outward
+  // Slope vector (from bottom-right to top): (topX - slopeStartX, topY - slopeStartY) normalized
+  // Normal (outward = to the left of slope direction): rotate 90 CCW
+  const slopeDx = topX - slopeStartX, slopeDy = topY - slopeStartY;
+  const slopeLen = Math.sqrt(slopeDx*slopeDx + slopeDy*slopeDy);
+  const normDirX = slopeDy / slopeLen; // rotated 90 CCW
+  const normDirY = -slopeDx / slopeLen;
+
+  drawArrow(ctx, blockMidX, blockMidY, blockMidX + normDirX * N * fScale, blockMidY + normDirY * N * fScale, '#10b981', 3);
+  ctx.fillStyle = '#10b981';
+  ctx.fillText('N=' + N.toFixed(1) + 'N', blockMidX + normDirX * N * fScale + 5, blockMidY + normDirY * N * fScale - 5);
+
+  // Parallel component (along slope, downward)
+  const parDirX = -slopeDx / slopeLen; // down the slope (opposite to up-slope)
+  const parDirY = -slopeDy / slopeLen;
+  drawArrow(ctx, blockMidX, blockMidY, blockMidX + parDirX * par * fScale, blockMidY + parDirY * par * fScale, '#f59e0b', 2.5);
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillText('mg sinθ=' + par.toFixed(1), blockMidX + parDirX * par * fScale - 10, blockMidY + parDirY * par * fScale + 20);
+
+  // Friction (along slope, upward, opposing motion down)
+  if (friction > 0.1) {
+    const frDirX = slopeDx / slopeLen;
+    const frDirY = slopeDy / slopeLen;
+    drawArrow(ctx, blockMidX, blockMidY, blockMidX + frDirX * friction * fScale, blockMidY + frDirY * friction * fScale, '#8b5cf6', 2.5);
+    ctx.fillStyle = '#8b5cf6';
+    ctx.fillText('f=' + friction.toFixed(1) + 'N', blockMidX + frDirX * friction * fScale + 5, blockMidY + frDirY * friction * fScale - 5);
+  }
+
+  // Legend
+  ctx.textAlign = 'left';
+  const lx = 20, ly = 20;
+  ctx.font = '13px sans-serif';
+  const legends = [
+    ['#ef4444', 'mg（重力）'],
+    ['#10b981', 'N（正向力）'],
+    ['#f59e0b', 'mg sinθ（沿斜面分力）'],
+    ['#8b5cf6', 'f（摩擦力）'],
+  ];
+  legends.forEach((l, i) => {
+    ctx.fillStyle = l[0];
+    ctx.fillRect(lx, ly + i*22, 14, 4);
+    ctx.fillText(' ' + l[1], lx + 18, ly + i*22 + 5);
+  });
+
+  // Ground line
+  ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(20, baseY); ctx.lineTo(cW - 20, baseY); ctx.stroke();
+  // Hatching
+  for (let hx = 30; hx < cW - 20; hx += 12) {
+    ctx.beginPath(); ctx.moveTo(hx, baseY); ctx.lineTo(hx - 8, baseY + 10); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.stroke();
+  }
+}
+
+// Initial incline draw
+setTimeout(() => updateIncline(), 150);
+
+// ========================
+// Tool 3: F = ma 實驗室
+// ========================
+let f2AnimId = null;
+let f2State = { x: 60, v: 0, running: false };
+
+function updateF2() {
+  const force = parseFloat(document.getElementById('f2-force').value);
+  const mass = parseFloat(document.getElementById('f2-mass').value);
+  const mu = parseFloat(document.getElementById('f2-mu').value);
+
+  document.getElementById('f2-force-val').textContent = force + ' N';
+  document.getElementById('f2-mass-val').textContent = mass.toFixed(1) + ' kg';
+  document.getElementById('f2-mu-val').textContent = mu.toFixed(2);
+
+  const W = mass * G;
+  const frictionMax = mu * W;
+  let fNet, fFriction;
+
+  if (!f2State.running) {
+    // Static analysis
+    if (Math.abs(force) <= frictionMax) {
+      fFriction = -force;
+      fNet = 0;
+    } else {
+      fFriction = force > 0 ? -frictionMax : frictionMax;
+      fNet = force + fFriction;
+    }
+  } else {
+    if (Math.abs(f2State.v) < 0.001 && Math.abs(force) <= frictionMax) {
+      fFriction = -force;
+      fNet = 0;
+    } else {
+      fFriction = f2State.v > 0 ? -frictionMax : (f2State.v < 0 ? frictionMax : (force > 0 ? -frictionMax : frictionMax));
+      fNet = force + fFriction;
+    }
+  }
+
+  const accel = fNet / mass;
+
+  document.getElementById('f2-fval').textContent = force.toFixed(1) + ' N';
+  document.getElementById('f2-frval').textContent = fFriction.toFixed(1) + ' N';
+  document.getElementById('f2-netval').textContent = fNet.toFixed(1) + ' N';
+  document.getElementById('f2-aval').textContent = accel.toFixed(2) + ' m/s²';
+
+  if (!f2State.running) drawF2Static();
+}
+
+function drawF2Static() {
+  const canvas = document.getElementById('canvas-f2');
+  const ctx = canvas.getContext('2d');
+  const cW = canvas.width, cH = canvas.height;
+  ctx.clearRect(0, 0, cW, cH);
+
+  const groundY = cH - 60;
+  // Ground
+  ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(20, groundY); ctx.lineTo(cW-20, groundY); ctx.stroke();
+  for (let hx = 30; hx < cW - 20; hx += 12) {
+    ctx.beginPath(); ctx.moveTo(hx, groundY); ctx.lineTo(hx-8, groundY+10); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  drawF2Block(ctx, f2State.x, groundY);
+}
+
+function drawF2Block(ctx, x, groundY) {
+  const force = parseFloat(document.getElementById('f2-force').value);
+  const mass = parseFloat(document.getElementById('f2-mass').value);
+  const blockW = 30 + mass * 1.5;
+  const blockH = 30 + mass * 1;
+
+  // Block
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(x, groundY - blockH, blockW, blockH);
+  ctx.strokeStyle = '#1d4ed8'; ctx.lineWidth = 2;
+  ctx.strokeRect(x, groundY - blockH, blockW, blockH);
+  ctx.fillStyle = 'white'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(mass.toFixed(0) + 'kg', x + blockW/2, groundY - blockH/2 + 5);
+
+  const cx = x + blockW / 2;
+  const cy = groundY - blockH / 2;
+
+  // Applied force arrow
+  if (Math.abs(force) > 0.5) {
+    const fLen = Math.min(Math.abs(force) * 1.5, 150);
+    const dir = force > 0 ? 1 : -1;
+    const startX = dir > 0 ? x - 5 : x + blockW + 5;
+    drawArrow(ctx, startX, cy, startX + dir * fLen * (-1), cy, '#ef4444', 3);
+    ctx.fillStyle = '#ef4444'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('F=' + force + 'N', startX + dir * fLen * (-1) / 2, cy - 15);
+  }
+
+  // Weight arrow
+  drawArrow(ctx, cx, groundY - blockH, cx, groundY - blockH - 40, '#64748b', 2);
+  ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('N', cx + 15, groundY - blockH - 30);
+
+  drawArrow(ctx, cx, groundY, cx, groundY + 40, '#94a3b8', 2);
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('mg', cx + 18, groundY + 35);
+
+  ctx.textAlign = 'left';
+}
+
+function startF2Anim() {
+  if (f2AnimId) cancelAnimationFrame(f2AnimId);
+  f2State = { x: 60, v: 0, running: true };
+  document.getElementById('f2-status').style.display = 'flex';
+  const canvas = document.getElementById('canvas-f2');
+  const cW = canvas.width;
+  const groundY = canvas.height - 60;
+  let lastTime = null;
+
+  function step(time) {
+    if (!lastTime) lastTime = time;
+    const dt = Math.min((time - lastTime) / 1000, 0.05);
+    lastTime = time;
+
+    const force = parseFloat(document.getElementById('f2-force').value);
+    const mass = parseFloat(document.getElementById('f2-mass').value);
+    const mu = parseFloat(document.getElementById('f2-mu').value);
+    const W = mass * G;
+    const frictionMax = mu * W;
+
+    let fFriction;
+    if (Math.abs(f2State.v) < 0.01 && Math.abs(force) <= frictionMax) {
+      fFriction = -force;
+    } else {
+      fFriction = f2State.v > 0.01 ? -frictionMax : (f2State.v < -0.01 ? frictionMax : (force > 0 ? -frictionMax : frictionMax));
+    }
+    const fNet = force + fFriction;
+    const accel = fNet / mass;
+
+    f2State.v += accel * dt * 3; // speed up simulation
+    f2State.x += f2State.v * dt * 60;
+
+    // Boundaries
+    if (f2State.x < 20) { f2State.x = 20; f2State.v = Math.max(0, f2State.v); }
+    const blockW = 30 + mass * 1.5;
+    if (f2State.x + blockW > cW - 20) { f2State.x = cW - 20 - blockW; f2State.v = Math.min(0, f2State.v); }
+
+    document.getElementById('f2-vval').textContent = f2State.v.toFixed(2) + ' m/s';
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, cW, canvas.height);
+
+    // Ground
+    ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, groundY); ctx.lineTo(cW-20, groundY); ctx.stroke();
+    for (let hx = 30; hx < cW - 20; hx += 12) {
+      ctx.beginPath(); ctx.moveTo(hx, groundY); ctx.lineTo(hx-8, groundY+10); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1; ctx.stroke();
+    }
+
+    // Speed indicator
+    ctx.fillStyle = '#64748b'; ctx.font = '14px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('v = ' + f2State.v.toFixed(2) + ' m/s', 30, 30);
+    ctx.fillText('a = ' + accel.toFixed(2) + ' m/s²', 30, 50);
+
+    drawF2Block(ctx, f2State.x, groundY);
+
+    if (f2State.running) f2AnimId = requestAnimationFrame(step);
+  }
+  f2AnimId = requestAnimationFrame(step);
+}
+
+function resetF2() {
+  if (f2AnimId) cancelAnimationFrame(f2AnimId);
+  f2State = { x: 60, v: 0, running: false };
+  document.getElementById('f2-status').style.display = 'none';
+  document.getElementById('f2-vval').textContent = '0 m/s';
+  updateF2();
+  drawF2Static();
+}
+
+setTimeout(() => { updateF2(); drawF2Static(); }, 200);
+
+// ========================
+// Tool 4: 阿特伍德機
+// ========================
+let atAnimId = null;
+let atState = { offset: 0, v: 0, running: false };
+
+function updateAtwood() {
+  const m1 = parseFloat(document.getElementById('at-m1').value);
+  const m2 = parseFloat(document.getElementById('at-m2').value);
+
+  document.getElementById('at-m1-val').textContent = m1.toFixed(1) + ' kg';
+  document.getElementById('at-m2-val').textContent = m2.toFixed(1) + ' kg';
+
+  const w1 = m1 * G;
+  const w2 = m2 * G;
+  const a = ((m1 - m2) * G) / (m1 + m2);
+  const T = (2 * m1 * m2 * G) / (m1 + m2);
+
+  document.getElementById('at-w1').textContent = w1.toFixed(2) + ' N';
+  document.getElementById('at-w2').textContent = w2.toFixed(2) + ' N';
+  document.getElementById('at-a').textContent = a.toFixed(3) + ' m/s²';
+  document.getElementById('at-t').textContent = T.toFixed(2) + ' N';
+  document.getElementById('at-formula-a').textContent = `(${m1}-${m2})×${G}/(${m1}+${m2}) = ${a.toFixed(3)}`;
+  document.getElementById('at-formula-t').textContent = `2×${m1}×${m2}×${G}/(${m1}+${m2}) = ${T.toFixed(2)}`;
+
+  drawAtwoodStatic();
+}
+
+function drawAtwoodStatic() {
+  drawAtwoodScene(0);
+}
+
+function drawAtwoodScene(offset) {
+  const canvas = document.getElementById('canvas-atwood');
+  const ctx = canvas.getContext('2d');
+  const cW = canvas.width, cH = canvas.height;
+  ctx.clearRect(0, 0, cW, cH);
+
+  const m1 = parseFloat(document.getElementById('at-m1').value);
+  const m2 = parseFloat(document.getElementById('at-m2').value);
+
+  const pulleyX = cW / 2;
+  const pulleyY = 70;
+  const pulleyR = 25;
+  const leftX = pulleyX - 120;
+  const rightX = pulleyX + 120;
+  const baseHang = 180;
+
+  const m1Y = baseHang + offset * 60;
+  const m2Y = baseHang - offset * 60;
+
+  // Support structure
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillRect(pulleyX - 4, 20, 8, pulleyY - 20);
+  ctx.fillRect(pulleyX - 60, 16, 120, 8);
+
+  // Pulley
+  ctx.beginPath();
+  ctx.arc(pulleyX, pulleyY, pulleyR, 0, Math.PI * 2);
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fill();
+  ctx.strokeStyle = '#64748b'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(pulleyX, pulleyY, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#64748b'; ctx.fill();
+
+  // Ropes
+  ctx.strokeStyle = '#78716c'; ctx.lineWidth = 2.5;
+  // Left rope: from pulley to m1
+  ctx.beginPath();
+  ctx.moveTo(pulleyX - pulleyR, pulleyY);
+  ctx.lineTo(leftX, pulleyY);
+  ctx.lineTo(leftX, m1Y);
+  ctx.stroke();
+  // Right rope: from pulley to m2
+  ctx.beginPath();
+  ctx.moveTo(pulleyX + pulleyR, pulleyY);
+  ctx.lineTo(rightX, pulleyY);
+  ctx.lineTo(rightX, m2Y);
+  ctx.stroke();
+
+  // Mass 1 (left, heavier)
+  const boxW = 60, boxH = 50;
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(leftX - boxW/2, m1Y, boxW, boxH);
+  ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 2;
+  ctx.strokeRect(leftX - boxW/2, m1Y, boxW, boxH);
+  ctx.fillStyle = 'white'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('m₁', leftX, m1Y + 22);
+  ctx.fillText(m1.toFixed(1) + ' kg', leftX, m1Y + 40);
+
+  // Mass 2 (right, lighter)
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(rightX - boxW/2, m2Y, boxW, boxH);
+  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2;
+  ctx.strokeRect(rightX - boxW/2, m2Y, boxW, boxH);
+  ctx.fillStyle = 'white'; ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('m₂', rightX, m2Y + 22);
+  ctx.fillText(m2.toFixed(1) + ' kg', rightX, m2Y + 40);
+
+  // Force arrows on m1
+  const a = ((m1 - m2) * G) / (m1 + m2);
+  const T = (2 * m1 * m2 * G) / (m1 + m2);
+  const fScale = 0.8;
+
+  // m1: weight down, tension up
+  const m1cx = leftX, m1cy = m1Y + boxH/2;
+  drawArrow(ctx, m1cx - 40, m1cy, m1cx - 40, m1cy + m1*G*fScale*0.4, '#ef4444', 2);
+  drawArrow(ctx, m1cx - 40, m1cy, m1cx - 40, m1cy - T*fScale*0.4, '#10b981', 2);
+  ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
+  ctx.fillStyle = '#ef4444'; ctx.fillText('m₁g', m1cx - 44, m1cy + m1*G*fScale*0.4 + 12);
+  ctx.fillStyle = '#10b981'; ctx.fillText('T', m1cx - 44, m1cy - T*fScale*0.4 - 5);
+
+  // m2: weight down, tension up
+  const m2cx = rightX, m2cy = m2Y + boxH/2;
+  drawArrow(ctx, m2cx + 40, m2cy, m2cx + 40, m2cy + m2*G*fScale*0.4, '#3b82f6', 2);
+  drawArrow(ctx, m2cx + 40, m2cy, m2cx + 40, m2cy - T*fScale*0.4, '#10b981', 2);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#3b82f6'; ctx.fillText('m₂g', m2cx + 44, m2cy + m2*G*fScale*0.4 + 12);
+  ctx.fillStyle = '#10b981'; ctx.fillText('T', m2cx + 44, m2cy - T*fScale*0.4 - 5);
+
+  // Direction arrow
+  if (Math.abs(a) > 0.01) {
+    const arrowDir = a > 0 ? 1 : -1;
+    ctx.fillStyle = '#f59e0b'; ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(a > 0 ? 'm₁ 下降 ↓' : 'm₁ 上升 ↑', leftX, m1Y + boxH + 30);
+    ctx.fillText(a > 0 ? 'm₂ 上升 ↑' : 'm₂ 下降 ↓', rightX, m2Y + boxH + 30);
+  }
+
+  // Info
+  ctx.fillStyle = '#64748b'; ctx.font = '13px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('a = ' + a.toFixed(3) + ' m/s²', 20, cH - 30);
+  ctx.fillText('T = ' + T.toFixed(2) + ' N', 20, cH - 10);
+}
+
+function startAtwoodAnim() {
+  if (atAnimId) cancelAnimationFrame(atAnimId);
+  atState = { offset: 0, v: 0, running: true };
+  document.getElementById('at-status').style.display = 'flex';
+
+  const m1 = parseFloat(document.getElementById('at-m1').value);
+  const m2 = parseFloat(document.getElementById('at-m2').value);
+  const a = ((m1 - m2) * G) / (m1 + m2);
+  let lastTime = null;
+
+  function step(time) {
+    if (!lastTime) lastTime = time;
+    const dt = Math.min((time - lastTime) / 1000, 0.05);
+    lastTime = time;
+
+    atState.v += a * dt * 0.5;
+    atState.offset += atState.v * dt * 2;
+
+    if (Math.abs(atState.offset) > 3.5) {
+      atState.offset = Math.sign(atState.offset) * 3.5;
+      atState.v = 0;
+      atState.running = false;
+      document.getElementById('at-status').style.display = 'none';
+    }
+
+    drawAtwoodScene(atState.offset);
+
+    if (atState.running) atAnimId = requestAnimationFrame(step);
+  }
+  atAnimId = requestAnimationFrame(step);
+}
+
+function resetAtwood() {
+  if (atAnimId) cancelAnimationFrame(atAnimId);
+  atState = { offset: 0, v: 0, running: false };
+  document.getElementById('at-status').style.display = 'none';
+  drawAtwoodStatic();
+}
+
+setTimeout(() => updateAtwood(), 250);
+</script>
+
+</body>
+</html>

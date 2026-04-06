@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>熱學與熱力學 — 互動工具</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2D6A9F;
+    --primary-light: #4A8EC7;
+    --primary-dark: #1B4F7A;
+    --accent: #E08A3C;
+    --accent-light: #F0A85C;
+    --accent-dark: #C06E20;
+    --bg: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --text: #1E2A3A;
+    --text-light: #4A5568;
+    --text-muted: #8899AA;
+    --border: #D8DEE6;
+    --success: #38A169;
+    --warning: #D69E2E;
+    --danger: #E53E3E;
+    --shadow-sm: 0 1px 3px rgba(30,42,58,0.08);
+    --shadow-md: 0 4px 12px rgba(30,42,58,0.1);
+    --shadow-lg: 0 8px 24px rgba(30,42,58,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6em;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.92em;
+    margin-bottom: 24px;
+  }
+
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+    background: #E8F0F8;
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.35s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    font-size: 1.15em;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+  }
+  .card .card-desc {
+    color: var(--text-muted);
+    font-size: 0.88em;
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.88em;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    margin: 4px 0 8px 0;
+    accent-color: var(--primary);
+  }
+
+  input[type="number"], select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.92em;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+  input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .control-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 500px) {
+    .control-row { grid-template-columns: 1fr; }
+  }
+
+  .val-display {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.95em;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--primary-dark); box-shadow: var(--shadow-md); }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-accent:hover { background: var(--accent-dark); box-shadow: var(--shadow-md); }
+  .btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .btn-outline:hover { background: var(--primary); color: #fff; }
+  .btn-group { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: #FAFBFC;
+    margin-bottom: 12px;
+  }
+
+  .info-box {
+    background: linear-gradient(135deg, #EBF4FF 0%, #F0F4F8 100%);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    font-size: 0.88em;
+    color: var(--text);
+    border-left: 4px solid var(--primary);
+    margin-bottom: 12px;
+    line-height: 1.8;
+  }
+  .info-box strong { color: var(--primary-dark); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .result-item {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .result-item .result-label {
+    font-size: 0.78em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .result-item .result-value {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-top: 2px;
+  }
+
+  .hint-toggle {
+    color: var(--primary);
+    font-size: 0.85em;
+    cursor: pointer;
+    font-weight: 600;
+    user-select: none;
+    display: inline-block;
+    margin-top: 8px;
+  }
+  .hint-toggle:hover { text-decoration: underline; }
+  .hint-content {
+    display: none;
+    margin-top: 6px;
+    padding: 10px 14px;
+    background: #FFF9EB;
+    border-radius: 8px;
+    font-size: 0.85em;
+    border-left: 4px solid var(--warning);
+    color: var(--text-light);
+    line-height: 1.7;
+  }
+  .hint-content.show { display: block; animation: fadeIn 0.25s ease; }
+
+  .comparison-bar {
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+    font-size: 0.85em;
+  }
+  .comparison-bar .bar-label {
+    width: 130px;
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--text-light);
+  }
+  .comparison-bar .bar-track {
+    flex: 1;
+    height: 22px;
+    background: var(--bg);
+    border-radius: 11px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .comparison-bar .bar-fill {
+    height: 100%;
+    border-radius: 11px;
+    transition: width 0.6s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-size: 0.8em;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .thermometer-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 40px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .thermo-unit {
+    text-align: center;
+  }
+  .thermo-tube {
+    width: 36px;
+    height: 200px;
+    background: #E8ECF0;
+    border-radius: 18px 18px 0 0;
+    position: relative;
+    margin: 0 auto 0;
+    border: 2px solid var(--border);
+    overflow: hidden;
+  }
+  .thermo-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0 0 0 0;
+    transition: height 0.5s ease, background-color 0.5s ease;
+  }
+  .thermo-bulb {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    margin: -4px auto 0;
+    border: 2px solid var(--border);
+    transition: background-color 0.5s ease;
+  }
+  .thermo-label {
+    font-weight: 700;
+    font-size: 0.85em;
+    color: var(--primary-dark);
+    margin-top: 6px;
+  }
+  .thermo-value {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  .cycle-stage-info {
+    margin-top: 10px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 0.88em;
+    line-height: 1.7;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .cycle-stage-info .stage-name {
+    font-weight: 700;
+    color: var(--primary-dark);
+    font-size: 1em;
+  }
+
+  .preset-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .preset-btn {
+    padding: 6px 14px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.82em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .preset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent-dark);
+  }
+  .preset-btn.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+
+<h1>熱學與熱力學 — 互動工具</h1>
+<p class="subtitle">透過動手操作來理解溫度、熱量、熱機效率與卡諾循環</p>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('engine')">熱機效率計算器</button>
+  <button class="tab-btn" onclick="switchTab('heat')">熱量計算器</button>
+  <button class="tab-btn" onclick="switchTab('carnot')">卡諾循環圖解</button>
+  <button class="tab-btn" onclick="switchTab('tempconv')">溫標轉換器</button>
+</div>
+
+<!-- ==================== Tool 1: Heat Engine Efficiency ==================== -->
+<div id="panel-engine" class="tab-panel active">
+  <div class="card">
+    <h2>熱機效率計算器</h2>
+    <p class="card-desc">輸入高溫與低溫熱源的溫度，計算卡諾效率上限，並與真實引擎比較。</p>
+
+    <div class="info-box">
+      <strong>卡諾效率公式：</strong> &eta; = 1 &minus; T<sub>cold</sub> / T<sub>hot</sub><br>
+      溫度必須使用<strong>絕對溫度（K）</strong>。效率越高，代表熱能轉化為功的比例越大。
+    </div>
+
+    <div class="control-row">
+      <div>
+        <label>高溫熱源溫度 T<sub>hot</sub></label>
+        <input type="range" id="eng-thot" min="300" max="2000" value="600" oninput="calcEngine()">
+        <span class="val-display" id="eng-thot-val">600 K (327 &deg;C)</span>
+      </div>
+      <div>
+        <label>低溫熱源溫度 T<sub>cold</sub></label>
+        <input type="range" id="eng-tcold" min="200" max="600" value="300" oninput="calcEngine()">
+        <span class="val-display" id="eng-tcold-val">300 K (27 &deg;C)</span>
+      </div>
+    </div>
+
+    <div class="preset-btns">
+      <button class="preset-btn" onclick="setEnginePreset(373,300)">蒸汽機(早期)</button>
+      <button class="preset-btn" onclick="setEnginePreset(600,300)">火力發電廠</button>
+      <button class="preset-btn" onclick="setEnginePreset(1500,300)">汽車引擎</button>
+      <button class="preset-btn" onclick="setEnginePreset(800,300)">核能發電</button>
+      <button class="preset-btn" onclick="setEnginePreset(1800,300)">噴射引擎</button>
+    </div>
+
+    <div class="result-grid" id="eng-results">
+      <div class="result-item">
+        <div class="result-label">卡諾效率</div>
+        <div class="result-value" id="eng-eff">50.0%</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">溫度差</div>
+        <div class="result-value" id="eng-dt">300 K</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">若吸收 1000 J</div>
+        <div class="result-value" id="eng-work">500 J 做功</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">廢熱</div>
+        <div class="result-value" id="eng-waste">500 J</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:20px;font-size:0.95em;color:var(--text-light);">與真實引擎比較</h3>
+    <div id="eng-comparison"></div>
+
+    <span class="hint-toggle" onclick="toggleHint('eng-hint')">&#9432; 觀察提示</span>
+    <div class="hint-content" id="eng-hint">
+      <strong>試試看：</strong>把高溫拉到最高、低溫拉到最低，看看效率能接近多少？你會發現，即使在最理想的條件下，效率也不可能達到 100%。<br>
+      <strong>想一想：</strong>為什麼真實引擎的效率總是遠低於卡諾效率？因為真實過程中有摩擦、熱損失、不完全燃燒等不可逆因素。
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tool 2: Heat Calculator ==================== -->
+<div id="panel-heat" class="tab-panel">
+  <div class="card">
+    <h2>熱量計算器</h2>
+    <p class="card-desc">選擇物質、輸入質量與溫度變化，計算所需的熱量 Q = mc&Delta;T。</p>
+
+    <div class="info-box">
+      <strong>公式：</strong> Q = m &times; c &times; &Delta;T<br>
+      其中 Q 為熱量（J），m 為質量（kg），c 為比熱容（J/(kg&middot;&deg;C)），&Delta;T 為溫度變化（&deg;C）。
+    </div>
+
+    <label>選擇物質（預設比熱值）</label>
+    <div class="preset-btns" id="heat-presets">
+      <button class="preset-btn active" onclick="setHeatPreset('water',4186)">水 (4186)</button>
+      <button class="preset-btn" onclick="setHeatPreset('ice',2090)">冰 (2090)</button>
+      <button class="preset-btn" onclick="setHeatPreset('aluminum',897)">鋁 (897)</button>
+      <button class="preset-btn" onclick="setHeatPreset('iron',449)">鐵 (449)</button>
+      <button class="preset-btn" onclick="setHeatPreset('copper',385)">銅 (385)</button>
+      <button class="preset-btn" onclick="setHeatPreset('lead',128)">鉛 (128)</button>
+      <button class="preset-btn" onclick="setHeatPreset('custom',0)">自訂</button>
+    </div>
+
+    <div class="control-row">
+      <div>
+        <label>質量 m (kg)</label>
+        <input type="number" id="heat-mass" value="1" min="0.01" step="0.1" oninput="calcHeat()">
+      </div>
+      <div>
+        <label>比熱容 c (J/(kg&middot;&deg;C))</label>
+        <input type="number" id="heat-c" value="4186" min="1" step="1" oninput="calcHeat()">
+      </div>
+    </div>
+    <div class="control-row">
+      <div>
+        <label>初始溫度 T<sub>i</sub> (&deg;C)</label>
+        <input type="number" id="heat-ti" value="20" step="1" oninput="calcHeat()">
+      </div>
+      <div>
+        <label>最終溫度 T<sub>f</sub> (&deg;C)</label>
+        <input type="number" id="heat-tf" value="100" step="1" oninput="calcHeat()">
+      </div>
+    </div>
+
+    <div class="result-grid" id="heat-results">
+      <div class="result-item">
+        <div class="result-label">溫度變化 &Delta;T</div>
+        <div class="result-value" id="heat-dt">80 &deg;C</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">所需熱量 Q</div>
+        <div class="result-value" id="heat-q">334,880 J</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">千焦耳</div>
+        <div class="result-value" id="heat-kj">334.9 kJ</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">千卡 (大卡)</div>
+        <div class="result-value" id="heat-kcal">80.0 kcal</div>
+      </div>
+    </div>
+
+    <span class="hint-toggle" onclick="toggleHint('heat-hint')">&#9432; 生活對照</span>
+    <div class="hint-content" id="heat-hint">
+      <strong>你知道嗎？</strong>把 1 公升的水從 20&deg;C 煮到 100&deg;C 需要約 335 kJ 的能量。一根火柴完全燃燒大約產生 1 kJ 的熱量，所以你需要大約 335 根火柴的能量！<br>
+      <strong>試試看：</strong>把物質改成「鐵」，同樣的質量和溫度變化，需要的熱量少了多少？這就是為什麼金屬比水更容易加熱。
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tool 3: Carnot Cycle Diagram ==================== -->
+<div id="panel-carnot" class="tab-panel">
+  <div class="card">
+    <h2>卡諾循環 PV 圖解</h2>
+    <p class="card-desc">觀看卡諾循環四個階段的動態 PV 圖，理解等溫與絕熱過程。</p>
+
+    <div class="info-box">
+      <strong>卡諾循環</strong>由四個可逆過程組成：等溫膨脹 &rarr; 絕熱膨脹 &rarr; 等溫壓縮 &rarr; 絕熱壓縮。PV 圖中圍成的面積代表一個循環的淨功。
+    </div>
+
+    <canvas id="carnot-canvas" width="800" height="500"></canvas>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" id="carnot-play-btn" onclick="carnotPlay()">&#9654; 播放動畫</button>
+      <button class="btn btn-outline" onclick="carnotReset()">&#8635; 重置</button>
+    </div>
+
+    <div class="cycle-stage-info" id="carnot-stage-info">
+      <div class="stage-name" id="carnot-stage-name">點擊「播放」開始觀看卡諾循環動畫</div>
+      <div id="carnot-stage-desc" style="margin-top:4px;color:var(--text-light);">將依序展示四個階段：等溫膨脹、絕熱膨脹、等溫壓縮、絕熱壓縮。</div>
+    </div>
+
+    <span class="hint-toggle" onclick="toggleHint('carnot-hint')">&#9432; 學習重點</span>
+    <div class="hint-content" id="carnot-hint">
+      <strong>觀察重點：</strong><br>
+      1. 等溫線（紅色/藍色曲線）的形狀像雙曲線，因為 PV = nRT = 常數。<br>
+      2. 絕熱線（綠色曲線）比等溫線更陡，因為氣體在膨脹時溫度會下降（PV<sup>&gamma;</sup> = 常數）。<br>
+      3. 曲線圍成的面積越大，一個循環做的淨功越多。<br>
+      4. 高溫與低溫的溫差越大，圍成的面積越大，效率越高。
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tool 4: Temperature Converter ==================== -->
+<div id="panel-tempconv" class="tab-panel">
+  <div class="card">
+    <h2>溫標轉換器</h2>
+    <p class="card-desc">在攝氏（&deg;C）、華氏（&deg;F）和克氏（K）之間即時轉換，搭配視覺化溫度計。</p>
+
+    <div class="info-box">
+      <strong>轉換公式：</strong><br>
+      &deg;F = (9/5) &times; &deg;C + 32 &nbsp;&nbsp;|&nbsp;&nbsp; K = &deg;C + 273.15<br>
+      <strong>特殊溫度：</strong> 絕對零度 = 0 K = &minus;273.15 &deg;C &nbsp;|&nbsp; 水的冰點 = 0 &deg;C = 273.15 K &nbsp;|&nbsp; 水的沸點 = 100 &deg;C = 373.15 K
+    </div>
+
+    <div class="control-row" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div>
+        <label>攝氏 (&deg;C)</label>
+        <input type="number" id="tc-celsius" value="25" step="0.1" oninput="convertTemp('c')">
+      </div>
+      <div>
+        <label>華氏 (&deg;F)</label>
+        <input type="number" id="tc-fahrenheit" value="77" step="0.1" oninput="convertTemp('f')">
+      </div>
+      <div>
+        <label>克氏 (K)</label>
+        <input type="number" id="tc-kelvin" value="298.15" step="0.1" oninput="convertTemp('k')">
+      </div>
+    </div>
+
+    <div class="preset-btns" style="margin-top:8px;">
+      <button class="preset-btn" onclick="setTempPreset(-273.15)">絕對零度</button>
+      <button class="preset-btn" onclick="setTempPreset(-40)">-40&deg;C (C=F)</button>
+      <button class="preset-btn" onclick="setTempPreset(0)">水的冰點</button>
+      <button class="preset-btn" onclick="setTempPreset(36.5)">人體體溫</button>
+      <button class="preset-btn" onclick="setTempPreset(100)">水的沸點</button>
+      <button class="preset-btn" onclick="setTempPreset(5500)">太陽表面</button>
+    </div>
+
+    <div class="thermometer-container" id="tc-thermos">
+      <div class="thermo-unit">
+        <div class="thermo-tube">
+          <div class="thermo-fill" id="tc-fill-c" style="height:40%;background:#E53E3E;"></div>
+        </div>
+        <div class="thermo-bulb" id="tc-bulb-c" style="background:#E53E3E;"></div>
+        <div class="thermo-label">攝氏 &deg;C</div>
+        <div class="thermo-value" id="tc-disp-c">25.0</div>
+      </div>
+      <div class="thermo-unit">
+        <div class="thermo-tube">
+          <div class="thermo-fill" id="tc-fill-f" style="height:40%;background:#DD6B20;"></div>
+        </div>
+        <div class="thermo-bulb" id="tc-bulb-f" style="background:#DD6B20;"></div>
+        <div class="thermo-label">華氏 &deg;F</div>
+        <div class="thermo-value" id="tc-disp-f">77.0</div>
+      </div>
+      <div class="thermo-unit">
+        <div class="thermo-tube">
+          <div class="thermo-fill" id="tc-fill-k" style="height:40%;background:#2D6A9F;"></div>
+        </div>
+        <div class="thermo-bulb" id="tc-bulb-k" style="background:#2D6A9F;"></div>
+        <div class="thermo-label">克氏 K</div>
+        <div class="thermo-value" id="tc-disp-k">298.2</div>
+      </div>
+    </div>
+
+    <span class="hint-toggle" onclick="toggleHint('tc-hint')">&#9432; 趣味知識</span>
+    <div class="hint-content" id="tc-hint">
+      <strong>你知道嗎？</strong> 攝氏和華氏在 &minus;40 度時數值完全相同！試著輸入 &minus;40 看看。<br>
+      <strong>想一想：</strong>為什麼克氏溫標沒有負值？因為它的零點就是「絕對零度」——理論上分子動能為零的最低溫度。
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ Tab Navigation ============ */
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  const btns = document.querySelectorAll('.tab-btn');
+  const map = { engine: 0, heat: 1, carnot: 2, tempconv: 3 };
+  btns[map[id]].classList.add('active');
+  if (id === 'carnot') { carnotReset(); drawCarnotStatic(); }
+}
+
+function toggleHint(id) {
+  document.getElementById(id).classList.toggle('show');
+}
+
+/* ============ Tool 1: Heat Engine Efficiency ============ */
+function calcEngine() {
+  const tH = +document.getElementById('eng-thot').value;
+  const tC = +document.getElementById('eng-tcold').value;
+  document.getElementById('eng-thot-val').innerHTML = tH + ' K (' + (tH - 273) + ' &deg;C)';
+  document.getElementById('eng-tcold-val').innerHTML = tC + ' K (' + (tC - 273) + ' &deg;C)';
+
+  const eff = tH > tC ? (1 - tC / tH) : 0;
+  const effPct = (eff * 100).toFixed(1);
+  const work = (eff * 1000).toFixed(0);
+  const waste = (1000 - eff * 1000).toFixed(0);
+
+  document.getElementById('eng-eff').textContent = effPct + '%';
+  document.getElementById('eng-dt').textContent = (tH - tC) + ' K';
+  document.getElementById('eng-work').textContent = work + ' J 做功';
+  document.getElementById('eng-waste').textContent = waste + ' J';
+
+  const engines = [
+    { name: '蒸汽機(早期)', eff: 5, color: '#8B5E3C' },
+    { name: '汽車引擎', eff: 25, color: '#E53E3E' },
+    { name: '柴油引擎', eff: 35, color: '#DD6B20' },
+    { name: '火力發電', eff: 40, color: '#D69E2E' },
+    { name: '燃氣渦輪', eff: 42, color: '#38A169' },
+    { name: '卡諾上限', eff: parseFloat(effPct), color: '#2D6A9F' }
+  ];
+  let html = '';
+  engines.forEach(e => {
+    const w = Math.min(e.eff, 100);
+    html += '<div class="comparison-bar">' +
+      '<span class="bar-label">' + e.name + '</span>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + w + '%;background:' + e.color + ';">' + e.eff + '%</div></div></div>';
+  });
+  document.getElementById('eng-comparison').innerHTML = html;
+}
+
+function setEnginePreset(tH, tC) {
+  document.getElementById('eng-thot').value = tH;
+  document.getElementById('eng-tcold').value = tC;
+  calcEngine();
+}
+
+calcEngine();
+
+/* ============ Tool 2: Heat Calculator ============ */
+function calcHeat() {
+  const m = +document.getElementById('heat-mass').value;
+  const c = +document.getElementById('heat-c').value;
+  const ti = +document.getElementById('heat-ti').value;
+  const tf = +document.getElementById('heat-tf').value;
+  const dt = tf - ti;
+  const q = m * c * dt;
+
+  document.getElementById('heat-dt').innerHTML = dt.toFixed(1) + ' &deg;C';
+  document.getElementById('heat-q').textContent = q.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' J';
+  document.getElementById('heat-kj').textContent = (q / 1000).toFixed(1) + ' kJ';
+  document.getElementById('heat-kcal').textContent = (q / 4186).toFixed(1) + ' kcal';
+}
+
+function setHeatPreset(name, c) {
+  document.querySelectorAll('#heat-presets .preset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (name !== 'custom' && c > 0) {
+    document.getElementById('heat-c').value = c;
+  }
+  calcHeat();
+}
+
+calcHeat();
+
+/* ============ Tool 3: Carnot Cycle Diagram ============ */
+let carnotAnim = null;
+let carnotStage = -1;
+let carnotProgress = 0;
+
+const carnotParams = {
+  n: 1, R: 8.314,
+  TH: 600, TC: 300,
+  V1: 1, gamma: 5 / 3
+};
+
+function carnotPV(V, T, isAdiabatic, refV, refP) {
+  if (isAdiabatic) {
+    return refP * Math.pow(refV / V, carnotParams.gamma);
+  }
+  return carnotParams.n * carnotParams.R * T / V;
+}
+
+function getCarnotPoints() {
+  const { n, R, TH, TC, V1, gamma } = carnotParams;
+  const P1 = n * R * TH / V1;
+  const V2 = V1 * 3.5;
+  const P2 = n * R * TH / V2;
+  const V3 = V2 * Math.pow(TH / TC, 1 / (gamma - 1));
+  const P3 = n * R * TC / V3;
+  const V4 = V1 * Math.pow(TH / TC, 1 / (gamma - 1));
+  const P4 = n * R * TC / V4;
+  return { V1, P1, V2, P2, V3, P3, V4, P4 };
+}
+
+function drawCarnotStatic() {
+  const canvas = document.getElementById('carnot-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.clientWidth * dpr;
+  canvas.height = canvas.clientHeight * dpr;
+  ctx.scale(dpr, dpr);
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const pad = { left: 70, right: 40, top: 40, bottom: 60 };
+  const gw = W - pad.left - pad.right;
+  const gh = H - pad.top - pad.bottom;
+
+  const pts = getCarnotPoints();
+  const allV = [pts.V1, pts.V2, pts.V3, pts.V4];
+  const allP = [pts.P1, pts.P2, pts.P3, pts.P4];
+  const Vmin = 0, Vmax = Math.max(...allV) * 1.15;
+  const Pmin = 0, Pmax = Math.max(...allP) * 1.15;
+
+  function toX(v) { return pad.left + (v - Vmin) / (Vmax - Vmin) * gw; }
+  function toY(p) { return pad.top + gh - (p - Pmin) / (Pmax - Pmin) * gh; }
+
+  // Grid
+  ctx.strokeStyle = '#E8ECF0';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const x = pad.left + gw * i / 5;
+    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + gh); ctx.stroke();
+    const y = pad.top + gh * i / 5;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + gw, y); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#2D3748';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + gh); ctx.lineTo(pad.left + gw, pad.top + gh); ctx.stroke();
+
+  ctx.fillStyle = '#2D3748';
+  ctx.font = '600 14px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('體積 V', pad.left + gw / 2, H - 10);
+  ctx.save();
+  ctx.translate(18, pad.top + gh / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('壓力 P', 0, 0);
+  ctx.restore();
+
+  function drawCurve(vStart, vEnd, fn, color, lw) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lw || 2.5;
+    ctx.beginPath();
+    const steps = 100;
+    for (let i = 0; i <= steps; i++) {
+      const v = vStart + (vEnd - vStart) * i / steps;
+      const p = fn(v);
+      const x = toX(v), y = toY(p);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  const { n, R, TH, TC, gamma } = carnotParams;
+
+  // Stage 1: isothermal expansion (TH)
+  drawCurve(pts.V1, pts.V2, v => n * R * TH / v, '#E53E3E', 3);
+  // Stage 2: adiabatic expansion
+  drawCurve(pts.V2, pts.V3, v => pts.P2 * Math.pow(pts.V2 / v, gamma), '#38A169', 3);
+  // Stage 3: isothermal compression (TC)
+  drawCurve(pts.V3, pts.V4, v => n * R * TC / v, '#3182CE', 3);
+  // Stage 4: adiabatic compression
+  drawCurve(pts.V4, pts.V1, v => pts.P4 * Math.pow(pts.V4 / v, gamma), '#D69E2E', 3);
+
+  // Fill cycle area
+  ctx.globalAlpha = 0.08;
+  ctx.fillStyle = '#2D6A9F';
+  ctx.beginPath();
+  const steps = 80;
+  for (let i = 0; i <= steps; i++) { const v = pts.V1 + (pts.V2 - pts.V1) * i / steps; ctx.lineTo(toX(v), toY(n * R * TH / v)); }
+  for (let i = 0; i <= steps; i++) { const v = pts.V2 + (pts.V3 - pts.V2) * i / steps; ctx.lineTo(toX(v), toY(pts.P2 * Math.pow(pts.V2 / v, gamma))); }
+  for (let i = 0; i <= steps; i++) { const v = pts.V3 + (pts.V4 - pts.V3) * i / steps; ctx.lineTo(toX(v), toY(n * R * TC / v)); }
+  for (let i = 0; i <= steps; i++) { const v = pts.V4 + (pts.V1 - pts.V4) * i / steps; ctx.lineTo(toX(v), toY(pts.P4 * Math.pow(pts.V4 / v, gamma))); }
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Corner labels
+  ctx.font = '700 13px -apple-system, sans-serif';
+  const labels = [
+    { label: '1', x: toX(pts.V1) - 14, y: toY(pts.P1) - 10, color: '#E53E3E' },
+    { label: '2', x: toX(pts.V2) + 8, y: toY(pts.P2) - 10, color: '#38A169' },
+    { label: '3', x: toX(pts.V3) + 8, y: toY(pts.P3) + 18, color: '#3182CE' },
+    { label: '4', x: toX(pts.V4) - 14, y: toY(pts.P4) + 18, color: '#D69E2E' }
+  ];
+  labels.forEach(l => {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(l.x, l.y, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = l.color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(l.x, l.y, 12, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = l.color;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(l.label, l.x, l.y);
+  });
+
+  // Legend
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.font = '600 12px -apple-system, sans-serif';
+  const legend = [
+    { text: '1→2 等溫膨脹 (TH)', color: '#E53E3E' },
+    { text: '2→3 絕熱膨脹', color: '#38A169' },
+    { text: '3→4 等溫壓縮 (TC)', color: '#3182CE' },
+    { text: '4→1 絕熱壓縮', color: '#D69E2E' }
+  ];
+  legend.forEach((l, i) => {
+    const lx = pad.left + gw - 175, ly = pad.top + 10 + i * 22;
+    ctx.fillStyle = l.color;
+    ctx.fillRect(lx, ly + 2, 16, 12);
+    ctx.fillStyle = '#4A5568';
+    ctx.fillText(l.text, lx + 22, ly);
+  });
+
+  return { toX, toY, pts, Vmin, Vmax, Pmin, Pmax, pad, gw, gh, W, H };
+}
+
+const stageInfo = [
+  { name: '階段 1：等溫膨脹 (1→2)', desc: '氣體在高溫 T_H 下緩慢膨脹。溫度不變，內能不變。系統從高溫熱源吸收熱量 Q_H，全部轉化為對外做的功。PV 圖上沿著高溫等溫線向右移動。', color: '#E53E3E' },
+  { name: '階段 2：絕熱膨脹 (2→3)', desc: '系統與外界隔絕（Q = 0），氣體繼續膨脹。膨脹做功消耗內能，溫度從 T_H 下降到 T_C。PV 圖上沿著更陡的絕熱線向右下移動。', color: '#38A169' },
+  { name: '階段 3：等溫壓縮 (3→4)', desc: '氣體在低溫 T_C 下被緩慢壓縮。溫度不變。壓縮產生的熱量 Q_C 被排放到低溫熱源。PV 圖上沿著低溫等溫線向左移動。', color: '#3182CE' },
+  { name: '階段 4：絕熱壓縮 (4→1)', desc: '系統與外界隔絕（Q = 0），氣體被進一步壓縮。壓縮做功增加內能，溫度從 T_C 升回 T_H，回到起點。PV 圖上沿著絕熱線向左上移動。', color: '#D69E2E' }
+];
+
+function carnotPlay() {
+  if (carnotAnim) { cancelAnimationFrame(carnotAnim); carnotAnim = null; }
+  carnotStage = 0;
+  carnotProgress = 0;
+  document.getElementById('carnot-play-btn').innerHTML = '&#9646;&#9646; 播放中...';
+  animateCarnot();
+}
+
+function carnotReset() {
+  if (carnotAnim) { cancelAnimationFrame(carnotAnim); carnotAnim = null; }
+  carnotStage = -1;
+  carnotProgress = 0;
+  document.getElementById('carnot-play-btn').innerHTML = '&#9654; 播放動畫';
+  document.getElementById('carnot-stage-name').textContent = '點擊「播放」開始觀看卡諾循環動畫';
+  document.getElementById('carnot-stage-desc').textContent = '將依序展示四個階段：等溫膨脹、絕熱膨脹、等溫壓縮、絕熱壓縮。';
+  document.getElementById('carnot-stage-info').style.borderLeftColor = 'var(--border)';
+  drawCarnotStatic();
+}
+
+function animateCarnot() {
+  const drawn = drawCarnotStatic();
+  if (carnotStage >= 4) {
+    carnotReset();
+    document.getElementById('carnot-stage-name').textContent = '循環完成！';
+    document.getElementById('carnot-stage-desc').textContent = '一個完整的卡諾循環結束。淨功 = 圖中藍色陰影面積。按「播放」再看一次。';
+    return;
+  }
+
+  const si = stageInfo[carnotStage];
+  document.getElementById('carnot-stage-name').textContent = si.name;
+  document.getElementById('carnot-stage-desc').textContent = si.desc;
+  document.getElementById('carnot-stage-info').style.borderLeftColor = si.color;
+
+  const { toX, toY, pts } = drawn;
+  const { n, R, TH, TC, gamma } = carnotParams;
+
+  const canvas = document.getElementById('carnot-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  ctx.save();
+  ctx.scale(dpr, dpr);
+
+  // Draw moving dot
+  let v, p;
+  if (carnotStage === 0) {
+    v = pts.V1 + (pts.V2 - pts.V1) * carnotProgress;
+    p = n * R * TH / v;
+  } else if (carnotStage === 1) {
+    v = pts.V2 + (pts.V3 - pts.V2) * carnotProgress;
+    p = pts.P2 * Math.pow(pts.V2 / v, gamma);
+  } else if (carnotStage === 2) {
+    v = pts.V3 + (pts.V4 - pts.V3) * carnotProgress;
+    p = n * R * TC / v;
+  } else {
+    v = pts.V4 + (pts.V1 - pts.V4) * carnotProgress;
+    p = pts.P4 * Math.pow(pts.V4 / v, gamma);
+  }
+
+  const dx = toX(v), dy = toY(p);
+  ctx.beginPath();
+  ctx.arc(dx, dy, 8, 0, Math.PI * 2);
+  ctx.fillStyle = si.color;
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.restore();
+
+  carnotProgress += 0.008;
+  if (carnotProgress >= 1) {
+    carnotProgress = 0;
+    carnotStage++;
+  }
+  carnotAnim = requestAnimationFrame(animateCarnot);
+}
+
+/* ============ Tool 4: Temperature Converter ============ */
+function convertTemp(source) {
+  let c, f, k;
+  if (source === 'c') {
+    c = +document.getElementById('tc-celsius').value;
+    f = c * 9 / 5 + 32;
+    k = c + 273.15;
+    document.getElementById('tc-fahrenheit').value = +f.toFixed(2);
+    document.getElementById('tc-kelvin').value = +k.toFixed(2);
+  } else if (source === 'f') {
+    f = +document.getElementById('tc-fahrenheit').value;
+    c = (f - 32) * 5 / 9;
+    k = c + 273.15;
+    document.getElementById('tc-celsius').value = +c.toFixed(2);
+    document.getElementById('tc-kelvin').value = +k.toFixed(2);
+  } else {
+    k = +document.getElementById('tc-kelvin').value;
+    c = k - 273.15;
+    f = c * 9 / 5 + 32;
+    document.getElementById('tc-celsius').value = +c.toFixed(2);
+    document.getElementById('tc-fahrenheit').value = +f.toFixed(2);
+  }
+  updateThermometers(c, f, k);
+}
+
+function updateThermometers(c, f, k) {
+  // Map temperature to height percentage (0-100)
+  // Range: -273.15 to 500 C
+  const minC = -273.15, maxC = 500;
+  const pct = Math.max(0, Math.min(100, (c - minC) / (maxC - minC) * 100));
+
+  function tempColor(celsius) {
+    if (celsius < -50) return '#3182CE';
+    if (celsius < 0) return '#4A90D9';
+    if (celsius < 20) return '#63B3ED';
+    if (celsius < 40) return '#F6AD55';
+    if (celsius < 100) return '#E53E3E';
+    return '#C53030';
+  }
+  const col = tempColor(c);
+
+  ['c', 'f', 'k'].forEach(u => {
+    document.getElementById('tc-fill-' + u).style.height = pct + '%';
+    document.getElementById('tc-fill-' + u).style.backgroundColor = col;
+    document.getElementById('tc-bulb-' + u).style.backgroundColor = col;
+  });
+
+  document.getElementById('tc-disp-c').textContent = c.toFixed(1);
+  document.getElementById('tc-disp-f').textContent = f.toFixed(1);
+  document.getElementById('tc-disp-k').textContent = k.toFixed(1);
+}
+
+function setTempPreset(celsius) {
+  document.getElementById('tc-celsius').value = celsius;
+  convertTemp('c');
+}
+
+convertTemp('c');
+
+/* ============ Responsive canvas resize ============ */
+window.addEventListener('resize', function() {
+  if (document.getElementById('panel-carnot').classList.contains('active')) {
+    drawCarnotStatic();
+  }
+});
+</script>
+</body>
+</html>

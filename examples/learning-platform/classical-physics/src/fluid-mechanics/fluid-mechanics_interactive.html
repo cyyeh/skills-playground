@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>流體力學 — 互動工具</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #2D6A9F;
+    --primary-light: #4A8EC7;
+    --primary-dark: #1B4F7A;
+    --accent: #E08A3C;
+    --accent-light: #F0A85C;
+    --accent-dark: #C06E20;
+    --bg: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --text: #1E2A3A;
+    --text-light: #4A5568;
+    --text-muted: #8899AA;
+    --border: #D8DEE6;
+    --success: #38A169;
+    --warning: #D69E2E;
+    --danger: #E53E3E;
+    --shadow-sm: 0 1px 3px rgba(30,42,58,0.08);
+    --shadow-md: 0 4px 12px rgba(30,42,58,0.1);
+    --shadow-lg: 0 8px 24px rgba(30,42,58,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6em;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.92em;
+    margin-bottom: 24px;
+  }
+
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+    background: #E8F0F8;
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.35s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    font-size: 1.15em;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+  }
+  .card .card-desc {
+    color: var(--text-muted);
+    font-size: 0.88em;
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.88em;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    margin: 4px 0 8px 0;
+    accent-color: var(--primary);
+  }
+
+  input[type="number"], select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.92em;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s;
+  }
+  input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .control-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .control-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 600px) {
+    .control-row { grid-template-columns: 1fr; }
+    .control-row-3 { grid-template-columns: 1fr; }
+  }
+
+  .val-display {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.95em;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--primary-dark); box-shadow: var(--shadow-md); }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-accent:hover { background: var(--accent-dark); box-shadow: var(--shadow-md); }
+  .btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .btn-outline:hover { background: var(--primary); color: #fff; }
+  .btn-group { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: #FAFBFC;
+    margin-bottom: 12px;
+  }
+
+  .info-box {
+    background: linear-gradient(135deg, #EBF4FF 0%, #F0F4F8 100%);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    font-size: 0.88em;
+    color: var(--text);
+    border-left: 4px solid var(--primary);
+    margin-bottom: 12px;
+    line-height: 1.8;
+  }
+  .info-box strong { color: var(--primary-dark); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .result-item {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .result-item .result-label {
+    font-size: 0.78em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .result-item .result-value {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-top: 2px;
+  }
+
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    color: var(--primary);
+    font-weight: 600;
+    border-bottom: 1px dashed var(--primary);
+  }
+  .tooltip .tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.82em;
+    font-weight: 400;
+    white-space: nowrap;
+    z-index: 10;
+    transition: opacity 0.2s;
+    max-width: 280px;
+    white-space: normal;
+    text-align: left;
+  }
+  .tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .status-float { color: var(--success); font-weight: 700; }
+  .status-sink { color: var(--danger); font-weight: 700; }
+  .status-suspend { color: var(--warning); font-weight: 700; }
+
+  .hydraulic-display {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0;
+    margin: 16px 0;
+    min-height: 220px;
+    position: relative;
+  }
+
+  .piston-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .piston-label {
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .piston-body {
+    background: linear-gradient(180deg, #B0BEC5 0%, #78909C 100%);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.4s ease;
+    position: relative;
+  }
+
+  .piston-cylinder {
+    background: linear-gradient(180deg, #42A5F5 0%, #1976D2 100%);
+    border-radius: 0 0 4px 4px;
+    transition: height 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .connector-pipe {
+    width: 100%;
+    height: 30px;
+    background: linear-gradient(180deg, #1976D2 0%, #42A5F5 50%, #1976D2 100%);
+    position: absolute;
+    bottom: 0;
+    border-radius: 0;
+  }
+
+  .force-arrow {
+    font-size: 1.4em;
+    color: var(--danger);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2px;
+  }
+
+  .force-value {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--primary-dark);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h1>流體力學 — 互動工具</h1>
+<p class="subtitle">透過模擬與計算，直觀理解流體力學的核心概念</p>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('buoyancy')">浮力計算器</button>
+  <button class="tab-btn" onclick="switchTab('hydraulic')">液壓機模擬器</button>
+  <button class="tab-btn" onclick="switchTab('bernoulli')">白努利效應模擬</button>
+  <button class="tab-btn" onclick="switchTab('pressure')">水壓與深度計算器</button>
+</div>
+
+<!-- ==================== Tab 1: Buoyancy Calculator ==================== -->
+<div id="tab-buoyancy" class="tab-panel active">
+  <div class="card">
+    <h2>浮力計算器</h2>
+    <p class="card-desc">輸入物體與流體的參數，計算浮力大小並判斷浮沉。觀察物體在流體中的位置變化。</p>
+
+    <div class="info-box">
+      <strong>阿基米德原理：</strong>浮力 F<sub>b</sub> = <span class="tooltip">ρ<sub>fluid</sub><span class="tooltip-text">流體的密度（kg/m³）</span></span> × V<sub>排</sub> × g。物體密度 < 流體密度時上浮，大於時下沉，相等時懸浮。
+    </div>
+
+    <div class="control-row-3">
+      <div>
+        <label>物體密度 (kg/m³)</label>
+        <input type="number" id="buoy-obj-density" value="800" min="1" max="25000" step="10">
+      </div>
+      <div>
+        <label>物體體積 (m³)</label>
+        <input type="number" id="buoy-obj-volume" value="0.01" min="0.0001" max="100" step="0.001">
+      </div>
+      <div>
+        <label>流體密度 (kg/m³)</label>
+        <select id="buoy-fluid-density">
+          <option value="1000">淡水 (1000)</option>
+          <option value="1025">海水 (1025)</option>
+          <option value="13600">水銀 (13600)</option>
+          <option value="789">酒精 (789)</option>
+          <option value="custom">自訂...</option>
+        </select>
+      </div>
+    </div>
+    <div id="buoy-custom-fluid-row" style="display:none; margin-bottom:12px;">
+      <label>自訂流體密度 (kg/m³)</label>
+      <input type="number" id="buoy-custom-fluid" value="1000" min="1" max="20000" step="1" style="max-width:200px;">
+    </div>
+
+    <div class="btn-group" style="margin-top:8px; margin-bottom:12px;">
+      <button class="btn btn-primary" onclick="calcBuoyancy()">計算</button>
+      <button class="btn btn-outline" onclick="resetBuoyancy()">重置</button>
+    </div>
+
+    <canvas id="buoy-canvas" width="900" height="350"></canvas>
+
+    <div class="result-grid" id="buoy-results">
+      <div class="result-item"><div class="result-label">物體重力 (N)</div><div class="result-value" id="buoy-weight">--</div></div>
+      <div class="result-item"><div class="result-label">最大浮力 (N)</div><div class="result-value" id="buoy-force">--</div></div>
+      <div class="result-item"><div class="result-label">浮沉狀態</div><div class="result-value" id="buoy-status">--</div></div>
+      <div class="result-item"><div class="result-label">浸沒比例</div><div class="result-value" id="buoy-submerged">--</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 2: Hydraulic Press Simulator ==================== -->
+<div id="tab-hydraulic" class="tab-panel">
+  <div class="card">
+    <h2>液壓機模擬器</h2>
+    <p class="card-desc">調整兩端活塞的面積和施力，觀察帕斯卡原理如何放大力量。</p>
+
+    <div class="info-box">
+      <strong>帕斯卡原理：</strong>密閉流體中的壓力變化等值傳遞。<span class="tooltip">F₂ / F₁ = A₂ / A₁<span class="tooltip-text">輸出力與輸入力的比值等於兩端活塞面積的比值。力放大了，但位移縮短了。</span></span>。功守恆：F₁ × d₁ = F₂ × d₂。
+    </div>
+
+    <div class="control-row">
+      <div>
+        <label>小活塞面積 A₁：<span class="val-display" id="hyd-a1-val">5</span> cm²</label>
+        <input type="range" id="hyd-a1" min="1" max="20" value="5" step="0.5" oninput="updateHydraulic()">
+      </div>
+      <div>
+        <label>大活塞面積 A₂：<span class="val-display" id="hyd-a2-val">50</span> cm²</label>
+        <input type="range" id="hyd-a2" min="10" max="200" value="50" step="1" oninput="updateHydraulic()">
+      </div>
+    </div>
+    <div class="control-row">
+      <div>
+        <label>施加力 F₁：<span class="val-display" id="hyd-f1-val">100</span> N</label>
+        <input type="range" id="hyd-f1" min="10" max="1000" value="100" step="10" oninput="updateHydraulic()">
+      </div>
+      <div>
+        <label>小活塞位移 d₁：<span class="val-display" id="hyd-d1-val">10</span> cm</label>
+        <input type="range" id="hyd-d1" min="1" max="50" value="10" step="0.5" oninput="updateHydraulic()">
+      </div>
+    </div>
+
+    <canvas id="hyd-canvas" width="900" height="320"></canvas>
+
+    <div class="result-grid">
+      <div class="result-item"><div class="result-label">液壓壓力 P</div><div class="result-value" id="hyd-pressure">--</div></div>
+      <div class="result-item"><div class="result-label">輸出力 F₂</div><div class="result-value" id="hyd-f2">--</div></div>
+      <div class="result-item"><div class="result-label">力放大倍數</div><div class="result-value" id="hyd-ratio">--</div></div>
+      <div class="result-item"><div class="result-label">大活塞位移 d₂</div><div class="result-value" id="hyd-d2">--</div></div>
+      <div class="result-item"><div class="result-label">輸入功</div><div class="result-value" id="hyd-work-in">--</div></div>
+      <div class="result-item"><div class="result-label">輸出功</div><div class="result-value" id="hyd-work-out">--</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 3: Bernoulli Effect Simulation ==================== -->
+<div id="tab-bernoulli" class="tab-panel">
+  <div class="card">
+    <h2>白努利效應模擬</h2>
+    <p class="card-desc">觀察流體通過不同截面積的管道時，流速和壓力如何變化。點擊「啟動流動」觀看動畫。</p>
+
+    <div class="info-box">
+      <strong>白努利方程：</strong>P + ½ρv² + ρgh = 常數。在水平管道中（h 相同），流速快的地方壓力低，流速慢的地方壓力高。<span class="tooltip">連續方程<span class="tooltip-text">A₁v₁ = A₂v₂：截面積小的地方流速快</span></span>決定了各處的流速。
+    </div>
+
+    <div class="control-row-3">
+      <div>
+        <label>寬處截面積：<span class="val-display" id="bern-a1-val">10</span> cm²</label>
+        <input type="range" id="bern-a1" min="5" max="20" value="10" step="0.5" oninput="updateBernoulli()">
+      </div>
+      <div>
+        <label>窄處截面積：<span class="val-display" id="bern-a2-val">3</span> cm²</label>
+        <input type="range" id="bern-a2" min="1" max="15" value="3" step="0.5" oninput="updateBernoulli()">
+      </div>
+      <div>
+        <label>入口流速：<span class="val-display" id="bern-v1-val">2</span> m/s</label>
+        <input type="range" id="bern-v1" min="0.5" max="10" value="2" step="0.5" oninput="updateBernoulli()">
+      </div>
+    </div>
+
+    <canvas id="bern-canvas" width="900" height="360"></canvas>
+
+    <div class="btn-group" style="margin-bottom: 12px;">
+      <button class="btn btn-primary" id="bern-flow-btn" onclick="toggleBernoulliFlow()">啟動流動</button>
+      <button class="btn btn-outline" onclick="resetBernoulli()">重置</button>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-item"><div class="result-label">寬處流速 v₁</div><div class="result-value" id="bern-v1-out">--</div></div>
+      <div class="result-item"><div class="result-label">窄處流速 v₂</div><div class="result-value" id="bern-v2-out">--</div></div>
+      <div class="result-item"><div class="result-label">速度比 v₂/v₁</div><div class="result-value" id="bern-vratio">--</div></div>
+      <div class="result-item"><div class="result-label">寬處壓力 P₁</div><div class="result-value" id="bern-p1-out">--</div></div>
+      <div class="result-item"><div class="result-label">窄處壓力 P₂</div><div class="result-value" id="bern-p2-out">--</div></div>
+      <div class="result-item"><div class="result-label">壓力差 ΔP</div><div class="result-value" id="bern-dp-out">--</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 4: Depth Pressure Calculator ==================== -->
+<div id="tab-pressure" class="tab-panel">
+  <div class="card">
+    <h2>水壓與深度計算器</h2>
+    <p class="card-desc">計算不同流體中不同深度的壓力，觀察壓力隨深度的變化。</p>
+
+    <div class="info-box">
+      <strong>液體靜壓力：</strong>P = P₀ + <span class="tooltip">ρgh<span class="tooltip-text">ρ = 流體密度、g = 重力加速度（9.8 m/s²）、h = 深度</span></span>。每增加 10 m 的水深，壓力增加約 1 atm。
+    </div>
+
+    <div class="control-row-3">
+      <div>
+        <label>流體類型</label>
+        <select id="pres-fluid" onchange="updatePressure()">
+          <option value="1000">淡水 (1000 kg/m³)</option>
+          <option value="1025">海水 (1025 kg/m³)</option>
+          <option value="13600">水銀 (13600 kg/m³)</option>
+          <option value="789">酒精 (789 kg/m³)</option>
+        </select>
+      </div>
+      <div>
+        <label>深度：<span class="val-display" id="pres-depth-val">10</span> m</label>
+        <input type="range" id="pres-depth" min="0" max="200" value="10" step="1" oninput="updatePressure()">
+      </div>
+      <div>
+        <label>表面壓力 P₀</label>
+        <select id="pres-surface" onchange="updatePressure()">
+          <option value="101325">1 atm (101,325 Pa)</option>
+          <option value="0">真空 (0 Pa)</option>
+        </select>
+      </div>
+    </div>
+
+    <canvas id="pres-canvas" width="900" height="380"></canvas>
+
+    <div class="result-grid">
+      <div class="result-item"><div class="result-label">液體壓力 ρgh</div><div class="result-value" id="pres-fluid-p">--</div></div>
+      <div class="result-item"><div class="result-label">總壓力 P</div><div class="result-value" id="pres-total">--</div></div>
+      <div class="result-item"><div class="result-label">等效大氣壓</div><div class="result-value" id="pres-atm">--</div></div>
+      <div class="result-item"><div class="result-label">每 cm² 的力</div><div class="result-value" id="pres-per-cm2">--</div></div>
+    </div>
+
+    <div class="info-box" style="margin-top: 12px;">
+      <strong>深度參考：</strong>休閒潛水 ~10 m (2 atm)、專業潛水 ~40 m (5 atm)、鐵達尼號沉船 ~3,800 m (~380 atm)、馬里亞納海溝 ~11,000 m (~1,100 atm)
+    </div>
+  </div>
+</div>
+
+<script>
+// ===========================
+// Tab switching
+// ===========================
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const tabs = ['buoyancy','hydraulic','bernoulli','pressure'];
+  const idx = tabs.indexOf(name);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+
+  if (name === 'buoyancy') drawBuoyancyScene(null);
+  if (name === 'hydraulic') updateHydraulic();
+  if (name === 'bernoulli') { updateBernoulli(); drawBernoulliScene(); }
+  if (name === 'pressure') updatePressure();
+}
+
+// ===========================
+// Utility
+// ===========================
+function getCanvasCtx(id) {
+  const c = document.getElementById(id);
+  const dpr = window.devicePixelRatio || 1;
+  const rect = c.getBoundingClientRect();
+  c.width = rect.width * dpr;
+  c.height = rect.height * dpr;
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+// ===========================
+// Tab 1: Buoyancy Calculator
+// ===========================
+const buoyFluidSelect = document.getElementById('buoy-fluid-density');
+buoyFluidSelect.addEventListener('change', function() {
+  document.getElementById('buoy-custom-fluid-row').style.display =
+    this.value === 'custom' ? 'block' : 'none';
+});
+
+let buoyAnim = null;
+let buoyState = null;
+
+function getFluidDensity() {
+  const sel = buoyFluidSelect.value;
+  if (sel === 'custom') return parseFloat(document.getElementById('buoy-custom-fluid').value) || 1000;
+  return parseFloat(sel);
+}
+
+function calcBuoyancy() {
+  const rhoObj = parseFloat(document.getElementById('buoy-obj-density').value);
+  const vol = parseFloat(document.getElementById('buoy-obj-volume').value);
+  const rhoFluid = getFluidDensity();
+  const g = 9.8;
+
+  const weight = rhoObj * vol * g;
+  const maxBuoyancy = rhoFluid * vol * g;
+
+  let status, submergedFrac;
+  if (rhoObj < rhoFluid) {
+    status = 'float';
+    submergedFrac = rhoObj / rhoFluid;
+  } else if (Math.abs(rhoObj - rhoFluid) < 0.5) {
+    status = 'suspend';
+    submergedFrac = 1.0;
+  } else {
+    status = 'sink';
+    submergedFrac = 1.0;
+  }
+
+  document.getElementById('buoy-weight').textContent = weight.toFixed(2) + ' N';
+  document.getElementById('buoy-force').textContent = maxBuoyancy.toFixed(2) + ' N';
+
+  const statusEl = document.getElementById('buoy-status');
+  if (status === 'float') { statusEl.textContent = '上浮（漂浮）'; statusEl.className = 'result-value status-float'; }
+  else if (status === 'suspend') { statusEl.textContent = '懸浮'; statusEl.className = 'result-value status-suspend'; }
+  else { statusEl.textContent = '下沉'; statusEl.className = 'result-value status-sink'; }
+
+  document.getElementById('buoy-submerged').textContent = (submergedFrac * 100).toFixed(1) + '%';
+
+  buoyState = { rhoObj, rhoFluid, vol, weight, maxBuoyancy, status, submergedFrac };
+  animateBuoyancy();
+}
+
+function animateBuoyancy() {
+  if (!buoyState) return;
+  if (buoyAnim) cancelAnimationFrame(buoyAnim);
+
+  const targetY = buoyState.status === 'float' ? buoyState.submergedFrac :
+                  buoyState.status === 'suspend' ? 0.5 : 0.9;
+  let currentY = 0.05;
+  const speed = 0.015;
+
+  function frame() {
+    if (Math.abs(currentY - targetY) > 0.005) {
+      currentY += (targetY - currentY) * speed * 3;
+      if (buoyState.status === 'sink' && currentY < targetY) currentY += speed;
+    }
+    drawBuoyancyScene(currentY);
+    if (Math.abs(currentY - targetY) > 0.003) {
+      buoyAnim = requestAnimationFrame(frame);
+    }
+  }
+  frame();
+}
+
+function drawBuoyancyScene(objYRatio) {
+  const { ctx, w, h } = getCanvasCtx('buoy-canvas');
+  ctx.clearRect(0, 0, w, h);
+
+  const waterTop = h * 0.3;
+  const waterBottom = h * 0.95;
+  const waterHeight = waterBottom - waterTop;
+
+  // Sky
+  ctx.fillStyle = '#E3F2FD';
+  ctx.fillRect(0, 0, w, waterTop);
+
+  // Water
+  const grad = ctx.createLinearGradient(0, waterTop, 0, waterBottom);
+  grad.addColorStop(0, '#42A5F5');
+  grad.addColorStop(0.5, '#1E88E5');
+  grad.addColorStop(1, '#0D47A1');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, waterTop, w, waterHeight);
+
+  // Water surface line
+  ctx.strokeStyle = '#1565C0';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, waterTop);
+  ctx.lineTo(w, waterTop);
+  ctx.stroke();
+
+  // Label
+  ctx.fillStyle = '#1565C0';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('水面', 10, waterTop - 8);
+
+  // Depth markers
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '11px sans-serif';
+  for (let i = 1; i <= 4; i++) {
+    const y = waterTop + (waterHeight * i / 5);
+    ctx.beginPath();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.moveTo(20, y);
+    ctx.lineTo(w - 20, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Object
+  if (objYRatio !== null) {
+    const objSize = Math.min(60, Math.max(25, Math.pow(buoyState ? buoyState.vol : 0.01, 1/3) * 200));
+    const objX = w / 2 - objSize / 2;
+    // objYRatio: 0 = top of water, 1 = bottom. For float, it represents submerged fraction
+    let objCenterY;
+    if (buoyState && buoyState.status === 'float') {
+      objCenterY = waterTop + (objSize * objYRatio) - objSize / 2;
+      if (objCenterY < waterTop - objSize * 0.8) objCenterY = waterTop - objSize * 0.8;
+    } else {
+      objCenterY = waterTop + waterHeight * objYRatio - objSize / 2;
+    }
+
+    // Object shadow in water
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+    ctx.fillRect(objX + 3, objCenterY + 3, objSize, objSize);
+
+    // Object
+    const objGrad = ctx.createLinearGradient(objX, objCenterY, objX + objSize, objCenterY + objSize);
+    if (buoyState && buoyState.status === 'float') {
+      objGrad.addColorStop(0, '#66BB6A');
+      objGrad.addColorStop(1, '#2E7D32');
+    } else if (buoyState && buoyState.status === 'suspend') {
+      objGrad.addColorStop(0, '#FFA726');
+      objGrad.addColorStop(1, '#E65100');
+    } else {
+      objGrad.addColorStop(0, '#EF5350');
+      objGrad.addColorStop(1, '#B71C1C');
+    }
+    ctx.fillStyle = objGrad;
+    ctx.beginPath();
+    ctx.roundRect(objX, objCenterY, objSize, objSize, 6);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Arrows
+    const arrowX = objX + objSize + 20;
+    const objMid = objCenterY + objSize / 2;
+
+    // Weight arrow (down)
+    ctx.strokeStyle = '#E53E3E';
+    ctx.fillStyle = '#E53E3E';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(arrowX, objMid);
+    ctx.lineTo(arrowX, objMid + 40);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(arrowX - 6, objMid + 34);
+    ctx.lineTo(arrowX, objMid + 42);
+    ctx.lineTo(arrowX + 6, objMid + 34);
+    ctx.fill();
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('W (重力)', arrowX + 8, objMid + 38);
+
+    // Buoyancy arrow (up)
+    ctx.strokeStyle = '#38A169';
+    ctx.fillStyle = '#38A169';
+    ctx.beginPath();
+    ctx.moveTo(arrowX + 60, objMid);
+    ctx.lineTo(arrowX + 60, objMid - 40);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(arrowX + 60 - 6, objMid - 34);
+    ctx.lineTo(arrowX + 60, objMid - 42);
+    ctx.lineTo(arrowX + 60 + 6, objMid - 34);
+    ctx.fill();
+    ctx.fillText('Fb (浮力)', arrowX + 68, objMid - 30);
+
+    // Density labels
+    if (buoyState) {
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ρ=' + buoyState.rhoObj, objX + objSize/2, objCenterY + objSize/2 + 4);
+      ctx.textAlign = 'left';
+    }
+  }
+
+  // Container walls
+  ctx.strokeStyle = '#546E7A';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.1, waterTop - 30);
+  ctx.lineTo(w * 0.1, waterBottom);
+  ctx.lineTo(w * 0.9, waterBottom);
+  ctx.lineTo(w * 0.9, waterTop - 30);
+  ctx.stroke();
+}
+
+function resetBuoyancy() {
+  if (buoyAnim) cancelAnimationFrame(buoyAnim);
+  buoyState = null;
+  document.getElementById('buoy-obj-density').value = 800;
+  document.getElementById('buoy-obj-volume').value = 0.01;
+  buoyFluidSelect.value = '1000';
+  document.getElementById('buoy-custom-fluid-row').style.display = 'none';
+  ['buoy-weight','buoy-force','buoy-status','buoy-submerged'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = '--';
+    el.className = 'result-value';
+  });
+  drawBuoyancyScene(null);
+}
+
+// ===========================
+// Tab 2: Hydraulic Press
+// ===========================
+function updateHydraulic() {
+  const a1 = parseFloat(document.getElementById('hyd-a1').value);
+  const a2 = parseFloat(document.getElementById('hyd-a2').value);
+  const f1 = parseFloat(document.getElementById('hyd-f1').value);
+  const d1 = parseFloat(document.getElementById('hyd-d1').value);
+
+  document.getElementById('hyd-a1-val').textContent = a1;
+  document.getElementById('hyd-a2-val').textContent = a2;
+  document.getElementById('hyd-f1-val').textContent = f1;
+  document.getElementById('hyd-d1-val').textContent = d1;
+
+  const pCm2 = f1 / a1; // N/cm²
+  const pPa = pCm2 * 10000; // N/m²
+  const f2 = pCm2 * a2;
+  const ratio = a2 / a1;
+  const d2 = d1 * a1 / a2;
+  const workIn = f1 * d1 / 100; // J (d1 in cm → m)
+  const workOut = f2 * d2 / 100;
+
+  document.getElementById('hyd-pressure').textContent = (pPa / 1000).toFixed(1) + ' kPa';
+  document.getElementById('hyd-f2').textContent = f2.toFixed(1) + ' N';
+  document.getElementById('hyd-ratio').textContent = ratio.toFixed(1) + ' 倍';
+  document.getElementById('hyd-d2').textContent = d2.toFixed(2) + ' cm';
+  document.getElementById('hyd-work-in').textContent = workIn.toFixed(2) + ' J';
+  document.getElementById('hyd-work-out').textContent = workOut.toFixed(2) + ' J';
+
+  drawHydraulicScene(a1, a2, f1, f2, d1, d2);
+}
+
+function drawHydraulicScene(a1, a2, f1, f2, d1, d2) {
+  const { ctx, w, h } = getCanvasCtx('hyd-canvas');
+  ctx.clearRect(0, 0, w, h);
+
+  const midY = h * 0.65;
+  const baseW = w * 0.8;
+  const startX = w * 0.1;
+
+  // Scale pistons visually
+  const maxA = Math.max(a1, a2);
+  const p1W = Math.max(30, (a1 / maxA) * 100);
+  const p2W = Math.max(30, (a2 / maxA) * 100);
+  const p1H = 50 + (d1 / 50) * 40;
+  const p2H = 50 + (d2 / 50) * 40;
+
+  const leftX = startX + baseW * 0.2;
+  const rightX = startX + baseW * 0.7;
+
+  // Connecting pipe
+  const pipeY = midY + 20;
+  const pipeH = 30;
+  ctx.fillStyle = '#1976D2';
+  ctx.fillRect(leftX - p1W/2, pipeY, rightX + p2W/2 - leftX + p1W/2, pipeH);
+
+  // Fluid in left cylinder
+  const leftCylH = 80;
+  ctx.fillStyle = '#42A5F5';
+  ctx.fillRect(leftX - p1W/2, midY - leftCylH + 20, p1W, leftCylH + pipeH);
+
+  // Fluid in right cylinder
+  const rightCylH = 80;
+  ctx.fillStyle = '#42A5F5';
+  ctx.fillRect(rightX - p2W/2, midY - rightCylH + 20, p2W, rightCylH + pipeH);
+
+  // Left piston
+  ctx.fillStyle = '#78909C';
+  ctx.fillRect(leftX - p1W/2 - 3, midY - leftCylH - 10, p1W + 6, 20);
+  ctx.fillStyle = '#B0BEC5';
+  ctx.fillRect(leftX - 4, midY - leftCylH - 40, 8, 30);
+
+  // Right piston
+  ctx.fillStyle = '#78909C';
+  ctx.fillRect(rightX - p2W/2 - 3, midY - rightCylH - 10, p2W + 6, 20);
+  ctx.fillStyle = '#B0BEC5';
+  ctx.fillRect(rightX - 4, midY - rightCylH - 40, 8, 30);
+
+  // Cylinder walls
+  ctx.strokeStyle = '#37474F';
+  ctx.lineWidth = 3;
+  // Left
+  ctx.beginPath();
+  ctx.moveTo(leftX - p1W/2 - 5, midY - leftCylH - 50);
+  ctx.lineTo(leftX - p1W/2 - 5, pipeY + pipeH);
+  ctx.moveTo(leftX + p1W/2 + 5, midY - leftCylH - 50);
+  ctx.lineTo(leftX + p1W/2 + 5, pipeY + pipeH);
+  ctx.stroke();
+  // Right
+  ctx.beginPath();
+  ctx.moveTo(rightX - p2W/2 - 5, midY - rightCylH - 50);
+  ctx.lineTo(rightX - p2W/2 - 5, pipeY + pipeH);
+  ctx.moveTo(rightX + p2W/2 + 5, midY - rightCylH - 50);
+  ctx.lineTo(rightX + p2W/2 + 5, pipeY + pipeH);
+  ctx.stroke();
+
+  // Force arrows
+  // Left: downward arrow (input force)
+  ctx.strokeStyle = '#E53E3E';
+  ctx.fillStyle = '#E53E3E';
+  ctx.lineWidth = 3;
+  const arrowLen1 = Math.min(40, 15 + f1/50);
+  ctx.beginPath();
+  ctx.moveTo(leftX, midY - leftCylH - 60);
+  ctx.lineTo(leftX, midY - leftCylH - 60 + arrowLen1);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(leftX - 7, midY - leftCylH - 60 + arrowLen1 - 8);
+  ctx.lineTo(leftX, midY - leftCylH - 60 + arrowLen1);
+  ctx.lineTo(leftX + 7, midY - leftCylH - 60 + arrowLen1 - 8);
+  ctx.fill();
+
+  // Right: upward arrow (output force)
+  const arrowLen2 = Math.min(50, 15 + f2/200);
+  ctx.strokeStyle = '#38A169';
+  ctx.fillStyle = '#38A169';
+  ctx.beginPath();
+  ctx.moveTo(rightX, midY - rightCylH - 60 + arrowLen2);
+  ctx.lineTo(rightX, midY - rightCylH - 60);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(rightX - 7, midY - rightCylH - 60 + 8);
+  ctx.lineTo(rightX, midY - rightCylH - 60);
+  ctx.lineTo(rightX + 7, midY - rightCylH - 60 + 8);
+  ctx.fill();
+
+  // Labels
+  ctx.fillStyle = var_textDark();
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('小活塞', leftX, h - 10);
+  ctx.fillText('A₁ = ' + a1 + ' cm²', leftX, h - 28);
+  ctx.fillText('大活塞', rightX, h - 10);
+  ctx.fillText('A₂ = ' + a2 + ' cm²', rightX, h - 28);
+
+  ctx.fillStyle = '#E53E3E';
+  ctx.fillText('F₁ = ' + f1 + ' N', leftX, midY - leftCylH - 68);
+  ctx.fillStyle = '#38A169';
+  ctx.fillText('F₂ = ' + f2.toFixed(0) + ' N', rightX, midY - rightCylH - 68);
+
+  ctx.fillStyle = '#1565C0';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillText('P = ' + (f1/a1*10000/1000).toFixed(1) + ' kPa', (leftX + rightX)/2, pipeY + pipeH/2 + 5);
+
+  ctx.textAlign = 'left';
+}
+
+function var_textDark() { return '#1B4F7A'; }
+
+// ===========================
+// Tab 3: Bernoulli Effect
+// ===========================
+let bernFlowing = false;
+let bernAnimId = null;
+let bernParticles = [];
+let bernTime = 0;
+
+function updateBernoulli() {
+  const a1 = parseFloat(document.getElementById('bern-a1').value);
+  const a2 = parseFloat(document.getElementById('bern-a2').value);
+  const v1 = parseFloat(document.getElementById('bern-v1').value);
+
+  document.getElementById('bern-a1-val').textContent = a1;
+  document.getElementById('bern-a2-val').textContent = a2;
+  document.getElementById('bern-v1-val').textContent = v1;
+
+  const v2 = v1 * a1 / a2;
+  const rho = 1000; // water
+  const p1 = 101325; // Pa (reference)
+  const p2 = p1 + 0.5 * rho * (v1*v1 - v2*v2);
+  const dp = p1 - p2;
+
+  document.getElementById('bern-v1-out').textContent = v1.toFixed(1) + ' m/s';
+  document.getElementById('bern-v2-out').textContent = v2.toFixed(1) + ' m/s';
+  document.getElementById('bern-vratio').textContent = (v2/v1).toFixed(2) + 'x';
+  document.getElementById('bern-p1-out').textContent = (p1/1000).toFixed(1) + ' kPa';
+  document.getElementById('bern-p2-out').textContent = (p2/1000).toFixed(1) + ' kPa';
+  document.getElementById('bern-dp-out').textContent = (dp/1000).toFixed(2) + ' kPa';
+
+  if (!bernFlowing) drawBernoulliScene();
+}
+
+function drawBernoulliScene() {
+  const { ctx, w, h } = getCanvasCtx('bern-canvas');
+  ctx.clearRect(0, 0, w, h);
+
+  const a1 = parseFloat(document.getElementById('bern-a1').value);
+  const a2 = parseFloat(document.getElementById('bern-a2').value);
+  const v1 = parseFloat(document.getElementById('bern-v1').value);
+  const v2 = v1 * a1 / a2;
+
+  const midY = h / 2;
+  const maxHalf = h * 0.3;
+  const wideHalf = (a1 / 20) * maxHalf;
+  const narrowHalf = (a2 / 20) * maxHalf;
+
+  // Pipe sections
+  const seg1End = w * 0.3;
+  const seg2Start = w * 0.35;
+  const seg2End = w * 0.65;
+  const seg3Start = w * 0.7;
+
+  // Draw pipe shape
+  ctx.beginPath();
+  ctx.moveTo(0, midY - wideHalf);
+  ctx.lineTo(seg1End, midY - wideHalf);
+  // Transition to narrow
+  ctx.bezierCurveTo(seg2Start, midY - wideHalf, seg2Start, midY - narrowHalf, seg2Start, midY - narrowHalf);
+  ctx.lineTo(seg2End, midY - narrowHalf);
+  // Transition back to wide
+  ctx.bezierCurveTo(seg3Start, midY - narrowHalf, seg3Start, midY - wideHalf, seg3Start, midY - wideHalf);
+  ctx.lineTo(w, midY - wideHalf);
+  ctx.lineTo(w, midY + wideHalf);
+  ctx.lineTo(seg3Start, midY + wideHalf);
+  ctx.bezierCurveTo(seg3Start, midY + wideHalf, seg3Start, midY + narrowHalf, seg2End, midY + narrowHalf);
+  ctx.lineTo(seg2Start, midY + narrowHalf);
+  ctx.bezierCurveTo(seg2Start, midY + narrowHalf, seg2Start, midY + wideHalf, seg1End, midY + wideHalf);
+  ctx.lineTo(0, midY + wideHalf);
+  ctx.closePath();
+
+  const pipeGrad = ctx.createLinearGradient(0, midY - maxHalf, 0, midY + maxHalf);
+  pipeGrad.addColorStop(0, '#BBDEFB');
+  pipeGrad.addColorStop(0.5, '#42A5F5');
+  pipeGrad.addColorStop(1, '#1565C0');
+  ctx.fillStyle = pipeGrad;
+  ctx.fill();
+  ctx.strokeStyle = '#0D47A1';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Pressure gauge indicators (manometer tubes)
+  const gaugeY1 = midY - wideHalf - 10;
+  const gaugeY2 = midY - narrowHalf - 10;
+  const rho = 1000;
+  const p1 = 101325;
+  const p2 = p1 + 0.5 * rho * (v1*v1 - v2*v2);
+  const maxGaugeH = 60;
+  const g1H = maxGaugeH;
+  const g2H = maxGaugeH * (p2 / p1);
+
+  // Left gauge
+  ctx.fillStyle = '#E3F2FD';
+  ctx.fillRect(w * 0.15 - 6, gaugeY1 - maxGaugeH - 20, 12, maxGaugeH + 20);
+  ctx.fillStyle = '#1976D2';
+  ctx.fillRect(w * 0.15 - 4, gaugeY1 - g1H, 8, g1H);
+  ctx.strokeStyle = '#546E7A';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(w * 0.15 - 6, gaugeY1 - maxGaugeH - 20, 12, maxGaugeH + 20);
+
+  // Right gauge (at narrow section)
+  ctx.fillStyle = '#E3F2FD';
+  ctx.fillRect(w * 0.5 - 6, gaugeY2 - maxGaugeH - 20, 12, maxGaugeH + 20);
+  ctx.fillStyle = '#1976D2';
+  ctx.fillRect(w * 0.5 - 4, gaugeY2 - Math.max(5, g2H), 8, Math.max(5, g2H));
+  ctx.strokeStyle = '#546E7A';
+  ctx.strokeRect(w * 0.5 - 6, gaugeY2 - maxGaugeH - 20, 12, maxGaugeH + 20);
+
+  // Labels
+  ctx.fillStyle = '#1B4F7A';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('寬處', w * 0.15, midY + wideHalf + 22);
+  ctx.fillText('v₁=' + v1.toFixed(1) + ' m/s', w * 0.15, midY + wideHalf + 38);
+  ctx.fillText('窄處', w * 0.5, midY + narrowHalf + 22);
+  ctx.fillText('v₂=' + v2.toFixed(1) + ' m/s', w * 0.5, midY + narrowHalf + 38);
+  ctx.fillText('寬處', w * 0.85, midY + wideHalf + 22);
+
+  // Pressure labels on gauges
+  ctx.fillStyle = '#0D47A1';
+  ctx.font = 'bold 10px sans-serif';
+  ctx.fillText('P₁', w * 0.15, gaugeY1 - maxGaugeH - 26);
+  ctx.fillText('P₂', w * 0.5, gaugeY2 - maxGaugeH - 26);
+
+  // Velocity arrows inside pipe
+  const arrowScale1 = Math.min(40, v1 * 10);
+  const arrowScale2 = Math.min(80, v2 * 10);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.font = 'bold 18px sans-serif';
+  // Wide section arrows
+  for (let i = 0; i < 3; i++) {
+    const ay = midY - wideHalf * 0.5 + i * wideHalf * 0.5;
+    drawArrow(ctx, w * 0.08, ay, arrowScale1, 'rgba(255,255,255,0.7)');
+  }
+  // Narrow section arrows (longer = faster)
+  for (let i = 0; i < 2; i++) {
+    const ay = midY - narrowHalf * 0.3 + i * narrowHalf * 0.3;
+    drawArrow(ctx, w * 0.4, ay, arrowScale2, 'rgba(255,255,0,0.7)');
+  }
+  // Exit arrows
+  for (let i = 0; i < 3; i++) {
+    const ay = midY - wideHalf * 0.5 + i * wideHalf * 0.5;
+    drawArrow(ctx, w * 0.78, ay, arrowScale1, 'rgba(255,255,255,0.7)');
+  }
+
+  // Draw particles
+  if (bernFlowing) {
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    for (const p of bernParticles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.textAlign = 'left';
+}
+
+function drawArrow(ctx, x, y, len, color) {
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + len, y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x + len - 5, y - 4);
+  ctx.lineTo(x + len, y);
+  ctx.lineTo(x + len - 5, y + 4);
+  ctx.fill();
+}
+
+function toggleBernoulliFlow() {
+  bernFlowing = !bernFlowing;
+  document.getElementById('bern-flow-btn').textContent = bernFlowing ? '暫停流動' : '啟動流動';
+  if (bernFlowing) {
+    bernParticles = [];
+    for (let i = 0; i < 30; i++) {
+      spawnBernoulliParticle(Math.random() * 900);
+    }
+    bernAnimLoop();
+  } else {
+    if (bernAnimId) cancelAnimationFrame(bernAnimId);
+    drawBernoulliScene();
+  }
+}
+
+function spawnBernoulliParticle(startX) {
+  const { ctx, w, h } = getCanvasCtxSize('bern-canvas');
+  const midY = h / 2;
+  const a1 = parseFloat(document.getElementById('bern-a1').value);
+  const maxHalf = h * 0.3;
+  const wideHalf = (a1 / 20) * maxHalf;
+  const yOff = (Math.random() - 0.5) * wideHalf * 1.5;
+  bernParticles.push({ x: startX || 0, y: midY + yOff });
+}
+
+function getCanvasCtxSize(id) {
+  const c = document.getElementById(id);
+  const rect = c.getBoundingClientRect();
+  return { w: rect.width, h: rect.height };
+}
+
+function bernAnimLoop() {
+  if (!bernFlowing) return;
+
+  const { w, h } = getCanvasCtxSize('bern-canvas');
+  const a1 = parseFloat(document.getElementById('bern-a1').value);
+  const a2 = parseFloat(document.getElementById('bern-a2').value);
+  const v1 = parseFloat(document.getElementById('bern-v1').value);
+  const v2 = v1 * a1 / a2;
+  const midY = h / 2;
+  const maxHalf = h * 0.3;
+  const wideHalf = (a1 / 20) * maxHalf;
+  const narrowHalf = (a2 / 20) * maxHalf;
+
+  const seg1End = w * 0.3;
+  const seg2Start = w * 0.35;
+  const seg2End = w * 0.65;
+  const seg3Start = w * 0.7;
+
+  for (const p of bernParticles) {
+    let speed;
+    let halfH;
+    if (p.x < seg1End) {
+      speed = v1 * 1.5;
+      halfH = wideHalf;
+    } else if (p.x < seg2Start) {
+      const t = (p.x - seg1End) / (seg2Start - seg1End);
+      speed = v1 + (v2 - v1) * t;
+      speed *= 1.5;
+      halfH = wideHalf + (narrowHalf - wideHalf) * t;
+    } else if (p.x < seg2End) {
+      speed = v2 * 1.5;
+      halfH = narrowHalf;
+    } else if (p.x < seg3Start) {
+      const t = (p.x - seg2End) / (seg3Start - seg2End);
+      speed = v2 + (v1 - v2) * t;
+      speed *= 1.5;
+      halfH = narrowHalf + (wideHalf - narrowHalf) * t;
+    } else {
+      speed = v1 * 1.5;
+      halfH = wideHalf;
+    }
+
+    p.x += speed;
+    // Constrain Y within pipe
+    if (p.y < midY - halfH * 0.85) p.y = midY - halfH * 0.85;
+    if (p.y > midY + halfH * 0.85) p.y = midY + halfH * 0.85;
+    // Attract to center in narrow section
+    if (p.x > seg1End && p.x < seg3Start) {
+      p.y += (midY - p.y) * 0.03;
+    }
+  }
+
+  // Remove off-screen, respawn
+  bernParticles = bernParticles.filter(p => p.x < w + 10);
+  while (bernParticles.length < 35) {
+    spawnBernoulliParticle(0);
+  }
+
+  drawBernoulliScene();
+  bernAnimId = requestAnimationFrame(bernAnimLoop);
+}
+
+function resetBernoulli() {
+  bernFlowing = false;
+  if (bernAnimId) cancelAnimationFrame(bernAnimId);
+  bernParticles = [];
+  document.getElementById('bern-flow-btn').textContent = '啟動流動';
+  document.getElementById('bern-a1').value = 10;
+  document.getElementById('bern-a2').value = 3;
+  document.getElementById('bern-v1').value = 2;
+  updateBernoulli();
+}
+
+// ===========================
+// Tab 4: Depth Pressure
+// ===========================
+function updatePressure() {
+  const rho = parseFloat(document.getElementById('pres-fluid').value);
+  const depth = parseFloat(document.getElementById('pres-depth').value);
+  const p0 = parseFloat(document.getElementById('pres-surface').value);
+  const g = 9.8;
+
+  document.getElementById('pres-depth-val').textContent = depth;
+
+  const fluidP = rho * g * depth;
+  const totalP = p0 + fluidP;
+  const atm = totalP / 101325;
+  const perCm2 = totalP / 10000;
+
+  document.getElementById('pres-fluid-p').textContent = formatPressure(fluidP);
+  document.getElementById('pres-total').textContent = formatPressure(totalP);
+  document.getElementById('pres-atm').textContent = atm.toFixed(2) + ' atm';
+  document.getElementById('pres-per-cm2').textContent = perCm2.toFixed(2) + ' N/cm²';
+
+  drawPressureScene(rho, depth, p0, totalP);
+}
+
+function formatPressure(p) {
+  if (p >= 1e6) return (p / 1e6).toFixed(2) + ' MPa';
+  if (p >= 1000) return (p / 1000).toFixed(1) + ' kPa';
+  return p.toFixed(1) + ' Pa';
+}
+
+function drawPressureScene(rho, depth, p0, totalP) {
+  const { ctx, w, h } = getCanvasCtx('pres-canvas');
+  ctx.clearRect(0, 0, w, h);
+
+  const surfaceY = h * 0.12;
+  const maxDepthPx = h * 0.8;
+  const maxDepthVal = parseFloat(document.getElementById('pres-depth').max);
+
+  // Gradient water
+  const grad = ctx.createLinearGradient(0, surfaceY, 0, surfaceY + maxDepthPx);
+  grad.addColorStop(0, '#64B5F6');
+  grad.addColorStop(0.3, '#1E88E5');
+  grad.addColorStop(0.7, '#0D47A1');
+  grad.addColorStop(1, '#01579B');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, surfaceY, w, maxDepthPx + 10);
+
+  // Sky
+  ctx.fillStyle = '#E3F2FD';
+  ctx.fillRect(0, 0, w, surfaceY);
+
+  // Surface line
+  ctx.strokeStyle = '#1565C0';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, surfaceY);
+  ctx.lineTo(w, surfaceY);
+  ctx.stroke();
+
+  // Surface label
+  ctx.fillStyle = '#0D47A1';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillText('水面 (深度 = 0 m)', 15, surfaceY - 6);
+
+  // Depth position marker
+  const depthPx = surfaceY + (depth / maxDepthVal) * maxDepthPx;
+
+  // Depth reference lines
+  const refs = [10, 50, 100, 200];
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.setLineDash([4, 6]);
+  for (const d of refs) {
+    if (d <= maxDepthVal) {
+      const dy = surfaceY + (d / maxDepthVal) * maxDepthPx;
+      ctx.beginPath();
+      ctx.moveTo(30, dy);
+      ctx.lineTo(w - 30, dy);
+      ctx.stroke();
+      ctx.fillText(d + ' m', w - 70, dy - 4);
+    }
+  }
+  ctx.setLineDash([]);
+
+  // Current depth indicator
+  ctx.strokeStyle = '#FFEB3B';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(40, depthPx);
+  ctx.lineTo(w - 40, depthPx);
+  ctx.stroke();
+
+  // Diver/point icon
+  ctx.fillStyle = '#FFEB3B';
+  ctx.beginPath();
+  ctx.arc(w / 2, depthPx, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#01579B';
+  ctx.beginPath();
+  ctx.arc(w / 2, depthPx, 7, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Pressure info box at depth
+  const boxX = w / 2 + 30;
+  const boxY = Math.max(depthPx - 30, surfaceY + 10);
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.beginPath();
+  ctx.roundRect(boxX, boxY, 200, 55, 8);
+  ctx.fill();
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillText('深度: ' + depth + ' m', boxX + 12, boxY + 18);
+  ctx.font = '12px sans-serif';
+  ctx.fillText('總壓力: ' + formatPressure(totalP), boxX + 12, boxY + 36);
+  ctx.fillText('≈ ' + (totalP / 101325).toFixed(2) + ' atm', boxX + 12, boxY + 50);
+
+  // Pressure arrows (increasing with depth)
+  const numArrows = 5;
+  for (let i = 0; i < numArrows; i++) {
+    const arrowDepthFrac = (i + 1) / (numArrows + 1);
+    const ay = surfaceY + arrowDepthFrac * maxDepthPx;
+    const arrowLen = 8 + arrowDepthFrac * 25;
+    const ax = 20;
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1.5;
+    // Right arrow
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax + arrowLen, ay);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(ax + arrowLen - 4, ay - 3);
+    ctx.lineTo(ax + arrowLen, ay);
+    ctx.lineTo(ax + arrowLen - 4, ay + 3);
+    ctx.fill();
+    // Left arrow
+    ctx.beginPath();
+    ctx.moveTo(w - ax, ay);
+    ctx.lineTo(w - ax - arrowLen, ay);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(w - ax - arrowLen + 4, ay - 3);
+    ctx.lineTo(w - ax - arrowLen, ay);
+    ctx.lineTo(w - ax - arrowLen + 4, ay + 3);
+    ctx.fill();
+  }
+
+  // Pressure bar on the right side
+  const barX = w - 25;
+  const barW = 14;
+  const barTop = surfaceY;
+  const barH = maxDepthPx;
+  ctx.fillStyle = 'rgba(255,152,0,0.15)';
+  ctx.fillRect(barX - barW/2, barTop, barW, barH);
+  // Fill to current depth
+  const fillH = (depth / maxDepthVal) * barH;
+  const barGrad = ctx.createLinearGradient(0, barTop, 0, barTop + fillH);
+  barGrad.addColorStop(0, '#FFA726');
+  barGrad.addColorStop(1, '#E65100');
+  ctx.fillStyle = barGrad;
+  ctx.fillRect(barX - barW/2, barTop, barW, fillH);
+  ctx.strokeStyle = '#E65100';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(barX - barW/2, barTop, barW, barH);
+
+  ctx.fillStyle = '#E65100';
+  ctx.font = 'bold 9px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.save();
+  ctx.translate(barX, barTop - 6);
+  ctx.fillText('P', 0, 0);
+  ctx.restore();
+  ctx.textAlign = 'left';
+}
+
+// ===========================
+// Initial draw
+// ===========================
+window.addEventListener('DOMContentLoaded', () => {
+  drawBuoyancyScene(null);
+  setTimeout(() => updateHydraulic(), 50);
+  setTimeout(() => updateBernoulli(), 50);
+  setTimeout(() => updatePressure(), 50);
+});
+
+// Handle canvas resize
+window.addEventListener('resize', () => {
+  const activePanel = document.querySelector('.tab-panel.active');
+  if (activePanel.id === 'tab-buoyancy') drawBuoyancyScene(buoyState ? (buoyState.status === 'float' ? buoyState.submergedFrac : buoyState.status === 'suspend' ? 0.5 : 0.9) : null);
+  if (activePanel.id === 'tab-hydraulic') updateHydraulic();
+  if (activePanel.id === 'tab-bernoulli') { if (!bernFlowing) drawBernoulliScene(); }
+  if (activePanel.id === 'tab-pressure') updatePressure();
+});
+</script>
+
+</body>
+</html>

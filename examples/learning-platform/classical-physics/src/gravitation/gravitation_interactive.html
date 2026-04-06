@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>萬有引力 — 互動工具</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f1f5f9; min-height: 100vh; padding: 24px; }
+  .container { max-width: 920px; margin: 0 auto; }
+  h1 { text-align: center; font-size: 26px; color: #1e293b; margin-bottom: 4px; }
+  .subtitle { text-align: center; font-size: 14px; color: #94a3b8; margin-bottom: 18px; }
+  .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 18px; }
+  .tab-btn { padding: 8px 20px; border-radius: 20px; border: 1px solid #cbd5e1; background: #fff; color: #64748b; font-size: 14px; cursor: pointer; transition: all .2s; }
+  .tab-btn:hover { border-color: #94a3b8; }
+  .tab-btn.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .panel { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,.06); padding: 24px; margin-bottom: 16px; }
+
+  h2 { font-size: 18px; color: #1e293b; margin-bottom: 4px; }
+  .panel-desc { font-size: 13px; color: #94a3b8; margin-bottom: 16px; line-height: 1.7; }
+
+  label { display: block; font-size: 13px; color: #475569; font-weight: 600; margin-bottom: 4px; }
+  input[type="range"] { width: 100%; margin: 4px 0 8px; accent-color: #1e293b; }
+  input[type="number"], select {
+    width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px;
+    font-size: 14px; color: #1e293b; background: #f8fafc; transition: border-color .2s;
+  }
+  input[type="number"]:focus, select:focus { outline: none; border-color: #1e293b; }
+
+  .control-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+  @media (max-width: 520px) { .control-row { grid-template-columns: 1fr; } }
+
+  .val-display { font-weight: 700; color: #1e293b; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 9px 22px; border: none;
+    border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s;
+  }
+  .btn-primary { background: #1e293b; color: #fff; }
+  .btn-primary:hover { background: #0f172a; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+  .btn-outline { background: transparent; color: #1e293b; border: 1px solid #1e293b; }
+  .btn-outline:hover { background: #1e293b; color: #fff; }
+  .btn-group { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+
+  .preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .preset-btn {
+    padding: 6px 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;
+    color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s;
+  }
+  .preset-btn:hover { border-color: #94a3b8; color: #1e293b; }
+  .preset-btn.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+
+  canvas { display: block; width: 100%; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 12px; }
+
+  .result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 12px; }
+  .result-item { background: #f8fafc; border-radius: 8px; padding: 10px 14px; text-align: center; border: 1px solid #e2e8f0; }
+  .result-label { font-size: 12px; color: #94a3b8; font-weight: 600; }
+  .result-value { font-size: 16px; font-weight: 700; color: #1e293b; margin-top: 2px; }
+
+  .info-box {
+    background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%); border-radius: 10px;
+    padding: 14px 18px; font-size: 13px; color: #334155; border-left: 4px solid #1e293b;
+    margin-bottom: 12px; line-height: 1.8;
+  }
+  .info-box strong { color: #1e293b; }
+
+  .tooltip { position: relative; display: inline-block; cursor: help; color: #1e293b; font-weight: 600; border-bottom: 1px dashed #1e293b; }
+  .tooltip .tip {
+    visibility: hidden; opacity: 0; position: absolute; bottom: 125%; left: 50%;
+    transform: translateX(-50%); background: #1e293b; color: #fff; padding: 8px 14px;
+    border-radius: 8px; font-size: 12px; font-weight: 400; z-index: 10; transition: opacity .2s;
+    max-width: 280px; white-space: normal; text-align: left; line-height: 1.6;
+  }
+  .tooltip:hover .tip { visibility: visible; opacity: 1; }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .data-table th, .data-table td { padding: 8px 10px; border: 1px solid #e2e8f0; text-align: center; }
+  .data-table th { background: #1e293b; color: #fff; font-weight: 600; font-size: 12px; }
+  .data-table tr:nth-child(even) { background: #f8fafc; }
+  .data-table tr:hover { background: #f0f4ff; }
+  .data-table tr { cursor: pointer; transition: background .15s; }
+
+  .bar-container { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { width: 56px; text-align: right; font-size: 13px; font-weight: 600; color: #475569; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 30px; background: #f1f5f9; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
+  .bar-fill {
+    height: 100%; border-radius: 6px; transition: width .6s ease; display: flex;
+    align-items: center; justify-content: flex-end; padding-right: 8px;
+    font-size: 12px; font-weight: 700; color: #fff; min-width: 60px;
+  }
+
+  .checkbox-label {
+    display: flex; align-items: center; gap: 6px; font-size: 13px; color: #64748b; cursor: pointer; margin-left: 6px;
+  }
+  .checkbox-label input { accent-color: #1e293b; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>萬有引力 — 互動工具</h1>
+  <p class="subtitle">透過模擬與計算，直觀理解萬有引力與軌道力學的核心概念</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(0)">行星軌道模擬器</button>
+    <button class="tab-btn" onclick="switchTab(1)">萬有引力計算器</button>
+    <button class="tab-btn" onclick="switchTab(2)">脫離速度計算器</button>
+    <button class="tab-btn" onclick="switchTab(3)">克卜勒第三定律驗證</button>
+  </div>
+
+  <!-- Tool 1: Orbit Simulator -->
+  <div class="tab-content active">
+    <div class="panel">
+      <h2>行星軌道模擬器</h2>
+      <p class="panel-desc">設定行星與恆星的距離和初始速度，觀察引力作用下的軌道運動。嘗試不同速度，探索圓軌道、橢圓軌道與脫離軌道的差異。</p>
+
+      <div style="margin-bottom:12px;">
+        <label style="margin-bottom:8px;">軌道預設：</label>
+        <div class="preset-row">
+          <button class="preset-btn" onclick="setOrbitPreset('circular')">圓軌道</button>
+          <button class="preset-btn" onclick="setOrbitPreset('elliptical')">橢圓軌道</button>
+          <button class="preset-btn" onclick="setOrbitPreset('escape')">脫離軌道</button>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div>
+          <label>初始距離：<span class="val-display" id="orbit-r-val">200</span> px</label>
+          <input type="range" id="orbit-r" min="80" max="350" value="200" step="5" oninput="updateOrbitLabels()">
+        </div>
+        <div>
+          <label>初始切線速度：<span class="val-display" id="orbit-v-val">2.0</span></label>
+          <input type="range" id="orbit-v" min="0.3" max="4.5" value="2.0" step="0.1" oninput="updateOrbitLabels()">
+        </div>
+      </div>
+
+      <canvas id="orbit-canvas" width="900" height="500" style="background:#0a0e1a;"></canvas>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="startOrbit()">開始模擬</button>
+        <button class="btn btn-outline" onclick="resetOrbit()">重置</button>
+        <label class="checkbox-label"><input type="checkbox" id="orbit-trace" checked> 顯示軌跡</label>
+        <label class="checkbox-label"><input type="checkbox" id="orbit-sweep"> 顯示掃過面積</label>
+      </div>
+
+      <div class="result-grid" id="orbit-results">
+        <div class="result-item"><div class="result-label">目前距離</div><div class="result-value" id="orbit-dist">--</div></div>
+        <div class="result-item"><div class="result-label">目前速率</div><div class="result-value" id="orbit-speed">--</div></div>
+        <div class="result-item"><div class="result-label">軌道類型</div><div class="result-value" id="orbit-type">--</div></div>
+        <div class="result-item"><div class="result-label">經過時間</div><div class="result-value" id="orbit-time">--</div></div>
+      </div>
+
+      <div class="info-box" style="margin-top:12px;">
+        <strong>提示：</strong>
+        <span class="tooltip">速度太小<span class="tip">行星會被拉向恆星，撞上去或形成非常扁的橢圓</span></span> 會墜落；
+        <span class="tooltip">速度剛好<span class="tip">圓軌道速度 v = sqrt(GM/r)，此時引力恰好提供向心力</span></span> 可形成圓軌道；
+        <span class="tooltip">速度太大<span class="tip">超過脫離速度 v_esc = sqrt(2GM/r) 時，行星的動能足以克服重力束縛</span></span> 則會飛離。
+        勾選「顯示掃過面積」可觀察克卜勒第二定律（等時掃過等面積）。
+      </div>
+    </div>
+  </div>
+
+  <!-- Tool 2: Gravitational Force Calculator -->
+  <div class="tab-content">
+    <div class="panel">
+      <h2>萬有引力計算器</h2>
+      <p class="panel-desc">輸入兩個物體的質量和距離，計算它們之間的萬有引力 F = GMm/r²。可使用預設值快速載入真實天體數據。</p>
+
+      <div class="info-box">
+        <strong>公式：</strong>F = G x M x m / r²，其中 G = 6.674 x 10⁻¹¹ N m²/kg²
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="margin-bottom:8px;">快速預設：</label>
+        <div class="preset-row" id="grav-presets">
+          <button class="preset-btn" onclick="setGravPreset('earth-moon')">地球—月球</button>
+          <button class="preset-btn" onclick="setGravPreset('earth-sun')">地球—太陽</button>
+          <button class="preset-btn" onclick="setGravPreset('earth-human')">地球—人</button>
+          <button class="preset-btn" onclick="setGravPreset('sun-jupiter')">太陽—木星</button>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div>
+          <label>物體 1 質量 M (kg)</label>
+          <input type="number" id="grav-m1" step="any" value="5.972e24" placeholder="例如 5.972e24">
+        </div>
+        <div>
+          <label>物體 2 質量 m (kg)</label>
+          <input type="number" id="grav-m2" step="any" value="7.342e22" placeholder="例如 7.342e22">
+        </div>
+      </div>
+      <div class="control-row">
+        <div>
+          <label>距離 r (m)</label>
+          <input type="number" id="grav-r" step="any" value="3.844e8" placeholder="例如 3.844e8">
+        </div>
+        <div></div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="calcGravity()">計算</button>
+        <button class="btn btn-outline" onclick="resetGravity()">清除</button>
+      </div>
+
+      <div id="grav-result" style="display:none; margin-top:16px;">
+        <div class="result-grid">
+          <div class="result-item"><div class="result-label">萬有引力 F</div><div class="result-value" id="grav-force">--</div></div>
+          <div class="result-item"><div class="result-label">物體 1 加速度</div><div class="result-value" id="grav-a1">--</div></div>
+          <div class="result-item"><div class="result-label">物體 2 加速度</div><div class="result-value" id="grav-a2">--</div></div>
+          <div class="result-item"><div class="result-label">重力場強度</div><div class="result-value" id="grav-field">--</div></div>
+        </div>
+        <div class="info-box" style="margin-top:12px;" id="grav-comment"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tool 3: Escape Velocity Calculator -->
+  <div class="tab-content">
+    <div class="panel">
+      <h2>脫離速度計算器</h2>
+      <p class="panel-desc">選擇天體或自訂質量與半徑，計算脫離速度 v = sqrt(2GM/R)，並以視覺化長條圖比較各天體的脫離速度。</p>
+
+      <div class="info-box">
+        <strong>公式：</strong>
+        <span class="tooltip">脫離速度<span class="tip">物體從天體表面出發，恰好能克服重力束縛飛向無窮遠的最小速度</span></span>
+        v<sub>esc</sub> = sqrt(2GM/R)。其中 G 為萬有引力常數，M 為天體質量，R 為天體半徑。
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="margin-bottom:8px;">選擇天體：</label>
+        <div class="preset-row" id="escape-bodies">
+          <button class="preset-btn active" onclick="selectEscBody(this,'earth')">地球</button>
+          <button class="preset-btn" onclick="selectEscBody(this,'moon')">月球</button>
+          <button class="preset-btn" onclick="selectEscBody(this,'mars')">火星</button>
+          <button class="preset-btn" onclick="selectEscBody(this,'jupiter')">木星</button>
+          <button class="preset-btn" onclick="selectEscBody(this,'sun')">太陽</button>
+          <button class="preset-btn" onclick="selectEscBody(this,'custom')">自訂</button>
+        </div>
+      </div>
+
+      <div id="escape-custom-inputs" style="display:none; margin-bottom:12px;">
+        <div class="control-row">
+          <div>
+            <label>天體質量 M (kg)</label>
+            <input type="number" id="esc-custom-mass" step="any" value="5.972e24" placeholder="例如 5.972e24">
+          </div>
+          <div>
+            <label>天體半徑 R (m)</label>
+            <input type="number" id="esc-custom-radius" step="any" value="6.371e6" placeholder="例如 6.371e6">
+          </div>
+        </div>
+        <div class="btn-group" style="margin-top:8px;">
+          <button class="btn btn-primary" onclick="calcCustomEscape()">計算自訂天體</button>
+        </div>
+      </div>
+
+      <div id="escape-detail" style="margin-top:12px;"></div>
+
+      <h3 style="font-size:15px; color:#1e293b; margin-top:20px; margin-bottom:10px;">各天體脫離速度比較</h3>
+      <div class="bar-container" id="escape-bars"></div>
+
+      <div class="info-box" style="margin-top:16px;">
+        <strong>思考：</strong>脫離速度只取決於天體的質量和半徑，與逃離物體本身的質量無關。如果一個天體的脫離速度超過光速（3 x 10⁵ km/s），連光都無法逃離——這就是
+        <span class="tooltip">黑洞<span class="tip">嚴格來說需要廣義相對論描述，但牛頓力學也能給出這個啟發性的結論</span></span>
+        的基本概念。
+      </div>
+    </div>
+  </div>
+
+  <!-- Tool 4: Kepler's Third Law Verifier -->
+  <div class="tab-content">
+    <div class="panel">
+      <h2>克卜勒第三定律驗證</h2>
+      <p class="panel-desc">用太陽系行星的實際數據，驗證週期平方 T² 與半長軸立方 a³ 的線性關係。點擊行星名稱可在圖上高亮顯示。</p>
+
+      <div class="info-box">
+        <strong>克卜勒第三定律：</strong>T² = (4pi²/GM) x a³。以年和 AU 為單位時，T²/a³ 之比對所有行星近乎為 1，所有數據點應落在一條通過原點的直線上。
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="kepler-table">
+          <thead>
+            <tr>
+              <th>行星</th>
+              <th>半長軸 a (AU)</th>
+              <th>週期 T (年)</th>
+              <th>a³ (AU³)</th>
+              <th>T² (年²)</th>
+              <th>T²/a³</th>
+            </tr>
+          </thead>
+          <tbody id="kepler-tbody"></tbody>
+        </table>
+      </div>
+
+      <canvas id="kepler-canvas" width="900" height="450" style="margin-top:16px; background:#fafbfc;"></canvas>
+
+      <div class="result-grid" style="margin-top:12px;">
+        <div class="result-item"><div class="result-label">最佳擬合斜率</div><div class="result-value" id="kepler-slope">--</div></div>
+        <div class="result-item"><div class="result-label">理論斜率</div><div class="result-value">1.000</div></div>
+        <div class="result-item"><div class="result-label">平均 T²/a³</div><div class="result-value" id="kepler-avg">--</div></div>
+      </div>
+
+      <div class="info-box" style="margin-top:12px;">
+        <strong>觀察：</strong>所有行星的 T²/a³ 值幾乎完全相同（約 1.000），精彩地驗證了克卜勒第三定律。此比值僅取決於
+        <span class="tooltip">中心天體的質量<span class="tip">T²/a³ = 4pi²/(GM)，其中 M 是太陽質量。木星的衛星系統會有不同的比值。</span></span>，與行星自身質量無關。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ TAB SWITCHING ============
+function switchTab(idx) {
+  var btns = document.querySelectorAll('.tab-btn');
+  var tabs = document.querySelectorAll('.tab-content');
+  btns.forEach(function(b) { b.classList.remove('active'); });
+  tabs.forEach(function(t) { t.classList.remove('active'); });
+  btns[idx].classList.add('active');
+  tabs[idx].classList.add('active');
+
+  if (idx === 0) { resetOrbit(); drawOrbitBg(); }
+  if (idx === 2) { renderEscapeDetail(); renderEscapeBars(); }
+  if (idx === 3) { drawKeplerChart(); }
+}
+
+// ============ UTILITIES ============
+function getCanvasSize(canvas) {
+  var rect = canvas.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { w: rect.width, h: rect.height };
+}
+
+function toSup(n) {
+  var sups = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+  return String(n).split('').map(function(c){ return sups[c] || c; }).join('');
+}
+
+function formatSci(num) {
+  if (num === 0) return '0';
+  if (Math.abs(num) >= 0.01 && Math.abs(num) < 1e5) return num.toFixed(3);
+  var exp = Math.floor(Math.log10(Math.abs(num)));
+  var m = num / Math.pow(10, exp);
+  return m.toFixed(2) + ' x 10' + toSup(exp);
+}
+
+// ============ TOOL 1: ORBIT SIMULATOR ============
+var orbitCanvas = document.getElementById('orbit-canvas');
+var orbitCtx = orbitCanvas.getContext('2d');
+var orbitAnim = null;
+var orbitState = null;
+var GM_SIM = 8000;
+
+function updateOrbitLabels() {
+  document.getElementById('orbit-r-val').textContent = document.getElementById('orbit-r').value;
+  document.getElementById('orbit-v-val').textContent = parseFloat(document.getElementById('orbit-v').value).toFixed(1);
+}
+
+function setOrbitPreset(type) {
+  var rSlider = document.getElementById('orbit-r');
+  var vSlider = document.getElementById('orbit-v');
+  document.querySelectorAll('#tab-orbit-presets .preset-btn, .tab-content:first-of-type .preset-btn').forEach(function(b){ b.classList.remove('active'); });
+
+  if (type === 'circular') {
+    var r = 200;
+    var vCirc = Math.sqrt(GM_SIM / r);
+    rSlider.value = r;
+    vSlider.value = Math.round(vCirc * 10) / 10;
+  } else if (type === 'elliptical') {
+    var r = 150;
+    var vCirc = Math.sqrt(GM_SIM / r);
+    rSlider.value = r;
+    vSlider.value = Math.round(vCirc * 1.35 * 10) / 10;
+  } else if (type === 'escape') {
+    var r = 200;
+    var vEsc = Math.sqrt(2 * GM_SIM / r);
+    rSlider.value = r;
+    vSlider.value = Math.min(Math.round(vEsc * 1.1 * 10) / 10, 4.5);
+  }
+  updateOrbitLabels();
+  if (event && event.target) event.target.classList.add('active');
+  startOrbit();
+}
+
+function drawOrbitBg() {
+  var size = getCanvasSize(orbitCanvas);
+  var w = size.w, h = size.h;
+  var ctx = orbitCtx;
+  ctx.clearRect(0, 0, w, h);
+
+  // Starry background
+  ctx.fillStyle = '#0a0e1a';
+  ctx.fillRect(0, 0, w, h);
+  for (var i = 0; i < 120; i++) {
+    ctx.beginPath();
+    ctx.arc(Math.random() * w, Math.random() * h, Math.random() * 1.2 + 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.5 + 0.2) + ')';
+    ctx.fill();
+  }
+
+  // Central star
+  var cx = w / 2, cy = h / 2;
+  var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 28);
+  grad.addColorStop(0, '#fff7d4');
+  grad.addColorStop(0.3, '#ffd93d');
+  grad.addColorStop(0.7, '#f59e0b');
+  grad.addColorStop(1, 'rgba(245,158,11,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Glow
+  var glow = ctx.createRadialGradient(cx, cy, 8, cx, cy, 55);
+  glow.addColorStop(0, 'rgba(255,217,61,0.18)');
+  glow.addColorStop(1, 'rgba(255,217,61,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 55, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function startOrbit() {
+  if (orbitAnim) cancelAnimationFrame(orbitAnim);
+  var size = getCanvasSize(orbitCanvas);
+  var w = size.w, h = size.h;
+  var cx = w / 2, cy = h / 2;
+  var r0 = parseFloat(document.getElementById('orbit-r').value);
+  var v0 = parseFloat(document.getElementById('orbit-v').value);
+
+  orbitState = {
+    x: r0, y: 0,
+    vx: 0, vy: -v0,
+    trail: [], sweepPoints: [],
+    time: 0, cx: cx, cy: cy, w: w, h: h,
+    running: true, sweepTimer: 0
+  };
+
+  // Classify orbit type
+  var vCirc = Math.sqrt(GM_SIM / r0);
+  var vEsc = vCirc * Math.sqrt(2);
+  if (v0 < vCirc * 0.3) {
+    document.getElementById('orbit-type').textContent = '墜落';
+  } else if (Math.abs(v0 - vCirc) < vCirc * 0.08) {
+    document.getElementById('orbit-type').textContent = '近圓軌道';
+  } else if (v0 < vEsc) {
+    document.getElementById('orbit-type').textContent = '橢圓軌道';
+  } else {
+    document.getElementById('orbit-type').textContent = '脫離軌道';
+  }
+
+  animateOrbit();
+}
+
+function animateOrbit() {
+  if (!orbitState || !orbitState.running) return;
+  var s = orbitState;
+  var dt = 0.15;
+  var steps = 4;
+
+  for (var i = 0; i < steps; i++) {
+    var dist = Math.sqrt(s.x * s.x + s.y * s.y);
+    if (dist < 16) {
+      s.running = false;
+      document.getElementById('orbit-type').textContent = '墜落（撞擊恆星）';
+      return;
+    }
+    if (dist > Math.max(s.w, s.h)) {
+      s.running = false;
+      document.getElementById('orbit-type').textContent = '脫離（飛離系統）';
+      return;
+    }
+    var d3 = dist * dist * dist;
+    var ax = -GM_SIM * s.x / d3;
+    var ay = -GM_SIM * s.y / d3;
+    s.vx += ax * dt;
+    s.vy += ay * dt;
+    s.x += s.vx * dt;
+    s.y += s.vy * dt;
+    s.time += dt;
+    s.trail.push({ x: s.x, y: s.y });
+    if (s.trail.length > 3000) s.trail.shift();
+  }
+
+  // Sweep area tracking
+  s.sweepTimer += dt * steps;
+  if (s.sweepTimer > 8) {
+    s.sweepPoints.push({ x: s.x, y: s.y });
+    if (s.sweepPoints.length > 40) s.sweepPoints.shift();
+    s.sweepTimer = 0;
+  }
+
+  // Redraw scene
+  drawOrbitBg();
+  var ctx = orbitCtx;
+
+  // Trail
+  if (document.getElementById('orbit-trace').checked && s.trail.length > 1) {
+    ctx.beginPath();
+    for (var i = 0; i < s.trail.length; i++) {
+      var px = s.cx + s.trail[i].x;
+      var py = s.cy + s.trail[i].y;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = 'rgba(100,180,255,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Sweep areas
+  if (document.getElementById('orbit-sweep').checked && s.sweepPoints.length > 1) {
+    var colors = ['rgba(255,160,60,0.15)','rgba(60,200,120,0.15)','rgba(100,160,255,0.15)'];
+    for (var i = 1; i < s.sweepPoints.length; i++) {
+      ctx.beginPath();
+      ctx.moveTo(s.cx, s.cy);
+      ctx.lineTo(s.cx + s.sweepPoints[i-1].x, s.cy + s.sweepPoints[i-1].y);
+      ctx.lineTo(s.cx + s.sweepPoints[i].x, s.cy + s.sweepPoints[i].y);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % 3];
+      ctx.fill();
+    }
+  }
+
+  // Planet
+  var ppx = s.cx + s.x;
+  var ppy = s.cy + s.y;
+  var pGrad = ctx.createRadialGradient(ppx - 2, ppy - 2, 0, ppx, ppy, 8);
+  pGrad.addColorStop(0, '#7dbbf0');
+  pGrad.addColorStop(1, '#2563eb');
+  ctx.fillStyle = pGrad;
+  ctx.beginPath();
+  ctx.arc(ppx, ppy, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Velocity arrow
+  var vScale = 15;
+  ctx.strokeStyle = '#ef4444';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(ppx, ppy);
+  ctx.lineTo(ppx + s.vx * vScale, ppy + s.vy * vScale);
+  ctx.stroke();
+  var vAng = Math.atan2(s.vy, s.vx);
+  ctx.beginPath();
+  ctx.moveTo(ppx + s.vx * vScale, ppy + s.vy * vScale);
+  ctx.lineTo(ppx + s.vx * vScale - 8 * Math.cos(vAng - 0.4), ppy + s.vy * vScale - 8 * Math.sin(vAng - 0.4));
+  ctx.lineTo(ppx + s.vx * vScale - 8 * Math.cos(vAng + 0.4), ppy + s.vy * vScale - 8 * Math.sin(vAng + 0.4));
+  ctx.closePath();
+  ctx.fillStyle = '#ef4444';
+  ctx.fill();
+
+  // Update readouts
+  var currDist = Math.sqrt(s.x * s.x + s.y * s.y);
+  var currSpeed = Math.sqrt(s.vx * s.vx + s.vy * s.vy);
+  document.getElementById('orbit-dist').textContent = currDist.toFixed(0) + ' px';
+  document.getElementById('orbit-speed').textContent = currSpeed.toFixed(2);
+  document.getElementById('orbit-time').textContent = s.time.toFixed(0);
+
+  orbitAnim = requestAnimationFrame(animateOrbit);
+}
+
+function resetOrbit() {
+  if (orbitAnim) cancelAnimationFrame(orbitAnim);
+  orbitState = null;
+  drawOrbitBg();
+  ['orbit-dist','orbit-speed','orbit-type','orbit-time'].forEach(function(id) {
+    document.getElementById(id).textContent = '--';
+  });
+}
+
+// ============ TOOL 2: GRAVITY CALCULATOR ============
+var gravPresets = {
+  'earth-moon':   { m1: 5.972e24, m2: 7.342e22,  r: 3.844e8,  name: '地球—月球' },
+  'earth-sun':    { m1: 5.972e24, m2: 1.989e30,   r: 1.496e11, name: '地球—太陽' },
+  'earth-human':  { m1: 5.972e24, m2: 70,         r: 6.371e6,  name: '地球—人（地表）' },
+  'sun-jupiter':  { m1: 1.989e30, m2: 1.898e27,   r: 7.785e11, name: '太陽—木星' }
+};
+
+function setGravPreset(key) {
+  var p = gravPresets[key];
+  document.getElementById('grav-m1').value = p.m1;
+  document.getElementById('grav-m2').value = p.m2;
+  document.getElementById('grav-r').value = p.r;
+  document.querySelectorAll('#grav-presets .preset-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (event && event.target) event.target.classList.add('active');
+  calcGravity();
+}
+
+function calcGravity() {
+  var G = 6.674e-11;
+  var m1 = parseFloat(document.getElementById('grav-m1').value);
+  var m2 = parseFloat(document.getElementById('grav-m2').value);
+  var r  = parseFloat(document.getElementById('grav-r').value);
+
+  if (isNaN(m1) || isNaN(m2) || isNaN(r) || r <= 0 || m1 <= 0 || m2 <= 0) {
+    alert('請輸入有效的正數值');
+    return;
+  }
+
+  var F = G * m1 * m2 / (r * r);
+  var a1 = F / m1;
+  var a2 = F / m2;
+  var field = G * m1 / (r * r);
+
+  document.getElementById('grav-force').textContent = formatSci(F) + ' N';
+  document.getElementById('grav-a1').textContent = formatSci(a1) + ' m/s²';
+  document.getElementById('grav-a2').textContent = formatSci(a2) + ' m/s²';
+  document.getElementById('grav-field').textContent = formatSci(field) + ' N/kg';
+
+  var comment = '';
+  if (F < 1e-5) {
+    comment = '<strong>觀察：</strong>這個引力非常微弱。這說明為什麼日常生活中我們感受不到物體之間的萬有引力——只有當至少一個物體具有天文級別的質量時，引力效應才會顯著。';
+  } else if (F > 1e20) {
+    comment = '<strong>觀察：</strong>這是天文學級別的巨大引力！正是這種力量讓行星穩定繞行恆星，維持太陽系數十億年的秩序。';
+  } else {
+    comment = '<strong>觀察：</strong>根據牛頓第三定律，兩個物體受到的力大小相同、方向相反，但因質量不同，加速度也不同。質量越大的物體加速度越小。';
+  }
+  document.getElementById('grav-comment').innerHTML = comment;
+  document.getElementById('grav-result').style.display = 'block';
+}
+
+function resetGravity() {
+  ['grav-m1','grav-m2','grav-r'].forEach(function(id){ document.getElementById(id).value = ''; });
+  document.getElementById('grav-result').style.display = 'none';
+  document.querySelectorAll('#grav-presets .preset-btn').forEach(function(b){ b.classList.remove('active'); });
+}
+
+// ============ TOOL 3: ESCAPE VELOCITY ============
+var celestialBodies = {
+  earth:   { name: '地球', mass: 5.972e24,  radius: 6.371e6,  color: '#3b82f6' },
+  moon:    { name: '月球', mass: 7.342e22,  radius: 1.737e6,  color: '#94a3b8' },
+  mars:    { name: '火星', mass: 6.417e23,  radius: 3.3895e6, color: '#ef4444' },
+  jupiter: { name: '木星', mass: 1.898e27,  radius: 6.9911e7, color: '#d97706' },
+  sun:     { name: '太陽', mass: 1.989e30,  radius: 6.96e8,   color: '#eab308' }
+};
+
+var selectedBody = 'earth';
+var customEscapeData = null;
+
+function selectEscBody(btn, key) {
+  selectedBody = key;
+  customEscapeData = null;
+  document.querySelectorAll('#escape-bodies .preset-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+
+  var customDiv = document.getElementById('escape-custom-inputs');
+  if (key === 'custom') {
+    customDiv.style.display = 'block';
+    return;
+  } else {
+    customDiv.style.display = 'none';
+  }
+  renderEscapeDetail();
+  renderEscapeBars();
+}
+
+function calcCustomEscape() {
+  var mass = parseFloat(document.getElementById('esc-custom-mass').value);
+  var radius = parseFloat(document.getElementById('esc-custom-radius').value);
+  if (isNaN(mass) || isNaN(radius) || mass <= 0 || radius <= 0) {
+    alert('請輸入有效的正數值');
+    return;
+  }
+  customEscapeData = { name: '自訂', mass: mass, radius: radius, color: '#8b5cf6' };
+  renderEscapeDetail();
+  renderEscapeBars();
+}
+
+function renderEscapeDetail() {
+  var G = 6.674e-11;
+  var b = (selectedBody === 'custom' && customEscapeData) ? customEscapeData : celestialBodies[selectedBody];
+  if (!b) return;
+
+  var vEsc = Math.sqrt(2 * G * b.mass / b.radius);
+  var vOrb = Math.sqrt(G * b.mass / b.radius);
+  var gSurf = G * b.mass / (b.radius * b.radius);
+
+  var html = '<div class="result-grid">'
+    + '<div class="result-item"><div class="result-label">天體</div><div class="result-value">' + b.name + '</div></div>'
+    + '<div class="result-item"><div class="result-label">脫離速度</div><div class="result-value">' + (vEsc / 1000).toFixed(2) + ' km/s</div></div>'
+    + '<div class="result-item"><div class="result-label">第一宇宙速度</div><div class="result-value">' + (vOrb / 1000).toFixed(2) + ' km/s</div></div>'
+    + '<div class="result-item"><div class="result-label">表面重力 g</div><div class="result-value">' + gSurf.toFixed(2) + ' m/s²</div></div>'
+    + '<div class="result-item"><div class="result-label">質量</div><div class="result-value">' + formatSci(b.mass) + ' kg</div></div>'
+    + '<div class="result-item"><div class="result-label">半徑</div><div class="result-value">' + formatSci(b.radius) + ' m</div></div>'
+    + '</div>';
+  document.getElementById('escape-detail').innerHTML = html;
+}
+
+function renderEscapeBars() {
+  var G = 6.674e-11;
+  var bodyKeys = ['moon','mars','earth','jupiter','sun'];
+  var allBodies = [];
+
+  bodyKeys.forEach(function(key) {
+    var b = celestialBodies[key];
+    allBodies.push({ name: b.name, v: Math.sqrt(2 * G * b.mass / b.radius), color: b.color, key: key });
+  });
+
+  // Add custom if present
+  if (customEscapeData) {
+    allBodies.push({
+      name: customEscapeData.name,
+      v: Math.sqrt(2 * G * customEscapeData.mass / customEscapeData.radius),
+      color: customEscapeData.color,
+      key: 'custom'
+    });
+  }
+
+  var maxV = 0;
+  allBodies.forEach(function(b) { if (b.v > maxV) maxV = b.v; });
+
+  var html = '';
+  allBodies.forEach(function(b) {
+    var pct = (b.v / maxV) * 100;
+    var isSelected = (b.key === selectedBody);
+    var barColor = isSelected ? b.color : '#cbd5e1';
+
+    html += '<div class="bar-row">'
+      + '<div class="bar-label">' + b.name + '</div>'
+      + '<div class="bar-track">'
+      + '<div class="bar-fill" style="width:' + Math.max(pct, 6) + '%; background:' + barColor + ';">'
+      + (b.v / 1000).toFixed(1) + ' km/s'
+      + '</div></div></div>';
+  });
+
+  document.getElementById('escape-bars').innerHTML = html;
+}
+
+// ============ TOOL 4: KEPLER'S THIRD LAW ============
+var planets = [
+  { name: '水星', a: 0.387,  T: 0.241,   color: '#8b8b8b' },
+  { name: '金星', a: 0.723,  T: 0.615,   color: '#eab308' },
+  { name: '地球', a: 1.000,  T: 1.000,   color: '#3b82f6' },
+  { name: '火星', a: 1.524,  T: 1.881,   color: '#ef4444' },
+  { name: '木星', a: 5.203,  T: 11.862,  color: '#d97706' },
+  { name: '土星', a: 9.537,  T: 29.457,  color: '#a3a38a' },
+  { name: '天王星', a: 19.19, T: 84.01,  color: '#06b6d4' },
+  { name: '海王星', a: 30.07, T: 164.8,  color: '#2563eb' }
+];
+
+var highlightedPlanet = -1;
+
+function populateKeplerTable() {
+  var tbody = document.getElementById('kepler-tbody');
+  var html = '';
+  var sumRatio = 0;
+
+  planets.forEach(function(p, i) {
+    var a3 = Math.pow(p.a, 3);
+    var T2 = Math.pow(p.T, 2);
+    var ratio = T2 / a3;
+    sumRatio += ratio;
+
+    html += '<tr onclick="highlightPlanet(' + i + ')" style="cursor:pointer;">'
+      + '<td style="font-weight:600; color:' + p.color + ';">' + p.name + '</td>'
+      + '<td>' + p.a.toFixed(3) + '</td>'
+      + '<td>' + p.T.toFixed(3) + '</td>'
+      + '<td>' + a3.toFixed(3) + '</td>'
+      + '<td>' + T2.toFixed(3) + '</td>'
+      + '<td>' + ratio.toFixed(4) + '</td>'
+      + '</tr>';
+  });
+
+  tbody.innerHTML = html;
+  document.getElementById('kepler-avg').textContent = (sumRatio / planets.length).toFixed(4);
+}
+
+function highlightPlanet(idx) {
+  highlightedPlanet = (highlightedPlanet === idx) ? -1 : idx;
+  drawKeplerChart();
+}
+
+function drawKeplerChart() {
+  var canvas = document.getElementById('kepler-canvas');
+  var size = getCanvasSize(canvas);
+  var w = size.w, h = size.h;
+  var ctx = canvas.getContext('2d');
+  var pad = { l: 70, r: 30, t: 30, b: 50 };
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#fafbfc';
+  ctx.fillRect(0, 0, w, h);
+
+  // Compute data points
+  var data = planets.map(function(p) {
+    return { x: Math.pow(p.a, 3), y: Math.pow(p.T, 2), name: p.name, color: p.color };
+  });
+
+  var maxX = data[data.length - 1].x * 1.1;
+  var maxY = data[data.length - 1].y * 1.1;
+  var plotW = w - pad.l - pad.r;
+  var plotH = h - pad.t - pad.b;
+
+  function toScreen(dx, dy) {
+    return {
+      sx: pad.l + (dx / maxX) * plotW,
+      sy: (h - pad.b) - (dy / maxY) * plotH
+    };
+  }
+
+  // Grid lines
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  for (var i = 1; i <= 5; i++) {
+    var gx = pad.l + plotW * i / 5;
+    ctx.beginPath(); ctx.moveTo(gx, pad.t); ctx.lineTo(gx, h - pad.b); ctx.stroke();
+    var gy = pad.t + plotH * i / 5;
+    ctx.beginPath(); ctx.moveTo(pad.l, gy); ctx.lineTo(w - pad.r, gy); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, h - pad.b);
+  ctx.lineTo(w - pad.r, h - pad.b);
+  ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '13px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('a\u00B3 (AU\u00B3)', w / 2, h - 8);
+  ctx.save();
+  ctx.translate(16, (h - pad.t - pad.b) / 2 + pad.t);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('T\u00B2 (\u5E74\u00B2)', 0, 0);
+  ctx.restore();
+
+  // Tick values
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  for (var i = 0; i <= 5; i++) {
+    var val = (maxX * i / 5).toFixed(0);
+    ctx.fillText(val, pad.l + plotW * i / 5, h - pad.b + 18);
+  }
+  ctx.textAlign = 'right';
+  for (var i = 0; i <= 5; i++) {
+    var val = (maxY * i / 5).toFixed(0);
+    ctx.fillText(val, pad.l - 8, (h - pad.b) - plotH * i / 5 + 4);
+  }
+
+  // T² = a³ reference line (slope = 1)
+  ctx.strokeStyle = 'rgba(34,197,94,0.5)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  var lineEnd = Math.min(maxX, maxY);
+  var p0 = toScreen(0, 0);
+  var p1 = toScreen(lineEnd, lineEnd);
+  ctx.moveTo(p0.sx, p0.sy);
+  ctx.lineTo(p1.sx, p1.sy);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Label for reference line
+  ctx.fillStyle = 'rgba(34,197,94,0.8)';
+  ctx.font = '12px sans-serif';
+  ctx.textAlign = 'left';
+  var labelPos = toScreen(lineEnd * 0.55, lineEnd * 0.55);
+  ctx.save();
+  ctx.translate(labelPos.sx + 5, labelPos.sy - 8);
+  ctx.rotate(-Math.atan(plotH / plotW));
+  ctx.fillText('T\u00B2 = a\u00B3 (\u7406\u8AD6\u7DDA)', 0, 0);
+  ctx.restore();
+
+  // Linear regression for slope
+  var sumXY = 0, sumXX = 0;
+  data.forEach(function(d) { sumXY += d.x * d.y; sumXX += d.x * d.x; });
+  var slope = sumXY / sumXX;
+  document.getElementById('kepler-slope').textContent = slope.toFixed(4);
+
+  // Data points
+  data.forEach(function(d, i) {
+    var scr = toScreen(d.x, d.y);
+    var sx = scr.sx, sy = scr.sy;
+    var isHl = (i === highlightedPlanet);
+    var radius = isHl ? 9 : 6;
+
+    if (isHl) {
+      ctx.beginPath();
+      ctx.arc(sx, sy, 16, 0, Math.PI * 2);
+      ctx.fillStyle = d.color + '33';
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = d.color;
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Planet name label
+    ctx.fillStyle = d.color;
+    ctx.font = (isHl ? 'bold ' : '') + '12px sans-serif';
+    ctx.textAlign = 'left';
+    var labelX = sx + 10;
+    var labelY = sy - 10;
+    if (i >= 6) { labelX = sx - 40; labelY = sy + 16; }
+    ctx.fillText(d.name, labelX, labelY);
+  });
+}
+
+// ============ INIT ============
+window.addEventListener('load', function() {
+  drawOrbitBg();
+  populateKeplerTable();
+  renderEscapeDetail();
+  renderEscapeBars();
+});
+
+window.addEventListener('resize', function() {
+  var tabs = document.querySelectorAll('.tab-content');
+  for (var i = 0; i < tabs.length; i++) {
+    if (tabs[i].classList.contains('active')) {
+      if (i === 0) drawOrbitBg();
+      if (i === 3) drawKeplerChart();
+      break;
+    }
+  }
+});
+</script>
+
+</body>
+</html>
