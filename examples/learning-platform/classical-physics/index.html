@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>古典物理學</title>
   <meta name="description" content="適合高中生的古典物理學互動學習平台">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='8' fill='%232563eb'/><ellipse cx='50' cy='50' rx='45' ry='15' fill='none' stroke='%232563eb' stroke-width='2'/><ellipse cx='50' cy='50' rx='45' ry='15' fill='none' stroke='%233b82f6' stroke-width='2' transform='rotate(60 50 50)'/><ellipse cx='50' cy='50' rx='45' ry='15' fill='none' stroke='%23f59e0b' stroke-width='2' transform='rotate(-60 50 50)'/></svg>" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛️</text></svg>" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <style>
     :root {
@@ -210,6 +210,7 @@
       .content-disclaimer { margin: 0 .75rem; padding: .75rem 1rem; font-size: .78rem; }
       .search-wrapper { padding: 0 .75rem; margin-top: .75rem; }
       .search-results-dropdown { left: .75rem; right: .75rem; max-height: 320px; }
+      .nav-tab .count { display: none; }
     }
   </style>
 </head>
@@ -239,11 +240,11 @@
       topicSectionHeader: '主題課程',
       crossSectionHeader: '跨主題分析',
       keywords: {
-        plain: ['入門', '指南', 'guide'],
+        plain: ['guide', 'beginner', 'plain', '入門', '指南'],
         interactive: [],
-        casestudy: ['案例', 'case'],
-        quiz: ['測驗', '練習', 'quiz'],
-        further: ['資源', '延伸', 'resource'],
+        casestudy: ['case', 'cases', '案例', '研究'],
+        quiz: ['quiz', 'practice', 'exercise', '測驗', '練習'],
+        further: ['resource', 'further', 'learning', '資源', '延伸'],
         cross: []
       },
       tabLabels: {
@@ -399,8 +400,8 @@
       const tc = topicSections.map(t => { const pro=t.links.find(l=>l.type==='professional'); const desc=stripMdLinks(pro?pro.description:t.links[0]?.description||''); const badges=t.links.map(l=>`<span class="badge">${tabLabel(l)}</span>`).join(''); return `<a class="card" href="#${encodeURIComponent(t.title)}"><h2>${t.title}</h2><p>${desc}</p><div class="badge-row">${badges}</div></a>`; }).join('');
       const cc = crossSections.map(t => { const desc=stripMdLinks(t.links[0]?.description||''); return `<a class="card cross-topic" href="#${encodeURIComponent(t.title)}"><h2>${t.title}</h2><p>${desc}</p></a>`; }).join('');
       const isT=activeHomeTab==='topics', isR=activeHomeTab==='roadmap', isG=activeHomeTab==='glossary';
-      let main; if (isR) main=`<main class="reader section-divider"><div class="content-box loading" id="roadmap-content">載入中…</div></main>`; else if (isG) main=`<main class="reader section-divider"><div class="content-box loading" id="glossary-content">載入中…</div></main>`; else main=`<main class="home section-divider"><div class="grid">${isT?tc:cc}</div></main>`;
-      document.getElementById('app').innerHTML = `<header><h1>古典物理學</h1><p class="subtitle">適合高中生的互動學習平台</p>${searchBarHTML()}</header><div class="nav-tabs"><button class="nav-tab${isR?' active roadmap':' roadmap'}" data-tab="roadmap">學習路線</button><button class="nav-tab${isT?' active':''}" data-tab="topics">主題課程<span class="count">${topicSections.length}</span></button><button class="nav-tab${activeHomeTab==='cross'?' active cross':' cross'}" data-tab="cross">跨主題分析<span class="count">${crossSections.length}</span></button><button class="nav-tab${isG?' active glossary':' glossary'}" data-tab="glossary">詞彙表</button></div>${main}<div class="content-disclaimer">本平台內容由 AI 生成，僅供學習參考。如有疑問，請以教科書或專業教師的說明為準。</div><footer>以 ❤️ 打造的古典物理學學習平台 · 內容由 AI 輔助生成</footer>`;
+      let main; if (isR) main=`<main class="reader section-divider"><div class="content-box loading" id="roadmap-content">${CONFIG.strings.loadingText}</div></main>`; else if (isG) main=`<main class="reader section-divider"><div class="content-box loading" id="glossary-content">${CONFIG.strings.loadingText}</div></main>`; else main=`<main class="home section-divider"><div class="grid">${isT?tc:cc}</div></main>`;
+      document.getElementById('app').innerHTML = `<header><h1>⚛️ 古典物理學</h1><p class="subtitle">適合高中生的互動學習平台</p>${searchBarHTML()}</header><div class="nav-tabs"><button class="nav-tab${isR?' active roadmap':' roadmap'}" data-tab="roadmap">學習路線</button><button class="nav-tab${isT?' active':''}" data-tab="topics">主題課程<span class="count">${topicSections.length}</span></button><button class="nav-tab${activeHomeTab==='cross'?' active cross':' cross'}" data-tab="cross">跨主題分析<span class="count">${crossSections.length}</span></button><button class="nav-tab${isG?' active glossary':' glossary'}" data-tab="glossary">詞彙表</button></div>${main}<div class="content-disclaimer">本平台內容由 AI 生成，僅供學習參考。如有疑問，請以教科書或專業教師的說明為準。</div><footer>以 ❤️ 打造的古典物理學學習平台 · 內容由 AI 輔助生成</footer>`;
       document.querySelectorAll('.nav-tab').forEach(b => b.addEventListener('click', () => { activeHomeTab=b.dataset.tab; renderHome(); }));
       bindSearchEvents(); if (isR) loadRoadmap(); if (isG) loadGlossary();
     }
@@ -422,7 +423,7 @@
       if (currentTabIdx>=topic.links.length) currentTabIdx=0;
       const tabs=topic.links.map((l,i)=>`<button class="tab${i===currentTabIdx?' active':''}" data-idx="${i}">${tabLabel(l)}</button>`).join('');
       const back=topic.isCross?CONFIG.strings.backToCross:CONFIG.strings.backToTopics;
-      document.getElementById('app').innerHTML = `<header><a class="back" href="#" data-back="${topic.isCross?'cross':'topics'}">${back}</a><h1>${topic.title}</h1>${searchBarHTML()}</header><main class="reader">${topic.links.length>1?`<div class="tabs">${tabs}</div>`:''}<div class="content-box loading" id="md-content">載入中…</div></main><div class="content-disclaimer">本平台內容由 AI 生成，僅供學習參考。如有疑問，請以教科書或專業教師的說明為準。</div><footer>以 ❤️ 打造的古典物理學學習平台 · 內容由 AI 輔助生成</footer>`;
+      document.getElementById('app').innerHTML = `<header><a class="back" href="#" data-back="${topic.isCross?'cross':'topics'}">${back}</a><h1>${topic.title}</h1>${searchBarHTML()}</header><main class="reader">${topic.links.length>1?`<div class="tabs">${tabs}</div>`:''}<div class="content-box loading" id="md-content">${CONFIG.strings.loadingText}</div></main><div class="content-disclaimer">本平台內容由 AI 生成，僅供學習參考。如有疑問，請以教科書或專業教師的說明為準。</div><footer>以 ❤️ 打造的古典物理學學習平台 · 內容由 AI 輔助生成</footer>`;
       document.querySelector('.back').addEventListener('click', e => { e.preventDefault(); activeHomeTab=e.target.dataset.back||'topics'; location.hash=''; });
       document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { currentTabIdx=parseInt(b.dataset.idx); document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); b.classList.add('active'); loadContent(topic.links[currentTabIdx]); }));
       bindSearchEvents(); await loadContent(topic.links[currentTabIdx]);

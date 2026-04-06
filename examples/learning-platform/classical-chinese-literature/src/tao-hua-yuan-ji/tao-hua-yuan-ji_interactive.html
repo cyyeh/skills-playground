@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>桃花源記 — 互動學習工具</title>
+<style>
+  :root {
+    --primary: #2c5282;
+    --primary-light: #3b6db5;
+    --primary-dark: #1e3a5f;
+    --accent: #d4576b;
+    --accent-light: #e88296;
+    --peach: #fbb6a0;
+    --peach-bg: #fff5f2;
+    --green: #38a169;
+    --green-bg: #d5f5e3;
+    --blue: #2b6cb0;
+    --blue-bg: #daeaf6;
+    --purple: #6b46c1;
+    --purple-bg: #ede9fe;
+    --bg: #f7f9fc;
+    --card-bg: #ffffff;
+    --text: #2d3748;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --success: #27ae60;
+    --success-bg: #d5f5e3;
+    --danger: #e74c3c;
+    --danger-bg: #fadbd8;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 28px 20px 20px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; letter-spacing: 2px; }
+  .header p { font-size: 0.88rem; opacity: 0.85; }
+
+  /* Tab Nav */
+  .tab-nav {
+    display: flex;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 13px 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-light);
+    border-bottom: 3px solid transparent;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--primary); background: #edf2f7; }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 700;
+  }
+
+  .tab-content { display: none; padding: 16px; max-width: 900px; margin: 0 auto; }
+  .tab-content.active { display: block; animation: fadeIn 0.35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card h2 { font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 4px; }
+  .card .desc { font-size: 0.82rem; color: var(--text-light); margin-bottom: 16px; line-height: 1.5; }
+
+  /* Shared */
+  .btn {
+    display: inline-block;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+  .btn-outline:hover { background: var(--primary); color: #fff; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { background: #219a52; }
+  .btn-small { padding: 5px 12px; font-size: 0.8rem; }
+
+  .feedback {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .feedback.show { display: block; animation: fadeIn 0.3s ease; }
+  .feedback.correct { background: var(--success-bg); border-left: 4px solid var(--success); }
+  .feedback.wrong { background: var(--danger-bg); border-left: 4px solid var(--danger); }
+  .feedback.info { background: #edf2f7; border-left: 4px solid var(--primary); }
+
+  /* ===== Tab 1: Journey Map ===== */
+  .journey-map {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+  }
+  .journey-svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+  }
+  .journey-node {
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+  }
+  .journey-node:hover { filter: brightness(1.1); }
+  .journey-node.active { filter: drop-shadow(0 0 8px rgba(44,82,130,0.5)); }
+  .node-circle {
+    transition: r 0.2s, stroke-width 0.2s;
+  }
+  .journey-node:hover .node-circle { stroke-width: 3; }
+  .journey-node.active .node-circle { stroke-width: 4; r: 26; }
+
+  .journey-info {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 14px;
+    min-height: 80px;
+  }
+  .journey-info h3 { font-size: 1rem; color: var(--primary); margin-bottom: 6px; }
+  .journey-info .original {
+    background: var(--peach-bg);
+    border-left: 4px solid var(--accent);
+    padding: 10px 14px;
+    margin: 8px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.95rem;
+  }
+  .journey-info .translation {
+    color: var(--text-light);
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  /* ===== Tab 2: Contrast Table ===== */
+  .contrast-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .contrast-table th {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .contrast-table th:first-child { background: #edf2f7; color: var(--text); }
+  .contrast-table th:nth-child(2) { background: var(--primary); color: #fff; }
+  .contrast-table th:nth-child(3) { background: var(--accent); color: #fff; }
+  .contrast-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+    vertical-align: top;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .contrast-table td:first-child {
+    font-weight: 600;
+    color: var(--primary-dark);
+    background: #f8fafc;
+    text-align: center;
+    min-width: 70px;
+  }
+  .contrast-table td:nth-child(2) { background: var(--blue-bg); }
+  .contrast-table td:nth-child(3) { background: var(--peach-bg); }
+  .contrast-table tr:hover td { filter: brightness(0.97); }
+  .contrast-table tr.active-row td { box-shadow: inset 0 0 0 2px var(--primary); }
+
+  .contrast-detail {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 14px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    min-height: 50px;
+  }
+
+  /* ===== Tab 3: Fill in Blanks ===== */
+  .fib-passage {
+    background: #f8fafc;
+    border-radius: var(--radius);
+    padding: 18px;
+    font-size: 1.05rem;
+    line-height: 2.2;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+  .fib-blank {
+    display: inline-block;
+    min-width: 50px;
+    padding: 2px 8px;
+    border-bottom: 2px dashed var(--primary);
+    color: var(--primary);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 4px;
+    text-align: center;
+  }
+  .fib-blank:hover { background: #edf2f7; }
+  .fib-blank.active { background: #dbeafe; border-bottom-style: solid; }
+  .fib-blank.correct { background: var(--success-bg); border-bottom-color: var(--success); color: var(--success); }
+  .fib-blank.wrong { background: var(--danger-bg); border-bottom-color: var(--danger); color: var(--danger); }
+  .fib-blank.filled { min-width: auto; }
+
+  .fib-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .fib-option {
+    padding: 6px 16px;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    background: #fff;
+    user-select: none;
+  }
+  .fib-option:hover { border-color: var(--primary); background: #edf2f7; }
+  .fib-option.selected { border-color: var(--primary); background: #dbeafe; color: var(--primary); font-weight: 600; }
+  .fib-option.used { opacity: 0.4; cursor: default; pointer-events: none; }
+
+  .fib-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .fib-score { text-align: center; font-size: 0.9rem; color: var(--text-light); margin-bottom: 12px; }
+  .fib-score strong { color: var(--primary); font-size: 1.1rem; }
+
+  /* ===== Tab 4: Theme Explorer ===== */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .theme-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+  }
+  .theme-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .theme-card.active { border-color: var(--primary); background: #edf2f7; }
+  .theme-card .theme-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+  .theme-card .theme-title { font-size: 0.95rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 4px; }
+  .theme-card .theme-subtitle { font-size: 0.78rem; color: var(--text-light); }
+
+  .theme-detail {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .theme-detail h3 { font-size: 1.05rem; color: var(--primary); margin-bottom: 10px; }
+  .theme-detail .theme-section { margin-bottom: 14px; }
+  .theme-detail .theme-section h4 {
+    font-size: 0.88rem;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+    padding-left: 10px;
+    border-left: 3px solid var(--primary);
+  }
+  .theme-detail .theme-section p { font-size: 0.85rem; color: var(--text); line-height: 1.7; margin-top: 4px; }
+  .theme-detail .theme-quote {
+    background: var(--peach-bg);
+    border-left: 4px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.9rem;
+    margin: 8px 0;
+    font-style: italic;
+  }
+  .theme-related {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--text-light);
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.78rem;
+    color: var(--text-light);
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  @media(max-width:600px) {
+    .header h1 { font-size: 1.25rem; }
+    .card { padding: 14px; }
+    .theme-grid { grid-template-columns: 1fr 1fr; }
+    .contrast-table th, .contrast-table td { padding: 8px 10px; font-size: 0.8rem; }
+  }
+  @media(max-width:400px) {
+    .theme-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>桃花源記 — 互動學習工具</h1>
+  <p>陶淵明 ・ 東晉</p>
+</div>
+
+<div class="tab-nav" id="tabNav">
+  <button class="tab-btn active" data-tab="journey">桃花源地圖探索</button>
+  <button class="tab-btn" data-tab="contrast">虛實世界對比</button>
+  <button class="tab-btn" data-tab="fillblank">文言文填空</button>
+  <button class="tab-btn" data-tab="themes">主題探索</button>
+</div>
+
+<!-- ==================== Tab 1: Journey Map ==================== -->
+<div class="tab-content active" id="tab-journey">
+  <div class="card">
+    <h2>漁人的旅程</h2>
+    <p class="desc">點擊下方旅程路線圖上的各個節點，查看漁人在每個階段的經歷、原文與翻譯。</p>
+
+    <div class="journey-map">
+      <svg class="journey-svg" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Path line -->
+        <path d="M 80 100 C 160 100, 200 60, 240 80 C 280 100, 320 120, 380 90 C 420 70, 440 50, 480 70 C 520 90, 540 110, 600 100 C 640 95, 680 80, 720 100"
+              fill="none" stroke="#cbd5e0" stroke-width="3" stroke-dasharray="8,4"/>
+
+        <!-- Forward path (solid) -->
+        <path d="M 80 100 C 160 100, 200 60, 240 80 C 280 100, 320 120, 380 90 C 420 70, 440 50, 480 70"
+              fill="none" stroke="#2c5282" stroke-width="3" opacity="0.4"/>
+
+        <!-- Return path (dashed red) -->
+        <path d="M 480 70 C 520 90, 540 110, 600 100 C 640 95, 680 80, 720 100"
+              fill="none" stroke="#d4576b" stroke-width="2.5" stroke-dasharray="6,3" opacity="0.5"/>
+
+        <!-- Node 1: Fishing -->
+        <g class="journey-node" data-node="0" onclick="showJourneyInfo(0)">
+          <circle class="node-circle" cx="80" cy="100" r="22" fill="#2c5282" stroke="#1e3a5f" stroke-width="2"/>
+          <text x="80" y="96" text-anchor="middle" fill="white" font-size="11" font-weight="700">捕魚</text>
+          <text x="80" y="108" text-anchor="middle" fill="white" font-size="9" opacity="0.8">溪行</text>
+        </g>
+
+        <!-- Node 2: Peach Forest -->
+        <g class="journey-node" data-node="1" onclick="showJourneyInfo(1)">
+          <circle class="node-circle" cx="240" cy="80" r="22" fill="#d4576b" stroke="#b33d55" stroke-width="2"/>
+          <text x="240" y="76" text-anchor="middle" fill="white" font-size="11" font-weight="700">桃林</text>
+          <text x="240" y="88" text-anchor="middle" fill="white" font-size="9" opacity="0.8">落英</text>
+        </g>
+
+        <!-- Node 3: Cave -->
+        <g class="journey-node" data-node="2" onclick="showJourneyInfo(2)">
+          <circle class="node-circle" cx="380" cy="90" r="22" fill="#6b46c1" stroke="#553c9a" stroke-width="2"/>
+          <text x="380" y="86" text-anchor="middle" fill="white" font-size="11" font-weight="700">山洞</text>
+          <text x="380" y="98" text-anchor="middle" fill="white" font-size="9" opacity="0.8">狹口</text>
+        </g>
+
+        <!-- Node 4: Village -->
+        <g class="journey-node" data-node="3" onclick="showJourneyInfo(3)">
+          <circle class="node-circle" cx="480" cy="70" r="22" fill="#38a169" stroke="#2f855a" stroke-width="2"/>
+          <text x="480" y="66" text-anchor="middle" fill="white" font-size="11" font-weight="700">村莊</text>
+          <text x="480" y="78" text-anchor="middle" fill="white" font-size="9" opacity="0.8">桃源</text>
+        </g>
+
+        <!-- Node 5: Leave -->
+        <g class="journey-node" data-node="4" onclick="showJourneyInfo(4)">
+          <circle class="node-circle" cx="600" cy="100" r="22" fill="#d69e2e" stroke="#b7791f" stroke-width="2"/>
+          <text x="600" y="96" text-anchor="middle" fill="white" font-size="11" font-weight="700">離開</text>
+          <text x="600" y="108" text-anchor="middle" fill="white" font-size="9" opacity="0.8">誌之</text>
+        </g>
+
+        <!-- Node 6: Lost -->
+        <g class="journey-node" data-node="5" onclick="showJourneyInfo(5)">
+          <circle class="node-circle" cx="720" cy="100" r="22" fill="#e53e3e" stroke="#c53030" stroke-width="2"/>
+          <text x="720" y="96" text-anchor="middle" fill="white" font-size="11" font-weight="700">再訪</text>
+          <text x="720" y="108" text-anchor="middle" fill="white" font-size="9" opacity="0.8">迷路</text>
+        </g>
+
+        <!-- Direction arrows -->
+        <polygon points="172,88 180,84 176,92" fill="#2c5282" opacity="0.6"/>
+        <polygon points="318,88 326,82 322,94" fill="#2c5282" opacity="0.6"/>
+        <polygon points="435,76 443,72 439,82" fill="#2c5282" opacity="0.6"/>
+        <polygon points="545,96 553,90 549,100" fill="#d4576b" opacity="0.6"/>
+        <polygon points="665,96 673,90 669,100" fill="#d4576b" opacity="0.6"/>
+      </svg>
+    </div>
+
+    <div class="journey-info" id="journeyInfo">
+      <span style="color:var(--text-light);">點擊上方旅程節點，查看對應的原文與翻譯</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 2: Contrast Table ==================== -->
+<div class="tab-content" id="tab-contrast">
+  <div class="card">
+    <h2>虛實世界對比</h2>
+    <p class="desc">桃花源（內）與外面世界的特徵對照。點擊任一行，查看詳細解析。</p>
+
+    <table class="contrast-table" id="contrastTable">
+      <thead>
+        <tr>
+          <th>維度</th>
+          <th>桃花源（內）</th>
+          <th>外面世界（外）</th>
+        </tr>
+      </thead>
+      <tbody id="contrastBody"></tbody>
+    </table>
+
+    <div class="contrast-detail" id="contrastDetail">
+      <span style="color:var(--text-light);">點擊表格中的任意一行，查看該維度的詳細分析</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 3: Fill in Blanks ==================== -->
+<div class="tab-content" id="tab-fillblank">
+  <div class="card">
+    <h2>文言文填空練習</h2>
+    <p class="desc">原文中的關鍵詞已被挖空，請點擊空格後選擇正確的詞語填入。</p>
+
+    <div class="fib-score">已完成：<strong id="fibCorrect">0</strong> / <strong id="fibTotal">0</strong></div>
+
+    <div class="fib-passage" id="fibPassage"></div>
+
+    <div class="fib-options" id="fibOptions"></div>
+
+    <div class="fib-controls">
+      <button class="btn btn-outline" onclick="resetFib()">重新開始</button>
+      <button class="btn btn-primary" onclick="checkAllFib()">檢查答案</button>
+    </div>
+
+    <div class="feedback" id="fibFeedback"></div>
+  </div>
+</div>
+
+<!-- ==================== Tab 4: Theme Explorer ==================== -->
+<div class="tab-content" id="tab-themes">
+  <div class="card">
+    <h2>主題探索</h2>
+    <p class="desc">《桃花源記》蘊含多層主題意涵。點擊下方主題卡片，深入了解每個主題在文中的體現。</p>
+
+    <div class="theme-grid" id="themeGrid"></div>
+
+    <div class="theme-detail" id="themeDetail" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="footer">
+  桃花源記互動學習工具 — 文言文學習平台
+</div>
+
+<script>
+/* ================================================================
+   TAB SWITCHING
+   ================================================================ */
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ================================================================
+   TAB 1: JOURNEY MAP
+   ================================================================ */
+var journeyData = [
+  {
+    title: '捕魚溪行',
+    original: '晉太元中，武陵人捕魚為業。緣溪行，忘路之遠近。',
+    translation: '東晉太元年間，武陵郡有個以捕魚為生的人。有天他沿著溪流划船前行，忘記了路途的遠近。',
+    note: '「忘路之遠近」是進入桃花源的前提——漁人在無意識的狀態下，才得以發現這個秘境。'
+  },
+  {
+    title: '桃花林',
+    original: '忽逢桃花林，夾岸數百步，中無雜樹，芳草鮮美，落英繽紛。漁人甚異之，復前行，欲窮其林。',
+    translation: '忽然遇見一片桃花林，兩岸綿延數百步，中間沒有其他雜樹，花草鮮嫩美麗，桃花花瓣紛紛飄落。漁人對此非常驚奇，繼續前行，想走到桃花林的盡頭。',
+    note: '桃花林是現實世界與理想世界之間的過渡地帶，純淨而夢幻的景象預告了即將到來的世外桃源。'
+  },
+  {
+    title: '穿越山洞',
+    original: '林盡水源，便得一山，山有小口，彷彿若有光。便舍船，從口入。初極狹，才通人。復行數十步，豁然開朗。',
+    translation: '桃花林在溪水源頭處結束了，出現一座山，山上有個小洞口，隱約好像有光透出。漁人棄船上岸，從洞口進入。起初非常狹窄，僅能容一人通過。又走了幾十步，突然變得開闊明亮。',
+    note: '從狹窄到「豁然開朗」的空間轉換，象徵從現實世界進入理想世界的通道，也帶有重生的隱喻。'
+  },
+  {
+    title: '桃花源村莊',
+    original: '土地平曠，屋舍儼然，有良田、美池、桑竹之屬。阡陌交通，雞犬相聞。其中往來種作，男女衣著，悉如外人。黃髮垂髫，並怡然自樂。',
+    translation: '土地平坦寬廣，房屋整整齊齊，有肥沃的田地、清澈的池塘和桑樹竹林。田間小路交錯相通，雞鳴犬吠之聲彼此可聞。人們來往耕作，穿著與外面的人一樣。老人和小孩都怡然自得、安適快樂。',
+    note: '這是全文描繪理想社會的核心段落：物質富足、人際和諧、老幼安樂——一幅完美的農耕社會畫面。'
+  },
+  {
+    title: '離開桃花源',
+    original: '停數日，辭去。此中人語云：「不足為外人道也。」既出，得其船，便扶向路，處處誌之。',
+    translation: '漁人住了幾天後告辭離去。村中人叮囑他：「這裡的事不值得對外面的人說。」出來後，漁人找到自己的船，沿著原路回去，一路上到處做了標記。',
+    note: '「不足為外人道也」反映了桃源人的自我保護意識。漁人「處處誌之」則暗示他並未真正理解桃花源的精神。'
+  },
+  {
+    title: '再訪不得',
+    original: '及郡下，詣太守，說如此。太守即遣人隨其往，尋向所誌，遂迷，不復得路。南陽劉子驥，高尚士也，聞之，欣然規往。未果，尋病終，後遂無問津者。',
+    translation: '到了郡城，漁人去拜見太守報告此事。太守立即派人隨他前往，但循著標記走卻迷了路，再也找不到了。南陽的劉子驥是位高尚之士，聽說此事後高興地計劃前往，但還沒成行就病逝了。此後再無人探訪。',
+    note: '桃花源的不可復尋是全文的點睛之筆——理想世界不存在於地理空間中，而存在於精神境界裡。'
+  }
+];
+
+function showJourneyInfo(idx) {
+  var data = journeyData[idx];
+  document.querySelectorAll('.journey-node').forEach(function(n) { n.classList.remove('active'); });
+  document.querySelector('.journey-node[data-node="' + idx + '"]').classList.add('active');
+
+  var el = document.getElementById('journeyInfo');
+  el.innerHTML =
+    '<h3>' + data.title + '</h3>' +
+    '<div class="original">' + data.original + '</div>' +
+    '<div class="translation"><strong>白話翻譯：</strong>' + data.translation + '</div>' +
+    '<div style="margin-top:10px;font-size:0.82rem;color:var(--text-light);padding:8px 12px;background:#edf2f7;border-radius:6px;">' + data.note + '</div>';
+}
+
+/* ================================================================
+   TAB 2: CONTRAST TABLE
+   ================================================================ */
+var contrastData = [
+  {
+    dim: '時間',
+    inside: '靜止——「不知有漢，無論魏晉」',
+    outside: '流動——朝代不斷更迭，秦漢魏晉',
+    detail: '桃花源中的時間彷彿凝固在秦代。居民的生活方式和價值觀保持不變，不受外部歷史進程的影響。相比之下，外面的世界經歷了數百年的朝代更迭，每一次改朝換代都伴隨著戰亂和苦難。陶淵明暗示：歷史的「進步」並沒有帶來真正的幸福，反而是時間的「靜止」保存了人性的純真。'
+  },
+  {
+    dim: '政治',
+    inside: '無政府——沒有統治者和被統治者',
+    outside: '暴政——秦朝苛政，東晉末年篡位殺戮',
+    detail: '桃花源中完全沒有提到任何形式的政治組織或統治者。村民之間是平等的鄰里關係，靠自發的互助維持社會秩序。這與外面世界充滿壓迫的政治現實形成了鮮明對比。陶淵明以此暗示：理想社會的根基不是完善的政治制度，而是人與人之間自然和諧的關係。'
+  },
+  {
+    dim: '人情',
+    inside: '純樸——「設酒殺雞作食」，熱情好客',
+    outside: '險惡——官場傾軋，爾虞我詐',
+    detail: '桃花源居民見到陌生人（漁人），第一反應是驚訝，緊接著就是熱情招待——「設酒殺雞作食」「各復延至其家，皆出酒食」。這種淳樸的人際關係與東晉末年官場上的勾心鬥角形成強烈反差。陶淵明自己正是因為無法忍受官場的虛偽而選擇辭官歸隱的。'
+  },
+  {
+    dim: '經濟',
+    inside: '自給自足——「良田、美池、桑竹之屬」',
+    outside: '剝削——沉重的賦稅和徭役',
+    detail: '桃花源的經濟模式是自給自足的小農經濟：良田提供糧食，美池養魚灌溉，桑樹養蠶織布，竹林供應建材和日用。居民不需要向任何人繳稅、服役。這是陶淵明理想中的經濟形態，也反映了他對當時賦稅繁重、百姓困苦的批判。'
+  },
+  {
+    dim: '社會結構',
+    inside: '平等——「黃髮垂髫，並怡然自樂」',
+    outside: '階層分明——士族門閥制度森嚴',
+    detail: '桃花源中老幼「並怡然自樂」，看不到任何階層差異。所有人都參與「往來種作」的勞動，沒有貴族和平民的區分。東晉是中國歷史上門閥制度最嚴格的時代之一，「上品無寒門，下品無士族」。陶淵明構想一個無階級的社會，正是對現實社會不平等的深刻回應。'
+  },
+  {
+    dim: '空間',
+    inside: '封閉——山洞阻隔，與世隔絕',
+    outside: '開放——但充滿戰爭與動盪',
+    detail: '桃花源通過狹窄的山洞與外界隔絕，這種封閉性既是它的保護機制（免受戰亂侵擾），也是它的脆弱性（一旦被外人發現就可能被破壞）。外面的世界雖然「開放」，但這種開放帶來的不是自由而是危險。陶淵明以此暗示：在一個不安全的世界裡，封閉反而是一種保護。'
+  },
+  {
+    dim: '價值觀',
+    inside: '回歸本真——追求簡樸和自然',
+    outside: '追逐功利——爭權奪利，汲汲營營',
+    detail: '桃花源居民的生活以農耕為本，沒有多餘的慾望和追求。他們的快樂來自簡單的日常：種田、織布、與鄰里往來。這正是陶淵明本人的人生理想——「採菊東籬下，悠然見南山」。相比之下，外面世界的人們為了權力、財富、地位而無止境地競爭，卻失去了內心的安寧。'
+  }
+];
+
+function buildContrastTable() {
+  var tbody = document.getElementById('contrastBody');
+  contrastData.forEach(function(row, i) {
+    var tr = document.createElement('tr');
+    tr.dataset.idx = i;
+    tr.innerHTML = '<td>' + row.dim + '</td><td>' + row.inside + '</td><td>' + row.outside + '</td>';
+    tr.addEventListener('click', function() {
+      document.querySelectorAll('#contrastBody tr').forEach(function(r) { r.classList.remove('active-row'); });
+      tr.classList.add('active-row');
+      document.getElementById('contrastDetail').innerHTML =
+        '<strong style="color:var(--primary);">' + row.dim + '</strong><p style="margin-top:8px;">' + row.detail + '</p>';
+    });
+    tbody.appendChild(tr);
+  });
+}
+buildContrastTable();
+
+/* ================================================================
+   TAB 3: FILL IN BLANKS
+   ================================================================ */
+var fibData = [
+  { before: '晉太元中，武陵人捕魚為業。', blank: '緣溪行', after: '，忘路之遠近。' },
+  { before: '忽逢桃花林，夾岸數百步，中無雜樹，', blank: '芳草鮮美', after: '，落英繽紛。' },
+  { before: '林盡水源，便得一山，山有小口，', blank: '彷彿若有光', after: '。' },
+  { before: '初極狹，才通人。復行數十步，', blank: '豁然開朗', after: '。' },
+  { before: '土地平曠，屋舍儼然，有良田、美池、', blank: '桑竹之屬', after: '。' },
+  { before: '', blank: '阡陌交通', after: '，雞犬相聞。' },
+  { before: '其中往來種作，男女衣著，悉如外人。', blank: '黃髮垂髫', after: '，並怡然自樂。' },
+  { before: '自云先世避秦時亂，率妻子邑人來此', blank: '絕境', after: '，不復出焉，遂與外人間隔。' },
+  { before: '問今是何世，乃不知有漢，', blank: '無論魏晉', after: '。' },
+  { before: '既出，得其船，便扶向路，', blank: '處處誌之', after: '。' },
+  { before: '太守即遣人隨其往，尋向所誌，', blank: '遂迷', after: '，不復得路。' },
+  { before: '南陽劉子驥，高尚士也，聞之，', blank: '欣然規往', after: '。未果，尋病終，後遂無問津者。' }
+];
+
+var fibState = { activeBlank: null, answers: {}, checked: false };
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
+function buildFib() {
+  fibState = { activeBlank: null, answers: {}, checked: false };
+  var passage = document.getElementById('fibPassage');
+  var options = document.getElementById('fibOptions');
+  var fb = document.getElementById('fibFeedback');
+  fb.className = 'feedback';
+  fb.style.display = 'none';
+  passage.innerHTML = '';
+  options.innerHTML = '';
+
+  document.getElementById('fibCorrect').textContent = '0';
+  document.getElementById('fibTotal').textContent = fibData.length;
+
+  fibData.forEach(function(item, i) {
+    var span = document.createElement('span');
+    span.innerHTML = item.before;
+    passage.appendChild(span);
+
+    var blank = document.createElement('span');
+    blank.className = 'fib-blank';
+    blank.dataset.idx = i;
+    blank.textContent = '＿＿＿';
+    blank.addEventListener('click', function() {
+      if (fibState.checked) return;
+      document.querySelectorAll('.fib-blank').forEach(function(b) { b.classList.remove('active'); });
+      blank.classList.add('active');
+      fibState.activeBlank = i;
+    });
+    passage.appendChild(blank);
+
+    var after = document.createElement('span');
+    after.innerHTML = item.after;
+    passage.appendChild(after);
+  });
+
+  var allAnswers = shuffle(fibData.map(function(item) { return item.blank; }));
+  allAnswers.forEach(function(ans) {
+    var opt = document.createElement('span');
+    opt.className = 'fib-option';
+    opt.textContent = ans;
+    opt.dataset.answer = ans;
+    opt.addEventListener('click', function() {
+      if (fibState.checked) return;
+      if (fibState.activeBlank === null) return;
+      if (opt.classList.contains('used')) return;
+
+      // If this blank already had an answer, free it
+      var prevAns = fibState.answers[fibState.activeBlank];
+      if (prevAns) {
+        var prevOpt = document.querySelector('.fib-option[data-answer="' + prevAns + '"]');
+        if (prevOpt) { prevOpt.classList.remove('used', 'selected'); }
+      }
+
+      fibState.answers[fibState.activeBlank] = ans;
+      opt.classList.add('used', 'selected');
+
+      var blankEl = document.querySelector('.fib-blank[data-idx="' + fibState.activeBlank + '"]');
+      blankEl.textContent = ans;
+      blankEl.classList.add('filled');
+      blankEl.classList.remove('active');
+      fibState.activeBlank = null;
+    });
+    options.appendChild(opt);
+  });
+}
+
+function checkAllFib() {
+  fibState.checked = true;
+  var correct = 0;
+  fibData.forEach(function(item, i) {
+    var blankEl = document.querySelector('.fib-blank[data-idx="' + i + '"]');
+    if (fibState.answers[i] === item.blank) {
+      blankEl.classList.add('correct');
+      blankEl.classList.remove('wrong');
+      correct++;
+    } else {
+      blankEl.classList.add('wrong');
+      blankEl.classList.remove('correct');
+    }
+  });
+  document.getElementById('fibCorrect').textContent = correct;
+
+  var fb = document.getElementById('fibFeedback');
+  if (correct === fibData.length) {
+    fb.className = 'feedback show correct';
+    fb.textContent = '太棒了！全部答對！你對桃花源記的原文已經非常熟悉了。';
+  } else {
+    fb.className = 'feedback show wrong';
+    fb.innerHTML = '答對了 ' + correct + ' / ' + fibData.length + ' 題。紅色標記的是錯誤的填空，正確答案如下：<br><br>' +
+      fibData.map(function(item, i) {
+        if (fibState.answers[i] !== item.blank) {
+          return '<strong>' + (i+1) + '.</strong> 正確答案為「<span style="color:var(--success);font-weight:700;">' + item.blank + '</span>」' +
+                 (fibState.answers[i] ? '（你填的是「' + fibState.answers[i] + '」）' : '（未填寫）');
+        }
+        return '';
+      }).filter(function(s) { return s; }).join('<br>');
+  }
+}
+
+function resetFib() {
+  buildFib();
+}
+
+buildFib();
+
+/* ================================================================
+   TAB 4: THEME EXPLORER
+   ================================================================ */
+var themeData = [
+  {
+    icon: '\u{1F3D4}',
+    title: '避世與隱逸',
+    subtitle: '逃離亂世的渴望',
+    sections: [
+      {
+        heading: '文中體現',
+        text: '桃源居民「先世避秦時亂，率妻子邑人來此絕境，不復出焉」——他們選擇徹底離開充滿暴力的世界，在隱蔽的山谷中建立新生活。這是中國文學中「避世」主題最極致的表現。'
+      },
+      {
+        heading: '作者的個人經歷',
+        text: '陶淵明本人也是「避世者」——他辭去彭澤縣令後再未出仕，在田園中度過餘生。但陶淵明的歸隱是個人行為，桃花源則是一整個社群的集體選擇，規模和意義都更加深遠。'
+      },
+      {
+        heading: '現代延伸',
+        text: '在現代社會中，「避世」的衝動依然存在：有人選擇離開大城市回歸鄉村，有人選擇數位斷連（digital detox）。這些選擇都是對過度競爭、資訊過載的回應。'
+      }
+    ],
+    quote: '自云先世避秦時亂，率妻子邑人來此絕境，不復出焉，遂與外人間隔。',
+    related: '相關主題：理想社會、時間流逝'
+  },
+  {
+    icon: '\u{1F3E1}',
+    title: '理想社會',
+    subtitle: '人類共通的烏托邦夢想',
+    sections: [
+      {
+        heading: '文中體現',
+        text: '桃花源的社會特徵包括：物質富足（良田、美池、桑竹）、人際和諧（設酒殺雞作食、各復延至其家）、社會平等（無統治者與被統治者之分）、老有所養幼有所樂（黃髮垂髫，並怡然自樂）。這是中國文學中最完整的理想社會描繪之一。'
+      },
+      {
+        heading: '思想淵源',
+        text: '桃花源的理想社會融合了多種思想：老子「小國寡民」的道家理想（雞犬相聞而民至老死不相往來）、儒家「大同世界」的理想（老有所終、壯有所用、幼有所長），以及陶淵明自身對田園生活的真實經驗。'
+      },
+      {
+        heading: '與西方烏托邦比較',
+        text: '不同於西方烏托邦（如摩爾《烏托邦》、培根《新亞特蘭提斯》）強調制度設計和理性規劃，桃花源的理想社會更強調人與人之間自然和諧的關係，不需要任何制度的約束。'
+      }
+    ],
+    quote: '土地平曠，屋舍儼然，有良田、美池、桑竹之屬。阡陌交通，雞犬相聞。',
+    related: '相關主題：避世與隱逸、純真的失落'
+  },
+  {
+    icon: '\u{231B}',
+    title: '時間流逝',
+    subtitle: '歷史的無情與時間的靜止',
+    sections: [
+      {
+        heading: '文中體現',
+        text: '「乃不知有漢，無論魏晉」是全文最震撼的句子之一。桃花源中的居民從秦朝起就與外界隔絕，不知道外面已經經歷了數百年的朝代更迭。時間在桃花源中彷彿靜止了，而外面的世界則在歷史的洪流中不斷翻滾。'
+      },
+      {
+        heading: '時間靜止的雙重含義',
+        text: '一方面，時間的靜止保存了桃花源的純真和安寧——沒有歷史的「進步」，也就沒有歷史帶來的苦難。另一方面，時間的靜止也意味著一種與世界脫節的孤立，桃源人永遠不會知道外面發生了什麼。'
+      },
+      {
+        heading: '文學意義',
+        text: '陶淵明通過時間的靜止，對「歷史進步」提出了深刻的質疑：從秦到晉，朝代換了好幾個，但百姓的苦難減少了嗎？如果沒有，那歷史的意義是什麼？桃花源以脫離歷史的方式，反而獲得了真正的安寧。'
+      }
+    ],
+    quote: '問今是何世，乃不知有漢，無論魏晉。此人一一為具言所聞，皆嘆惋。',
+    related: '相關主題：理想社會、避世與隱逸'
+  },
+  {
+    icon: '\u{1F338}',
+    title: '純真的失落',
+    subtitle: '理想世界為何不可復得',
+    sections: [
+      {
+        heading: '文中體現',
+        text: '漁人離開桃花源後「處處誌之」，但帶人回去尋找時「遂迷，不復得路」。劉子驥「欣然規往」也「未果，尋病終」。桃花源的不可復尋，是全文最深刻的象徵——它暗示理想世界一旦離開就無法回去。'
+      },
+      {
+        heading: '為什麼找不回去',
+        text: '漁人第一次「忘路之遠近」時偶然發現桃花源，這是一種無目的、無功利的純真狀態。但他離開後的行為——做標記、報告太守——全是功利性的。當心態從「純真」轉為「功利」，桃花源就自動消失了。這暗示：理想世界只向純真之心敞開。'
+      },
+      {
+        heading: '更深層的悲涼',
+        text: '「後遂無問津者」是全文最悲涼的結語。它不是說人們找不到桃花源，而是說人們放棄了尋找。當一個社會連追尋理想的意願都失去了，那才是真正的悲劇。'
+      }
+    ],
+    quote: '尋向所誌，遂迷，不復得路。……後遂無問津者。',
+    related: '相關主題：時間流逝、虛實之間'
+  },
+  {
+    icon: '\u{1F32B}',
+    title: '虛實之間',
+    subtitle: '亦真亦幻的藝術張力',
+    sections: [
+      {
+        heading: '「實」的元素',
+        text: '陶淵明在虛構的故事中嵌入了大量真實元素：「晉太元中」是真實的年號（376-396），「武陵」是真實的地名（今湖南常德一帶），「南陽劉子驥」是歷史上確有其人的名士。這些真實的錨點讓虛構的故事具有了可信度。'
+      },
+      {
+        heading: '「虛」的暗示',
+        text: '同時，文中處處暗示這個故事的虛幻性：漁人「忘路之遠近」才發現桃花源，山洞口「彷彿若有光」的不確定描述，以及最終「遂迷，不復得路」的結局——這些都在提示讀者：桃花源存在於現實與幻境的邊界上。'
+      },
+      {
+        heading: '文學效果',
+        text: '陶淵明刻意營造的這種亦真亦幻的效果，是《桃花源記》最精妙的藝術特色。它讓讀者既相信又懷疑，既嚮往又知道不可得——正是這種張力，使桃花源成為中國文學史上最令人魂牽夢繫的意象。'
+      }
+    ],
+    quote: '山有小口，彷彿若有光。便舍船，從口入。',
+    related: '相關主題：純真的失落、避世與隱逸'
+  }
+];
+
+function buildThemes() {
+  var grid = document.getElementById('themeGrid');
+  themeData.forEach(function(theme, i) {
+    var card = document.createElement('div');
+    card.className = 'theme-card';
+    card.dataset.idx = i;
+    card.innerHTML =
+      '<span class="theme-icon">' + theme.icon + '</span>' +
+      '<div class="theme-title">' + theme.title + '</div>' +
+      '<div class="theme-subtitle">' + theme.subtitle + '</div>';
+    card.addEventListener('click', function() {
+      document.querySelectorAll('.theme-card').forEach(function(c) { c.classList.remove('active'); });
+      card.classList.add('active');
+      showThemeDetail(i);
+    });
+    grid.appendChild(card);
+  });
+}
+
+function showThemeDetail(idx) {
+  var theme = themeData[idx];
+  var el = document.getElementById('themeDetail');
+  el.style.display = 'block';
+
+  var sectionsHtml = theme.sections.map(function(s) {
+    return '<div class="theme-section"><h4>' + s.heading + '</h4><p>' + s.text + '</p></div>';
+  }).join('');
+
+  el.innerHTML =
+    '<h3>' + theme.icon + ' ' + theme.title + '</h3>' +
+    sectionsHtml +
+    '<div class="theme-quote">' + theme.quote + '</div>' +
+    '<div class="theme-related">' + theme.related + '</div>';
+
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+buildThemes();
+</script>
+</body>
+</html>

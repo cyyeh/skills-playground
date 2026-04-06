@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陋室銘 — 互動學習工具</title>
+<style>
+  :root {
+    --primary: #2c5282;
+    --primary-light: #3b6db5;
+    --primary-dark: #1e3a5f;
+    --accent: #e67e22;
+    --accent-light: #f0a050;
+    --virtual: #2980b9;
+    --virtual-bg: #daeaf6;
+    --content: #e67e22;
+    --content-bg: #fdebd0;
+    --bg: #f7f9fc;
+    --card-bg: #ffffff;
+    --text: #2d3748;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --success: #27ae60;
+    --success-bg: #d5f5e3;
+    --danger: #e74c3c;
+    --danger-bg: #fadbd8;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 28px 20px 20px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; letter-spacing: 2px; }
+  .header p { font-size: 0.88rem; opacity: 0.85; }
+
+  /* Tab Nav */
+  .tab-nav {
+    display: flex;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 13px 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-light);
+    border-bottom: 3px solid transparent;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--primary); background: #edf2f7; }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 700;
+  }
+
+  .tab-content { display: none; padding: 16px; max-width: 900px; margin: 0 auto; }
+  .tab-content.active { display: block; animation: fadeIn 0.35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card h2 { font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 4px; }
+  .card .desc { font-size: 0.82rem; color: var(--text-light); margin-bottom: 16px; line-height: 1.5; }
+
+  /* Shared */
+  .btn {
+    display: inline-block;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+  .btn-outline:hover { background: var(--primary); color: #fff; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { background: #219a52; }
+  .btn-small { padding: 5px 12px; font-size: 0.8rem; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; font-size: 0.82rem; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+
+  .feedback {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .feedback.show { display: block; animation: fadeIn 0.3s ease; }
+  .feedback.correct { background: var(--success-bg); border-left: 4px solid var(--success); }
+  .feedback.wrong { background: var(--danger-bg); border-left: 4px solid var(--danger); }
+  .feedback.info { background: #edf2f7; border-left: 4px solid var(--primary); }
+
+  /* ===== Tab 1: Word Annotator ===== */
+  .annotator-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .annotator-controls .btn.selected { box-shadow: 0 0 0 3px rgba(44,82,130,0.3); }
+
+  .text-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 16px;
+    line-height: 1;
+  }
+  .char-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    background: #fff;
+    position: relative;
+  }
+  .char-box:hover { border-color: var(--primary); transform: scale(1.05); }
+  .char-box.virtual-word { background: var(--virtual-bg); border-color: var(--virtual); color: var(--virtual); font-weight: 700; }
+  .char-box.content-word { background: var(--content-bg); border-color: var(--content); color: #b45309; font-weight: 700; }
+  .char-box.punct { cursor: default; border-color: transparent; background: transparent; width: 24px; }
+
+  .word-info {
+    background: #f7fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    min-height: 60px;
+    font-size: 0.88rem;
+  }
+  .word-info .char-label { font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+  .word-info .word-type { font-size: 0.78rem; color: var(--text-light); margin-bottom: 6px; }
+
+  /* ===== Tab 2: Sentence Structure ===== */
+  .sentence-block { margin-bottom: 18px; }
+  .sentence-block h3 { font-size: 0.95rem; color: var(--primary); margin-bottom: 8px; }
+  .structure-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .struct-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+  }
+  .struct-tag:hover { transform: translateY(-1px); }
+  .struct-tag .label { font-size: 0.72rem; font-weight: 700; opacity: 0.8; }
+  .struct-subject { background: #dbeafe; color: #1e40af; }
+  .struct-subject:hover, .struct-subject.active { border-color: #3b82f6; }
+  .struct-predicate { background: #dcfce7; color: #166534; }
+  .struct-predicate:hover, .struct-predicate.active { border-color: #22c55e; }
+  .struct-object { background: #fef3c7; color: #92400e; }
+  .struct-object:hover, .struct-object.active { border-color: #f59e0b; }
+  .struct-adverbial { background: #f3e8ff; color: #6b21a8; }
+  .struct-adverbial:hover, .struct-adverbial.active { border-color: #a855f7; }
+  .struct-complement { background: #ffe4e6; color: #9f1239; }
+  .struct-complement:hover, .struct-complement.active { border-color: #f43f5e; }
+  .struct-conjunction { background: #e0e7ff; color: #3730a3; }
+  .struct-conjunction:hover, .struct-conjunction.active { border-color: #6366f1; }
+
+  .struct-explanation {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    min-height: 40px;
+    transition: all 0.2s;
+  }
+
+  /* ===== Tab 3: Pairing ===== */
+  .pair-area { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media(max-width:500px) { .pair-area { grid-template-columns: 1fr; } }
+  .pair-col h3 { font-size: 0.9rem; color: var(--text-light); margin-bottom: 8px; text-align: center; }
+  .pair-item {
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.92rem;
+    text-align: center;
+    user-select: none;
+    background: #fff;
+  }
+  .pair-item:hover { border-color: var(--primary); background: #edf2f7; }
+  .pair-item.selected { border-color: var(--primary); background: #dbeafe; font-weight: 600; }
+  .pair-item.matched { border-color: var(--success); background: var(--success-bg); cursor: default; }
+  .pair-item.wrong-flash { border-color: var(--danger); background: var(--danger-bg); }
+
+  .pair-score { text-align: center; font-size: 0.9rem; color: var(--text-light); margin-bottom: 12px; }
+  .pair-score strong { color: var(--primary); font-size: 1.1rem; }
+
+  /* ===== Tab 4: Translation ===== */
+  .trans-block { margin-bottom: 20px; }
+  .trans-original {
+    background: #f0f4f8;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--primary);
+    font-weight: 500;
+  }
+  .trans-input {
+    width: 100%;
+    min-height: 70px;
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  .trans-input:focus { outline: none; border-color: var(--primary); }
+  .trans-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .trans-reference {
+    margin-top: 8px;
+    padding: 12px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    border-left: 4px solid var(--success);
+    font-size: 0.88rem;
+    display: none;
+  }
+  .trans-reference.show { display: block; animation: fadeIn 0.3s ease; }
+  .trans-reference strong { display: block; margin-bottom: 4px; color: var(--success); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.78rem;
+    color: var(--text-light);
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  @media(max-width:480px) {
+    .header h1 { font-size: 1.25rem; }
+    .char-box { width: 36px; height: 36px; font-size: 0.95rem; }
+    .card { padding: 14px; }
+    .pair-area { gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>陋室銘 — 互動學習工具</h1>
+  <p>劉禹錫 ・ 唐代</p>
+</div>
+
+<div class="tab-nav" id="tabNav">
+  <button class="tab-btn active" data-tab="annotator">虛詞實詞標註</button>
+  <button class="tab-btn" data-tab="structure">句式結構拆解</button>
+  <button class="tab-btn" data-tab="pairing">對偶句配對</button>
+  <button class="tab-btn" data-tab="translate">翻譯練習</button>
+</div>
+
+<!-- ==================== Tab 1: Annotator ==================== -->
+<div class="tab-content active" id="tab-annotator">
+  <div class="card">
+    <h2>虛詞實詞標註器</h2>
+    <p class="desc">點擊下方的字，再選擇它是「虛詞」或「實詞」。標註後可查看該字的詞性與解說。</p>
+
+    <div class="annotator-controls">
+      <button class="btn btn-small btn-outline selected" id="modeVirtual" onclick="setAnnotateMode('virtual')">標註為虛詞（藍）</button>
+      <button class="btn btn-small btn-outline" id="modeContent" onclick="setAnnotateMode('content')">標註為實詞（橙）</button>
+      <button class="btn btn-small" style="background:#e2e8f0;color:var(--text);" onclick="clearAnnotations()">清除全部</button>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--virtual-bg);border:2px solid var(--virtual);"></div> 虛詞</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--content-bg);border:2px solid var(--content);"></div> 實詞</div>
+    </div>
+
+    <div class="text-grid" id="annotatorGrid"></div>
+
+    <div class="word-info" id="wordInfo">
+      <span style="color:var(--text-light);">點擊任一文字查看詞性解說</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 2: Structure ==================== -->
+<div class="tab-content" id="tab-structure">
+  <div class="card">
+    <h2>句式結構拆解</h2>
+    <p class="desc">點擊各成分，查看它在句中的語法功能。不同顏色代表不同句法成分。</p>
+
+    <div class="legend" style="margin-bottom:18px;">
+      <div class="legend-item"><div class="legend-dot" style="background:#dbeafe;border:2px solid #3b82f6;"></div> 主語</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:2px solid #22c55e;"></div> 謂語</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fef3c7;border:2px solid #f59e0b;"></div> 賓語</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f3e8ff;border:2px solid #a855f7;"></div> 狀語</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ffe4e6;border:2px solid #f43f5e;"></div> 補語</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e0e7ff;border:2px solid #6366f1;"></div> 連接詞</div>
+    </div>
+
+    <div id="structureContainer"></div>
+
+    <div class="struct-explanation" id="structExplain">
+      <span style="color:var(--text-light);">點擊上方任意成分，查看語法說明</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 3: Pairing ==================== -->
+<div class="tab-content" id="tab-pairing">
+  <div class="card">
+    <h2>對偶句配對練習</h2>
+    <p class="desc">左欄是上聯，右欄是打亂順序的下聯。請點擊左邊一句，再點擊右邊對應的一句進行配對。</p>
+
+    <div class="pair-score">已配對：<strong id="pairCount">0</strong> / <strong id="pairTotal">0</strong></div>
+
+    <div class="pair-area">
+      <div class="pair-col">
+        <h3>上聯</h3>
+        <div id="pairLeft"></div>
+      </div>
+      <div class="pair-col">
+        <h3>下聯</h3>
+        <div id="pairRight"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn btn-outline" onclick="resetPairing()">重新開始</button>
+    </div>
+
+    <div class="feedback" id="pairFeedback"></div>
+  </div>
+</div>
+
+<!-- ==================== Tab 4: Translate ==================== -->
+<div class="tab-content" id="tab-translate">
+  <div class="card">
+    <h2>翻譯練習</h2>
+    <p class="desc">閱讀原文，嘗試用白話文翻譯。完成後可查看參考答案。</p>
+    <div id="translateContainer"></div>
+  </div>
+</div>
+
+<div class="footer">
+  陋室銘互動學習工具 — 文言文學習平台
+</div>
+
+<script>
+/* ================================================================
+   DATA
+   ================================================================ */
+const fullText = '山不在高，有仙則名。水不在深，有龍則靈。斯是陋室，惟吾德馨。苔痕上階綠，草色入簾青。談笑有鴻儒，往來無白丁。可以調素琴，閱金經。無絲竹之亂耳，無案牘之勞形。南陽諸葛廬，西蜀子雲亭。孔子云：何陋之有？';
+
+const wordData = {
+  '山':{type:'content',pos:'名詞',note:'指山嶽，自然地形。此處泛指一般的山。'},
+  '不':{type:'virtual',pos:'副詞（否定）',note:'表示否定，修飾謂語「在」。'},
+  '在':{type:'virtual',pos:'動詞/介詞',note:'此處作動詞用，意為「在於」。'},
+  '高':{type:'content',pos:'形容詞',note:'高聳，形容山的高度。'},
+  '有':{type:'virtual',pos:'動詞',note:'表示存在，「有……則……」構成條件句。'},
+  '仙':{type:'content',pos:'名詞',note:'神仙，傳說中修煉得道的人。'},
+  '則':{type:'virtual',pos:'連詞',note:'表示條件關係，相當於「就」。'},
+  '名':{type:'content',pos:'動詞（形容詞活用）',note:'出名、聞名。原為形容詞「有名的」，此處活用為動詞。'},
+  '水':{type:'content',pos:'名詞',note:'水域，泛指河流湖泊。'},
+  '深':{type:'content',pos:'形容詞',note:'深邃，形容水的深度。'},
+  '龍':{type:'content',pos:'名詞',note:'蛟龍，傳說中的神獸。'},
+  '靈':{type:'content',pos:'形容詞',note:'靈異、神奇。形容因龍的存在而顯得不凡。'},
+  '斯':{type:'virtual',pos:'指示代詞',note:'這，指示代詞，指代眼前的陋室。'},
+  '是':{type:'virtual',pos:'判斷動詞',note:'表示判斷，「是」在文言文中常作判斷詞。'},
+  '陋':{type:'content',pos:'形容詞',note:'簡陋、狹小。形容房屋的簡樸。'},
+  '室':{type:'content',pos:'名詞',note:'房間、居室。'},
+  '惟':{type:'virtual',pos:'副詞',note:'只、只因為。表示限定。'},
+  '吾':{type:'virtual',pos:'代詞',note:'我，第一人稱代詞。'},
+  '德':{type:'content',pos:'名詞',note:'品德、德行。'},
+  '馨':{type:'content',pos:'形容詞',note:'芳香，比喻品德美好。本義為散布很遠的香氣。'},
+  '苔':{type:'content',pos:'名詞',note:'苔蘚，生長在陰濕處的綠色植物。'},
+  '痕':{type:'content',pos:'名詞',note:'痕跡。「苔痕」即苔蘚的蹤跡。'},
+  '上':{type:'content',pos:'動詞',note:'向上蔓延。方位名詞活用為動詞，表示苔蘚沿階梯往上長。'},
+  '階':{type:'content',pos:'名詞',note:'臺階、階梯。'},
+  '綠':{type:'content',pos:'形容詞',note:'翠綠色，形容苔蘚的顏色。'},
+  '草':{type:'content',pos:'名詞',note:'青草、草木。'},
+  '色':{type:'content',pos:'名詞',note:'顏色。「草色」即草的顏色。'},
+  '入':{type:'content',pos:'動詞',note:'進入、映入。此處有擬人意味，彷彿草色主動走進屋內。'},
+  '簾':{type:'content',pos:'名詞',note:'門簾、窗簾。'},
+  '青':{type:'content',pos:'形容詞',note:'青翠色，與「綠」相近。'},
+  '談':{type:'content',pos:'動詞',note:'談論、交談。'},
+  '笑':{type:'content',pos:'動詞',note:'歡笑。「談笑」為並列結構。'},
+  '鴻':{type:'content',pos:'形容詞',note:'大、博大。修飾「儒」。'},
+  '儒':{type:'content',pos:'名詞',note:'儒生、學者。「鴻儒」即學問淵博的大學者。'},
+  '往':{type:'content',pos:'動詞',note:'前往、去。'},
+  '來':{type:'content',pos:'動詞',note:'到來。「往來」即來來去去。'},
+  '無':{type:'virtual',pos:'副詞（否定）',note:'沒有，表示否定存在。'},
+  '白':{type:'content',pos:'形容詞',note:'空白、無功名的。'},
+  '丁':{type:'content',pos:'名詞',note:'平民。「白丁」指沒有學識功名的人。'},
+  '可':{type:'virtual',pos:'助動詞',note:'可以、能夠。「可以」在文言文中是兩個詞。'},
+  '以':{type:'virtual',pos:'連詞/介詞',note:'用來、用以。與「可」連用表示「能夠用來」。'},
+  '調':{type:'content',pos:'動詞',note:'彈奏。此處讀 tiáo，意為調弄、彈奏。'},
+  '素':{type:'content',pos:'形容詞',note:'樸素的、不加裝飾的。'},
+  '琴':{type:'content',pos:'名詞',note:'古琴，七弦琴。'},
+  '閱':{type:'content',pos:'動詞',note:'閱讀、翻閱。'},
+  '金':{type:'content',pos:'形容詞',note:'珍貴的。「金經」指佛經或珍貴經典。'},
+  '經':{type:'content',pos:'名詞',note:'經典、經書。'},
+  '絲':{type:'content',pos:'名詞',note:'絲弦樂器（如琴、瑟）。'},
+  '竹':{type:'content',pos:'名詞',note:'竹管樂器（如笛、簫）。「絲竹」借指音樂或宴飲。'},
+  '之':{type:'virtual',pos:'結構助詞',note:'用在主語和謂語之間，取消句子獨立性，使其成為偏正結構。'},
+  '亂':{type:'content',pos:'動詞',note:'擾亂、使混亂。'},
+  '耳':{type:'content',pos:'名詞',note:'耳朵。'},
+  '案':{type:'content',pos:'名詞',note:'書桌、公案。'},
+  '牘':{type:'content',pos:'名詞',note:'文書、公文。「案牘」即公文卷宗。'},
+  '勞':{type:'content',pos:'動詞',note:'使勞累、使疲倦。'},
+  '形':{type:'content',pos:'名詞',note:'身體、形體。'},
+  '南':{type:'content',pos:'形容詞',note:'南方的。修飾「陽」。'},
+  '陽':{type:'content',pos:'名詞',note:'地名用字。「南陽」為古地名，今河南南陽。'},
+  '諸':{type:'content',pos:'名詞（姓氏）',note:'姓氏用字，「諸葛」為複姓。'},
+  '葛':{type:'content',pos:'名詞（姓氏）',note:'姓氏用字，與「諸」合成複姓「諸葛」。'},
+  '廬':{type:'content',pos:'名詞',note:'草屋、簡陋的房舍。指諸葛亮的茅廬。'},
+  '西':{type:'content',pos:'形容詞',note:'西方的。修飾「蜀」。'},
+  '蜀':{type:'content',pos:'名詞',note:'古地名，今四川一帶。'},
+  '子':{type:'content',pos:'名詞（尊稱）',note:'古代對人的尊稱。「子雲」為揚雄的字。'},
+  '雲':{type:'content',pos:'名詞（人名）',note:'人名用字。「子雲」是揚雄的字。'},
+  '亭':{type:'content',pos:'名詞',note:'亭子、涼亭。指揚雄的居所。'},
+  '孔':{type:'content',pos:'名詞（姓氏）',note:'姓氏。「孔子」即孔丘，春秋時期思想家。'},
+  '云':{type:'content',pos:'動詞',note:'說、表示。引述他人話語時用。'},
+  '何':{type:'virtual',pos:'疑問代詞',note:'什麼、怎麼。用於反問，表示「有什麼」。'},
+};
+
+const structureData = [
+  {
+    title: '山不在高，有仙則名。',
+    parts: [
+      {text:'山', cls:'struct-subject', label:'主', explain:'主語：山，全句討論的對象。'},
+      {text:'不在高', cls:'struct-predicate', label:'謂', explain:'謂語：「不在（於）高」，否定判斷句，說明山的價值不在於高度。「在」是動詞，「高」作賓語補足。'},
+      {text:'有仙', cls:'struct-predicate', label:'謂', explain:'謂語：「有仙」，存現句，表示有神仙存在。'},
+      {text:'則', cls:'struct-conjunction', label:'連', explain:'連詞：表示條件推論關係，相當於「就」。'},
+      {text:'名', cls:'struct-predicate', label:'謂', explain:'謂語：「名」，形容詞活用為動詞，意思是「出名」。這是整個條件句的結果。'},
+    ]
+  },
+  {
+    title: '斯是陋室，惟吾德馨。',
+    parts: [
+      {text:'斯', cls:'struct-subject', label:'主', explain:'主語：「斯」是指示代詞，相當於「這」，指代眼前的房屋。'},
+      {text:'是', cls:'struct-predicate', label:'謂', explain:'謂語（判斷詞）：表示判斷，「是」在此為繫詞。'},
+      {text:'陋室', cls:'struct-object', label:'賓', explain:'賓語：「陋室」，即簡陋的房間。「陋」是形容詞修飾「室」。'},
+      {text:'惟', cls:'struct-adverbial', label:'狀', explain:'狀語：「惟」是副詞，意為「只因為」，修飾後面的原因。'},
+      {text:'吾德', cls:'struct-subject', label:'主', explain:'主語：「吾德」即「我的品德」。「吾」是定語，「德」是主語核心。'},
+      {text:'馨', cls:'struct-predicate', label:'謂', explain:'謂語：「馨」是形容詞作謂語，意為「芳香」，比喻品德美好。'},
+    ]
+  },
+  {
+    title: '苔痕上階綠，草色入簾青。',
+    parts: [
+      {text:'苔痕', cls:'struct-subject', label:'主', explain:'主語：苔蘚的痕跡，即苔蘚。「苔」修飾「痕」。'},
+      {text:'上', cls:'struct-predicate', label:'謂', explain:'謂語：「上」為方位名詞活用作動詞，意為「往上蔓延」。'},
+      {text:'階', cls:'struct-object', label:'賓', explain:'賓語：臺階。苔痕向上蔓延的位置。'},
+      {text:'綠', cls:'struct-complement', label:'補', explain:'補語：「綠」為形容詞補語，補充說明苔痕蔓延後呈現的顏色狀態。'},
+    ]
+  },
+  {
+    title: '談笑有鴻儒，往來無白丁。',
+    parts: [
+      {text:'談笑', cls:'struct-adverbial', label:'狀', explain:'狀語：在談笑之間、在交談歡笑時。表示時間或情境。'},
+      {text:'有', cls:'struct-predicate', label:'謂', explain:'謂語：存現動詞，表示「存在、有」。'},
+      {text:'鴻儒', cls:'struct-object', label:'賓', explain:'賓語：學問淵博的大學者。「鴻」修飾「儒」，表示學問之大。'},
+    ]
+  },
+  {
+    title: '無絲竹之亂耳，無案牘之勞形。',
+    parts: [
+      {text:'無', cls:'struct-predicate', label:'謂', explain:'謂語（否定存現）：沒有。表示不存在某事物。'},
+      {text:'絲竹', cls:'struct-subject', label:'主', explain:'主語：絲弦和竹管樂器，借指官場宴飲的喧鬧音樂。'},
+      {text:'之', cls:'struct-conjunction', label:'連', explain:'結構助詞：用在主語「絲竹」和謂語「亂耳」之間，取消句子獨立性，使整個「絲竹之亂耳」成為「無」的賓語。'},
+      {text:'亂', cls:'struct-predicate', label:'謂', explain:'謂語：擾亂、使紊亂。表示音樂聲對耳朵的影響。'},
+      {text:'耳', cls:'struct-object', label:'賓', explain:'賓語：耳朵。被「亂」這個動作影響的對象。'},
+    ]
+  },
+  {
+    title: '孔子云：何陋之有？',
+    parts: [
+      {text:'孔子', cls:'struct-subject', label:'主', explain:'主語：孔子，春秋時期思想家，儒家學派創始人。'},
+      {text:'云', cls:'struct-predicate', label:'謂', explain:'謂語：說、表示。引出後面的引語。'},
+      {text:'何陋', cls:'struct-adverbial', label:'狀', explain:'狀語（前置賓語）：「何陋」是疑問代詞「何」修飾「陋」，意為「什麼簡陋」。這是賓語前置的典型句式——「何陋之有」即「有何陋」。'},
+      {text:'之', cls:'struct-conjunction', label:'連', explain:'結構助詞：賓語前置的標誌。「何陋之有」= 「有何陋」，「之」幫助將賓語「何陋」提到動詞「有」前面，加強反問語氣。'},
+      {text:'有', cls:'struct-predicate', label:'謂', explain:'謂語：有、存在。反問句「何陋之有」意為「有什麼簡陋的呢」，答案是「沒有什麼簡陋的」。'},
+    ]
+  }
+];
+
+const pairsData = [
+  {left:'山不在高，有仙則名', right:'水不在深，有龍則靈'},
+  {left:'苔痕上階綠', right:'草色入簾青'},
+  {left:'談笑有鴻儒', right:'往來無白丁'},
+  {left:'可以調素琴', right:'閱金經'},
+  {left:'無絲竹之亂耳', right:'無案牘之勞形'},
+  {left:'南陽諸葛廬', right:'西蜀子雲亭'},
+];
+
+const translateData = [
+  {original:'山不在高，有仙則名。水不在深，有龍則靈。', reference:'山不在於有多高，有了仙人居住就會出名。水不在於有多深，有了蛟龍棲息就顯得靈異。'},
+  {original:'斯是陋室，惟吾德馨。', reference:'這裡雖然是簡陋的居室，只因我的品德高尚如馨香般遠播，所以不覺得簡陋。'},
+  {original:'苔痕上階綠，草色入簾青。', reference:'碧綠的苔蘚沿著臺階向上蔓延，青翠的草色透過門簾映入屋中。'},
+  {original:'談笑有鴻儒，往來無白丁。', reference:'在這裡談笑的都是學識淵博的大學者，來來往往的沒有沒有學問的人。'},
+  {original:'可以調素琴，閱金經。', reference:'在這裡可以彈奏不加裝飾的古琴，閱讀珍貴的經典。'},
+  {original:'無絲竹之亂耳，無案牘之勞形。', reference:'沒有嘈雜的管弦樂聲擾亂耳朵，也沒有堆積的公文使身體疲勞。'},
+  {original:'南陽諸葛廬，西蜀子雲亭。', reference:'這裡就像南陽諸葛亮的草廬，也像西蜀揚雄的草亭。'},
+  {original:'孔子云：何陋之有？', reference:'孔子說過：「有什麼簡陋的呢？」'},
+];
+
+/* ================================================================
+   TAB SWITCHING
+   ================================================================ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ================================================================
+   TAB 1: ANNOTATOR
+   ================================================================ */
+let annotateMode = 'virtual';
+
+function setAnnotateMode(mode) {
+  annotateMode = mode;
+  document.getElementById('modeVirtual').classList.toggle('selected', mode === 'virtual');
+  document.getElementById('modeContent').classList.toggle('selected', mode === 'content');
+}
+
+function clearAnnotations() {
+  document.querySelectorAll('.char-box').forEach(b => {
+    b.classList.remove('virtual-word', 'content-word');
+  });
+  document.getElementById('wordInfo').innerHTML = '<span style="color:var(--text-light);">點擊任一文字查看詞性解說</span>';
+}
+
+function buildAnnotator() {
+  const grid = document.getElementById('annotatorGrid');
+  const puncts = '，。：；？！、';
+  for (let ch of fullText) {
+    const box = document.createElement('div');
+    box.className = 'char-box' + (puncts.includes(ch) ? ' punct' : '');
+    box.textContent = ch;
+    box.dataset.char = ch;
+    if (!puncts.includes(ch)) {
+      box.addEventListener('click', () => {
+        // toggle annotation
+        if (annotateMode === 'virtual') {
+          box.classList.toggle('virtual-word');
+          box.classList.remove('content-word');
+        } else {
+          box.classList.toggle('content-word');
+          box.classList.remove('virtual-word');
+        }
+        showWordInfo(ch);
+      });
+    }
+    grid.appendChild(box);
+  }
+}
+
+function showWordInfo(ch) {
+  const info = wordData[ch];
+  const el = document.getElementById('wordInfo');
+  if (!info) {
+    el.innerHTML = '<div class="char-label">' + ch + '</div><div class="word-type">此字暫無資料</div>';
+    return;
+  }
+  const typeColor = info.type === 'virtual' ? 'var(--virtual)' : 'var(--content)';
+  const typeName = info.type === 'virtual' ? '虛詞' : '實詞';
+  el.innerHTML =
+    '<div class="char-label" style="color:' + typeColor + ';">' + ch + '</div>' +
+    '<div class="word-type">' + typeName + ' ・ ' + info.pos + '</div>' +
+    '<div>' + info.note + '</div>';
+}
+
+buildAnnotator();
+
+/* ================================================================
+   TAB 2: STRUCTURE
+   ================================================================ */
+function buildStructure() {
+  const container = document.getElementById('structureContainer');
+  structureData.forEach((sent, si) => {
+    const block = document.createElement('div');
+    block.className = 'sentence-block';
+    const h3 = document.createElement('h3');
+    h3.textContent = sent.title;
+    block.appendChild(h3);
+
+    const row = document.createElement('div');
+    row.className = 'structure-row';
+    sent.parts.forEach((p, pi) => {
+      const tag = document.createElement('div');
+      tag.className = 'struct-tag ' + p.cls;
+      tag.innerHTML = '<span class="label">[' + p.label + ']</span> ' + p.text;
+      tag.addEventListener('click', () => {
+        document.querySelectorAll('.struct-tag').forEach(t => t.classList.remove('active'));
+        tag.classList.add('active');
+        document.getElementById('structExplain').innerHTML = '<strong style="color:var(--primary);margin-bottom:4px;display:block;">' + p.text + '</strong>' + p.explain;
+      });
+      row.appendChild(tag);
+    });
+    block.appendChild(row);
+    container.appendChild(block);
+  });
+}
+buildStructure();
+
+/* ================================================================
+   TAB 3: PAIRING
+   ================================================================ */
+let pairState = { leftSel: null, rightSel: null, matched: 0 };
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildPairing() {
+  const leftCol = document.getElementById('pairLeft');
+  const rightCol = document.getElementById('pairRight');
+  leftCol.innerHTML = '';
+  rightCol.innerHTML = '';
+  pairState = { leftSel: null, rightSel: null, matched: 0 };
+  document.getElementById('pairCount').textContent = '0';
+  document.getElementById('pairTotal').textContent = pairsData.length;
+  const fb = document.getElementById('pairFeedback');
+  fb.className = 'feedback';
+  fb.style.display = 'none';
+
+  pairsData.forEach((p, i) => {
+    const item = document.createElement('div');
+    item.className = 'pair-item';
+    item.textContent = p.left;
+    item.dataset.idx = i;
+    item.dataset.side = 'left';
+    item.addEventListener('click', () => selectPair(item, 'left'));
+    leftCol.appendChild(item);
+  });
+
+  const shuffled = shuffle(pairsData.map((p, i) => ({text: p.right, idx: i})));
+  shuffled.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'pair-item';
+    item.textContent = s.text;
+    item.dataset.idx = s.idx;
+    item.dataset.side = 'right';
+    item.addEventListener('click', () => selectPair(item, 'right'));
+    rightCol.appendChild(item);
+  });
+}
+
+function selectPair(el, side) {
+  if (el.classList.contains('matched')) return;
+
+  if (side === 'left') {
+    document.querySelectorAll('#pairLeft .pair-item:not(.matched)').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    pairState.leftSel = el;
+  } else {
+    document.querySelectorAll('#pairRight .pair-item:not(.matched)').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    pairState.rightSel = el;
+  }
+
+  if (pairState.leftSel && pairState.rightSel) {
+    checkPair();
+  }
+}
+
+function checkPair() {
+  const li = parseInt(pairState.leftSel.dataset.idx);
+  const ri = parseInt(pairState.rightSel.dataset.idx);
+  const fb = document.getElementById('pairFeedback');
+
+  if (li === ri) {
+    pairState.leftSel.classList.remove('selected');
+    pairState.leftSel.classList.add('matched');
+    pairState.rightSel.classList.remove('selected');
+    pairState.rightSel.classList.add('matched');
+    pairState.matched++;
+    document.getElementById('pairCount').textContent = pairState.matched;
+
+    if (pairState.matched === pairsData.length) {
+      fb.className = 'feedback correct show';
+      fb.innerHTML = '恭喜！你已成功配對所有對偶句。《陋室銘》中對偶的運用貫穿全篇，是本文最突出的修辭特色之一。';
+    }
+  } else {
+    pairState.leftSel.classList.add('wrong-flash');
+    pairState.rightSel.classList.add('wrong-flash');
+    const l = pairState.leftSel;
+    const r = pairState.rightSel;
+    setTimeout(() => {
+      l.classList.remove('selected', 'wrong-flash');
+      r.classList.remove('selected', 'wrong-flash');
+    }, 600);
+    fb.className = 'feedback wrong show';
+    fb.innerHTML = '配對不正確，請再試一次。提示：注意句式結構的對應關係。';
+  }
+
+  pairState.leftSel = null;
+  pairState.rightSel = null;
+}
+
+function resetPairing() {
+  buildPairing();
+}
+
+buildPairing();
+
+/* ================================================================
+   TAB 4: TRANSLATE
+   ================================================================ */
+function buildTranslate() {
+  const container = document.getElementById('translateContainer');
+  translateData.forEach((t, i) => {
+    const block = document.createElement('div');
+    block.className = 'trans-block';
+    block.innerHTML =
+      '<div class="trans-original">' + t.original + '</div>' +
+      '<textarea class="trans-input" placeholder="請在此輸入你的白話翻譯..." id="transInput' + i + '"></textarea>' +
+      '<div class="trans-actions">' +
+        '<button class="btn btn-small btn-primary" onclick="showReference(' + i + ')">查看參考答案</button>' +
+        '<button class="btn btn-small btn-outline" onclick="hideReference(' + i + ')">隱藏答案</button>' +
+      '</div>' +
+      '<div class="trans-reference" id="transRef' + i + '">' +
+        '<strong>參考翻譯：</strong>' + t.reference +
+      '</div>';
+    container.appendChild(block);
+  });
+}
+
+function showReference(i) {
+  document.getElementById('transRef' + i).classList.add('show');
+}
+function hideReference(i) {
+  document.getElementById('transRef' + i).classList.remove('show');
+}
+
+buildTranslate();
+</script>
+</body>
+</html>

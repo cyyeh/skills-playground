@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>愛蓮說 — 互動學習工具</title>
+<style>
+  :root {
+    --primary: #2c5282;
+    --primary-light: #3b6db5;
+    --primary-dark: #1e3a5f;
+    --secondary: #6b46c1;
+    --accent: #d69e2e;
+    --bg: #f7f8fc;
+    --card-bg: #ffffff;
+    --text: #1a202c;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --success: #38a169;
+    --danger: #e53e3e;
+    --lotus-pink: #ed64a6;
+    --chrysanthemum: #d69e2e;
+    --peony: #e53e3e;
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 28px 20px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; letter-spacing: 2px; }
+  .header p { font-size: 0.9rem; opacity: 0.9; }
+
+  .tab-nav {
+    display: flex;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 14px 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-light);
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .tab-btn:hover { color: var(--primary); background: #edf2f7; }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+
+  .tab-content { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+  .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 8px;
+  }
+  .section-desc {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  /* Flower Cards */
+  .flower-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 600px) {
+    .flower-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .flower-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+  .flower-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .flower-card.expanded { border-color: var(--primary); }
+
+  .flower-card-header {
+    padding: 20px;
+    text-align: center;
+    color: white;
+    position: relative;
+  }
+  .flower-card-header .flower-icon { font-size: 2.8rem; margin-bottom: 8px; }
+  .flower-card-header h3 { font-size: 1.2rem; font-weight: 700; }
+  .flower-card-header .flower-subtitle { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
+
+  .flower-card[data-flower="chrysanthemum"] .flower-card-header {
+    background: linear-gradient(135deg, #b7791f, #d69e2e);
+  }
+  .flower-card[data-flower="peony"] .flower-card-header {
+    background: linear-gradient(135deg, #c53030, #e53e3e);
+  }
+  .flower-card[data-flower="lotus"] .flower-card-header {
+    background: linear-gradient(135deg, var(--primary), #4a90d9);
+  }
+
+  .flower-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+  }
+  .flower-card.expanded .flower-card-body {
+    max-height: 600px;
+  }
+  .flower-card-inner {
+    padding: 16px 20px 20px;
+  }
+  .flower-card-inner h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin: 12px 0 6px;
+  }
+  .flower-card-inner h4:first-child { margin-top: 0; }
+  .flower-card-inner p {
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .flower-card-inner blockquote {
+    background: #f7fafc;
+    border-left: 3px solid var(--primary);
+    padding: 10px 14px;
+    margin: 8px 0;
+    font-size: 0.88rem;
+    color: #4a5568;
+    border-radius: 0 6px 6px 0;
+  }
+  .click-hint {
+    font-size: 0.78rem;
+    color: var(--text-light);
+    text-align: center;
+    padding: 8px;
+    opacity: 0.8;
+  }
+  .flower-card.expanded .click-hint { display: none; }
+
+  /* Rhetoric Quiz */
+  .rhetoric-item {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .rhetoric-item .quote {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+    line-height: 1.6;
+  }
+  .rhetoric-item .translation {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 14px;
+  }
+  .rhetoric-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .rhetoric-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--text);
+    transition: all 0.2s ease;
+  }
+  .rhetoric-btn:hover { border-color: var(--primary); color: var(--primary); background: #edf2f7; }
+  .rhetoric-btn.correct { border-color: var(--success); background: #f0fff4; color: var(--success); font-weight: 600; }
+  .rhetoric-btn.wrong { border-color: var(--danger); background: #fff5f5; color: var(--danger); }
+  .rhetoric-btn.disabled { pointer-events: none; opacity: 0.5; }
+  .rhetoric-feedback {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .rhetoric-feedback.show { display: block; }
+  .rhetoric-feedback.success { background: #f0fff4; border: 1px solid #c6f6d5; color: #276749; }
+  .rhetoric-feedback.error { background: #fff5f5; border: 1px solid #fed7d7; color: #9b2c2c; }
+
+  .score-bar {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .score-bar .score-label { font-size: 0.9rem; color: var(--text-light); }
+  .score-bar .score-value { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+
+  /* Personality Match */
+  .match-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 600px) {
+    .match-container { grid-template-columns: 1fr 1fr; gap: 20px; }
+  }
+  .match-traits, .match-targets {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .match-col-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  .trait-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow);
+  }
+  .trait-card:hover { border-color: var(--primary-light); }
+  .trait-card.selected { border-color: var(--primary); background: #ebf4ff; }
+  .trait-card.matched-correct { border-color: var(--success); background: #f0fff4; }
+  .trait-card.matched-wrong { border-color: var(--danger); background: #fff5f5; }
+  .trait-card .trait-text { font-size: 0.88rem; color: var(--text); }
+  .trait-card .trait-label {
+    font-size: 0.78rem;
+    margin-top: 6px;
+    color: var(--text-light);
+    display: none;
+  }
+  .trait-card.matched-correct .trait-label,
+  .trait-card.matched-wrong .trait-label { display: block; }
+  .trait-card.matched-correct .trait-label { color: var(--success); }
+  .trait-card.matched-wrong .trait-label { color: var(--danger); }
+
+  .target-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .target-card:hover { border-color: var(--primary-light); }
+  .target-card.selected { border-color: var(--accent); background: #fffff0; }
+  .target-card.disabled { opacity: 0.4; pointer-events: none; }
+  .target-card .target-icon { font-size: 1.8rem; margin-bottom: 4px; }
+  .target-card .target-name { font-size: 0.92rem; font-weight: 600; }
+
+  .match-instruction {
+    background: #ebf8ff;
+    border: 1px solid #bee3f8;
+    color: #2a4365;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .match-status {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  .btn-reset {
+    display: inline-block;
+    padding: 10px 24px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 16px;
+  }
+  .btn-reset:hover { background: var(--primary-dark); }
+
+  /* Ancient vs Modern */
+  .era-toggle {
+    display: flex;
+    background: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .era-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.92rem;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--text-light);
+    transition: all 0.3s ease;
+  }
+  .era-btn.active { background: var(--primary); color: white; font-weight: 600; }
+
+  .era-content { display: none; }
+  .era-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+  .scenario-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--primary);
+  }
+  .scenario-card h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 8px;
+  }
+  .scenario-card p {
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+  .scenario-card .lotus-quote {
+    background: #f0f5ff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--primary-dark);
+    margin-top: 8px;
+    font-style: italic;
+  }
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  @media (min-width: 600px) {
+    .comparison-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .comparison-box {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+  }
+  .comparison-box h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .comparison-box ul {
+    list-style: none;
+    padding: 0;
+  }
+  .comparison-box li {
+    padding: 6px 0;
+    font-size: 0.88rem;
+    color: var(--text);
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .comparison-box li:last-child { border-bottom: none; }
+
+  .footer-note {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  @media (max-width: 480px) {
+    .header h1 { font-size: 1.3rem; }
+    .tab-btn { min-width: 80px; padding: 12px 8px; font-size: 0.78rem; }
+    .tab-content { padding: 14px; }
+    .flower-card-header .flower-icon { font-size: 2.2rem; }
+    .rhetoric-options { flex-direction: column; }
+    .rhetoric-btn { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>愛蓮說 — 互動學習工具</h1>
+  <p>北宋 周敦頤 ── 探索花卉的象徵世界</p>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('flowers')">花卉象徵</button>
+  <button class="tab-btn" onclick="switchTab('rhetoric')">修辭辨識</button>
+  <button class="tab-btn" onclick="switchTab('match')">人格配對</button>
+  <button class="tab-btn" onclick="switchTab('compare')">古今對比</button>
+</nav>
+
+<!-- Tab 1: Flower Symbolism -->
+<div id="tab-flowers" class="tab-content active">
+  <h2 class="section-title">花卉象徵探索</h2>
+  <p class="section-desc">點擊每朵花的卡片，展開了解它們在《愛蓮說》中的象徵意義、代表的人物類型，以及相關的原文引述。</p>
+
+  <div class="flower-grid">
+    <div class="flower-card" data-flower="chrysanthemum" onclick="toggleFlower(this)">
+      <div class="flower-card-header">
+        <div class="flower-icon">🌼</div>
+        <h3>菊花</h3>
+        <div class="flower-subtitle">花之隱逸者</div>
+      </div>
+      <div class="click-hint">點擊展開</div>
+      <div class="flower-card-body">
+        <div class="flower-card-inner">
+          <h4>象徵意義</h4>
+          <p>菊花象徵<strong>隱逸避世</strong>的人生態度。它在秋天百花凋零時獨自綻放，不畏風霜，代表著超脫塵世、獨善其身的高潔品格。</p>
+          <h4>代表人物類型</h4>
+          <p>以東晉<strong>陶淵明</strong>為代表的隱士型人格。他們選擇離開複雜的社會，回歸自然與內心的寧靜。在現代社會中，可能是那些選擇遠離喧囂、追求簡樸生活的人。</p>
+          <h4>原文引述</h4>
+          <blockquote>「晉陶淵明獨愛菊。」<br>「予謂菊，花之隱逸者也。」<br>「菊之愛，陶後鮮有聞。」</blockquote>
+          <h4>周敦頤的態度</h4>
+          <p>敬佩但不完全認同。他承認菊花的高潔，但感嘆這種隱逸之道難以傳承（「陶後鮮有聞」），且過於消極，不如蓮花的入世而自持。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flower-card" data-flower="peony" onclick="toggleFlower(this)">
+      <div class="flower-card-header">
+        <div class="flower-icon">🌺</div>
+        <h3>牡丹</h3>
+        <div class="flower-subtitle">花之富貴者</div>
+      </div>
+      <div class="click-hint">點擊展開</div>
+      <div class="flower-card-body">
+        <div class="flower-card-inner">
+          <h4>象徵意義</h4>
+          <p>牡丹象徵<strong>富貴榮華</strong>與世俗追求。自唐代以來，牡丹被視為「國色天香」，花型碩大、色彩豔麗，深受權貴與世人喜愛，代表對名利的追逐。</p>
+          <h4>代表人物類型</h4>
+          <p>追逐<strong>名利富貴</strong>的世俗之人。他們以物質享受和社會地位為人生目標，隨波逐流。在現代社會中，可能是那些過度追求名牌、地位、外在光環的人。</p>
+          <h4>原文引述</h4>
+          <blockquote>「自李唐來，世人甚愛牡丹。」<br>「牡丹，花之富貴者也。」<br>「牡丹之愛，宜乎眾矣。」</blockquote>
+          <h4>周敦頤的態度</h4>
+          <p>含蓄的批判與嘲諷。「宜乎眾矣」看似平淡陳述，實則暗含失望——大多數人都在追逐富貴，能堅守高潔的人太少了。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flower-card" data-flower="lotus" onclick="toggleFlower(this)">
+      <div class="flower-card-header">
+        <div class="flower-icon">🪷</div>
+        <h3>蓮花</h3>
+        <div class="flower-subtitle">花之君子者</div>
+      </div>
+      <div class="click-hint">點擊展開</div>
+      <div class="flower-card-body">
+        <div class="flower-card-inner">
+          <h4>象徵意義</h4>
+          <p>蓮花象徵<strong>君子品格</strong>——在濁世中保持高潔，積極入世卻不同流合污。它代表儒家理想中最崇高的人格境界：既不消極避世，也不隨波逐流。</p>
+          <h4>代表人物類型</h4>
+          <p>以<strong>周敦頤</strong>自己為代表的君子型人格。他們身處複雜的社會環境，面對各種誘惑與考驗，卻始終堅守道德原則。在現代社會中，是那些在不良風氣中仍然正直做人的人。</p>
+          <h4>原文引述</h4>
+          <blockquote>「予獨愛蓮之出淤泥而不染，濯清漣而不妖，中通外直，不蔓不枝，香遠益清，亭亭淨植，可遠觀而不可褻玩焉。」<br>「蓮，花之君子者也。」</blockquote>
+          <h4>周敦頤的態度</h4>
+          <p>全心推崇與自我期許。蓮花是他心目中最理想的人格象徵，也是他對自己一生為官做人的期望——如蓮般在官場的「淤泥」中保持清廉正直。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 2: Rhetoric Quiz -->
+<div id="tab-rhetoric" class="tab-content">
+  <h2 class="section-title">修辭手法辨識</h2>
+  <p class="section-desc">閱讀以下《愛蓮說》的句子，選出該句所使用的主要修辭手法。</p>
+
+  <div class="score-bar">
+    <span class="score-label">答對題數</span>
+    <span class="score-value" id="rhetoric-score">0 / 6</span>
+  </div>
+
+  <div id="rhetoric-questions"></div>
+
+  <div style="text-align:center;">
+    <button class="btn-reset" onclick="resetRhetoric()">重新作答</button>
+  </div>
+</div>
+
+<!-- Tab 3: Personality Match -->
+<div id="tab-match" class="tab-content">
+  <h2 class="section-title">人格特質配對</h2>
+  <p class="section-desc">將蓮花的特質描述配對到對應的人格類型。先點選左側的特質描述，再點選右側對應的花朵。</p>
+
+  <div class="match-instruction">
+    <strong>操作方式：</strong>先點選左邊的特質描述（變為藍色），再點選右邊你認為對應的花朵類型。配對正確會顯示綠色，錯誤會顯示紅色。
+  </div>
+
+  <div class="match-container">
+    <div>
+      <div class="match-col-title">特質描述</div>
+      <div class="match-traits" id="match-traits"></div>
+    </div>
+    <div>
+      <div class="match-col-title">花朵 / 人格類型</div>
+      <div class="match-targets" id="match-targets"></div>
+    </div>
+  </div>
+
+  <div class="match-status" id="match-status">已配對：0 / 8</div>
+
+  <div style="text-align:center;">
+    <button class="btn-reset" onclick="resetMatch()">重新配對</button>
+  </div>
+</div>
+
+<!-- Tab 4: Ancient vs Modern -->
+<div id="tab-compare" class="tab-content">
+  <h2 class="section-title">古今對比</h2>
+  <p class="section-desc">探索「出淤泥而不染」的精神在古代與現代不同情境中如何體現。</p>
+
+  <div class="era-toggle">
+    <button class="era-btn active" onclick="switchEra('ancient')">古代情境</button>
+    <button class="era-btn" onclick="switchEra('modern')">現代情境</button>
+    <button class="era-btn" onclick="switchEra('comparison')">核心對照</button>
+  </div>
+
+  <div id="era-ancient" class="era-content active">
+    <div class="scenario-card">
+      <h4>周敦頤的仕途生涯</h4>
+      <p>周敦頤在北宋官場任職三十餘年，歷任多個地方官職。當時官場風氣並不清明，很多官員以權謀私。然而周敦頤始終保持清廉，他判案公正、不收賄賂，甚至敢於為冤案平反。去世時「家無餘財」，正如蓮花般出淤泥而不染。</p>
+      <div class="lotus-quote">「出淤泥而不染」—— 身處官場的污濁環境（淤泥），卻不被腐敗風氣所影響（不染）。</div>
+    </div>
+    <div class="scenario-card">
+      <h4>屈原的忠貞與放逐</h4>
+      <p>戰國時期的楚國大夫屈原，面對朝廷的腐敗與讒言，始終堅持自己的政治理想。他被放逐後寫下《離騷》：「制芰荷以為衣兮，集芙蓉以為裳」——以荷花為衣裳，表達自己高潔的品格。最終投汨羅江自盡，以死明志。</p>
+      <div class="lotus-quote">「濯清漣而不妖」—— 即使有美化自己的條件，也不願妥協做出違心之事。</div>
+    </div>
+    <div class="scenario-card">
+      <h4>包拯的鐵面無私</h4>
+      <p>北宋名臣包拯以清廉公正聞名。他擔任開封府尹時，權貴犯法照樣依法處置，不徇私情。民間稱他為「包青天」。在當時複雜的政治環境中，他能做到不畏權勢、秉公執法，正是「不蔓不枝」——不攀附權貴、不牽扯利害關係——的真實體現。</p>
+      <div class="lotus-quote">「不蔓不枝」—— 不攀附權貴，不因利害關係而偏離正道。</div>
+    </div>
+  </div>
+
+  <div id="era-modern" class="era-content">
+    <div class="scenario-card">
+      <h4>校園中的同儕壓力</h4>
+      <p>在學校裡，當大多數同學都在做某件不對的事（例如考試作弊、排擠某個同學），你能不能堅持自己的判斷，不被群體壓力左右？這就是現代版的「出淤泥而不染」。淤泥不再是官場腐敗，而是同儕壓力和從眾心理。</p>
+      <div class="lotus-quote">「出淤泥而不染」—— 在不良風氣中堅守原則，不因「大家都這樣做」就跟著做。</div>
+    </div>
+    <div class="scenario-card">
+      <h4>社群媒體的虛假與真實</h4>
+      <p>在 Instagram、TikTok 等平台上，許多人為了獲得關注而過度包裝自己、製造虛假的完美形象。如果你能在這種環境中保持真實、不為了按讚數而扭曲自己，就是「濯清漣而不妖」——面對美化的工具和誘惑，仍然保持質樸與真實。</p>
+      <div class="lotus-quote">「濯清漣而不妖」—— 有條件包裝自己，卻選擇真實；不因外在誘惑而失去本心。</div>
+    </div>
+    <div class="scenario-card">
+      <h4>職場中的道德抉擇</h4>
+      <p>進入社會後，你可能會遇到各種灰色地帶：主管要求你做不誠實的報告、同事建議你走捷徑、客戶暗示只要配合就有好處。在這些情境中堅守職業道德和個人原則，就是現代版的「中通外直，不蔓不枝」。</p>
+      <div class="lotus-quote">「中通外直，不蔓不枝」—— 內心坦蕩、行事正直，不因利益而妥協原則。</div>
+    </div>
+    <div class="scenario-card">
+      <h4>網路輿論中的獨立思考</h4>
+      <p>在網路上，輿論常常一面倒地攻擊或讚美某個人或某件事。很多人不加思考就跟著轉發、留言。如果你能保持冷靜，獨立判斷事情的是非，不被情緒化的輿論帶著走，這就是「可遠觀而不可褻玩」的精神——保持理性的距離，不隨意被煽動。</p>
+      <div class="lotus-quote">「可遠觀而不可褻玩」—— 保持理性的距離和獨立的判斷，不被輕易操弄。</div>
+    </div>
+  </div>
+
+  <div id="era-comparison" class="era-content">
+    <div class="comparison-grid">
+      <div class="comparison-box">
+        <h4 style="color: var(--primary-dark);">古代的「淤泥」</h4>
+        <ul>
+          <li>官場腐敗與黨爭</li>
+          <li>權貴的籠絡與打壓</li>
+          <li>功名利祿的誘惑</li>
+          <li>世俗禮教的束縛</li>
+          <li>讒言與誹謗</li>
+        </ul>
+      </div>
+      <div class="comparison-box">
+        <h4 style="color: var(--secondary);">現代的「淤泥」</h4>
+        <ul>
+          <li>同儕壓力與從眾心理</li>
+          <li>社群媒體的虛假文化</li>
+          <li>消費主義與物質誘惑</li>
+          <li>網路霸凌與輿論暴力</li>
+          <li>職場中的道德灰色地帶</li>
+        </ul>
+      </div>
+    </div>
+    <div class="comparison-grid" style="margin-top:16px;">
+      <div class="comparison-box">
+        <h4 style="color: var(--primary-dark);">古代的「不染」</h4>
+        <ul>
+          <li>為官清廉，不收受賄賂</li>
+          <li>堅持正義，不畏權勢</li>
+          <li>淡泊名利，安貧樂道</li>
+          <li>直言進諫，不阿諛奉承</li>
+          <li>以身作則，品德感化他人</li>
+        </ul>
+      </div>
+      <div class="comparison-box">
+        <h4 style="color: var(--secondary);">現代的「不染」</h4>
+        <ul>
+          <li>堅持獨立思考，不盲目跟風</li>
+          <li>保持真實自我，不過度包裝</li>
+          <li>拒絕不正當手段，誠實做事</li>
+          <li>面對霸凌敢於發聲</li>
+          <li>在物質誘惑中保持精神追求</li>
+        </ul>
+      </div>
+    </div>
+    <div class="scenario-card" style="margin-top:20px; border-left-color: var(--accent);">
+      <h4>不變的核心精神</h4>
+      <p>無論古今，「出淤泥而不染」的核心都是同一件事：<strong>在不完美的環境中保持自我的完整與高潔。</strong>環境的形式會隨時代改變——從官場變成網路、從科舉變成升學——但人面臨的根本考驗始終如一：你是否有勇氣和能力，在眾人都選擇妥協的時候，堅持做對的事？</p>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">
+  愛蓮說互動學習工具 — 內容依據北宋周敦頤《愛蓮說》原文設計
+</div>
+
+<script>
+// Tab switching
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  const tabs = ['flowers', 'rhetoric', 'match', 'compare'];
+  const idx = tabs.indexOf(tabId);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+}
+
+// Flower card toggle
+function toggleFlower(card) {
+  const wasExpanded = card.classList.contains('expanded');
+  document.querySelectorAll('.flower-card').forEach(c => c.classList.remove('expanded'));
+  if (!wasExpanded) card.classList.add('expanded');
+}
+
+// Rhetoric Quiz Data
+const rhetoricData = [
+  {
+    quote: '予獨愛蓮之出淤泥而不染',
+    translation: '我只獨愛蓮花——它從污泥中長出卻不受污染',
+    answer: '比興',
+    options: ['比興', '對比', '排比', '誇張'],
+    explanation: '以蓮花「出淤泥而不染」的自然特性，比喻君子身處濁世而不同流合污。這是典型的「比」——以物喻人，借自然物象來表達人的品格。'
+  },
+  {
+    quote: '菊，花之隱逸者也；牡丹，花之富貴者也；蓮，花之君子者也。',
+    translation: '菊花是花中的隱士；牡丹是花中的富貴者；蓮花是花中的君子。',
+    answer: '排比',
+    options: ['比興', '對比', '排比', '託物言志'],
+    explanation: '三個結構完全相同的判斷句（「X，花之Y者也」）依次排列，形成整齊的排比句式。同時這三句也包含對比（隱逸 vs. 富貴 vs. 君子），但主要的修辭形式是排比。'
+  },
+  {
+    quote: '菊之愛，陶後鮮有聞。蓮之愛，同予者何人？牡丹之愛，宜乎眾矣。',
+    translation: '喜愛菊花的，陶淵明之後很少聽聞。喜愛蓮花的，跟我一樣的有誰？喜愛牡丹的，自然是大多數了。',
+    answer: '對比',
+    options: ['比興', '對比', '排比', '誇張'],
+    explanation: '「鮮有聞」（少）與「宜乎眾矣」（多）形成鮮明對比。三種花的受歡迎程度形成階梯式的對照，凸顯出愛蓮者（君子）的稀少，反襯出社會追逐富貴的風氣。'
+  },
+  {
+    quote: '中通外直，不蔓不枝，香遠益清，亭亭淨植',
+    translation: '莖管中空而外形挺直，不攀附蔓延也不旁生枝節，香氣傳得越遠越清幽，高挑潔淨地直立',
+    answer: '託物言志',
+    options: ['比興', '對比', '託物言志', '誇張'],
+    explanation: '表面上在描寫蓮花的物理特徵（莖的結構、不攀附、香氣、姿態），實際上每一個特徵都對應著君子的品格。這是「託物言志」——借助對事物的描寫來表達作者的志向與情操。'
+  },
+  {
+    quote: '蓮之愛，同予者何人？',
+    translation: '喜愛蓮花的，跟我一樣的能有幾人呢？',
+    answer: '反問',
+    options: ['反問', '對比', '排比', '誇張'],
+    explanation: '「同予者何人？」是一個反問句，不需要回答，答案不言自明——很少。反問比直接陳述更具感染力，強調了知音難覓的感慨和孤獨感。'
+  },
+  {
+    quote: '水陸草木之花，可愛者甚蕃。晉陶淵明獨愛菊。自李唐來，世人甚愛牡丹。予獨愛蓮……',
+    translation: '水中和陸地上草木的花，可愛的很多。陶淵明獨愛菊……世人甚愛牡丹……我獨愛蓮……',
+    answer: '對比',
+    options: ['比興', '對比', '排比', '託物言志'],
+    explanation: '開篇以「甚蕃」（繁多）總起，再以陶淵明愛菊、世人愛牡丹、作者愛蓮三者相互對比。「獨」字出現兩次，將陶淵明的孤高與作者的獨鍾形成呼應，而「世人甚愛」則代表世俗潮流，形成鮮明的對比結構。'
+  }
+];
+
+let rhetoricScore = 0;
+let rhetoricAnswered = 0;
+
+function initRhetoric() {
+  const container = document.getElementById('rhetoric-questions');
+  container.innerHTML = '';
+  rhetoricScore = 0;
+  rhetoricAnswered = 0;
+  updateRhetoricScore();
+
+  rhetoricData.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'rhetoric-item';
+    div.id = 'rq-' + idx;
+    div.innerHTML = `
+      <div class="quote">「${item.quote}」</div>
+      <div class="translation">${item.translation}</div>
+      <div class="rhetoric-options">
+        ${item.options.map(opt => `<button class="rhetoric-btn" onclick="checkRhetoric(${idx},'${opt}',this)">${opt}</button>`).join('')}
+      </div>
+      <div class="rhetoric-feedback" id="rf-${idx}"></div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function checkRhetoric(idx, chosen, btn) {
+  const item = rhetoricData[idx];
+  const feedback = document.getElementById('rf-' + idx);
+  const buttons = document.querySelectorAll('#rq-' + idx + ' .rhetoric-btn');
+  const alreadyAnswered = feedback.classList.contains('show');
+  if (alreadyAnswered) return;
+
+  rhetoricAnswered++;
+  buttons.forEach(b => {
+    b.classList.add('disabled');
+    if (b.textContent === item.answer) b.classList.add('correct');
+  });
+
+  if (chosen === item.answer) {
+    rhetoricScore++;
+    btn.classList.add('correct');
+    feedback.className = 'rhetoric-feedback show success';
+    feedback.innerHTML = '<strong>正確！</strong> ' + item.explanation;
+  } else {
+    btn.classList.add('wrong');
+    feedback.className = 'rhetoric-feedback show error';
+    feedback.innerHTML = '<strong>不太對喔。</strong>正確答案是<strong>「' + item.answer + '」</strong>。' + item.explanation;
+  }
+  updateRhetoricScore();
+}
+
+function updateRhetoricScore() {
+  document.getElementById('rhetoric-score').textContent = rhetoricScore + ' / ' + rhetoricData.length;
+}
+
+function resetRhetoric() {
+  initRhetoric();
+}
+
+// Personality Match
+const matchData = [
+  { text: '在百花凋零的秋天獨自綻放', answer: 'chrysanthemum', label: '菊花——隱逸者的孤高' },
+  { text: '國色天香，深受權貴追捧', answer: 'peony', label: '牡丹——富貴者的豔麗' },
+  { text: '從污泥中長出卻潔白無瑕', answer: 'lotus', label: '蓮花——出淤泥而不染' },
+  { text: '遠離塵世，歸隱田園', answer: 'chrysanthemum', label: '菊花——避世隱居的選擇' },
+  { text: '追求名利地位，隨波逐流', answer: 'peony', label: '牡丹——隨波逐流的世俗' },
+  { text: '內心通達，外在正直，不攀附他人', answer: 'lotus', label: '蓮花——中通外直的品格' },
+  { text: '花開時節動京城，人人爭相觀賞', answer: 'peony', label: '牡丹——萬眾追捧的盛況' },
+  { text: '令人敬重，不可輕慢褻玩', answer: 'lotus', label: '蓮花——莊重威嚴的氣度' }
+];
+
+const targets = [
+  { id: 'chrysanthemum', name: '菊花（隱逸者）', icon: '🌼' },
+  { id: 'peony', name: '牡丹（富貴者）', icon: '🌺' },
+  { id: 'lotus', name: '蓮花（君子）', icon: '🪷' }
+];
+
+let selectedTrait = null;
+let matchedCount = 0;
+
+function initMatch() {
+  const traitsEl = document.getElementById('match-traits');
+  const targetsEl = document.getElementById('match-targets');
+  traitsEl.innerHTML = '';
+  targetsEl.innerHTML = '';
+  selectedTrait = null;
+  matchedCount = 0;
+  updateMatchStatus();
+
+  const shuffled = [...matchData].sort(() => Math.random() - 0.5);
+  shuffled.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'trait-card';
+    div.id = 'trait-' + idx;
+    div.dataset.answer = item.answer;
+    div.dataset.label = item.label;
+    div.innerHTML = `<div class="trait-text">${item.text}</div><div class="trait-label"></div>`;
+    div.onclick = () => selectTrait(idx);
+    traitsEl.appendChild(div);
+  });
+
+  targets.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'target-card';
+    div.dataset.id = t.id;
+    div.innerHTML = `<div class="target-icon">${t.icon}</div><div class="target-name">${t.name}</div>`;
+    div.onclick = () => selectTarget(t.id);
+    targetsEl.appendChild(div);
+  });
+}
+
+function selectTrait(idx) {
+  const card = document.getElementById('trait-' + idx);
+  if (card.classList.contains('matched-correct') || card.classList.contains('matched-wrong')) return;
+  document.querySelectorAll('.trait-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedTrait = idx;
+}
+
+function selectTarget(targetId) {
+  if (selectedTrait === null) return;
+  const traitCard = document.getElementById('trait-' + selectedTrait);
+  if (traitCard.classList.contains('matched-correct') || traitCard.classList.contains('matched-wrong')) {
+    selectedTrait = null;
+    return;
+  }
+  const answer = traitCard.dataset.answer;
+  const label = traitCard.dataset.label;
+
+  traitCard.classList.remove('selected');
+  matchedCount++;
+
+  if (answer === targetId) {
+    traitCard.classList.add('matched-correct');
+    traitCard.querySelector('.trait-label').textContent = '✓ ' + label;
+  } else {
+    traitCard.classList.add('matched-wrong');
+    const correctName = targets.find(t => t.id === answer).name;
+    traitCard.querySelector('.trait-label').textContent = '✗ 應為 ' + correctName + '（' + label + '）';
+  }
+
+  selectedTrait = null;
+  updateMatchStatus();
+}
+
+function updateMatchStatus() {
+  const correct = document.querySelectorAll('.trait-card.matched-correct').length;
+  document.getElementById('match-status').textContent =
+    '已配對：' + matchedCount + ' / ' + matchData.length + '（正確 ' + correct + ' 題）';
+}
+
+function resetMatch() {
+  initMatch();
+}
+
+// Era toggle
+function switchEra(era) {
+  document.querySelectorAll('.era-content').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.era-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('era-' + era).classList.add('active');
+  const eras = ['ancient', 'modern', 'comparison'];
+  document.querySelectorAll('.era-btn')[eras.indexOf(era)].classList.add('active');
+}
+
+// Initialize
+initRhetoric();
+initMatch();
+</script>
+
+</body>
+</html>

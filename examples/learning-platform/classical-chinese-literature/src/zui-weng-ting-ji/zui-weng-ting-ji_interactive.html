@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>醉翁亭記 — 互動學習工具</title>
+<style>
+  :root {
+    --primary: #2c5282;
+    --primary-light: #3b6db5;
+    --primary-dark: #1e3a5f;
+    --accent: #e67e22;
+    --accent-light: #f0a050;
+    --bg: #f7f9fc;
+    --card-bg: #ffffff;
+    --text: #2d3748;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --success: #27ae60;
+    --success-bg: #d5f5e3;
+    --danger: #e74c3c;
+    --danger-bg: #fadbd8;
+    --spring: #48bb78;
+    --summer: #38a169;
+    --autumn: #dd6b20;
+    --winter: #4299e1;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 28px 20px 20px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; letter-spacing: 2px; }
+  .header p { font-size: 0.88rem; opacity: 0.85; }
+
+  .tab-nav {
+    display: flex;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 13px 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-light);
+    border-bottom: 3px solid transparent;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--primary); background: #edf2f7; }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 700;
+  }
+
+  .tab-content { display: none; padding: 16px; max-width: 900px; margin: 0 auto; }
+  .tab-content.active { display: block; animation: fadeIn 0.35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card h2 { font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 4px; }
+  .card .desc { font-size: 0.82rem; color: var(--text-light); margin-bottom: 16px; line-height: 1.5; }
+
+  .btn {
+    display: inline-block;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+  .btn-outline:hover { background: var(--primary); color: #fff; }
+  .btn-small { padding: 5px 12px; font-size: 0.8rem; }
+
+  .feedback {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .feedback.show { display: block; animation: fadeIn 0.3s ease; }
+  .feedback.info { background: #edf2f7; border-left: 4px solid var(--primary); }
+
+  /* ===== Tab 1: Ye Analyzer ===== */
+  .ye-text {
+    font-size: 1.05rem;
+    line-height: 2.2;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .ye-char {
+    display: inline;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ye-char.ye-highlight {
+    background: #fef3c7;
+    color: #92400e;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 4px;
+    border-bottom: 3px solid var(--accent);
+  }
+  .ye-char.ye-highlight:hover {
+    background: #fde68a;
+    transform: scale(1.1);
+  }
+  .ye-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .ye-stat-box {
+    background: #f0f4f8;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .ye-stat-box .num { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+  .ye-stat-box .label { font-size: 0.78rem; color: var(--text-light); }
+  .ye-info {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    padding: 14px;
+    min-height: 60px;
+    font-size: 0.9rem;
+  }
+  .ye-info .ye-idx { font-size: 0.75rem; color: var(--accent); font-weight: 700; margin-bottom: 2px; }
+  .ye-info .ye-sentence { font-weight: 600; color: var(--primary-dark); margin-bottom: 6px; font-size: 1rem; }
+
+  /* ===== Tab 2: Structure ===== */
+  .structure-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 10px 0;
+  }
+  .layer-ring {
+    width: 100%;
+    max-width: 500px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    border: 3px solid transparent;
+  }
+  .layer-ring:hover { transform: scale(1.02); }
+  .layer-ring.active { border-color: var(--primary); box-shadow: var(--shadow-lg); }
+  .layer-ring .layer-title { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
+  .layer-ring .layer-text { font-size: 0.82rem; opacity: 0.85; }
+  .layer-arrow {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin: 2px 0;
+  }
+
+  .layer-0 { background: #dbeafe; color: #1e40af; }
+  .layer-1 { background: #bfdbfe; color: #1e3a8a; }
+  .layer-2 { background: #93c5fd; color: #1e3a8a; }
+  .layer-3 { background: #60a5fa; color: #fff; }
+  .layer-4 { background: #3b82f6; color: #fff; }
+  .layer-5 { background: var(--primary); color: #fff; }
+
+  .layer-detail {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .layer-detail .detail-title { font-weight: 700; color: var(--primary); margin-bottom: 6px; font-size: 1rem; }
+  .layer-detail .detail-quote {
+    background: #edf2f7;
+    padding: 10px 14px;
+    border-left: 4px solid var(--primary);
+    border-radius: 4px;
+    margin: 8px 0;
+    font-style: italic;
+  }
+
+  /* ===== Tab 3: Seasons ===== */
+  .season-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .season-btn {
+    padding: 12px 8px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .season-btn:hover { transform: translateY(-2px); }
+  .season-btn.active { transform: translateY(-2px); }
+  .season-btn .season-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+
+  .season-spring { color: var(--spring); }
+  .season-spring.active { border-color: var(--spring); background: #f0fff4; }
+  .season-summer { color: var(--summer); }
+  .season-summer.active { border-color: var(--summer); background: #f0fff4; }
+  .season-autumn { color: var(--autumn); }
+  .season-autumn.active { border-color: var(--autumn); background: #fffaf0; }
+  .season-winter { color: var(--winter); }
+  .season-winter.active { border-color: var(--winter); background: #ebf8ff; }
+
+  .season-display {
+    border-radius: 12px;
+    padding: 24px;
+    min-height: 200px;
+    transition: all 0.4s;
+  }
+  .season-display h3 { font-size: 1.1rem; margin-bottom: 12px; }
+  .season-display .original {
+    font-size: 1.15rem;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    line-height: 1.8;
+  }
+  .season-display .translation {
+    font-size: 0.92rem;
+    margin-bottom: 14px;
+    line-height: 1.7;
+  }
+  .season-display .imagery {
+    font-size: 0.88rem;
+    padding: 12px;
+    border-radius: 8px;
+    line-height: 1.6;
+  }
+  .season-display .imagery strong { display: block; margin-bottom: 4px; }
+
+  .spring-display { background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%); color: #22543d; }
+  .spring-display .original { background: rgba(255,255,255,0.7); }
+  .spring-display .imagery { background: rgba(255,255,255,0.5); }
+  .summer-display { background: linear-gradient(135deg, #f0fff4 0%, #9ae6b4 100%); color: #1a4731; }
+  .summer-display .original { background: rgba(255,255,255,0.7); }
+  .summer-display .imagery { background: rgba(255,255,255,0.5); }
+  .autumn-display { background: linear-gradient(135deg, #fffaf0 0%, #fbd38d 100%); color: #7b341e; }
+  .autumn-display .original { background: rgba(255,255,255,0.7); }
+  .autumn-display .imagery { background: rgba(255,255,255,0.5); }
+  .winter-display { background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%); color: #2a4365; }
+  .winter-display .original { background: rgba(255,255,255,0.7); }
+  .winter-display .imagery { background: rgba(255,255,255,0.5); }
+
+  /* ===== Tab 4: Comparison ===== */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media(max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } }
+
+  .compare-col {
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .compare-col h3 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid;
+  }
+  .compare-left {
+    background: #eff6ff;
+    border: 2px solid #bfdbfe;
+  }
+  .compare-left h3 { color: var(--primary); border-color: var(--primary); }
+  .compare-right {
+    background: #fef3c7;
+    border: 2px solid #fcd34d;
+  }
+  .compare-right h3 { color: #92400e; border-color: #f59e0b; }
+
+  .compare-item {
+    margin-bottom: 12px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .compare-item .item-label {
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+  }
+  .compare-left .item-label { color: var(--primary); }
+  .compare-right .item-label { color: #92400e; }
+
+  .compare-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .topic-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .topic-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .topic-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .compare-summary {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+  .compare-summary strong { color: var(--primary-dark); }
+
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.78rem;
+    color: var(--text-light);
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  @media(max-width:480px) {
+    .header h1 { font-size: 1.25rem; }
+    .card { padding: 14px; }
+    .season-tabs { grid-template-columns: repeat(2, 1fr); }
+    .ye-text { font-size: 0.95rem; line-height: 2; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>醉翁亭記 — 互動學習工具</h1>
+  <p>歐陽修 ・ 北宋</p>
+</div>
+
+<div class="tab-nav" id="tabNav">
+  <button class="tab-btn active" data-tab="ye-analyzer">「也」字分析器</button>
+  <button class="tab-btn" data-tab="structure">段落結構圖</button>
+  <button class="tab-btn" data-tab="seasons">四季景色探索</button>
+  <button class="tab-btn" data-tab="comparison">與岳陽樓記比較</button>
+</div>
+
+<!-- ==================== Tab 1: Ye Analyzer ==================== -->
+<div class="tab-content active" id="tab-ye-analyzer">
+  <div class="card">
+    <h2>「也」字句式分析器</h2>
+    <p class="desc">全文共有 21 個「也」字。點擊高亮的「也」字，查看它在句中的語法功能與語氣效果。</p>
+
+    <div class="ye-stats" id="yeStats">
+      <div class="ye-stat-box"><div class="num">21</div><div class="label">全文「也」字總數</div></div>
+      <div class="ye-stat-box"><div class="num">9</div><div class="label">判斷語氣</div></div>
+      <div class="ye-stat-box"><div class="num">5</div><div class="label">解釋語氣</div></div>
+      <div class="ye-stat-box"><div class="num">4</div><div class="label">陳述語氣</div></div>
+      <div class="ye-stat-box"><div class="num">3</div><div class="label">感嘆語氣</div></div>
+    </div>
+
+    <div class="ye-text" id="yeText"></div>
+
+    <div class="ye-info" id="yeInfo">
+      <span style="color:var(--text-light);">點擊文中高亮的「也」字，查看語法分析</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 2: Structure ==================== -->
+<div class="tab-content" id="tab-structure">
+  <div class="card">
+    <h2>段落結構圖</h2>
+    <p class="desc">《醉翁亭記》採用由遠及近、由外而內的層層推進法。點擊各層，查看對應的原文與解說。</p>
+
+    <div class="structure-container" id="structureContainer"></div>
+
+    <div class="layer-detail" id="layerDetail">
+      <span style="color:var(--text-light);">點擊上方的層次色塊，查看詳細解說</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab 3: Seasons ==================== -->
+<div class="tab-content" id="tab-seasons">
+  <div class="card">
+    <h2>四季景色探索</h2>
+    <p class="desc">歐陽修以精煉的筆墨描繪了山間四季的不同風貌。點擊下方按鈕，探索各季的景色描寫。</p>
+
+    <div class="season-tabs" id="seasonTabs">
+      <button class="season-btn season-spring active" data-season="spring">
+        <span class="season-icon">&#x1F338;</span>春
+      </button>
+      <button class="season-btn season-summer" data-season="summer">
+        <span class="season-icon">&#x2600;&#xFE0F;</span>夏
+      </button>
+      <button class="season-btn season-autumn" data-season="autumn">
+        <span class="season-icon">&#x1F341;</span>秋
+      </button>
+      <button class="season-btn season-winter" data-season="winter">
+        <span class="season-icon">&#x2744;&#xFE0F;</span>冬
+      </button>
+    </div>
+
+    <div id="seasonDisplay"></div>
+  </div>
+</div>
+
+<!-- ==================== Tab 4: Comparison ==================== -->
+<div class="tab-content" id="tab-comparison">
+  <div class="card">
+    <h2>與岳陽樓記比較</h2>
+    <p class="desc">兩篇同年（1046年）問世的記體散文，展現了兩位被貶文人面對逆境的不同態度。選擇比較面向：</p>
+
+    <div class="compare-topics" id="compareTopics"></div>
+
+    <div class="compare-grid" id="compareGrid"></div>
+
+    <div class="compare-summary" id="compareSummary"></div>
+  </div>
+</div>
+
+<div class="footer">
+  醉翁亭記互動學習工具 — 文言文學習平台
+</div>
+
+<script>
+/* ===== Tab Switching ===== */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ===== Tab 1: Ye Analyzer ===== */
+const yeData = [
+  { sentence: '環滁皆山也', ye: '也', type: '判斷語氣', func: '表示判斷，說明滁州四面環山的地理事實。', effect: '以簡潔有力的判斷句開篇，如同大全景鏡頭一掃而過，氣勢開闊。' },
+  { sentence: '望之蔚然而深秀者，琅琊也', ye: '也', type: '判斷語氣', func: '判斷句，指出那蒼翠深秀的山就是琅琊山。', effect: '鏡頭聚焦，從群山中指認出琅琊山，語氣確定而從容。' },
+  { sentence: '瀉出於兩峰之間者，釀泉也', ye: '也', type: '判斷語氣', func: '判斷句，指出兩峰之間流出的泉水就是釀泉。', effect: '繼續聚焦，由視覺轉為聽覺，引出泉水之名。' },
+  { sentence: '醉翁亭也', ye: '也', type: '判斷語氣', func: '判斷句，指出泉上的亭子就是醉翁亭。', effect: '完成空間推進的最後一步，亭名落定，語氣乾淨利落。' },
+  { sentence: '山之僧智仙也', ye: '也', type: '判斷語氣', func: '判斷句，回答「作亭者誰」的問題。', effect: '自問自答的節奏，增添口語化的親切感。' },
+  { sentence: '太守自謂也', ye: '也', type: '解釋語氣', func: '解釋說明，回答命名者是太守自己。', effect: '延續問答結構，引出太守這一關鍵人物。' },
+  { sentence: '故自號曰醉翁也', ye: '也', type: '解釋語氣', func: '解釋說明太守為何自號「醉翁」。', effect: '交代命名緣由，為全文的「醉」字奠定基調。' },
+  { sentence: '在乎山水之間也', ye: '也', type: '感嘆語氣', func: '帶有感嘆意味，強調真意在山水。', effect: '全文文眼所在，「也」字拖長語氣，讀來意味深長。' },
+  { sentence: '山水之樂，得之心而寓之酒也', ye: '也', type: '感嘆語氣', func: '感嘆語氣，表達心領神會的領悟。', effect: '以「也」字收束第一段，餘韻悠長，如一聲滿足的嘆息。' },
+  { sentence: '山間之朝暮也', ye: '也', type: '解釋語氣', func: '解釋說明晦明變化就是山間的朝暮景象。', effect: '以舒緩的節奏描寫景色變化，不疾不徐。' },
+  { sentence: '山間之四時也', ye: '也', type: '解釋語氣', func: '解釋說明以上四景就是山間的四季景色。', effect: '總結性的收束，四季輪轉盡在一個「也」字中。' },
+  { sentence: '而樂亦無窮也', ye: '也', type: '感嘆語氣', func: '帶有深沉感嘆，表達無窮的快樂。', effect: '第二段的點睛之句，「也」字承載了悠遠的快樂之感。' },
+  { sentence: '滁人遊也', ye: '也', type: '陳述語氣', func: '平穩陳述，說明以上場景是滁州百姓出遊。', effect: '畫面切換到人群，語氣平和溫暖。' },
+  { sentence: '太守宴也', ye: '也', type: '陳述語氣', func: '平穩陳述，說明以上食物是太守的宴席。', effect: '節奏對稱，與前句「滁人遊也」形成工整的呼應。' },
+  { sentence: '眾賓歡也', ye: '也', type: '陳述語氣', func: '平穩陳述，說明以上歡樂場景屬於賓客。', effect: '三個「也」字連續落下（遊也、宴也、歡也），如節拍器般規律。' },
+  { sentence: '太守醉也', ye: '也', type: '陳述語氣', func: '陳述太守醉了的事實，語氣中帶有微妙的轉折。', effect: '在歡樂高潮中突然轉入太守的醉態，「也」字增添了一絲蒼涼。' },
+  { sentence: '太守歸而賓客從也', ye: '也', type: '解釋語氣', func: '說明傍晚太守回去、賓客跟隨的情景。', effect: '場景漸暗，「也」字帶有曲終人散的意味。' },
+  { sentence: '遊人去而禽鳥樂也', ye: '也', type: '判斷語氣', func: '判斷遊人離去後禽鳥感到快樂。', effect: '從人的世界轉向自然的世界，語氣平靜而深遠。' },
+  { sentence: '而不知太守之樂其樂也', ye: '也', type: '判斷語氣', func: '判斷語氣，強調人們不知道太守以眾人之樂為樂。', effect: '全文哲理核心，「也」字帶有深沉的感慨。' },
+  { sentence: '醒能述以文者，太守也', ye: '也', type: '判斷語氣', func: '判斷句，揭示太守的身分。', effect: '即將揭謎，語氣鄭重而帶有自信。' },
+  { sentence: '廬陵歐陽修也', ye: '也', type: '判斷語氣', func: '判斷句，最終揭示太守就是歐陽修。', effect: '全文收束，最後一個「也」字如同落幕的鐘聲，餘音繞樑。' }
+];
+
+const fullText = '環滁皆山也。其西南諸峰，林壑尤美，望之蔚然而深秀者，琅琊也。山行六七里，漸聞水聲潺潺而瀉出於兩峰之間者，釀泉也。峰迴路轉，有亭翼然臨於泉上者，醉翁亭也。作亭者誰？山之僧智仙也。名之者誰？太守自謂也。太守與客來飲於此，飲少輒醉，而年又最高，故自號曰醉翁也。醉翁之意不在酒，在乎山水之間也。山水之樂，得之心而寓之酒也。\n若夫日出而林霏開，雲歸而巖穴暝，晦明變化者，山間之朝暮也。野芳發而幽香，佳木秀而繁陰，風霜高潔，水落而石出者，山間之四時也。朝而往，暮而歸，四時之景不同，而樂亦無窮也。\n至於負者歌於途，行者休於樹，前者呼，後者應，傴僂提攜，往來而不絕者，滁人遊也。臨溪而漁，溪深而魚肥，釀泉為酒，泉香而酒洌，山肴野蔌，雜然而前陳者，太守宴也。宴酣之樂，非絲非竹，射者中，弈者勝，觥籌交錯，起坐而喧嘩者，眾賓歡也。蒼顏白髮，頹然乎其間者，太守醉也。\n已而夕陽在山，人影散亂，太守歸而賓客從也。樹林陰翳，鳴聲上下，遊人去而禽鳥樂也。然而禽鳥知山林之樂，而不知人之樂；人知從太守遊而樂，而不知太守之樂其樂也。醉能同其樂，醒能述以文者，太守也。太守謂誰？廬陵歐陽修也。';
+
+function buildYeText() {
+  const container = document.getElementById('yeText');
+  // We need to find each 也 and make it clickable, mapping to yeData index
+  let yeIndex = 0;
+  let html = '';
+  for (let i = 0; i < fullText.length; i++) {
+    const ch = fullText[i];
+    if (ch === '\n') {
+      html += '<br><br>';
+    } else if (ch === '也' && yeIndex < yeData.length) {
+      const idx = yeIndex;
+      html += '<span class="ye-char ye-highlight" data-ye="' + idx + '" onclick="showYeInfo(' + idx + ')">' + ch + '</span>';
+      yeIndex++;
+    } else {
+      html += '<span class="ye-char">' + ch + '</span>';
+    }
+  }
+  container.innerHTML = html;
+}
+
+function showYeInfo(idx) {
+  const d = yeData[idx];
+  const info = document.getElementById('yeInfo');
+  info.innerHTML =
+    '<div class="ye-idx">第 ' + (idx + 1) + ' / 21 個「也」字 — ' + d.type + '</div>' +
+    '<div class="ye-sentence">「' + d.sentence + '」</div>' +
+    '<div><strong>語法功能：</strong>' + d.func + '</div>' +
+    '<div style="margin-top:6px;"><strong>韻律效果：</strong>' + d.effect + '</div>';
+
+  document.querySelectorAll('.ye-highlight').forEach(el => el.style.outline = 'none');
+  const target = document.querySelector('.ye-highlight[data-ye="' + idx + '"]');
+  if (target) {
+    target.style.outline = '3px solid var(--accent)';
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+buildYeText();
+
+/* ===== Tab 2: Structure ===== */
+const layers = [
+  { title: '山（遠景）', text: '環滁皆山也', color: 0, quote: '環滁皆山也。其西南諸峰，林壑尤美，望之蔚然而深秀者，琅琊也。', detail: '全文以最廣闊的視野開篇——四面環山的滁州城。這是空間結構的最外層，如同一幅山水畫卷緩緩展開。鏡頭從全景掃描，讓讀者首先感受到群山環抱的壯闊感。' },
+  { title: '水（中景）', text: '漸聞水聲潺潺', color: 1, quote: '山行六七里，漸聞水聲潺潺而瀉出於兩峰之間者，釀泉也。', detail: '從視覺轉向聽覺。「漸聞」二字帶有時間感，讀者彷彿跟隨作者的腳步，一路走來，漸漸聽到泉水的聲音。空間從遠處的群山推進到近處的泉水。' },
+  { title: '亭（近景）', text: '有亭翼然臨於泉上', color: 2, quote: '峰迴路轉，有亭翼然臨於泉上者，醉翁亭也。', detail: '鏡頭繼續推進，聚焦到醉翁亭。「翼然」寫出亭子如鳥展翅的輕盈之態，「峰迴路轉」則暗含柳暗花明的驚喜。亭子是全文空間的核心——故事將在這裡展開。' },
+  { title: '太守（人物）', text: '太守與客來飲於此', color: 3, quote: '太守與客來飲於此，飲少輒醉，而年又最高，故自號曰醉翁也。', detail: '從自然景物轉向人物。太守出場，帶著客人在亭中飲酒，自號「醉翁」。景中有了人，靜態的山水畫變成了生動的生活場景。' },
+  { title: '眾人（群像）', text: '傴僂提攜，往來不絕', color: 4, quote: '負者歌於途，行者休於樹，前者呼，後者應，傴僂提攜，往來而不絕者，滁人遊也。', detail: '鏡頭進一步擴展到百姓群像。老老少少出遊、太守設宴、賓客歡聚——人間的熱鬧與溫暖達到高潮。這一層展現了歐陽修作為地方官「與民同樂」的理想。' },
+  { title: '樂（精神）', text: '太守之樂其樂也', color: 5, quote: '人知從太守遊而樂，而不知太守之樂其樂也。', detail: '空間推進的終點不是物質的場景，而是精神的境界。禽鳥之樂→眾人之樂→太守之樂，三層遞進揭示了全文的哲理核心：最高的快樂是以他人的快樂為快樂。' }
+];
+
+function buildStructure() {
+  const container = document.getElementById('structureContainer');
+  let html = '';
+  layers.forEach((l, i) => {
+    if (i > 0) html += '<div class="layer-arrow">&#9660;</div>';
+    html += '<div class="layer-ring layer-' + i + '" data-layer="' + i + '" onclick="showLayerDetail(' + i + ')">' +
+      '<div class="layer-title">' + l.title + '</div>' +
+      '<div class="layer-text">' + l.text + '</div>' +
+      '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function showLayerDetail(idx) {
+  const l = layers[idx];
+  document.querySelectorAll('.layer-ring').forEach(el => el.classList.remove('active'));
+  document.querySelector('.layer-ring[data-layer="' + idx + '"]').classList.add('active');
+
+  const detail = document.getElementById('layerDetail');
+  detail.innerHTML =
+    '<div class="detail-title">' + l.title + '</div>' +
+    '<div class="detail-quote">' + l.quote + '</div>' +
+    '<div>' + l.detail + '</div>';
+}
+
+buildStructure();
+
+/* ===== Tab 3: Seasons ===== */
+const seasons = {
+  spring: {
+    title: '春 — 野芳發而幽香',
+    original: '野芳發而幽香',
+    translation: '野花盛開，散發出淡淡的幽香。',
+    imagery: '春天是萬物甦醒的季節。歐陽修以「野芳」代表春天，不是名貴的園花，而是山間的野花。「發」字寫花開的動態，「幽香」寫不濃不淡、若有若無的香氣。這是一種不刻意經營的天然之美，正如歐陽修在滁州追求的那種自然、不矯飾的生活態度。',
+    cssClass: 'spring-display'
+  },
+  summer: {
+    title: '夏 — 佳木秀而繁陰',
+    original: '佳木秀而繁陰',
+    translation: '好的樹木枝繁葉茂，形成了濃密的綠蔭。',
+    imagery: '夏天的特徵是「繁陰」——樹木茂盛到遮天蔽日。「佳木」二字帶有讚美之意，「秀」寫樹木茁壯生長的姿態。在炎炎夏日裡，濃密的樹蔭是山中最珍貴的饋贈。歐陽修只用五個字就營造出一片清涼綠意，讓人彷彿感受到了林間的涼風。',
+    cssClass: 'summer-display'
+  },
+  autumn: {
+    title: '秋 — 風霜高潔',
+    original: '風霜高潔',
+    translation: '秋風帶霜，天高氣爽，一片清朗高潔。',
+    imagery: '秋天的關鍵詞是「高潔」——天空高遠，空氣清冽，萬物褪去了夏日的繁華，呈現出一種肅穆而乾淨的美感。「風霜」不是蕭瑟的悲秋意象，而是帶有「高」與「潔」的正面評價，反映了歐陽修對清高品格的欣賞。這也暗合他被貶後仍保持的清廉風骨。',
+    cssClass: 'autumn-display'
+  },
+  winter: {
+    title: '冬 — 水落而石出',
+    original: '水落而石出者',
+    translation: '水位降低，原本沉在水底的石頭露了出來。',
+    imagery: '冬天的景象是「水落石出」——河水水位下降，露出了底下的石頭。這四個字後來成為了一個成語，比喻「真相大白」。在文學層面上，冬天剝去了繁華的外衣，留下的是最本質的東西。歐陽修選擇這個意象，或許也暗示了他在被貶後回歸本真、看清事物本質的心境。',
+    cssClass: 'winter-display'
+  }
+};
+
+function showSeason(key) {
+  document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.season-btn[data-season="' + key + '"]').classList.add('active');
+
+  const s = seasons[key];
+  const display = document.getElementById('seasonDisplay');
+  display.innerHTML =
+    '<div class="season-display ' + s.cssClass + '">' +
+      '<h3>' + s.title + '</h3>' +
+      '<div class="original">' + s.original + '</div>' +
+      '<div class="translation">' + s.translation + '</div>' +
+      '<div class="imagery"><strong>意象賞析</strong>' + s.imagery + '</div>' +
+    '</div>';
+}
+
+document.querySelectorAll('.season-btn').forEach(btn => {
+  btn.addEventListener('click', () => showSeason(btn.dataset.season));
+});
+showSeason('spring');
+
+/* ===== Tab 4: Comparison ===== */
+const compareData = {
+  background: {
+    label: '寫作背景',
+    left: { items: [
+      { label: '時間', text: '慶曆六年（1046年）' },
+      { label: '地點', text: '滁州琅琊山，作者親臨其境' },
+      { label: '起因', text: '因支持慶曆新政被貶至滁州，在醉翁亭飲酒賞景有感而寫' }
+    ]},
+    right: { items: [
+      { label: '時間', text: '慶曆六年（1046年）' },
+      { label: '地點', text: '鄧州，應友人滕子京之請而寫（范仲淹本人未親臨岳陽樓）' },
+      { label: '起因', text: '同因支持新政被貶，收到滕子京來信請他為重修的岳陽樓作記' }
+    ]},
+    summary: '兩篇文章同年問世，同出於被貶的背景，但歐陽修是身臨其境的親身體驗，范仲淹則是依據描述和想像而寫。不同的創作方式造就了不同的風格——歐陽修寫實而親切，范仲淹壯闊而超然。'
+  },
+  theme: {
+    label: '主題思想',
+    left: { items: [
+      { label: '核心', text: '醉翁之意不在酒——山水之樂、與民同樂' },
+      { label: '層次', text: '禽鳥之樂 → 眾人之樂 → 太守之樂（三層遞進）' },
+      { label: '態度', text: '在山水中尋找快樂，以百姓的安樂為自己的快樂' }
+    ]},
+    right: { items: [
+      { label: '核心', text: '先天下之憂而憂，後天下之樂而樂' },
+      { label: '層次', text: '以物喜 / 以己悲 → 不以物喜不以己悲 → 先憂後樂（三層遞進）' },
+      { label: '態度', text: '超越個人得失，以天下蒼生的憂樂為己任' }
+    ]},
+    summary: '兩者都談「樂」，但歐陽修的「樂」是當下的、感受性的——看到百姓快樂而快樂；范仲淹的「樂」是未來的、理想化的——天下都快樂了自己才快樂。歐陽修更溫暖，范仲淹更崇高。'
+  },
+  style: {
+    label: '文學風格',
+    left: { items: [
+      { label: '語言', text: '平白如話，21個「也」字營造吟詠唱嘆的節奏' },
+      { label: '手法', text: '以景入情、層層推進，空間結構如電影鏡頭' },
+      { label: '節奏', text: '舒緩悠揚，如行雲流水般自然' }
+    ]},
+    right: { items: [
+      { label: '語言', text: '駢散結合，四六句式鋪排壯美，氣勢磅礴' },
+      { label: '手法', text: '先敘事後議論，對比鮮明（悲/喜、憂/樂）' },
+      { label: '節奏', text: '雄渾有力，如黃鐘大呂般莊嚴' }
+    ]},
+    summary: '歐陽修的文風是散文之美的典範——自然、流暢、不露痕跡；范仲淹則展現了駢散交融的壯美。如果說《醉翁亭記》像一首悠揚的田園小曲，那《岳陽樓記》就是一部恢弘的交響樂。'
+  },
+  emotion: {
+    label: '情感基調',
+    left: { items: [
+      { label: '表面', text: '曠達超然，通篇洋溢著山水之樂、人情之暖' },
+      { label: '深層', text: '樂中含悲——「蒼顏白髮，頹然乎其間」暗藏被貶的落寞' },
+      { label: '處理方式', text: '以「醉」消解痛苦，在山水和人情中重建精神世界' }
+    ]},
+    right: { items: [
+      { label: '表面', text: '沉鬱深遠，充滿對國家和蒼生的深切關懷' },
+      { label: '深層', text: '憂中見志——即使被貶，仍以天下為己任' },
+      { label: '處理方式', text: '以「憂」昇華自我，將個人遭遇轉化為對家國的擔當' }
+    ]},
+    summary: '歐陽修選擇「以樂消愁」——在快樂的表面下藏著一絲不易察覺的哀愁。范仲淹選擇「以憂明志」——在沉重的憂思中展現崇高的理想。兩種態度殊途同歸：都是不向命運低頭的高貴姿態。'
+  }
+};
+
+const topicKeys = ['background', 'theme', 'style', 'emotion'];
+
+function buildCompareTopics() {
+  const container = document.getElementById('compareTopics');
+  let html = '';
+  topicKeys.forEach((k, i) => {
+    html += '<button class="topic-btn' + (i === 0 ? ' active' : '') + '" data-topic="' + k + '">' + compareData[k].label + '</button>';
+  });
+  container.innerHTML = html;
+
+  container.querySelectorAll('.topic-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showComparison(btn.dataset.topic);
+    });
+  });
+}
+
+function showComparison(key) {
+  const d = compareData[key];
+  const grid = document.getElementById('compareGrid');
+
+  let leftHtml = '<div class="compare-col compare-left"><h3>醉翁亭記（歐陽修）</h3>';
+  d.left.items.forEach(item => {
+    leftHtml += '<div class="compare-item"><div class="item-label">' + item.label + '</div><div>' + item.text + '</div></div>';
+  });
+  leftHtml += '</div>';
+
+  let rightHtml = '<div class="compare-col compare-right"><h3>岳陽樓記（范仲淹）</h3>';
+  d.right.items.forEach(item => {
+    rightHtml += '<div class="compare-item"><div class="item-label">' + item.label + '</div><div>' + item.text + '</div></div>';
+  });
+  rightHtml += '</div>';
+
+  grid.innerHTML = leftHtml + rightHtml;
+
+  document.getElementById('compareSummary').innerHTML = '<strong>小結：</strong>' + d.summary;
+}
+
+buildCompareTopics();
+showComparison('background');
+</script>
+</body>
+</html>

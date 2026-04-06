@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>岳陽樓記 — 互動學習工具</title>
+<style>
+  :root {
+    --primary: #2c5282;
+    --primary-light: #3b6db5;
+    --primary-dark: #1e3a5f;
+    --accent: #e67e22;
+    --accent-light: #f0a050;
+    --bg: #f7f9fc;
+    --card-bg: #ffffff;
+    --text: #2d3748;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --success: #27ae60;
+    --success-bg: #d5f5e3;
+    --danger: #e74c3c;
+    --danger-bg: #fadbd8;
+    --rain-color: #5b7a99;
+    --rain-bg: #e8eef5;
+    --sun-color: #b8860b;
+    --sun-bg: #fdf6e3;
+    --sad-color: #8b4513;
+    --sad-bg: #f5ebe0;
+    --happy-color: #2e7d32;
+    --happy-bg: #e8f5e9;
+    --visual-color: #2980b9;
+    --visual-bg: #daeaf6;
+    --audio-color: #8e44ad;
+    --audio-bg: #ebdef0;
+    --smell-color: #27ae60;
+    --smell-bg: #d5f5e3;
+    --touch-color: #e67e22;
+    --touch-bg: #fdebd0;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 28px 20px 20px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; letter-spacing: 2px; }
+  .header p { font-size: 0.88rem; opacity: 0.85; }
+
+  .tab-nav {
+    display: flex;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 13px 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-light);
+    border-bottom: 3px solid transparent;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--primary); background: #edf2f7; }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 700;
+  }
+
+  .tab-content { display: none; padding: 16px; max-width: 900px; margin: 0 auto; }
+  .tab-content.active { display: block; animation: fadeIn 0.35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card h2 { font-size: 1.15rem; color: var(--primary-dark); margin-bottom: 4px; }
+  .card .desc { font-size: 0.82rem; color: var(--text-light); margin-bottom: 16px; line-height: 1.5; }
+
+  .btn {
+    display: inline-block;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+  .btn-outline:hover { background: var(--primary); color: #fff; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { background: #219a52; }
+  .btn-small { padding: 5px 12px; font-size: 0.8rem; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; font-size: 0.82rem; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+
+  .feedback {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .feedback.show { display: block; animation: fadeIn 0.3s ease; }
+  .feedback.correct { background: var(--success-bg); border-left: 4px solid var(--success); }
+  .feedback.wrong { background: var(--danger-bg); border-left: 4px solid var(--danger); }
+  .feedback.info { background: #edf2f7; border-left: 4px solid var(--primary); }
+
+  /* ===== Tab 1: Contrast Table ===== */
+  .contrast-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .contrast-controls .btn.selected { box-shadow: 0 0 0 3px rgba(44,82,130,0.3); }
+
+  .contrast-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .contrast-columns { grid-template-columns: 1fr; } }
+
+  .contrast-col {
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .contrast-col.rain { background: var(--rain-bg); border: 2px solid var(--rain-color); }
+  .contrast-col.sun { background: var(--sun-bg); border: 2px solid var(--sun-color); }
+  .contrast-col h3 { font-size: 1rem; margin-bottom: 10px; }
+  .contrast-col.rain h3 { color: var(--rain-color); }
+  .contrast-col.sun h3 { color: var(--sun-color); }
+
+  .contrast-line {
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    border: 2px solid transparent;
+  }
+  .contrast-line:hover { transform: translateX(3px); }
+  .contrast-line.hl-scene-rain { background: rgba(91,122,153,0.15); border-color: var(--rain-color); }
+  .contrast-line.hl-scene-sun { background: rgba(184,134,11,0.15); border-color: var(--sun-color); }
+  .contrast-line.hl-emotion-sad { background: var(--sad-bg); border-color: var(--sad-color); }
+  .contrast-line.hl-emotion-happy { background: var(--happy-bg); border-color: var(--happy-color); }
+  .contrast-line .cn { font-weight: 600; }
+  .contrast-line .tr { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
+
+  .contrast-emotion {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .contrast-emotion.sad { background: var(--sad-bg); border-left: 4px solid var(--sad-color); color: var(--sad-color); }
+  .contrast-emotion.happy { background: var(--happy-bg); border-left: 4px solid var(--happy-color); color: var(--happy-color); }
+
+  /* ===== Tab 2: Three Minds ===== */
+  .mind-chart {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .mind-card {
+    flex: 1;
+    min-width: 220px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 3px solid transparent;
+  }
+  .mind-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+  .mind-card.selected { border-color: var(--primary); }
+  .mind-card-header {
+    padding: 14px 16px;
+    color: #fff;
+    text-align: center;
+  }
+  .mind-card-header h3 { font-size: 1rem; margin-bottom: 2px; }
+  .mind-card-header .subtitle { font-size: 0.78rem; opacity: 0.85; }
+  .mind-card.sad-traveler .mind-card-header { background: linear-gradient(135deg, #5b7a99, #3d5a80); }
+  .mind-card.happy-traveler .mind-card-header { background: linear-gradient(135deg, #b8860b, #d4a017); }
+  .mind-card.sage .mind-card-header { background: linear-gradient(135deg, var(--primary), #1a365d); }
+  .mind-card-body {
+    padding: 14px 16px;
+    background: var(--card-bg);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  .mind-card-body .trigger { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .mind-card-body .response { color: var(--text-light); margin-bottom: 6px; }
+  .mind-card-body .quote {
+    background: #f7f9fc;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-style: italic;
+    font-size: 0.83rem;
+    border-left: 3px solid var(--border);
+  }
+  .mind-detail {
+    padding: 16px;
+    border-radius: var(--radius);
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .mind-detail.show { display: block; }
+  .mind-detail h3 { color: var(--primary-dark); font-size: 1rem; margin-bottom: 8px; }
+  .mind-detail p { font-size: 0.88rem; margin-bottom: 8px; line-height: 1.7; }
+  .mind-level-bar {
+    height: 18px;
+    border-radius: 9px;
+    margin: 8px 0 4px;
+    transition: width 0.6s ease;
+  }
+  .mind-level-label { font-size: 0.78rem; color: var(--text-light); }
+
+  /* ===== Tab 3: Sensory Analysis ===== */
+  .sensory-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .sensory-controls .btn.selected { box-shadow: 0 0 0 3px rgba(44,82,130,0.3); }
+
+  .sensory-text {
+    font-size: 1.05rem;
+    line-height: 2.2;
+    padding: 16px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .sensory-text .s-char {
+    transition: all 0.3s;
+    border-radius: 3px;
+    padding: 1px 0;
+  }
+  .sensory-text .s-char.hl-visual { background: var(--visual-bg); color: var(--visual-color); font-weight: 600; }
+  .sensory-text .s-char.hl-audio { background: var(--audio-bg); color: var(--audio-color); font-weight: 600; }
+  .sensory-text .s-char.hl-smell { background: var(--smell-bg); color: var(--smell-color); font-weight: 600; }
+  .sensory-text .s-char.hl-touch { background: var(--touch-bg); color: var(--touch-color); font-weight: 600; }
+  .sensory-text .s-char.dim { opacity: 0.3; }
+
+  .sensory-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .sensory-stat {
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.82rem;
+  }
+  .sensory-stat .count { font-size: 1.3rem; font-weight: 700; }
+
+  /* ===== Tab 4: Vocab Quiz ===== */
+  .vocab-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-size: 0.82rem;
+    color: var(--text-light);
+  }
+  .vocab-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .vocab-progress-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  .vocab-question {
+    margin-bottom: 10px;
+  }
+  .vocab-question .word {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 2px;
+  }
+  .vocab-question .context {
+    font-size: 0.88rem;
+    color: var(--text-light);
+    padding: 8px 12px;
+    background: #f7f9fc;
+    border-radius: 6px;
+    border-left: 3px solid var(--primary);
+    margin-bottom: 12px;
+  }
+
+  .vocab-options { display: flex; flex-direction: column; gap: 8px; }
+  .vocab-option {
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    background: var(--card-bg);
+  }
+  .vocab-option:hover { border-color: var(--primary); background: #edf2f7; }
+  .vocab-option.correct { border-color: var(--success); background: var(--success-bg); }
+  .vocab-option.wrong { border-color: var(--danger); background: var(--danger-bg); }
+  .vocab-option.disabled { pointer-events: none; }
+
+  .vocab-score {
+    text-align: center;
+    padding: 30px;
+  }
+  .vocab-score .big { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+  .vocab-score .label { font-size: 0.9rem; color: var(--text-light); margin-top: 4px; }
+
+  @media (max-width: 500px) {
+    .header h1 { font-size: 1.25rem; }
+    .tab-btn { font-size: 0.75rem; padding: 10px 6px; }
+    .card { padding: 14px; }
+    .mind-chart { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>岳陽樓記 — 互動學習工具</h1>
+  <p>范仲淹｜北宋慶曆六年（1046年）</p>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab(0)">情景對照表</button>
+  <button class="tab-btn" onclick="switchTab(1)">先憂後樂探索</button>
+  <button class="tab-btn" onclick="switchTab(2)">寫景手法分析</button>
+  <button class="tab-btn" onclick="switchTab(3)">文言字詞練習</button>
+</div>
+
+<!-- ==================== TAB 1: Contrast ==================== -->
+<div class="tab-content active" id="tab0">
+  <div class="card">
+    <h2>情景對照表</h2>
+    <p class="desc">點擊左右兩欄的文句，可以高亮顯示對應的景色描寫和情感表達。使用下方按鈕切換高亮模式。</p>
+
+    <div class="contrast-controls">
+      <button class="btn btn-small btn-outline selected" onclick="setContrastMode('scene', this)">景色對比</button>
+      <button class="btn btn-small btn-outline" onclick="setContrastMode('emotion', this)">情感對比</button>
+      <button class="btn btn-small btn-outline" onclick="setContrastMode('clear', this)">清除高亮</button>
+    </div>
+
+    <div class="contrast-columns">
+      <div class="contrast-col rain">
+        <h3>陰雨悲景</h3>
+        <div class="contrast-line" data-pair="1" data-type="rain" onclick="highlightContrast(this)">
+          <div class="cn">淫雨霏霏，連月不開</div>
+          <div class="tr">陰雨連綿不斷，接連數月不晴</div>
+        </div>
+        <div class="contrast-line" data-pair="2" data-type="rain" onclick="highlightContrast(this)">
+          <div class="cn">陰風怒號，濁浪排空</div>
+          <div class="tr">陰冷的風怒吼，混濁的浪衝天</div>
+        </div>
+        <div class="contrast-line" data-pair="3" data-type="rain" onclick="highlightContrast(this)">
+          <div class="cn">日星隱曜，山岳潛形</div>
+          <div class="tr">日星隱去光芒，山嶽藏起形跡</div>
+        </div>
+        <div class="contrast-line" data-pair="4" data-type="rain" onclick="highlightContrast(this)">
+          <div class="cn">商旅不行，檣傾楫摧</div>
+          <div class="tr">商旅無法通行，船桅傾斜折斷</div>
+        </div>
+        <div class="contrast-line" data-pair="5" data-type="rain" onclick="highlightContrast(this)">
+          <div class="cn">薄暮冥冥，虎嘯猿啼</div>
+          <div class="tr">黃昏天色昏暗，虎嘯猿猴悲啼</div>
+        </div>
+        <div class="contrast-emotion sad">
+          <strong>悲情：</strong>去國懷鄉，憂讒畏譏，滿目蕭然，感極而悲者矣。
+        </div>
+      </div>
+
+      <div class="contrast-col sun">
+        <h3>晴明喜景</h3>
+        <div class="contrast-line" data-pair="1" data-type="sun" onclick="highlightContrast(this)">
+          <div class="cn">春和景明，波瀾不驚</div>
+          <div class="tr">春風和煦、陽光明媚、湖面平靜</div>
+        </div>
+        <div class="contrast-line" data-pair="2" data-type="sun" onclick="highlightContrast(this)">
+          <div class="cn">上下天光，一碧萬頃</div>
+          <div class="tr">天光水色輝映，碧綠廣達萬頃</div>
+        </div>
+        <div class="contrast-line" data-pair="3" data-type="sun" onclick="highlightContrast(this)">
+          <div class="cn">沙鷗翔集，錦鱗游泳</div>
+          <div class="tr">鷗鳥飛翔棲息，錦鯉游來游去</div>
+        </div>
+        <div class="contrast-line" data-pair="4" data-type="sun" onclick="highlightContrast(this)">
+          <div class="cn">浮光躍金，靜影沉璧</div>
+          <div class="tr">浮光如躍動金子，倒影如沉水白璧</div>
+        </div>
+        <div class="contrast-line" data-pair="5" data-type="sun" onclick="highlightContrast(this)">
+          <div class="cn">漁歌互答，此樂何極</div>
+          <div class="tr">漁歌此起彼伏，快樂無窮無盡</div>
+        </div>
+        <div class="contrast-emotion happy">
+          <strong>喜情：</strong>心曠神怡，寵辱偕忘，把酒臨風，其喜洋洋者矣。
+        </div>
+      </div>
+    </div>
+
+    <div class="feedback info show" style="margin-top:16px;">
+      <strong>思考：</strong>范仲淹為何要寫這兩段截然對立的景色？因為他想指出：大多數人的心情都會被外在環境左右。而「古仁人」的境界，是「不以物喜，不以己悲」——超越這兩種反應。
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 2: Three Minds ==================== -->
+<div class="tab-content" id="tab1">
+  <div class="card">
+    <h2>「先憂後樂」思想探索</h2>
+    <p class="desc">《岳陽樓記》呈現了三種人面對環境的不同態度。點擊卡片，探索他們的心境層次。</p>
+
+    <div class="mind-chart">
+      <div class="mind-card sad-traveler" onclick="selectMind(0)">
+        <div class="mind-card-header">
+          <h3>遷客騷人（悲）</h3>
+          <div class="subtitle">陰雨時登樓</div>
+        </div>
+        <div class="mind-card-body">
+          <div class="trigger">觸發條件：陰雨悲景</div>
+          <div class="response">反應：去國懷鄉、感極而悲</div>
+          <div class="quote">「滿目蕭然，感極而悲者矣」</div>
+        </div>
+      </div>
+      <div class="mind-card happy-traveler" onclick="selectMind(1)">
+        <div class="mind-card-header">
+          <h3>遷客騷人（喜）</h3>
+          <div class="subtitle">晴明時登樓</div>
+        </div>
+        <div class="mind-card-body">
+          <div class="trigger">觸發條件：晴明美景</div>
+          <div class="response">反應：心曠神怡、寵辱偕忘</div>
+          <div class="quote">「把酒臨風，其喜洋洋者矣」</div>
+        </div>
+      </div>
+      <div class="mind-card sage" onclick="selectMind(2)">
+        <div class="mind-card-header">
+          <h3>古仁人</h3>
+          <div class="subtitle">超越悲喜</div>
+        </div>
+        <div class="mind-card-body">
+          <div class="trigger">觸發條件：無關外物</div>
+          <div class="response">反應：不以物喜、不以己悲</div>
+          <div class="quote">「先天下之憂而憂，後天下之樂而樂」</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mind-detail" id="mindDetail"></div>
+  </div>
+</div>
+
+<!-- ==================== TAB 3: Sensory Analysis ==================== -->
+<div class="tab-content" id="tab2">
+  <div class="card">
+    <h2>寫景手法分析：感官描寫</h2>
+    <p class="desc">《岳陽樓記》的景色描寫運用了多種感官。選擇不同的感官層，高亮對應的文字。</p>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--visual-color)"></div>視覺</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--audio-color)"></div>聽覺</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--smell-color)"></div>嗅覺</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--touch-color)"></div>觸覺/動態感</div>
+    </div>
+
+    <div class="sensory-controls">
+      <button class="btn btn-small btn-outline" onclick="setSensory('all', this)">全部顯示</button>
+      <button class="btn btn-small btn-outline" style="border-color:var(--visual-color);color:var(--visual-color)" onclick="setSensory('visual', this)">視覺</button>
+      <button class="btn btn-small btn-outline" style="border-color:var(--audio-color);color:var(--audio-color)" onclick="setSensory('audio', this)">聽覺</button>
+      <button class="btn btn-small btn-outline" style="border-color:var(--smell-color);color:var(--smell-color)" onclick="setSensory('smell', this)">嗅覺</button>
+      <button class="btn btn-small btn-outline" style="border-color:var(--touch-color);color:var(--touch-color)" onclick="setSensory('touch', this)">觸覺/動態</button>
+      <button class="btn btn-small btn-outline" onclick="setSensory('clear', this)">清除</button>
+    </div>
+
+    <div class="sensory-text" id="sensoryText"></div>
+
+    <div class="sensory-stats" id="sensoryStats"></div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: Vocab Quiz ==================== -->
+<div class="tab-content" id="tab3">
+  <div class="card">
+    <h2>文言文字詞練習</h2>
+    <p class="desc">岳陽樓記中有許多一詞多義的字詞。完成以下練習，測試你對關鍵字詞的理解。</p>
+
+    <div class="vocab-progress">
+      <span id="vocabProgressLabel">第 1 題 / 共 10 題</span>
+      <div class="vocab-progress-bar"><div class="vocab-progress-fill" id="vocabProgressFill" style="width:10%"></div></div>
+    </div>
+
+    <div id="vocabArea"></div>
+  </div>
+</div>
+
+<script>
+/* ===== Tab Switching ===== */
+function switchTab(idx) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', i===idx));
+}
+
+/* ===== Tab 1: Contrast ===== */
+let contrastMode = 'scene';
+function setContrastMode(mode, btn) {
+  contrastMode = mode;
+  document.querySelectorAll('.contrast-controls .btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  clearContrastHL();
+}
+function clearContrastHL() {
+  document.querySelectorAll('.contrast-line').forEach(el => {
+    el.className = 'contrast-line';
+  });
+}
+function highlightContrast(el) {
+  clearContrastHL();
+  if (contrastMode === 'clear') return;
+  const pair = el.dataset.pair;
+  const type = el.dataset.type;
+  document.querySelectorAll('.contrast-line[data-pair="'+pair+'"]').forEach(line => {
+    if (contrastMode === 'scene') {
+      line.classList.add(line.dataset.type === 'rain' ? 'hl-scene-rain' : 'hl-scene-sun');
+    } else {
+      line.classList.add(line.dataset.type === 'rain' ? 'hl-emotion-sad' : 'hl-emotion-happy');
+    }
+  });
+}
+
+/* ===== Tab 2: Three Minds ===== */
+const mindData = [
+  {
+    title: '遷客騷人的悲傷心境',
+    paragraphs: [
+      '當被貶的官員和失意的文人在陰雨天登上岳陽樓，他們看到的是「淫雨霏霏」「濁浪排空」的陰暗景象。外在的惡劣環境觸發了他們內心深處的痛苦記憶。',
+      '他們「去國懷鄉」——遠離了國都和家鄉，倍感孤獨；「憂讒畏譏」——擔心政敵的讒言和他人的譏刺，活在恐懼之中。最終「感極而悲」——悲傷到了極點。',
+      '這種心境的特點是：情緒完全被外在環境所左右。天氣陰暗 → 想起不幸 → 悲痛欲絕。他們無法從環境的影響中抽離出來。'
+    ],
+    levels: [{label:'被環境影響的程度', value:95, color:'var(--rain-color)'}, {label:'關注自身得失的程度', value:90, color:'var(--sad-color)'}, {label:'關注天下蒼生的程度', value:15, color:'var(--primary)'}]
+  },
+  {
+    title: '遷客騷人的喜悅心境',
+    paragraphs: [
+      '同樣是被貶的官員和失意的文人，在晴明的春日登上岳陽樓，他們看到的是「春和景明」「一碧萬頃」的美好景色。外在的美景暫時撫平了他們內心的創傷。',
+      '他們「心曠神怡」——心胸舒暢、精神愉悅；「寵辱偕忘」——榮辱得失暫時忘卻；「把酒臨風」——舉杯暢飲、喜不自勝。',
+      '然而，這種快樂是脆弱的：它完全依賴於外在的美景。一旦天氣轉陰，他們的快樂就會消失，取而代之的又是悲傷。他們的情緒像跷跷板一樣，被環境上下擺動。'
+    ],
+    levels: [{label:'被環境影響的程度', value:95, color:'var(--sun-color)'}, {label:'關注自身得失的程度', value:80, color:'var(--sad-color)'}, {label:'關注天下蒼生的程度', value:20, color:'var(--primary)'}]
+  },
+  {
+    title: '古仁人的超越心境',
+    paragraphs: [
+      '古仁人的心境是「不以物喜，不以己悲」——他們不會因為外在環境的好壞而高興或悲傷，也不會因為個人際遇的順逆而情緒波動。他們的內心有一個穩定的錨點，那就是對天下蒼生的責任。',
+      '「居廟堂之高則憂其民」——在朝廷做高官時，他們想的不是自己的榮華富貴，而是百姓的疾苦。「處江湖之遠則憂其君」——即使被貶到偏遠的地方，他們依然心繫國家大事。',
+      '古仁人的最高境界是「先天下之憂而憂，後天下之樂而樂」——在天下人還沒意識到問題的時候就先擔憂，在天下人都已經幸福之後才允許自己快樂。這是一種將個人完全融入天下的無私精神。'
+    ],
+    levels: [{label:'被環境影響的程度', value:10, color:'var(--rain-color)'}, {label:'關注自身得失的程度', value:10, color:'var(--sad-color)'}, {label:'關注天下蒼生的程度', value:98, color:'var(--primary)'}]
+  }
+];
+
+function selectMind(idx) {
+  document.querySelectorAll('.mind-card').forEach((c,i) => c.classList.toggle('selected', i===idx));
+  const d = mindData[idx];
+  let html = '<h3>' + d.title + '</h3>';
+  d.paragraphs.forEach(p => html += '<p>' + p + '</p>');
+  html += '<div style="margin-top:12px">';
+  d.levels.forEach(l => {
+    html += '<div class="mind-level-label">' + l.label + '</div>';
+    html += '<div style="background:var(--border);border-radius:9px;overflow:hidden;margin-bottom:10px">';
+    html += '<div class="mind-level-bar" style="width:' + l.value + '%;background:' + l.color + '"></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  const detail = document.getElementById('mindDetail');
+  detail.innerHTML = html;
+  detail.classList.add('show');
+}
+
+/* ===== Tab 3: Sensory Analysis ===== */
+const sensoryData = [
+  {label:'【陰雨段】', chars: ''},
+  {t:'淫雨霏霏', s:'visual'},
+  {t:'，連月不開，', s:''},
+  {t:'陰風怒號', s:'audio'},
+  {t:'，', s:''},
+  {t:'濁浪排空', s:'touch'},
+  {t:'；', s:''},
+  {t:'日星隱曜', s:'visual'},
+  {t:'，', s:''},
+  {t:'山岳潛形', s:'visual'},
+  {t:'；商旅不行，', s:''},
+  {t:'檣傾楫摧', s:'touch'},
+  {t:'；', s:''},
+  {t:'薄暮冥冥', s:'visual'},
+  {t:'，', s:''},
+  {t:'虎嘯猿啼', s:'audio'},
+  {t:'。', s:''},
+  {label:'\n\n【晴明段】', chars:''},
+  {t:'春和景明', s:'visual'},
+  {t:'，', s:''},
+  {t:'波瀾不驚', s:'visual'},
+  {t:'，', s:''},
+  {t:'上下天光', s:'visual'},
+  {t:'，', s:''},
+  {t:'一碧萬頃', s:'visual'},
+  {t:'；', s:''},
+  {t:'沙鷗翔集', s:'visual'},
+  {t:'，', s:''},
+  {t:'錦鱗游泳', s:'visual'},
+  {t:'；', s:''},
+  {t:'岸芷汀蘭', s:'smell'},
+  {t:'，', s:''},
+  {t:'郁郁青青', s:'visual'},
+  {t:'。而或長煙一空，', s:''},
+  {t:'皓月千里', s:'visual'},
+  {t:'，', s:''},
+  {t:'浮光躍金', s:'visual'},
+  {t:'，', s:''},
+  {t:'靜影沉璧', s:'visual'},
+  {t:'，', s:''},
+  {t:'漁歌互答', s:'audio'},
+  {t:'，此樂何極！', s:''}
+];
+
+let currentSensory = 'all';
+
+function buildSensoryText() {
+  const container = document.getElementById('sensoryText');
+  let html = '';
+  sensoryData.forEach((item, i) => {
+    if (item.label !== undefined) {
+      html += '<div style="font-weight:700;color:var(--primary-dark);margin-top:' + (i > 0 ? '14px' : '0') + ';margin-bottom:6px">' + item.label.replace('\n\n','<br>') + '</div>';
+      return;
+    }
+    const chars = item.t.split('');
+    chars.forEach(ch => {
+      html += '<span class="s-char" data-sense="' + (item.s || '') + '">' + ch + '</span>';
+    });
+  });
+  container.innerHTML = html;
+  updateSensoryHL();
+  updateSensoryStats();
+}
+
+function setSensory(mode, btn) {
+  currentSensory = mode;
+  document.querySelectorAll('.sensory-controls .btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateSensoryHL();
+}
+
+function updateSensoryHL() {
+  document.querySelectorAll('.s-char').forEach(el => {
+    el.className = 's-char';
+    const s = el.dataset.sense;
+    if (!s) return;
+    if (currentSensory === 'clear') return;
+    if (currentSensory === 'all') {
+      el.classList.add('hl-' + s);
+    } else if (currentSensory === s) {
+      el.classList.add('hl-' + s);
+    } else {
+      el.classList.add('dim');
+    }
+  });
+}
+
+function updateSensoryStats() {
+  const counts = {visual:0, audio:0, smell:0, touch:0};
+  document.querySelectorAll('.s-char').forEach(el => {
+    const s = el.dataset.sense;
+    if (s && counts[s] !== undefined) counts[s]++;
+  });
+  const labels = {visual:'視覺', audio:'聽覺', smell:'嗅覺', touch:'觸覺/動態'};
+  const colors = {visual:'var(--visual-color)', audio:'var(--audio-color)', smell:'var(--smell-color)', touch:'var(--touch-color)'};
+  const bgs = {visual:'var(--visual-bg)', audio:'var(--audio-bg)', smell:'var(--smell-bg)', touch:'var(--touch-bg)'};
+  let html = '';
+  for (const k in counts) {
+    html += '<div class="sensory-stat" style="background:' + bgs[k] + ';color:' + colors[k] + '">';
+    html += '<div class="count">' + counts[k] + '</div>';
+    html += '<div>' + labels[k] + '</div></div>';
+  }
+  document.getElementById('sensoryStats').innerHTML = html;
+}
+
+/* ===== Tab 4: Vocab Quiz ===== */
+const vocabQuestions = [
+  {
+    word: '觀',
+    context: '予「觀」夫巴陵勝狀',
+    options: ['觀看、觀賞', '道觀（道教場所）', '外觀、外表', '觀念、看法'],
+    correct: 0,
+    explanation: '此處「觀」讀 guān，意為「觀看、觀賞」。范仲淹在此表示「我觀賞那巴陵郡的壯麗景色」。'
+  },
+  {
+    word: '觀',
+    context: '此則岳陽樓之大「觀」也',
+    options: ['觀看、觀賞', '道觀（道教場所）', '壯觀的景象', '觀念、看法'],
+    correct: 2,
+    explanation: '此處「觀」讀 guàn，意為「壯觀的景象、壯麗的景色」，是名詞用法。同一個字在不同語境中讀音和意義都不同。'
+  },
+  {
+    word: '勝',
+    context: '予觀夫巴陵「勝」狀',
+    options: ['勝利、獲勝', '優美的、壯麗的', '承受、禁得起', '超過、勝過'],
+    correct: 1,
+    explanation: '此處「勝」意為「優美的、壯麗的」，「勝狀」即壯麗的景象。在文言文中「勝」常作形容詞，表示美好、優美，如「名勝古蹟」。'
+  },
+  {
+    word: '臨',
+    context: '把酒「臨」風',
+    options: ['來到、靠近', '面對、迎著', '臨時、臨時的', '治理、管理'],
+    correct: 1,
+    explanation: '此處「臨」意為「面對、迎著」。「把酒臨風」意思是「手持酒杯面對清風」。「臨」在文言文中有多種意思，此處取「面向」之意。'
+  },
+  {
+    word: '屬',
+    context: '「屬」予作文以記之',
+    options: ['屬於、歸屬', '囑咐、委託', '種類、類別', '連接、接連'],
+    correct: 1,
+    explanation: '此處「屬」讀 zhǔ，通「囑」，意為「囑咐、委託」。整句意思是「囑咐我寫一篇文章來記述這件事」。注意此處不讀 shǔ。'
+  },
+  {
+    word: '開',
+    context: '連月不「開」',
+    options: ['打開、開啟', '開始、開端', '天氣放晴', '開拓、開發'],
+    correct: 2,
+    explanation: '此處「開」意為「天氣放晴」。「連月不開」指接連數月天氣都不放晴。這是「開」在氣象描述中的特殊用法。'
+  },
+  {
+    word: '薄',
+    context: '「薄」暮冥冥',
+    options: ['薄弱、微薄', '迫近、接近', '輕薄、不厚', '刻薄、冷淡'],
+    correct: 1,
+    explanation: '此處「薄」讀 bó，意為「迫近、接近」。「薄暮」即接近黃昏、傍晚時分。這個用法在成語「日薄西山」中也可見到。'
+  },
+  {
+    word: '微',
+    context: '「微」斯人，吾誰與歸',
+    options: ['微小、細微', '沒有、無', '低微、卑微', '稍微、略微'],
+    correct: 1,
+    explanation: '此處「微」意為「沒有、無」，表示假設。「微斯人」即「如果沒有這樣的人」。這是「微」在文言文中的一個重要用法，同「無」。'
+  },
+  {
+    word: '具',
+    context: '百廢「具」興',
+    options: ['具體、具備', '工具、器具', '全部、都', '具有、擁有'],
+    correct: 2,
+    explanation: '此處「具」通「俱」，意為「全部、都」。「百廢具興」意思是「各種荒廢的事業都興盛起來」。這是通假字的用法。'
+  },
+  {
+    word: '或',
+    context: '「或」異二者之為',
+    options: ['或者、或許', '有的人、有人', '也許、大概', '迷惑、疑惑'],
+    correct: 2,
+    explanation: '此處「或」意為「也許、大概」，表示推測語氣。整句意思是「也許不同於以上那兩種人的做法」。在文言文中「或」有「或者」「有的人」「也許」等多種含義，需要根據語境判斷。'
+  }
+];
+
+let vocabIdx = 0;
+let vocabScore = 0;
+let vocabAnswered = false;
+
+function renderVocab() {
+  if (vocabIdx >= vocabQuestions.length) {
+    showVocabScore();
+    return;
+  }
+  vocabAnswered = false;
+  const q = vocabQuestions[vocabIdx];
+  document.getElementById('vocabProgressLabel').textContent = '第 ' + (vocabIdx+1) + ' 題 / 共 ' + vocabQuestions.length + ' 題';
+  document.getElementById('vocabProgressFill').style.width = ((vocabIdx+1)/vocabQuestions.length*100) + '%';
+
+  let html = '<div class="vocab-question">';
+  html += '<div class="word">' + q.word + '</div>';
+  html += '<div class="context">原文：' + q.context + '</div>';
+  html += '<div style="font-size:0.9rem;margin-bottom:10px;color:var(--text)">此處「' + q.word + '」的意思是：</div>';
+  html += '</div><div class="vocab-options">';
+  q.options.forEach((opt, i) => {
+    html += '<div class="vocab-option" onclick="answerVocab(' + i + ')" data-idx="' + i + '">' + String.fromCharCode(65+i) + '. ' + opt + '</div>';
+  });
+  html += '</div><div class="feedback" id="vocabFeedback"></div>';
+  document.getElementById('vocabArea').innerHTML = html;
+}
+
+function answerVocab(idx) {
+  if (vocabAnswered) return;
+  vocabAnswered = true;
+  const q = vocabQuestions[vocabIdx];
+  const options = document.querySelectorAll('.vocab-option');
+  options.forEach(o => o.classList.add('disabled'));
+  if (idx === q.correct) {
+    vocabScore++;
+    options[idx].classList.add('correct');
+    showVocabFeedback(true, q.explanation);
+  } else {
+    options[idx].classList.add('wrong');
+    options[q.correct].classList.add('correct');
+    showVocabFeedback(false, q.explanation);
+  }
+  setTimeout(() => {
+    vocabIdx++;
+    renderVocab();
+  }, 2800);
+}
+
+function showVocabFeedback(isCorrect, text) {
+  const fb = document.getElementById('vocabFeedback');
+  fb.className = 'feedback show ' + (isCorrect ? 'correct' : 'wrong');
+  fb.innerHTML = '<strong>' + (isCorrect ? '正確！' : '答錯了！') + '</strong> ' + text;
+}
+
+function showVocabScore() {
+  const pct = Math.round(vocabScore / vocabQuestions.length * 100);
+  let msg = '';
+  if (pct >= 90) msg = '太厲害了！你對岳陽樓記的字詞掌握得非常好！';
+  else if (pct >= 70) msg = '不錯的表現！大部分關鍵字詞你都理解了。';
+  else if (pct >= 50) msg = '還有進步空間，建議回去重讀原文中這些字詞的用法。';
+  else msg = '建議先仔細閱讀岳陽樓記的逐段翻譯，再來挑戰這個練習。';
+
+  let html = '<div class="vocab-score">';
+  html += '<div class="big">' + vocabScore + ' / ' + vocabQuestions.length + '</div>';
+  html += '<div class="label">' + msg + '</div>';
+  html += '<button class="btn btn-primary" style="margin-top:16px" onclick="vocabIdx=0;vocabScore=0;renderVocab()">重新挑戰</button>';
+  html += '</div>';
+  document.getElementById('vocabArea').innerHTML = html;
+}
+
+/* ===== Init ===== */
+buildSensoryText();
+renderVocab();
+</script>
+</body>
+</html>
