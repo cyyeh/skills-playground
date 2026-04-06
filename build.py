@@ -57,10 +57,18 @@ def split_into_sections(body: str) -> tuple[str, list[dict]]:
     sections = []
     current_section = None
     seen_h1 = False
+    in_fenced_code = False
     slug_counts: dict[str, int] = {}
 
     for line in lines:
-        h2_match = re.match(r"^## (.+)$", line)
+        # Track fenced code blocks so headings inside them are treated as plain text
+        if re.match(r"^(`{3,}|~{3,})", line):
+            in_fenced_code = not in_fenced_code
+
+        if not in_fenced_code:
+            h2_match = re.match(r"^## (.+)$", line)
+        else:
+            h2_match = None
         if h2_match:
             if current_section:
                 sections.append(current_section)
@@ -80,15 +88,16 @@ def split_into_sections(body: str) -> tuple[str, list[dict]]:
 
         if current_section is None:
             # Skip the first h1 title line (already shown in header)
-            if not seen_h1 and re.match(r"^# .+$", line):
+            if not in_fenced_code and not seen_h1 and re.match(r"^# .+$", line):
                 seen_h1 = True
                 continue
             overview_lines.append(line)
         else:
             current_section["lines"].append(line)
-            h3_match = re.match(r"^### (.+)$", line)
-            if h3_match:
-                current_section["subsections"].append(h3_match.group(1).strip())
+            if not in_fenced_code:
+                h3_match = re.match(r"^### (.+)$", line)
+                if h3_match:
+                    current_section["subsections"].append(h3_match.group(1).strip())
 
     if current_section:
         sections.append(current_section)
