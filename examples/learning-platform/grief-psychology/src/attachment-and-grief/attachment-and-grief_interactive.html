@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>依附理論與悲傷：互動工具</title>
+<style>
+  :root {
+    --primary: #5B6A8A;
+    --primary-light: #7B8DAD;
+    --primary-dark: #3F4E6A;
+    --accent: #C4956A;
+    --accent-light: #D4AE8A;
+    --accent-dark: #A67A50;
+    --bg: #F7F5F2;
+    --bg-card: #FFFFFF;
+    --text: #2D3142;
+    --text-light: #5A5F72;
+    --border: #DDD8D0;
+    --success: #6B9E7A;
+    --warning: #D4A04A;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(45,49,66,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+  h1 {
+    text-align: center;
+    color: var(--primary-dark);
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-btn {
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    color: var(--primary-dark);
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+  }
+  .card h3 {
+    color: var(--primary);
+    font-size: 1rem;
+    margin: 16px 0 8px;
+  }
+  .card-desc {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+
+  /* Assessment */
+  .q-group { margin-bottom: 20px; }
+  .q-label {
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .q-num {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 24px;
+    font-size: 0.75rem;
+    margin-right: 8px;
+  }
+  .likert {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .likert label {
+    flex: 1;
+    min-width: 50px;
+    text-align: center;
+    padding: 8px 4px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: all 0.2s;
+    color: var(--text-light);
+    user-select: none;
+  }
+  .likert label:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+  }
+  .likert input { display: none; }
+  .likert input:checked + span {
+    /* handled by parent label */
+  }
+  .likert label:has(input:checked) {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-accent:hover { background: var(--accent-dark); }
+  .btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .btn-outline:hover {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  /* Results */
+  .result-section { display: none; }
+  .result-section.visible { display: block; }
+  .result-bars { margin: 16px 0; }
+  .result-bar-item { margin-bottom: 14px; }
+  .result-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .result-bar-track {
+    height: 14px;
+    background: #EBE7E2;
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .result-bar-fill {
+    height: 100%;
+    border-radius: 7px;
+    transition: width 0.8s ease-out;
+  }
+  .bar-secure { background: var(--success); }
+  .bar-anxious { background: var(--warning); }
+  .bar-avoidant { background: var(--primary); }
+  .bar-disorganized { background: #C26A6A; }
+  .result-text {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    border-left: 4px solid var(--accent);
+  }
+
+  /* Diagram Tool */
+  .diagram-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .diagram-left {
+    flex: 1;
+    min-width: 250px;
+  }
+  .diagram-right {
+    flex: 1.2;
+    min-width: 280px;
+  }
+  .style-card {
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .style-card:hover {
+    border-color: var(--primary-light);
+    transform: translateX(4px);
+  }
+  .style-card.selected {
+    border-color: var(--accent);
+    background: #FDF8F4;
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .style-card .style-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+  .style-card .style-brief {
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+  .style-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .grief-detail {
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    min-height: 300px;
+    border: 1px solid var(--border);
+  }
+  .grief-detail h3 {
+    margin-top: 0;
+    color: var(--primary-dark);
+    font-size: 1.05rem;
+  }
+  .grief-detail .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 3px 3px 3px 0;
+  }
+  .grief-detail ul {
+    margin: 10px 0;
+    padding-left: 20px;
+  }
+  .grief-detail li {
+    font-size: 0.88rem;
+    margin-bottom: 6px;
+    line-height: 1.6;
+  }
+  .grief-placeholder {
+    text-align: center;
+    color: var(--text-light);
+    padding: 60px 20px;
+    font-size: 0.9rem;
+  }
+  .grief-placeholder .arrow {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  /* IWM Grid */
+  .iwm-grid-wrapper { margin: 20px 0; }
+  .iwm-grid {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    grid-template-rows: auto 1fr 1fr;
+    gap: 0;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .iwm-corner {
+    background: transparent;
+  }
+  .iwm-col-header, .iwm-row-header {
+    padding: 10px 14px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .iwm-col-header {
+    border-bottom: 2px solid var(--primary);
+  }
+  .iwm-row-header {
+    border-right: 2px solid var(--primary);
+    writing-mode: horizontal-tb;
+  }
+  .iwm-cell {
+    border: 1px solid var(--border);
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .iwm-cell:hover {
+    background: #F0EDE8;
+    transform: scale(1.02);
+    z-index: 1;
+    box-shadow: var(--shadow);
+  }
+  .iwm-cell.active {
+    box-shadow: 0 0 0 3px var(--accent);
+    z-index: 2;
+    background: #FDF8F4;
+  }
+  .iwm-cell-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  .iwm-cell-sub {
+    font-size: 0.75rem;
+    color: var(--text-light);
+  }
+  .iwm-detail {
+    margin-top: 20px;
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid var(--border);
+    display: none;
+  }
+  .iwm-detail.visible { display: block; }
+  .iwm-detail h3 {
+    color: var(--primary-dark);
+    margin-bottom: 8px;
+  }
+  .iwm-detail p {
+    font-size: 0.9rem;
+    line-height: 1.8;
+    margin-bottom: 8px;
+  }
+  .iwm-detail .label-pair {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+  }
+  .iwm-detail .label-tag {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+  .pos-tag { background: #E3F0E7; color: #3D7A50; }
+  .neg-tag { background: #F5E3E3; color: #9E4444; }
+
+  /* Disclaimer */
+  .disclaimer {
+    background: #FFF8F0;
+    border: 1px solid var(--accent-light);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.82rem;
+    color: var(--accent-dark);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .disclaimer strong { color: var(--accent-dark); }
+
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #EBE7E2;
+    border-radius: 3px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 14px 10px; }
+    h1 { font-size: 1.25rem; }
+    .tab-btn { padding: 8px 10px; font-size: 0.8rem; }
+    .card { padding: 16px; }
+    .diagram-container { flex-direction: column; }
+    .likert { gap: 4px; }
+    .likert label { padding: 6px 2px; font-size: 0.72rem; min-width: 44px; }
+    .iwm-grid { max-width: 100%; }
+    .iwm-cell { padding: 10px 6px; min-height: 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>依附理論與悲傷：互動工具</h1>
+  <p class="subtitle">探索依附風格如何影響我們的悲傷體驗</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('assess')">依附風格自我評估</button>
+    <button class="tab-btn" onclick="switchTab('diagram')">依附風格與悲傷關係圖</button>
+    <button class="tab-btn" onclick="switchTab('iwm')">內在運作模式探索器</button>
+  </div>
+
+  <!-- Tab 1: Assessment -->
+  <div id="tab-assess" class="tab-panel active">
+    <div class="card">
+      <h2>依附風格自我評估</h2>
+      <p class="card-desc">透過以下問題探索你的依附傾向。請根據你在親密關係中的一般感受作答。</p>
+
+      <div class="disclaimer">
+        <strong>重要聲明：</strong>此工具僅供學習與自我探索使用，並非心理診斷工具。結果僅反映一般傾向，不應取代專業的心理評估。每個人的依附模式都是複雜且多面向的。
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+
+      <div id="assessQuestions"></div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" id="submitAssess" onclick="submitAssessment()" disabled>查看結果</button>
+        <button class="btn btn-outline" onclick="resetAssessment()">重新作答</button>
+      </div>
+
+      <div class="result-section" id="assessResult">
+        <h3 style="margin:20px 0 10px;color:var(--primary-dark)">你的依附傾向分布</h3>
+        <div class="result-bars" id="resultBars"></div>
+        <div class="result-text" id="resultInterpretation"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Diagram -->
+  <div id="tab-diagram" class="tab-panel">
+    <div class="card">
+      <h2>依附風格與悲傷反應關係圖</h2>
+      <p class="card-desc">點選左側的依附風格，探索它與悲傷反應之間的具體關聯。</p>
+
+      <div class="diagram-container">
+        <div class="diagram-left">
+          <div class="style-card" onclick="selectStyle('secure')" id="card-secure">
+            <div class="style-name"><span class="style-dot" style="background:var(--success)"></span>安全型依附</div>
+            <div class="style-brief">正向自我觀 + 正向他人觀</div>
+          </div>
+          <div class="style-card" onclick="selectStyle('anxious')" id="card-anxious">
+            <div class="style-name"><span class="style-dot" style="background:var(--warning)"></span>焦慮型依附</div>
+            <div class="style-brief">負向自我觀 + 正向他人觀</div>
+          </div>
+          <div class="style-card" onclick="selectStyle('avoidant')" id="card-avoidant">
+            <div class="style-name"><span class="style-dot" style="background:var(--primary)"></span>逃避型依附</div>
+            <div class="style-brief">正向自我觀 + 負向他人觀</div>
+          </div>
+          <div class="style-card" onclick="selectStyle('disorganized')" id="card-disorganized">
+            <div class="style-name"><span class="style-dot" style="background:#C26A6A"></span>混亂型依附</div>
+            <div class="style-brief">負向自我觀 + 負向他人觀</div>
+          </div>
+        </div>
+        <div class="diagram-right">
+          <div class="grief-detail" id="griefDetail">
+            <div class="grief-placeholder" id="griefPlaceholder">
+              <span class="arrow">&#8592;</span>
+              點選左側的依附風格<br>以探索其悲傷反應特徵
+            </div>
+            <div id="griefContent" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: IWM -->
+  <div id="tab-iwm" class="tab-panel">
+    <div class="card">
+      <h2>內在運作模式探索器</h2>
+      <p class="card-desc">Bowlby 認為，我們對自己和他人的看法（正向或負向）組合出不同的依附風格。點選下方的象限來探索每種組合。</p>
+
+      <div class="iwm-grid-wrapper">
+        <div class="iwm-grid">
+          <div class="iwm-corner"></div>
+          <div class="iwm-col-header">他人模式：正向<br><span style="font-weight:400;font-size:0.75rem">「他人是可靠的」</span></div>
+          <div class="iwm-col-header">他人模式：負向<br><span style="font-weight:400;font-size:0.75rem">「他人是不可靠的」</span></div>
+
+          <div class="iwm-row-header">自我模式：正向<br><span style="font-weight:400;font-size:0.75rem">「我是有價值的」</span></div>
+          <div class="iwm-cell" onclick="selectIWM('secure')" id="iwm-secure">
+            <div class="iwm-cell-title" style="color:var(--success)">安全型</div>
+            <div class="iwm-cell-sub">自在親密、信任他人</div>
+          </div>
+          <div class="iwm-cell" onclick="selectIWM('avoidant')" id="iwm-avoidant">
+            <div class="iwm-cell-title" style="color:var(--primary)">逃避型</div>
+            <div class="iwm-cell-sub">強調獨立、壓抑情感</div>
+          </div>
+
+          <div class="iwm-row-header">自我模式：負向<br><span style="font-weight:400;font-size:0.75rem">「我是不夠好的」</span></div>
+          <div class="iwm-cell" onclick="selectIWM('anxious')" id="iwm-anxious">
+            <div class="iwm-cell-title" style="color:var(--warning)">焦慮型</div>
+            <div class="iwm-cell-sub">渴望親密、害怕被拋棄</div>
+          </div>
+          <div class="iwm-cell" onclick="selectIWM('disorganized')" id="iwm-disorganized">
+            <div class="iwm-cell-title" style="color:#C26A6A">混亂型</div>
+            <div class="iwm-cell-sub">渴望又恐懼、矛盾不安</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="iwm-detail" id="iwmDetail"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// === Tab Navigation ===
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const tabs = { assess: 0, diagram: 1, iwm: 2 };
+  document.querySelectorAll('.tab-btn')[tabs[tab]].classList.add('active');
+}
+
+// === Assessment Tool ===
+const assessQuestions = [
+  { text: "當我與親近的人分開時，我會感到焦慮不安。", dim: "anxious" },
+  { text: "我覺得依賴別人是舒適自然的事。", dim: "secure" },
+  { text: "我傾向不向別人展示自己脆弱的一面。", dim: "avoidant" },
+  { text: "我經常擔心我在意的人會離開我。", dim: "anxious" },
+  { text: "當我需要幫助時，我能安心地向別人求助。", dim: "secure" },
+  { text: "在親密關係中，我覺得太過親近讓我不自在。", dim: "avoidant" },
+  { text: "面對衝突時，我時而想靠近對方、時而想逃離。", dim: "disorganized" },
+  { text: "我能在獨處與親密之間找到舒適的平衡。", dim: "secure" },
+  { text: "我經常需要對方反覆保證他們在乎我。", dim: "anxious" },
+  { text: "我習慣自己處理情緒問題，不太會找人傾訴。", dim: "avoidant" },
+  { text: "我有時候覺得自己對關係的反應連自己都搞不懂。", dim: "disorganized" },
+  { text: "我相信當我需要的時候，重要的人會在身邊。", dim: "secure" },
+  { text: "別人的一點冷淡就會讓我非常不安。", dim: "anxious" },
+  { text: "我覺得完全靠自己比較安全。", dim: "avoidant" },
+  { text: "在親密關係中，我會同時感到強烈的渴望和恐懼。", dim: "disorganized" },
+  { text: "失去重要的人時，我能允許自己悲傷也能尋求支持。", dim: "secure" }
+];
+const scaleLabels = ["完全不符合", "不太符合", "普通", "有點符合", "非常符合"];
+let answers = {};
+const totalQ = assessQuestions.length;
+
+function renderQuestions() {
+  const container = document.getElementById('assessQuestions');
+  let html = '';
+  assessQuestions.forEach((q, i) => {
+    html += '<div class="q-group"><div class="q-label"><span class="q-num">' + (i + 1) + '</span>' + q.text + '</div><div class="likert">';
+    scaleLabels.forEach((label, v) => {
+      html += '<label><input type="radio" name="q' + i + '" value="' + (v + 1) + '" onchange="onAnswer(' + i + ',' + (v + 1) + ')"><span>' + label + '</span></label>';
+    });
+    html += '</div></div>';
+  });
+  container.innerHTML = html;
+}
+
+function onAnswer(qi, val) {
+  answers[qi] = val;
+  const answered = Object.keys(answers).length;
+  document.getElementById('progressFill').style.width = (answered / totalQ * 100) + '%';
+  document.getElementById('submitAssess').disabled = answered < totalQ;
+}
+
+function submitAssessment() {
+  const scores = { secure: 0, anxious: 0, avoidant: 0, disorganized: 0 };
+  const counts = { secure: 0, anxious: 0, avoidant: 0, disorganized: 0 };
+  assessQuestions.forEach((q, i) => {
+    if (answers[i] !== undefined) {
+      scores[q.dim] += answers[i];
+      counts[q.dim]++;
+    }
+  });
+  // Normalize to percentage
+  const pct = {};
+  let maxKey = 'secure', maxVal = 0;
+  for (const k in scores) {
+    pct[k] = Math.round((scores[k] / (counts[k] * 5)) * 100);
+    if (pct[k] > maxVal) { maxVal = pct[k]; maxKey = k; }
+  }
+
+  const names = { secure: '安全型', anxious: '焦慮型', avoidant: '逃避型', disorganized: '混亂型' };
+  const colors = { secure: 'bar-secure', anxious: 'bar-anxious', avoidant: 'bar-avoidant', disorganized: 'bar-disorganized' };
+
+  let barsHtml = '';
+  for (const k of ['secure', 'anxious', 'avoidant', 'disorganized']) {
+    barsHtml += '<div class="result-bar-item"><div class="result-bar-label"><span>' + names[k] + '</span><span>' + pct[k] + '%</span></div><div class="result-bar-track"><div class="result-bar-fill ' + colors[k] + '" style="width:0%"></div></div></div>';
+  }
+  document.getElementById('resultBars').innerHTML = barsHtml;
+
+  const interpretations = {
+    secure: '你的回答顯示較明顯的<strong>安全型依附</strong>傾向。這意味著你通常能夠在關係中感到自在，信任他人也信任自己。面對失落時，你可能能夠充分體驗悲傷同時保持基本的韌性與功能。你傾向尋求並有效利用社會支持。',
+    anxious: '你的回答顯示較明顯的<strong>焦慮型依附</strong>傾向。這意味著你在關係中可能比較敏感於被拒絕或被拋棄的信號，需要較多的安全感確認。面對失落時，你的情緒反應可能比較強烈且持久，自我責備的傾向也可能較高。了解這一點可以幫助你在悲傷中更有意識地照顧自己。',
+    avoidant: '你的回答顯示較明顯的<strong>逃避型依附</strong>傾向。這意味著你可能比較習慣獨立處理情緒，不太容易向他人展示脆弱。面對失落時，你可能傾向壓抑情緒、快速回到「正常」。值得留意的是，被壓下的情緒可能在日後以其他形式出現。',
+    disorganized: '你的回答顯示較明顯的<strong>混亂型依附</strong>傾向。這意味著你在關係中可能經歷矛盾的感受——同時渴望又恐懼親密。面對失落時，你的反應可能較為複雜且不可預測。如果這些模式造成了困擾，與專業的心理師談談可能會有幫助。'
+  };
+  document.getElementById('resultInterpretation').innerHTML = interpretations[maxKey] + '<br><br><em style="color:var(--text-light);font-size:0.83rem">提醒：大多數人不會完全屬於單一類型。依附風格是一個光譜，而且會隨著生命經驗而改變。此結果僅供自我探索參考。</em>';
+
+  document.getElementById('assessResult').classList.add('visible');
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.result-bar-fill').forEach((bar, i) => {
+      const keys = ['secure', 'anxious', 'avoidant', 'disorganized'];
+      bar.style.width = pct[keys[i]] + '%';
+    });
+  }, 100);
+  document.getElementById('assessResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetAssessment() {
+  answers = {};
+  document.querySelectorAll('#assessQuestions input').forEach(i => i.checked = false);
+  document.querySelectorAll('.likert label').forEach(l => l.classList.remove('selected'));
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('submitAssess').disabled = true;
+  document.getElementById('assessResult').classList.remove('visible');
+}
+
+renderQuestions();
+
+// === Diagram Tool ===
+const griefData = {
+  secure: {
+    title: '安全型依附的悲傷反應',
+    color: 'var(--success)',
+    tags: [
+      { text: '韌性恢復', bg: '#E3F0E7', color: '#3D7A50' },
+      { text: '靈活因應', bg: '#E3F0E7', color: '#3D7A50' },
+      { text: '尋求支持', bg: '#E3F0E7', color: '#3D7A50' }
+    ],
+    emotion: '適度且流動——能夠充分感受悲傷但不會被情緒淹沒，隨時間逐漸減緩。',
+    behaviors: [
+      '主動聯繫親友傾訴、加入支持團體',
+      '能在悲傷與日常功能之間自然流動',
+      '保持基本生活節奏，偶有悲傷波動',
+      '建構連貫的失落敘事，賦予失落意義'
+    ],
+    bonds: '發展健康的持續性連結——在心裡保持與逝者的溫暖連結，同時接受失落的現實。',
+    risk: '複雜性悲傷的風險較低。通常在數月至一年內達到良好的適應。',
+    support: '社會支持團體通常已足夠。如果遇到特別困難的時期，短期諮商可提供額外幫助。'
+  },
+  anxious: {
+    title: '焦慮型依附的悲傷反應',
+    color: 'var(--warning)',
+    tags: [
+      { text: '慢性悲傷風險', bg: '#FDF0DC', color: '#8B6B2A' },
+      { text: '反覆咀嚼', bg: '#FDF0DC', color: '#8B6B2A' },
+      { text: '過度依賴', bg: '#FDF0DC', color: '#8B6B2A' }
+    ],
+    emotion: '極度強烈且持久——悲傷反應從初期就非常劇烈，且不隨時間明顯減緩。強烈的分離焦慮與被拋棄感。',
+    behaviors: [
+      '反覆咀嚼失落相關的想法，難以停止「如果...」的思考迴圈',
+      '頻繁尋求他人安慰但難以被安撫',
+      '強烈的自責與愧疚感',
+      '過度專注於失落，難以轉向日常生活任務',
+      '可能出現抗議行為——憤怒、責怪'
+    ],
+    bonds: '持續性連結可能變得過度強烈且帶有焦慮色彩——無法接受逝者不會回來的事實，執著於維持「彷彿還在」的幻覺。',
+    risk: '發展延長性悲傷障礙（PGD）和慢性悲傷的風險明顯較高。',
+    support: '強烈建議尋求專業諮商，特別是聚焦於依附議題和情緒調節的治療取向。學習自我安撫技巧尤為重要。'
+  },
+  avoidant: {
+    title: '逃避型依附的悲傷反應',
+    color: 'var(--primary)',
+    tags: [
+      { text: '延遲悲傷風險', bg: '#E8ECF4', color: '#3F4E6A' },
+      { text: '情緒壓抑', bg: '#E8ECF4', color: '#3F4E6A' },
+      { text: '身體化', bg: '#E8ECF4', color: '#3F4E6A' }
+    ],
+    emotion: '表面壓抑或缺乏明顯情緒反應——看起來「很快恢復」，但情緒並非不存在，而是被隔離在意識之外。',
+    behaviors: [
+      '快速回到工作和日常例行，展現「堅強」的外表',
+      '主動清除逝者相關物品，迴避提及逝者的話題',
+      '拒絕他人的安慰與關心（「我沒事」）',
+      '可能過度投入工作或其他活動來填滿空洞',
+      '被壓抑的情緒可能以身體症狀呈現——頭痛、消化問題、慢性疲勞'
+    ],
+    bonds: '傾向切斷與逝者的連結，或將連結理智化。可能迴避懷念或否認逝者對自己的重要性。',
+    risk: '延遲性悲傷風險較高——被壓抑的悲傷可能在數月至數年後突然爆發。也可能出現物質使用問題。',
+    support: '治療重點在於創造安全空間讓被壓抑的情緒得以浮現。治療關係本身的穩定與安全是關鍵。需要耐心，不宜強迫情緒表達。'
+  },
+  disorganized: {
+    title: '混亂型依附的悲傷反應',
+    color: '#C26A6A',
+    tags: [
+      { text: '複雜悲傷風險最高', bg: '#F5E3E3', color: '#9E4444' },
+      { text: '矛盾反應', bg: '#F5E3E3', color: '#9E4444' },
+      { text: '解離風險', bg: '#F5E3E3', color: '#9E4444' }
+    ],
+    emotion: '極不穩定且矛盾——可能在強烈悲傷與完全麻木之間快速切換，情緒反應令自己和他人都感到困惑。',
+    behaviors: [
+      '行為充滿矛盾——時而緊握逝者遺物、時而全部丟棄',
+      '時而極度依賴他人、時而猛烈推開所有人',
+      '可能出現解離現象——感覺「不真實」、「靈魂出竅」',
+      '難以建構連貫的失落敘事',
+      '過去未解決的創傷被新的失落重新激活'
+    ],
+    bonds: '持續性連結高度矛盾——渴望維持連結同時恐懼連結帶來的痛苦，在執著與切斷之間反覆擺盪。',
+    risk: '發展複雜性悲傷和創傷性悲傷的風險最高。常與其他心理健康問題共病，包括 PTSD、憂鬱症、解離症狀。',
+    support: '強烈建議尋求專業心理治療。治療通常需要同時處理當前的悲傷和早期的依附創傷。優先建立安全穩定的治療關係是治療的基石。'
+  }
+};
+
+function selectStyle(style) {
+  document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + style).classList.add('selected');
+  const data = griefData[style];
+  document.getElementById('griefPlaceholder').style.display = 'none';
+  const content = document.getElementById('griefContent');
+  content.style.display = 'block';
+
+  let tagsHtml = data.tags.map(t => '<span class="tag" style="background:' + t.bg + ';color:' + t.color + '">' + t.text + '</span>').join('');
+  let behaviorsHtml = data.behaviors.map(b => '<li>' + b + '</li>').join('');
+
+  content.innerHTML = '<h3 style="color:' + data.color + '">' + data.title + '</h3>' + tagsHtml +
+    '<h4 style="margin:14px 0 6px;font-size:0.9rem;color:var(--text)">情緒反應模式</h4><p style="font-size:0.88rem;line-height:1.7">' + data.emotion + '</p>' +
+    '<h4 style="margin:14px 0 6px;font-size:0.9rem;color:var(--text)">典型行為表現</h4><ul>' + behaviorsHtml + '</ul>' +
+    '<h4 style="margin:14px 0 6px;font-size:0.9rem;color:var(--text)">持續性連結</h4><p style="font-size:0.88rem;line-height:1.7">' + data.bonds + '</p>' +
+    '<h4 style="margin:14px 0 6px;font-size:0.9rem;color:var(--text)">風險評估</h4><p style="font-size:0.88rem;line-height:1.7">' + data.risk + '</p>' +
+    '<h4 style="margin:14px 0 6px;font-size:0.9rem;color:var(--text)">建議支持方式</h4><p style="font-size:0.88rem;line-height:1.7">' + data.support + '</p>';
+}
+
+// === IWM Explorer ===
+const iwmData = {
+  secure: {
+    title: '安全型依附',
+    self: 'positive',
+    other: 'positive',
+    selfDesc: '我是有價值的、值得被愛的、有能力的',
+    otherDesc: '他人是可靠的、願意回應我的、值得信賴的',
+    formation: '在成長過程中，照顧者大部分時候能敏感且一致地回應孩子的需求。孩子學到：「我的需求是合理的（正向自我），而且會被回應（正向他人）。」',
+    inRelationship: '能自在地建立親密關係，不害怕被拒絕也不害怕太過親近。信任伴侶、朋友和其他重要他人。能適度地依賴他人也能獨立自主。',
+    inGrief: '面對失落時，安全的內在運作模式提供了一個穩定的心理基礎。個體相信自己有能力度過困境（正向自我），也相信尋求幫助是安全的且會得到回應（正向他人）。這使他們能夠充分體驗悲傷而不至於被壓垮。',
+    color: 'var(--success)'
+  },
+  anxious: {
+    title: '焦慮型依附',
+    self: 'negative',
+    other: 'positive',
+    selfDesc: '我是不夠好的、不值得被愛的、容易被拋棄的',
+    otherDesc: '他人是有價值的、是我需要的，但可能不會一直在',
+    formation: '照顧者的回應不一致——有時溫暖回應，有時忽視或拒絕。孩子學到：「我必須更努力才能獲得關注（負向自我），但對方是重要且有價值的（正向他人）。」',
+    inRelationship: '渴望極度親密但同時害怕被拋棄。敏感於拒絕信號，需要頻繁確認對方的感情。在衝突中容易恐慌，擔心關係會因此結束。',
+    inGrief: '失落觸發了深層的「我不夠好所以被拋棄」的信念（負向自我）。同時，因為高度重視他人（正向他人），失去依附對象等於失去了自我價值的主要來源。這解釋了為什麼焦慮型個體的悲傷如此強烈且持久——他們不只失去了一個人，還失去了讓自己感覺「夠好」的鏡子。',
+    color: 'var(--warning)'
+  },
+  avoidant: {
+    title: '逃避型依附',
+    self: 'positive',
+    other: 'negative',
+    selfDesc: '我是有能力的、獨立的、不需要依賴他人的',
+    otherDesc: '他人是不可靠的、會拒絕我的、依賴他人是危險的',
+    formation: '照顧者經常忽視或拒絕孩子的情感需求。孩子學到：「向別人表達需求是沒有用的（負向他人），我必須靠自己（維持表面正向的自我——但這其實是一種防衛）。」',
+    inRelationship: '強調獨立與自給自足。對太過親密感到不自在，傾向保持情感距離。壓抑依附需求，否認自己需要他人。',
+    inGrief: '逃避型的正向自我模式實際上是防衛性的——「我不需要任何人」保護他們免受被拒絕的痛苦。當依附對象去世時，這個防衛面臨挑戰：失落的痛苦揭示了被否認的依附需求。因此他們加倍啟動壓抑策略，表現出「沒事」的樣子，但情緒壓力會以其他形式滲出。',
+    color: 'var(--primary)'
+  },
+  disorganized: {
+    title: '混亂型依附',
+    self: 'negative',
+    other: 'negative',
+    selfDesc: '我是不好的、不值得被愛的、有缺陷的',
+    otherDesc: '他人是危險的、不可預測的、既是安慰也是威脅',
+    formation: '照顧者本身就是恐懼的來源——可能伴隨虐待、嚴重忽視或照顧者自身處於未解決的創傷中。孩子面臨無法解決的矛盾：需要靠近照顧者（因為他們是依附對象），但靠近又是危險的（因為他們也是威脅來源）。',
+    inRelationship: '關係模式充滿矛盾——強烈渴望親密的同時恐懼親密。可能在關係中出現戲劇化的靠近-逃離循環。難以建立穩定而信任的關係。',
+    inGrief: '失落同時激活了依附系統（渴望靠近逝者）和恐懼系統（與依附相關的恐懼記憶）。這種雙重激活導致了極其矛盾且不可預測的悲傷反應。加上負向的自我和他人模式，個體既無法安撫自己、也無法信任他人的安撫，因此陷入最為困難的悲傷境地。',
+    color: '#C26A6A'
+  }
+};
+
+function selectIWM(style) {
+  document.querySelectorAll('.iwm-cell').forEach(c => c.classList.remove('active'));
+  document.getElementById('iwm-' + style).classList.add('active');
+  const data = iwmData[style];
+  const detail = document.getElementById('iwmDetail');
+  detail.classList.add('visible');
+
+  detail.innerHTML = '<h3 style="color:' + data.color + '">' + data.title + '的內在運作模式</h3>' +
+    '<div class="label-pair"><span class="label-tag ' + (data.self === 'positive' ? 'pos-tag' : 'neg-tag') + '">自我模式：' + (data.self === 'positive' ? '正向' : '負向') + '</span>' +
+    '<span class="label-tag ' + (data.other === 'positive' ? 'pos-tag' : 'neg-tag') + '">他人模式：' + (data.other === 'positive' ? '正向' : '負向') + '</span></div>' +
+    '<p><strong>自我觀：</strong>' + data.selfDesc + '</p>' +
+    '<p><strong>他人觀：</strong>' + data.otherDesc + '</p>' +
+    '<h4 style="margin:12px 0 6px;font-size:0.9rem">如何形成？</h4><p>' + data.formation + '</p>' +
+    '<h4 style="margin:12px 0 6px;font-size:0.9rem">在關係中的表現</h4><p>' + data.inRelationship + '</p>' +
+    '<h4 style="margin:12px 0 6px;font-size:0.9rem">如何影響悲傷？</h4><p>' + data.inGrief + '</p>';
+
+  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+</body>
+</html>

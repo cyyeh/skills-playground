@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kübler-Ross 悲傷階段模型 — 互動工具</title>
+<style>
+  :root {
+    --primary: #5B6A8A;
+    --primary-light: #7B8AA8;
+    --primary-dark: #3E4D6A;
+    --accent: #C4956A;
+    --accent-light: #D4AD8A;
+    --accent-dark: #A47A52;
+    --bg: #F7F5F2;
+    --bg-card: #FFFFFF;
+    --text: #2D3142;
+    --text-light: #6B7080;
+    --border: #E0DCD6;
+    --success: #6A9E78;
+    --warning: #C4956A;
+    --shadow: 0 2px 12px rgba(45,49,66,0.08);
+    --radius: 10px;
+    --transition: 0.25s ease;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .app-header {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: white;
+    padding: 28px 24px 20px;
+    text-align: center;
+  }
+  .app-header h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .app-header p {
+    font-size: 0.85rem;
+    opacity: 0.85;
+  }
+
+  /* Tab Navigation */
+  .tab-nav {
+    display: flex;
+    background: var(--bg-card);
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 14px 12px;
+    border: none;
+    background: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .tab-btn:hover { color: var(--primary); background: rgba(91,106,138,0.05); }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--accent);
+    background: rgba(196,149,106,0.06);
+  }
+  .tab-icon { display: block; font-size: 1.3rem; margin-bottom: 4px; }
+
+  .tab-content { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+  .tab-content.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+  .card h3 {
+    font-size: 1.05rem;
+    color: var(--primary-dark);
+    margin-bottom: 8px;
+  }
+  .card p { font-size: 0.9rem; color: var(--text-light); }
+
+  /* ===== Tool 1: Timeline ===== */
+  .timeline-intro {
+    text-align: center;
+    padding: 12px 0 20px;
+    font-size: 0.88rem;
+    color: var(--text-light);
+  }
+  .timeline-note {
+    background: rgba(196,149,106,0.1);
+    border-left: 4px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-bottom: 24px;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  .timeline-container {
+    position: relative;
+    padding: 10px 0;
+  }
+  .timeline-line {
+    position: absolute;
+    left: 28px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--accent-light), var(--primary-light), var(--accent-light));
+    border-radius: 2px;
+  }
+  /* Non-linear arrows */
+  .timeline-arrows {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    opacity: 0.35;
+  }
+  .timeline-arrows span {
+    font-size: 0.7rem;
+    color: var(--accent-dark);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-left: 60px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: 19px;
+    top: 16px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    background: var(--bg-card);
+    transition: var(--transition);
+    z-index: 1;
+  }
+  .timeline-item:nth-child(1) .timeline-dot { border-color: #8B9DC3; }
+  .timeline-item:nth-child(2) .timeline-dot { border-color: #C47A6A; }
+  .timeline-item:nth-child(3) .timeline-dot { border-color: #C4B06A; }
+  .timeline-item:nth-child(4) .timeline-dot { border-color: #7A8BA8; }
+  .timeline-item:nth-child(5) .timeline-dot { border-color: #6A9E78; }
+
+  .timeline-item.expanded .timeline-dot {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 4px rgba(196,149,106,0.2);
+  }
+
+  .timeline-header {
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .timeline-item:hover .timeline-header { border-color: var(--primary-light); }
+  .timeline-item.expanded .timeline-header {
+    border-color: var(--accent);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .stage-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .timeline-item:nth-child(1) .stage-num { background: #8B9DC3; }
+  .timeline-item:nth-child(2) .stage-num { background: #C47A6A; }
+  .timeline-item:nth-child(3) .stage-num { background: #C4B06A; }
+  .timeline-item:nth-child(4) .stage-num { background: #7A8BA8; }
+  .timeline-item:nth-child(5) .stage-num { background: #6A9E78; }
+
+  .stage-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .stage-eng {
+    font-size: 0.78rem;
+    color: var(--text-light);
+    font-weight: 400;
+  }
+  .expand-icon {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    transition: var(--transition);
+  }
+  .timeline-item.expanded .expand-icon { transform: rotate(180deg); }
+
+  .timeline-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    background: var(--bg-card);
+    border: 1px solid var(--accent);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .timeline-item.expanded .timeline-detail {
+    max-height: 600px;
+  }
+  .timeline-detail-inner {
+    padding: 16px;
+  }
+  .timeline-detail-inner h4 {
+    font-size: 0.88rem;
+    color: var(--primary-dark);
+    margin: 12px 0 6px;
+  }
+  .timeline-detail-inner h4:first-child { margin-top: 0; }
+  .timeline-detail-inner p, .timeline-detail-inner li {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.7;
+  }
+  .timeline-detail-inner ul {
+    padding-left: 18px;
+    margin: 4px 0;
+  }
+  .timeline-detail-inner li { margin-bottom: 3px; }
+  .quote-box {
+    background: rgba(196,149,106,0.08);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    margin: 10px 0;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--text);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .nonlinear-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(91,106,138,0.08), rgba(196,149,106,0.08));
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    margin-top: 16px;
+    cursor: pointer;
+    border: 1px dashed var(--primary-light);
+    transition: var(--transition);
+  }
+  .nonlinear-banner:hover { border-color: var(--accent); }
+  .nonlinear-icon { font-size: 1.5rem; }
+  .nonlinear-text h4 { font-size: 0.9rem; color: var(--primary-dark); }
+  .nonlinear-text p { font-size: 0.82rem; color: var(--text-light); }
+
+  /* ===== Tool 2: Comparison ===== */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .filter-btn {
+    padding: 7px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg-card);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    color: var(--text);
+  }
+  .filter-btn:hover { border-color: var(--primary-light); }
+  .filter-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  .compare-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    min-width: 600px;
+  }
+  .compare-table th {
+    background: var(--primary);
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+  }
+  .compare-table th:first-child {
+    background: var(--primary-dark);
+    min-width: 100px;
+  }
+  .compare-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .compare-table tr:hover td { background: rgba(91,106,138,0.03); }
+  .compare-table .row-label {
+    font-weight: 600;
+    color: var(--primary-dark);
+    background: rgba(91,106,138,0.04);
+  }
+  .model-col { transition: opacity 0.3s ease; }
+  .model-col.hidden { opacity: 0.15; }
+
+  .model-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .tag-stage { background: rgba(139,157,195,0.2); color: #5B6A8A; }
+  .tag-task { background: rgba(106,158,120,0.2); color: #4A7E58; }
+  .tag-phase { background: rgba(196,149,106,0.2); color: #8A6A42; }
+  .tag-process { background: rgba(196,106,106,0.2); color: #8A4242; }
+  .tag-meaning { background: rgba(160,120,180,0.2); color: #6A4A7A; }
+
+  .evidence-meter {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+  }
+  .evidence-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .evidence-dot.filled { background: var(--accent); }
+  .evidence-label { font-size: 0.75rem; color: var(--text-light); margin-left: 6px; }
+
+  /* ===== Tool 3: Journal ===== */
+  .journal-intro {
+    text-align: center;
+    padding: 8px 0 20px;
+  }
+  .journal-intro p {
+    font-size: 0.88rem;
+    color: var(--text-light);
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .journal-disclaimer {
+    background: rgba(196,106,106,0.08);
+    border: 1px solid rgba(196,106,106,0.2);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: var(--text);
+    text-align: center;
+  }
+
+  .journal-section {
+    margin-bottom: 20px;
+  }
+  .journal-section label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--primary-dark);
+    margin-bottom: 8px;
+  }
+  .journal-section .hint {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+
+  .dimension-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 500px) {
+    .dimension-grid { grid-template-columns: 1fr; }
+  }
+  .dimension-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    background: var(--bg-card);
+  }
+  .dimension-card:hover { border-color: var(--primary-light); }
+  .dimension-card.selected {
+    border-color: var(--accent);
+    background: rgba(196,149,106,0.04);
+    box-shadow: 0 0 0 2px rgba(196,149,106,0.15);
+  }
+  .dimension-card .dim-icon { font-size: 1.2rem; margin-bottom: 4px; }
+  .dimension-card .dim-name { font-weight: 600; font-size: 0.88rem; }
+  .dimension-card .dim-desc { font-size: 0.78rem; color: var(--text-light); margin-top: 2px; }
+
+  .slider-group { margin-bottom: 16px; }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+  }
+  .slider-label .label-name { font-weight: 600; color: var(--text); }
+  .slider-label .label-value { color: var(--accent-dark); font-weight: 600; }
+  input[type="range"] {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .slider-range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    resize: vertical;
+    transition: var(--transition);
+    color: var(--text);
+    background: var(--bg-card);
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(196,149,106,0.12);
+  }
+  textarea::placeholder { color: var(--text-light); opacity: 0.6; }
+
+  .journal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--primary-light); }
+
+  .saved-entries { margin-top: 24px; }
+  .saved-entries h3 {
+    font-size: 0.95rem;
+    color: var(--primary-dark);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .entry-card {
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+  }
+  .entry-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .entry-date { font-size: 0.78rem; color: var(--text-light); }
+  .entry-delete {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    font-family: inherit;
+    transition: var(--transition);
+  }
+  .entry-delete:hover { border-color: #C47A6A; color: #C47A6A; }
+  .entry-dims {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .entry-dim-tag {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(196,149,106,0.12);
+    color: var(--accent-dark);
+  }
+  .entry-text { font-size: 0.82rem; color: var(--text); white-space: pre-wrap; }
+  .entry-sliders {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--text-light);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-light);
+    font-size: 0.88rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>Kübler-Ross 悲傷階段模型 — 互動工具</h1>
+  <p>探索、比較、反思</p>
+</div>
+
+<nav class="tab-nav" role="tablist">
+  <button class="tab-btn active" onclick="switchTab('timeline')" role="tab" aria-selected="true">
+    <span class="tab-icon">&#9776;</span>
+    五階段互動時間線
+  </button>
+  <button class="tab-btn" onclick="switchTab('compare')" role="tab" aria-selected="false">
+    <span class="tab-icon">&#9638;</span>
+    理論模型比較
+  </button>
+  <button class="tab-btn" onclick="switchTab('journal')" role="tab" aria-selected="false">
+    <span class="tab-icon">&#9998;</span>
+    悲傷歷程日誌
+  </button>
+</nav>
+
+<!-- ===== TAB 1: Timeline ===== -->
+<div id="tab-timeline" class="tab-content active">
+  <div class="timeline-intro">
+    <strong>點擊各階段查看詳細說明</strong><br>
+    請記住：這些「階段」在真實經驗中往往是重疊、非線性的
+  </div>
+
+  <div class="timeline-note">
+    <strong>重要提醒：</strong>下方的時間線以順序呈現五個階段，是為了方便說明。在真實的悲傷經驗中，這些反應可能以任何順序出現、同時存在、反覆發生，或者根本不出現某些階段。
+  </div>
+
+  <div class="timeline-container">
+    <div class="timeline-line"></div>
+
+    <div class="timeline-item" onclick="toggleTimeline(this)">
+      <div class="timeline-dot"></div>
+      <div class="timeline-header">
+        <div class="stage-num">1</div>
+        <div>
+          <div class="stage-title">否認 <span class="stage-eng">Denial</span></div>
+        </div>
+        <span class="expand-icon">&#9660;</span>
+      </div>
+      <div class="timeline-detail">
+        <div class="timeline-detail-inner">
+          <h4>核心特徵</h4>
+          <p>面對重大失落時，心理上拒絕接受現實的防衛反應。「這不可能是真的。」</p>
+          <h4>心理功能</h4>
+          <p>否認是一種<strong>暫時性的緩衝機制</strong>，給予個體時間逐步消化無法承受的訊息。它不是軟弱或逃避，而是心理系統的自我保護。</p>
+          <h4>可能的表現</h4>
+          <ul>
+            <li>反覆確認消息來源的正確性</li>
+            <li>行為上表現得「好像什麼都沒發生」</li>
+            <li>情緒上感到麻木、不真實感</li>
+            <li>迴避與失落有關的對話</li>
+          </ul>
+          <div class="quote-box">
+            「否認幫助我們度過了失落的第一波衝擊。它是大自然讓我們只承受自己能處理的部分的方式。」— Kübler-Ross & Kessler, 2005
+          </div>
+          <h4>值得注意</h4>
+          <p>短暫的否認是正常的。但如果否認持續很長時間，嚴重阻礙了必要的決策或醫療行為，則可能需要專業協助。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-item" onclick="toggleTimeline(this)">
+      <div class="timeline-dot"></div>
+      <div class="timeline-header">
+        <div class="stage-num">2</div>
+        <div>
+          <div class="stage-title">憤怒 <span class="stage-eng">Anger</span></div>
+        </div>
+        <span class="expand-icon">&#9660;</span>
+      </div>
+      <div class="timeline-detail">
+        <div class="timeline-detail-inner">
+          <h4>核心特徵</h4>
+          <p>對失落的不公平性感到憤怒，憤怒可能指向任何方向——自己、他人、命運、甚至逝者。</p>
+          <h4>心理功能</h4>
+          <p>憤怒提供了一種<strong>結構與方向感</strong>。在失落的混亂中，憤怒讓人感覺自己還有力量、還能反應。它是痛苦的另一種表達方式。</p>
+          <h4>可能的表現</h4>
+          <ul>
+            <li>對醫護人員、家人發脾氣</li>
+            <li>質問「為什麼是我？為什麼不是別人？」</li>
+            <li>對日常小事過度反應</li>
+            <li>對逝者感到生氣（「你怎麼能丟下我？」）</li>
+            <li>內化的憤怒（自責、自我攻擊）</li>
+          </ul>
+          <h4>值得注意</h4>
+          <p>社會文化常常不允許悲傷者表達憤怒，尤其在華人文化中。但壓抑的憤怒並不會消失，它可能以其他方式呈現——如身體症狀、焦慮，或對他人的被動攻擊。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-item" onclick="toggleTimeline(this)">
+      <div class="timeline-dot"></div>
+      <div class="timeline-header">
+        <div class="stage-num">3</div>
+        <div>
+          <div class="stage-title">討價還價 <span class="stage-eng">Bargaining</span></div>
+        </div>
+        <span class="expand-icon">&#9660;</span>
+      </div>
+      <div class="timeline-detail">
+        <div class="timeline-detail-inner">
+          <h4>核心特徵</h4>
+          <p>試圖透過假設性思考或心理交易來逆轉、減緩或補償失落。</p>
+          <h4>心理功能</h4>
+          <p>討價還價是<strong>試圖重獲控制感</strong>的表現。面對無法控制的失落，人類的本能是尋找「如果我做了什麼不同的事」的可能性。</p>
+          <h4>可能的表現</h4>
+          <ul>
+            <li>反覆想「如果......就好了」（if only）</li>
+            <li>與上天或命運進行心理交易</li>
+            <li>尋找各種替代方案或奇蹟療法</li>
+            <li>過度承擔責任（「都是我的錯」）</li>
+          </ul>
+          <div class="quote-box">
+            「討價還價常常伴隨著罪惡感。我們在過去的每個決定中尋找自己的過錯，彷彿找到了原因就能改變結果。」— Kübler-Ross & Kessler, 2005
+          </div>
+          <h4>值得注意</h4>
+          <p>適度的反思是正常的，但如果反覆的「如果」思考演變為持續性的罪惡感或自責，可能需要專業支持來處理。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-item" onclick="toggleTimeline(this)">
+      <div class="timeline-dot"></div>
+      <div class="timeline-header">
+        <div class="stage-num">4</div>
+        <div>
+          <div class="stage-title">沮喪 <span class="stage-eng">Depression</span></div>
+        </div>
+        <span class="expand-icon">&#9660;</span>
+      </div>
+      <div class="timeline-detail">
+        <div class="timeline-detail-inner">
+          <h4>核心特徵</h4>
+          <p>深刻體會到失落的現實與不可逆性後產生的深層悲傷、空虛與退縮。</p>
+          <h4>心理功能</h4>
+          <p>Kübler-Ross 認為這種沮喪是面對失落時<strong>適當的反應</strong>，不應被視為需要「修復」的病態。它代表個體開始真正面對失落的全部重量。</p>
+          <h4>兩種形式</h4>
+          <ul>
+            <li><strong>反應性沮喪：</strong>對已發生的失落的哀傷（失去的角色、能力、連結）</li>
+            <li><strong>預備性沮喪：</strong>為即將到來的最終失落做準備（Kübler-Ross 認為此時過度鼓勵反而有害）</li>
+          </ul>
+          <h4>可能的表現</h4>
+          <ul>
+            <li>退縮、不想與人互動</li>
+            <li>對原本喜歡的事物失去興趣</li>
+            <li>哭泣或深沉的沉默</li>
+            <li>感覺一切都失去意義</li>
+          </ul>
+          <h4>值得注意</h4>
+          <p>悲傷中的沮喪與臨床憂鬱症有所不同。如果沮喪持續很長時間、伴隨自殺念頭，或嚴重影響基本生活功能，應尋求專業評估。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline-item" onclick="toggleTimeline(this)">
+      <div class="timeline-dot"></div>
+      <div class="timeline-header">
+        <div class="stage-num">5</div>
+        <div>
+          <div class="stage-title">接受 <span class="stage-eng">Acceptance</span></div>
+        </div>
+        <span class="expand-icon">&#9660;</span>
+      </div>
+      <div class="timeline-detail">
+        <div class="timeline-detail-inner">
+          <h4>核心特徵</h4>
+          <p>承認失落的現實，不再消耗能量於抗拒。這不等於「沒事了」或「快樂」。</p>
+          <h4>心理功能</h4>
+          <p>接受使個體能夠<strong>將心理資源從抗拒現實轉向適應現實</strong>。它是重新投入生活的基礎，但不意味著悲傷的結束。</p>
+          <h4>可能的表現</h4>
+          <ul>
+            <li>開始進行實際的安排與規劃</li>
+            <li>能夠談論失落而不被情緒淹沒</li>
+            <li>重新建立日常節奏</li>
+            <li>在悲傷與日常生活之間找到某種平衡</li>
+          </ul>
+          <div class="quote-box">
+            「接受不是說『我對你的離開感到OK』。它是說『你確實離開了，而我必須學習在這個新的現實中生活。』」— Kübler-Ross & Kessler, 2005
+          </div>
+          <h4>值得注意</h4>
+          <p>並非所有人都會到達「接受」，這也是正常的。有些人找到的是意義重建（meaning-making）而非接受。Kessler 後來提出的「第六階段」——意義——就是對此的回應。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nonlinear-banner" onclick="this.querySelector('.nonlinear-expand').style.display = this.querySelector('.nonlinear-expand').style.display === 'block' ? 'none' : 'block'">
+    <div class="nonlinear-icon">&#8634;</div>
+    <div class="nonlinear-text" style="flex:1">
+      <h4>關於非線性：真實的悲傷歷程</h4>
+      <p>點擊展開，了解為什麼五階段不是一條直線</p>
+      <div class="nonlinear-expand" style="display:none; margin-top:10px; font-size:0.84rem; color:#2D3142; line-height:1.7">
+        <p>研究者 Bonanno（2004）的大規模研究發現，悲傷的軌跡至少有 4-5 種不同模式。超過半數的喪親者展現「韌性」反應，從未經歷明顯的階段性歷程。</p>
+        <p style="margin-top:8px">Kübler-Ross 本人在晚年也明確表示：「階段不是線性的，也不是每個人都會經歷全部。」真實的悲傷可能像：</p>
+        <ul style="margin-top:6px;padding-left:18px">
+          <li>在同一天內多次切換不同的情緒狀態</li>
+          <li>某些「階段」完全不出現</li>
+          <li>以為已經「接受」了，過了數月又出現強烈的憤怒或悲傷</li>
+          <li>多種情緒同時並存而非依序出現</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 2: Comparison ===== -->
+<div id="tab-compare" class="tab-content">
+  <div class="card" style="margin-bottom:20px">
+    <h3>悲傷理論模型比較</h3>
+    <p>選擇你想比較的模型（可多選），查看不同理論在各面向的異同。</p>
+  </div>
+
+  <div class="filter-bar" id="modelFilters">
+    <button class="filter-btn active" data-model="kubler" onclick="toggleModel(this)">Kübler-Ross 五階段</button>
+    <button class="filter-btn active" data-model="worden" onclick="toggleModel(this)">Worden 四任務</button>
+    <button class="filter-btn active" data-model="bowlby" onclick="toggleModel(this)">Bowlby 四階段</button>
+    <button class="filter-btn active" data-model="dpm" onclick="toggleModel(this)">Stroebe & Schut DPM</button>
+    <button class="filter-btn active" data-model="neimeyer" onclick="toggleModel(this)">Neimeyer 意義重建</button>
+  </div>
+
+  <div class="compare-grid">
+    <table class="compare-table" id="compareTable">
+      <thead>
+        <tr>
+          <th>比較面向</th>
+          <th class="model-col" data-model="kubler">Kübler-Ross<br><span class="model-tag tag-stage">階段模型</span></th>
+          <th class="model-col" data-model="worden">Worden<br><span class="model-tag tag-task">任務模型</span></th>
+          <th class="model-col" data-model="bowlby">Bowlby<br><span class="model-tag tag-phase">階段模型</span></th>
+          <th class="model-col" data-model="dpm">Stroebe & Schut<br><span class="model-tag tag-process">歷程模型</span></th>
+          <th class="model-col" data-model="neimeyer">Neimeyer<br><span class="model-tag tag-meaning">建構模型</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">提出年代</td>
+          <td class="model-col" data-model="kubler">1969</td>
+          <td class="model-col" data-model="worden">1982 / 1991修訂</td>
+          <td class="model-col" data-model="bowlby">1980</td>
+          <td class="model-col" data-model="dpm">1999</td>
+          <td class="model-col" data-model="neimeyer">2001</td>
+        </tr>
+        <tr>
+          <td class="row-label">理論基礎</td>
+          <td class="model-col" data-model="kubler">臨床觀察（末期病患訪談）</td>
+          <td class="model-col" data-model="worden">臨床實務與悲傷輔導經驗</td>
+          <td class="model-col" data-model="bowlby">依附理論與演化心理學</td>
+          <td class="model-col" data-model="dpm">壓力因應理論與既有悲傷研究的整合</td>
+          <td class="model-col" data-model="neimeyer">社會建構主義與敘事心理學</td>
+        </tr>
+        <tr>
+          <td class="row-label">核心內容</td>
+          <td class="model-col" data-model="kubler">五階段：否認、憤怒、討價還價、沮喪、接受</td>
+          <td class="model-col" data-model="worden">四任務：接受現實、處理痛苦、適應環境、重新定位連結</td>
+          <td class="model-col" data-model="bowlby">四階段：麻木、渴望與尋找、混亂與絕望、重組</td>
+          <td class="model-col" data-model="dpm">兩導向擺盪：失落導向與復原導向之間的動態切換</td>
+          <td class="model-col" data-model="neimeyer">在失落經驗中重新建構意義與自我敘事</td>
+        </tr>
+        <tr>
+          <td class="row-label">悲傷者角色</td>
+          <td class="model-col" data-model="kubler">被動經歷者（經歷各階段）</td>
+          <td class="model-col" data-model="worden">主動因應者（完成任務）</td>
+          <td class="model-col" data-model="bowlby">依附系統驅動的反應者</td>
+          <td class="model-col" data-model="dpm">主動調節者（在兩導向間擺盪）</td>
+          <td class="model-col" data-model="neimeyer">意義建構者（重寫生命敘事）</td>
+        </tr>
+        <tr>
+          <td class="row-label">歷程觀</td>
+          <td class="model-col" data-model="kubler">階段性（常被解讀為線性）</td>
+          <td class="model-col" data-model="worden">非線性（任務可同時進行、反覆）</td>
+          <td class="model-col" data-model="bowlby">大致有序但有重疊</td>
+          <td class="model-col" data-model="dpm">動態擺盪、非線性</td>
+          <td class="model-col" data-model="neimeyer">持續性的、個體化的歷程</td>
+        </tr>
+        <tr>
+          <td class="row-label">「終點」概念</td>
+          <td class="model-col" data-model="kubler">接受</td>
+          <td class="model-col" data-model="worden">完成四項任務（非一次性）</td>
+          <td class="model-col" data-model="bowlby">重組（重建生活結構）</td>
+          <td class="model-col" data-model="dpm">無明確終點（擺盪幅度漸小）</td>
+          <td class="model-col" data-model="neimeyer">無固定終點（持續建構意義）</td>
+        </tr>
+        <tr>
+          <td class="row-label">文化考量</td>
+          <td class="model-col" data-model="kubler">有限（基於西方臨床觀察）</td>
+          <td class="model-col" data-model="worden">有限但較有臨床彈性</td>
+          <td class="model-col" data-model="bowlby">有限（基於西方依附研究）</td>
+          <td class="model-col" data-model="dpm">較佳（模型本身有文化適用的彈性）</td>
+          <td class="model-col" data-model="neimeyer">較佳（強調個體與文化脈絡的建構）</td>
+        </tr>
+        <tr>
+          <td class="row-label">實證支持程度</td>
+          <td class="model-col" data-model="kubler">
+            <div class="evidence-meter">
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot"></div>
+              <div class="evidence-dot"></div>
+              <div class="evidence-dot"></div>
+              <span class="evidence-label">有限</span>
+            </div>
+          </td>
+          <td class="model-col" data-model="worden">
+            <div class="evidence-meter">
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot"></div>
+              <div class="evidence-dot"></div>
+              <span class="evidence-label">中等</span>
+            </div>
+          </td>
+          <td class="model-col" data-model="bowlby">
+            <div class="evidence-meter">
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot"></div>
+              <span class="evidence-label">中等至強</span>
+            </div>
+          </td>
+          <td class="model-col" data-model="dpm">
+            <div class="evidence-meter">
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot"></div>
+              <span class="evidence-label">較強</span>
+            </div>
+          </td>
+          <td class="model-col" data-model="neimeyer">
+            <div class="evidence-meter">
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot filled"></div>
+              <div class="evidence-dot"></div>
+              <div class="evidence-dot"></div>
+              <span class="evidence-label">中等</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="row-label">臨床應用性</td>
+          <td class="model-col" data-model="kubler">心理教育與概念介紹的入門工具</td>
+          <td class="model-col" data-model="worden">悲傷輔導的實務架構，可直接指導介入</td>
+          <td class="model-col" data-model="bowlby">理解悲傷反應的理論基礎</td>
+          <td class="model-col" data-model="dpm">理解與正常化悲傷因應的動態歷程</td>
+          <td class="model-col" data-model="neimeyer">敘事治療與意義建構的治療取向</td>
+        </tr>
+        <tr>
+          <td class="row-label">主要局限</td>
+          <td class="model-col" data-model="kubler">缺乏實證支持、過度簡化、線性暗示、文化局限</td>
+          <td class="model-col" data-model="worden">任務定義較模糊、缺乏對韌性反應的解釋</td>
+          <td class="model-col" data-model="bowlby">仍有階段性暗示、較少關注非死亡失落</td>
+          <td class="model-col" data-model="dpm">操作性定義不夠精確、實證研究仍在累積中</td>
+          <td class="model-col" data-model="neimeyer">較難量化研究、對非反思型個體的適用性不明</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== TAB 3: Journal ===== -->
+<div id="tab-journal" class="tab-content">
+  <div class="journal-intro">
+    <p>這不是一個「你在哪個階段」的測驗。而是一個幫助你<strong>觀察與記錄</strong>自己當下感受的空間。悲傷沒有標準路徑。</p>
+  </div>
+
+  <div class="journal-disclaimer">
+    此工具僅供個人反思使用，不構成任何心理健康評估或診斷。資料僅儲存在你的瀏覽器中，不會上傳至任何伺服器。如你正經歷嚴重的情緒困擾，請尋求專業心理健康服務。
+  </div>
+
+  <div class="card">
+    <div class="journal-section">
+      <label>今天，你正在經歷哪些面向的感受？<span class="hint">（可多選）</span></label>
+      <div class="dimension-grid" id="dimensionGrid">
+        <div class="dimension-card" data-dim="shock" onclick="toggleDim(this)">
+          <div class="dim-icon">&#9675;</div>
+          <div class="dim-name">震驚與麻木</div>
+          <div class="dim-desc">感覺不真實、情緒像被凍住</div>
+        </div>
+        <div class="dimension-card" data-dim="yearning" onclick="toggleDim(this)">
+          <div class="dim-icon">&#9829;</div>
+          <div class="dim-name">渴望與思念</div>
+          <div class="dim-desc">強烈地想念某人或某段過去</div>
+        </div>
+        <div class="dimension-card" data-dim="anger" onclick="toggleDim(this)">
+          <div class="dim-icon">&#9889;</div>
+          <div class="dim-name">憤怒與不公</div>
+          <div class="dim-desc">對發生的事感到不公平、憤怒</div>
+        </div>
+        <div class="dimension-card" data-dim="guilt" onclick="toggleDim(this)">
+          <div class="dim-icon">&#10070;</div>
+          <div class="dim-name">罪惡感與自責</div>
+          <div class="dim-desc">覺得自己應該做些什麼不同的</div>
+        </div>
+        <div class="dimension-card" data-dim="sadness" onclick="toggleDim(this)">
+          <div class="dim-icon">&#9724;</div>
+          <div class="dim-name">深層悲傷</div>
+          <div class="dim-desc">深沉的悲傷、空虛、失去動力</div>
+        </div>
+        <div class="dimension-card" data-dim="anxiety" onclick="toggleDim(this)">
+          <div class="dim-icon">&#9708;</div>
+          <div class="dim-name">焦慮與不安</div>
+          <div class="dim-desc">對未來感到不確定、擔憂</div>
+        </div>
+        <div class="dimension-card" data-dim="acceptance" onclick="toggleDim(this)">
+          <div class="dim-icon">&#9711;</div>
+          <div class="dim-name">平靜與面對</div>
+          <div class="dim-desc">開始接受現實、感到些許平靜</div>
+        </div>
+        <div class="dimension-card" data-dim="growth" onclick="toggleDim(this)">
+          <div class="dim-icon">&#9400;</div>
+          <div class="dim-name">意義與成長</div>
+          <div class="dim-desc">在失落中找到一些意義或力量</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="journal-section">
+      <label>目前的整體狀態</label>
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="label-name">情緒強度</span>
+          <span class="label-value" id="intensityVal">5</span>
+        </div>
+        <input type="range" id="intensitySlider" min="1" max="10" value="5" oninput="document.getElementById('intensityVal').textContent=this.value">
+        <div class="slider-range-labels">
+          <span>1 - 平靜</span>
+          <span>10 - 非常強烈</span>
+        </div>
+      </div>
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="label-name">日常功能</span>
+          <span class="label-value" id="functionVal">5</span>
+        </div>
+        <input type="range" id="functionSlider" min="1" max="10" value="5" oninput="document.getElementById('functionVal').textContent=this.value">
+        <div class="slider-range-labels">
+          <span>1 - 幾乎無法運作</span>
+          <span>10 - 正常運作</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="journal-section">
+      <label>想記錄什麼？<span class="hint">（選填）</span></label>
+      <textarea id="journalText" placeholder="你可以寫下今天的感受、發生的事情、腦中的想法，或任何你想記錄的內容。沒有字數限制，也沒有對錯。"></textarea>
+    </div>
+
+    <div class="journal-actions">
+      <button class="btn btn-primary" onclick="saveEntry()">儲存這則紀錄</button>
+      <button class="btn btn-secondary" onclick="clearForm()">清除</button>
+    </div>
+  </div>
+
+  <div class="saved-entries" id="savedEntries">
+    <h3>過往紀錄</h3>
+    <div id="entriesList">
+      <div class="empty-state">尚無紀錄。你的所有資料僅儲存在此瀏覽器中。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Tab Switching =====
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(el) {
+    el.classList.remove('active');
+    el.setAttribute('aria-selected', 'false');
+  });
+  document.getElementById('tab-' + tabId).classList.add('active');
+  var btns = document.querySelectorAll('.tab-btn');
+  var tabMap = { 'timeline': 0, 'compare': 1, 'journal': 2 };
+  if (tabMap[tabId] !== undefined) {
+    btns[tabMap[tabId]].classList.add('active');
+    btns[tabMap[tabId]].setAttribute('aria-selected', 'true');
+  }
+}
+
+// ===== Timeline =====
+function toggleTimeline(item) {
+  var wasExpanded = item.classList.contains('expanded');
+  document.querySelectorAll('.timeline-item').forEach(function(el) { el.classList.remove('expanded'); });
+  if (!wasExpanded) { item.classList.add('expanded'); }
+}
+
+// ===== Model Comparison =====
+function toggleModel(btn) {
+  btn.classList.toggle('active');
+  var model = btn.getAttribute('data-model');
+  var isActive = btn.classList.contains('active');
+  document.querySelectorAll('.model-col[data-model="' + model + '"]').forEach(function(col) {
+    if (isActive) { col.classList.remove('hidden'); } else { col.classList.add('hidden'); }
+  });
+}
+
+// ===== Journal =====
+var selectedDims = [];
+
+function toggleDim(card) {
+  card.classList.toggle('selected');
+  var dim = card.getAttribute('data-dim');
+  var idx = selectedDims.indexOf(dim);
+  if (idx > -1) { selectedDims.splice(idx, 1); } else { selectedDims.push(dim); }
+}
+
+function getEntries() {
+  try {
+    return JSON.parse(localStorage.getItem('kr_journal_entries') || '[]');
+  } catch (e) { return []; }
+}
+
+function setEntries(entries) {
+  localStorage.setItem('kr_journal_entries', JSON.stringify(entries));
+}
+
+var dimLabels = {
+  shock: '震驚與麻木', yearning: '渴望與思念', anger: '憤怒與不公',
+  guilt: '罪惡感與自責', sadness: '深層悲傷', anxiety: '焦慮與不安',
+  acceptance: '平靜與面對', growth: '意義與成長'
+};
+
+function saveEntry() {
+  var text = document.getElementById('journalText').value.trim();
+  var intensity = document.getElementById('intensitySlider').value;
+  var func = document.getElementById('functionSlider').value;
+
+  if (selectedDims.length === 0 && !text) {
+    alert('請至少選擇一個感受面向，或寫下一些文字。');
+    return;
+  }
+
+  var entry = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    dims: selectedDims.slice(),
+    intensity: intensity,
+    func: func,
+    text: text
+  };
+
+  var entries = getEntries();
+  entries.unshift(entry);
+  setEntries(entries);
+  renderEntries();
+  clearForm();
+}
+
+function clearForm() {
+  selectedDims = [];
+  document.querySelectorAll('.dimension-card').forEach(function(c) { c.classList.remove('selected'); });
+  document.getElementById('journalText').value = '';
+  document.getElementById('intensitySlider').value = 5;
+  document.getElementById('functionSlider').value = 5;
+  document.getElementById('intensityVal').textContent = '5';
+  document.getElementById('functionVal').textContent = '5';
+}
+
+function deleteEntry(id) {
+  if (!confirm('確定要刪除這則紀錄嗎？')) return;
+  var entries = getEntries().filter(function(e) { return e.id !== id; });
+  setEntries(entries);
+  renderEntries();
+}
+
+function renderEntries() {
+  var entries = getEntries();
+  var container = document.getElementById('entriesList');
+
+  if (entries.length === 0) {
+    container.innerHTML = '<div class="empty-state">尚無紀錄。你的所有資料僅儲存在此瀏覽器中。</div>';
+    return;
+  }
+
+  var html = '';
+  entries.forEach(function(e) {
+    var dimTags = '';
+    if (e.dims && e.dims.length > 0) {
+      e.dims.forEach(function(d) {
+        dimTags += '<span class="entry-dim-tag">' + (dimLabels[d] || d) + '</span>';
+      });
+    }
+    html += '<div class="entry-card">' +
+      '<div class="entry-meta">' +
+        '<span class="entry-date">' + e.date + '</span>' +
+        '<button class="entry-delete" onclick="deleteEntry(' + e.id + ')">刪除</button>' +
+      '</div>' +
+      (dimTags ? '<div class="entry-dims">' + dimTags + '</div>' : '') +
+      '<div class="entry-sliders">情緒強度：' + e.intensity + '/10 &nbsp; 日常功能：' + e.func + '/10</div>' +
+      (e.text ? '<div class="entry-text" style="margin-top:8px">' + escapeHtml(e.text) + '</div>' : '') +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function escapeHtml(str) {
+  var div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Init
+renderEntries();
+</script>
+</body>
+</html>

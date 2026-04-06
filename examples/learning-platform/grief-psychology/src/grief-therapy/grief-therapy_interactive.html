@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>悲傷諮商與治療 — 互動工具</title>
+<style>
+  :root {
+    --primary: #5B6A8A;
+    --primary-light: #7B8DAD;
+    --primary-dark: #455270;
+    --accent: #C4956A;
+    --accent-light: #D4AD8A;
+    --bg: #f7fafc;
+    --card-bg: #fff;
+    --text: #2d3748;
+    --text-light: #616b7c;
+    --border: #e2e8f0;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+    --success: #48bb78;
+    --warning: #ed8936;
+    --info: #4299e1;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: #fff; padding: 2rem 1.5rem; text-align: center;
+  }
+  .header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: .3rem; }
+  .header p { opacity: .85; font-size: .95rem; }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 2px; background: var(--border);
+    border-radius: var(--radius) var(--radius) 0 0;
+    overflow: hidden; margin-top: 1.5rem;
+  }
+  .tab-btn {
+    flex: 1; padding: .85rem .5rem; border: none; background: #edf2f7;
+    cursor: pointer; font-size: .88rem; font-weight: 600;
+    color: var(--text-light); transition: all .2s; font-family: inherit;
+    text-align: center; line-height: 1.3;
+  }
+  .tab-btn:hover { background: #e2e8f0; color: var(--text); }
+  .tab-btn.active { background: var(--card-bg); color: var(--primary); }
+  .tab-content {
+    display: none; background: var(--card-bg); padding: 1.5rem;
+    border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .tab-content.active { display: block; }
+  .tab-content h2 {
+    font-size: 1.2rem; color: var(--primary); margin-bottom: .3rem;
+  }
+  .tab-content .subtitle {
+    color: var(--text-light); font-size: .9rem; margin-bottom: 1.25rem;
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    background: #fff8f0; border: 1px solid var(--accent-light); border-radius: var(--radius);
+    padding: 1rem 1.25rem; margin-top: 1.5rem; font-size: .85rem; color: #7c5a3a;
+    line-height: 1.6;
+  }
+  .disclaimer strong { color: #9c6a3a; }
+
+  /* ============ Tool 1: Comparison Matrix ============ */
+  .matrix-controls {
+    display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem;
+  }
+  .matrix-controls label {
+    font-size: .85rem; display: flex; align-items: center; gap: .35rem;
+    cursor: pointer; padding: .35rem .7rem; border-radius: 6px;
+    border: 1px solid var(--border); background: #f9fafb; transition: all .2s;
+    user-select: none;
+  }
+  .matrix-controls label:hover { border-color: var(--primary-light); }
+  .matrix-controls label.checked {
+    background: var(--primary); color: #fff; border-color: var(--primary);
+  }
+  .matrix-controls input[type="checkbox"] { display: none; }
+  .matrix-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .matrix-table {
+    width: 100%; border-collapse: collapse; font-size: .85rem;
+    min-width: 700px;
+  }
+  .matrix-table th {
+    background: var(--primary); color: #fff; padding: .7rem .6rem;
+    text-align: left; font-weight: 600; white-space: nowrap;
+    position: sticky; top: 0;
+  }
+  .matrix-table th:first-child { border-radius: var(--radius) 0 0 0; }
+  .matrix-table th:last-child { border-radius: 0 var(--radius) 0 0; }
+  .matrix-table td {
+    padding: .65rem .6rem; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .matrix-table tr:hover td { background: #f0f4f8; }
+  .matrix-table tr:last-child td { border-bottom: none; }
+  .matrix-table td:first-child { font-weight: 600; color: var(--primary-dark); white-space: nowrap; }
+  .evidence-badge {
+    display: inline-block; padding: .15rem .5rem; border-radius: 4px;
+    font-size: .78rem; font-weight: 600;
+  }
+  .evidence-strong { background: #c6f6d5; color: #276749; }
+  .evidence-moderate { background: #fefcbf; color: #975a16; }
+  .evidence-emerging { background: #fed7d7; color: #9b2c2c; }
+  .highlight-row td { background: #f0f7ff !important; }
+
+  /* ============ Tool 2: Decision Tree ============ */
+  .tree-node {
+    background: var(--card-bg); border: 2px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem;
+    transition: all .3s;
+  }
+  .tree-node.active { border-color: var(--primary); box-shadow: var(--shadow-md); }
+  .tree-node.completed { border-color: var(--success); opacity: .7; }
+  .tree-question {
+    font-size: 1.05rem; font-weight: 600; color: var(--primary-dark);
+    margin-bottom: .75rem; line-height: 1.5;
+  }
+  .tree-options { display: flex; flex-direction: column; gap: .5rem; }
+  .tree-option {
+    padding: .7rem 1rem; border: 1px solid var(--border); border-radius: 8px;
+    cursor: pointer; font-size: .9rem; transition: all .2s;
+    background: #f9fafb; font-family: inherit; text-align: left;
+    line-height: 1.5; display: block; width: 100;
+  }
+  .tree-option:hover { border-color: var(--primary); background: #eef2f7; }
+  .tree-option.selected {
+    border-color: var(--primary); background: var(--primary); color: #fff;
+  }
+  .tree-result {
+    background: linear-gradient(135deg, #f0f7ff, #eef5f0);
+    border: 2px solid var(--primary-light); border-radius: var(--radius);
+    padding: 1.5rem; margin-top: 1rem;
+  }
+  .tree-result h3 { color: var(--primary); margin-bottom: .5rem; font-size: 1.1rem; }
+  .tree-result p { font-size: .92rem; line-height: 1.7; margin-bottom: .5rem; }
+  .tree-result ul { padding-left: 1.25rem; margin: .5rem 0; }
+  .tree-result li { font-size: .9rem; margin-bottom: .3rem; }
+  .tree-restart {
+    margin-top: 1rem; padding: .6rem 1.5rem; border: 1px solid var(--primary);
+    background: var(--card-bg); color: var(--primary); border-radius: 8px;
+    cursor: pointer; font-size: .9rem; font-weight: 600; font-family: inherit;
+    transition: all .2s;
+  }
+  .tree-restart:hover { background: var(--primary); color: #fff; }
+  .step-indicator {
+    display: flex; align-items: center; gap: .4rem; margin-bottom: 1rem;
+    font-size: .82rem; color: var(--text-light);
+  }
+  .step-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--border);
+  }
+  .step-dot.filled { background: var(--primary); }
+  .step-dot.current { background: var(--accent); width: 10px; height: 10px; }
+
+  /* ============ Tool 3: Worden Tasks ============ */
+  .task-nav {
+    display: flex; gap: .4rem; margin-bottom: 1.25rem; flex-wrap: wrap;
+  }
+  .task-nav-btn {
+    padding: .5rem 1rem; border: 2px solid var(--border); border-radius: 8px;
+    background: var(--card-bg); cursor: pointer; font-size: .85rem;
+    font-weight: 600; color: var(--text-light); transition: all .2s;
+    font-family: inherit;
+  }
+  .task-nav-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+  .task-nav-btn.active { border-color: var(--primary); color: var(--primary); background: #eef2f7; }
+  .task-nav-btn.completed-task { border-color: var(--success); color: var(--success); }
+  .task-panel { display: none; }
+  .task-panel.active { display: block; }
+  .task-description {
+    background: #f0f4f8; border-radius: var(--radius); padding: 1.15rem;
+    margin-bottom: 1.25rem; border-left: 4px solid var(--primary);
+  }
+  .task-description h3 { color: var(--primary-dark); font-size: 1rem; margin-bottom: .3rem; }
+  .task-description p { font-size: .9rem; color: var(--text-light); }
+  .reflection-group { margin-bottom: 1.25rem; }
+  .reflection-label {
+    font-size: .92rem; font-weight: 600; color: var(--text);
+    margin-bottom: .5rem; line-height: 1.5;
+  }
+  .reflection-textarea {
+    width: 100%; min-height: 90px; padding: .75rem; border: 1px solid var(--border);
+    border-radius: 8px; font-size: .9rem; font-family: inherit; line-height: 1.6;
+    resize: vertical; transition: border-color .2s; color: var(--text);
+  }
+  .reflection-textarea:focus { outline: none; border-color: var(--primary); }
+  .reflection-textarea::placeholder { color: #a0aec0; }
+  .task-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+  .btn-primary {
+    padding: .6rem 1.5rem; background: var(--primary); color: #fff;
+    border: none; border-radius: 8px; cursor: pointer; font-size: .9rem;
+    font-weight: 600; font-family: inherit; transition: background .2s;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary {
+    padding: .6rem 1.5rem; background: var(--card-bg); color: var(--primary);
+    border: 1px solid var(--primary); border-radius: 8px; cursor: pointer;
+    font-size: .9rem; font-weight: 600; font-family: inherit; transition: all .2s;
+  }
+  .btn-secondary:hover { background: #eef2f7; }
+  .save-notice {
+    font-size: .82rem; color: var(--success); margin-top: .5rem;
+    opacity: 0; transition: opacity .3s;
+  }
+  .save-notice.show { opacity: 1; }
+  .progress-bar {
+    height: 6px; background: var(--border); border-radius: 3px;
+    margin-bottom: 1.25rem; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 3px; transition: width .5s ease;
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 1rem; }
+    .header { padding: 1.5rem 1rem; }
+    .header h1 { font-size: 1.3rem; }
+    .tab-btn { padding: .65rem .3rem; font-size: .78rem; }
+    .tab-content { padding: 1rem; }
+    .matrix-controls label { font-size: .8rem; padding: .3rem .5rem; }
+    .task-nav { gap: .3rem; }
+    .task-nav-btn { padding: .4rem .7rem; font-size: .8rem; }
+    .tree-option { padding: .6rem .8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>悲傷諮商與治療：互動工具</h1>
+  <p>探索不同治療取向、了解何時尋求幫助、反思你的哀悼歷程</p>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('matrix')">治療取向比較</button>
+    <button class="tab-btn" onclick="switchTab('tree')">介入策略決策樹</button>
+    <button class="tab-btn" onclick="switchTab('worden')">Worden 四項任務</button>
+  </div>
+
+  <!-- ========== TAB 1: Comparison Matrix ========== -->
+  <div id="tab-matrix" class="tab-content active">
+    <h2>治療取向比較矩陣</h2>
+    <p class="subtitle">勾選想比較的面向，點擊列名可以高亮該治療取向。</p>
+
+    <div class="matrix-controls" id="dimControls"></div>
+    <div class="matrix-table-wrap">
+      <table class="matrix-table" id="matrixTable">
+        <thead><tr id="matrixHead"></tr></thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========== TAB 2: Decision Tree ========== -->
+  <div id="tab-tree" class="tab-content">
+    <h2>介入策略決策樹</h2>
+    <p class="subtitle">回答以下問題，了解哪種支持方式可能適合你或你關心的人的情境。</p>
+    <div class="step-indicator" id="stepIndicator"></div>
+    <div id="treeContainer"></div>
+  </div>
+
+  <!-- ========== TAB 3: Worden Tasks ========== -->
+  <div id="tab-worden" class="tab-content">
+    <h2>Worden 四項哀悼任務——自我反思</h2>
+    <p class="subtitle">這不是測驗或診斷工具，而是一個引導你整理自身經驗的反思練習。</p>
+    <div class="progress-bar"><div class="progress-fill" id="wordenProgress" style="width:0%"></div></div>
+    <div class="task-nav" id="taskNav"></div>
+    <div id="taskPanels"></div>
+    <div class="save-notice" id="saveNotice">反思內容已暫存於瀏覽器中</div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>重要提醒：</strong>本頁面所有工具僅供教育與自我反思之用，不構成心理診斷或治療建議。每個人的悲傷經驗都是獨特的，如果你正在經歷困難，請尋求合格的心理健康專業人員協助。台灣安心專線：1925（24小時免費）。
+  </div>
+</div>
+
+<script>
+/* ===== Tab Switching ===== */
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['matrix','tree','worden'][i] === id);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => {
+    c.classList.toggle('active', c.id === 'tab-' + id);
+  });
+}
+
+/* ============================================================
+   TOOL 1: Comparison Matrix
+   ============================================================ */
+const dimensions = [
+  { key: 'target', label: '適用對象', default: true },
+  { key: 'techniques', label: '核心技術', default: true },
+  { key: 'evidence', label: '實證基礎', default: true },
+  { key: 'duration', label: '典型療程', default: true },
+  { key: 'strengths', label: '優勢', default: false },
+  { key: 'limitations', label: '限制', default: false },
+  { key: 'training', label: '治療師訓練', default: false },
+  { key: 'format', label: '治療形式', default: false },
+];
+
+const approaches = [
+  {
+    name: '複雜性悲傷治療\n(CGT)',
+    target: '延長性悲傷障礙、複雜性悲傷',
+    techniques: '想像式重訪、情境暴露、想像式對話、雙軌工作、悲傷監測',
+    evidence: 'strong',
+    evidenceText: '強——多項 RCT 支持',
+    duration: '16 週，每週一次',
+    strengths: '高度結構化、專門設計、療效數據最充分',
+    limitations: '需專門訓練、手冊化可能缺乏彈性',
+    training: '需完成 CGT 認證訓練課程',
+    format: '個別治療',
+  },
+  {
+    name: '意義重建取向\n(Neimeyer)',
+    target: '意義崩解的悲傷者、找不到失落意義者',
+    techniques: '失落敘事書寫、意義地圖、生命印記、好處發現、虛擬夢境工作',
+    evidence: 'moderate',
+    evidenceText: '中——後設分析支持',
+    duration: '彈性，通常 10-20 次',
+    strengths: '尊重個人獨特性、深度意義探索、文化彈性高',
+    limitations: '標準化方案較少、需要較高的治療師技巧',
+    training: '建構主義心理治療訓練',
+    format: '個別或團體',
+  },
+  {
+    name: '認知行為治療\n(CBT)',
+    target: '悲傷伴隨焦慮、憂鬱、罪惡感、認知扭曲',
+    techniques: '認知重建、行為活化、暴露練習、放鬆訓練、問題解決',
+    evidence: 'strong',
+    evidenceText: '強——多項後設分析',
+    duration: '12-20 週',
+    strengths: '技術明確、廣泛適用、容易研究',
+    limitations: '可能忽略存在意義層面、部分個案覺得「太理性」',
+    training: 'CBT 基礎訓練加悲傷專題',
+    format: '個別治療',
+  },
+  {
+    name: 'EMDR',
+    target: '創傷性悲傷（突然、暴力、意外死亡）',
+    techniques: '雙側刺激、記憶歷程更新、認知嵌入、身體掃描',
+    evidence: 'moderate',
+    evidenceText: '中——PTSD 證據充分，悲傷研究漸增',
+    duration: '8-12 次',
+    strengths: '快速處理創傷成分、不需大量語言表達',
+    limitations: '悲傷特定 RCT 仍需累積、需認證訓練',
+    training: 'EMDR 國際認證訓練（Level I & II）',
+    format: '個別治療',
+  },
+  {
+    name: '敘事治療',
+    target: '文化壓抑、身份困擾、剝奪性悲傷',
+    techniques: '外化對話、重新會員化、獨特結果、見證儀式、治療性文件',
+    evidence: 'emerging',
+    evidenceText: '弱至中——質性研究為主',
+    duration: '彈性',
+    strengths: '高度文化敏感、賦權取向、適合被邊緣化的悲傷',
+    limitations: '量化實證較少、不適合需要高度結構的個案',
+    training: '敘事治療專業訓練',
+    format: '個別、家庭或團體',
+  },
+  {
+    name: '表達性藝術治療',
+    target: '兒童、語言表達受限者、非語言的悲傷處理',
+    techniques: '繪畫、黏土、音樂、舞蹈律動、戲劇、沙遊',
+    evidence: 'emerging',
+    evidenceText: '弱至中——多為小型研究',
+    duration: '彈性，通常 12-20 次',
+    strengths: '超越語言限制、適合兒童、提供身體層面的處理',
+    limitations: '需要藝術治療專門訓練、量化研究較少',
+    training: '藝術治療碩士學位或相關認證',
+    format: '個別或團體',
+  },
+];
+
+let activeDims = new Set(dimensions.filter(d => d.default).map(d => d.key));
+let highlightedRow = -1;
+
+function renderMatrixControls() {
+  const el = document.getElementById('dimControls');
+  el.innerHTML = dimensions.map(d => {
+    const checked = activeDims.has(d.key);
+    return `<label class="${checked ? 'checked' : ''}" data-dim="${d.key}">
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleDim('${d.key}', this)">${d.label}
+    </label>`;
+  }).join('');
+}
+
+function toggleDim(key, cb) {
+  if (cb.checked) activeDims.add(key); else activeDims.delete(key);
+  cb.parentElement.classList.toggle('checked', cb.checked);
+  renderMatrix();
+}
+
+function renderMatrix() {
+  const dims = dimensions.filter(d => activeDims.has(d.key));
+  const head = document.getElementById('matrixHead');
+  head.innerHTML = '<th>治療取向</th>' + dims.map(d => `<th>${d.label}</th>`).join('');
+
+  const body = document.getElementById('matrixBody');
+  body.innerHTML = approaches.map((a, i) => {
+    const cls = i === highlightedRow ? 'highlight-row' : '';
+    const cells = dims.map(d => {
+      if (d.key === 'evidence') {
+        const lvl = a.evidence;
+        const cls2 = lvl === 'strong' ? 'evidence-strong' : lvl === 'moderate' ? 'evidence-moderate' : 'evidence-emerging';
+        return `<td><span class="evidence-badge ${cls2}">${a.evidenceText}</span></td>`;
+      }
+      return `<td>${a[d.key]}</td>`;
+    }).join('');
+    return `<tr class="${cls}" onclick="toggleHighlight(${i})" style="cursor:pointer">
+      <td>${a.name.replace('\n','<br>')}</td>${cells}</tr>`;
+  }).join('');
+}
+
+function toggleHighlight(i) {
+  highlightedRow = highlightedRow === i ? -1 : i;
+  renderMatrix();
+}
+
+renderMatrixControls();
+renderMatrix();
+
+/* ============================================================
+   TOOL 2: Decision Tree
+   ============================================================ */
+const treeData = {
+  start: {
+    question: '你目前最關心的是哪一種情況？',
+    options: [
+      { text: '我自己正在經歷失落後的悲傷', next: 'self_time' },
+      { text: '我關心的人正在經歷悲傷，我想幫助他/她', next: 'other_who' },
+      { text: '我是專業工作者，想了解如何為個案選擇介入方式', next: 'prof_type' },
+    ]
+  },
+  self_time: {
+    question: '失落發生到現在大約多久了？',
+    options: [
+      { text: '不到六個月', next: 'self_early' },
+      { text: '六個月到一年', next: 'self_mid' },
+      { text: '超過一年', next: 'self_long' },
+    ]
+  },
+  self_early: {
+    question: '你目前最困擾的是什麼？',
+    options: [
+      { text: '強烈的情緒波動，但日常生活大致能維持', next: 'result_normal_support' },
+      { text: '完全無法正常生活、工作或照顧自己', next: 'result_professional_early' },
+      { text: '有傷害自己的念頭', next: 'result_crisis' },
+    ]
+  },
+  self_mid: {
+    question: '和失落剛發生時相比，你的狀態有什麼變化？',
+    options: [
+      { text: '雖然仍然痛苦，但整體有慢慢改善', next: 'result_normal_continued' },
+      { text: '痛苦的強度沒有減輕，甚至更加嚴重', next: 'self_mid_detail' },
+      { text: '一開始好像沒事，但最近才開始變得很痛苦', next: 'result_delayed_grief' },
+    ]
+  },
+  self_mid_detail: {
+    question: '以下哪些狀況最符合你現在的經驗？（選擇最主要的）',
+    options: [
+      { text: '持續強烈的思念和渴望，覺得沒有逝者無法繼續生活', next: 'result_cgt' },
+      { text: '被罪惡感、自責的想法困住，反覆想著「如果當初...」', next: 'result_cbt' },
+      { text: '覺得生命失去意義，對一切都提不起勁', next: 'result_meaning' },
+      { text: '腦海中反覆出現與死亡相關的創傷畫面', next: 'result_trauma' },
+    ]
+  },
+  self_long: {
+    question: '超過一年後，哪個描述最符合你的狀態？',
+    options: [
+      { text: '大部分時候還好，但某些時刻（紀念日、節日）特別難受', next: 'result_normal_waves' },
+      { text: '悲傷的強度幾乎和剛發生時一樣，生活嚴重受影響', next: 'result_pgd' },
+      { text: '不太允許自己去感受悲傷，但覺得哪裡不對勁', next: 'result_inhibited' },
+    ]
+  },
+  other_who: {
+    question: '你關心的人是什麼年齡層？',
+    options: [
+      { text: '兒童（12歲以下）', next: 'result_child' },
+      { text: '青少年（12-18歲）', next: 'result_adolescent' },
+      { text: '成人', next: 'result_adult_support' },
+      { text: '年長者（65歲以上）', next: 'result_elderly' },
+    ]
+  },
+  prof_type: {
+    question: '個案呈現的主要議題是什麼？',
+    options: [
+      { text: '持續超過預期的強烈分離痛苦', next: 'result_prof_pgd' },
+      { text: '悲傷中夾雜創傷反應（侵入性畫面、過度警覺）', next: 'result_prof_trauma' },
+      { text: '認知層面的困擾（罪惡感、自責、災難化思考）', next: 'result_prof_cbt' },
+      { text: '意義崩解、存在困境', next: 'result_prof_meaning' },
+      { text: '非語言表達需求（兒童或語言受限者）', next: 'result_prof_art' },
+    ]
+  },
+  /* ---- Results ---- */
+  result_normal_support: {
+    result: true,
+    title: '目前建議：社會支持與自我照顧',
+    body: '你正在經歷的聽起來是正常的悲傷反應。在失落的初期，強烈的情緒波動是自然的。',
+    suggestions: [
+      '允許自己感受悲傷，不需要強迫自己「趕快好起來」',
+      '與信任的親友保持聯繫，不要獨自承受',
+      '維持基本的生活作息（睡眠、飲食、運動）',
+      '如果需要有人傾聽，可以撥打安心專線 1925',
+      '如果數月後狀況沒有改善或惡化，建議尋求專業協助',
+    ]
+  },
+  result_professional_early: {
+    result: true,
+    title: '建議：儘早尋求專業支持',
+    body: '失落初期就出現嚴重的功能損害，值得及早尋求專業人員的評估。這不代表你「有問題」，而是表示你可能需要額外的支持。',
+    suggestions: [
+      '建議預約心理師或精神科門診進行評估',
+      '可先至各縣市社區心理衛生中心尋求免費諮詢',
+      '精神科醫師可評估是否需要短期藥物輔助',
+      '支持性悲傷輔導可提供即時的陪伴與穩定',
+    ]
+  },
+  result_crisis: {
+    result: true,
+    title: '請立即尋求協助',
+    body: '如果你有傷害自己的念頭，請知道你不需要獨自面對。這些感受在極度痛苦時可能會出現，但有人可以幫助你度過這個最困難的時刻。',
+    suggestions: [
+      '立即撥打安心專線 1925（24小時免費）',
+      '撥打生命線 1995',
+      '前往最近的醫院急診室',
+      '告訴你身邊信任的人你現在的狀態',
+      '你值得被幫助，請不要放棄',
+    ]
+  },
+  result_normal_continued: {
+    result: true,
+    title: '持續的自然復原歷程',
+    body: '雖然悲傷仍然存在，但逐漸改善的趨勢顯示你正在經歷自然的適應歷程。悲傷不會完全「消失」，但隨時間推移會逐漸變得可以承受。',
+    suggestions: [
+      '繼續保持與支持系統的連結',
+      '如果希望有結構化的支持，可以考慮參加悲傷支持團體',
+      '紀念日或特殊日子前後可能會暫時加劇——這是正常的「悲傷波浪」',
+      '如果在某個時點感覺惡化了，隨時可以尋求專業協助',
+    ]
+  },
+  result_delayed_grief: {
+    result: true,
+    title: '可能的延遲性悲傷反應',
+    body: '有些人在失落初期因為忙於處理後事或其他壓力而未能充分哀悼，悲傷會在之後才浮現。這是被認可的悲傷模式之一。',
+    suggestions: [
+      '建議尋求悲傷諮商，有專業人員陪伴你走過這個歷程',
+      '你現在感受到的痛苦是真實且有意義的，不要因為「時間已經過了很久」而否定它',
+      '支持性的悲傷輔導可以幫助你完成先前未能進行的哀悼任務',
+    ]
+  },
+  result_cgt: {
+    result: true,
+    title: '可能適合：複雜性悲傷治療（CGT）',
+    body: '你描述的經驗——持續強烈的思念和分離痛苦，以及覺得無法在沒有逝者的情況下繼續生活——是延長性悲傷障礙的核心特徵。CGT 是目前針對這類型悲傷最具實證支持的治療方案。',
+    suggestions: [
+      '建議尋找接受過 CGT 或悲傷治療專門訓練的心理師',
+      'CGT 為 16 週的結構化治療，包含想像式重訪、情境暴露等技術',
+      '治療的目標不是「放下」逝者，而是幫助你的悲傷重新流動',
+      '也可先至精神科門診評估是否符合延長性悲傷障礙的診斷',
+    ]
+  },
+  result_cbt: {
+    result: true,
+    title: '可能適合：認知行為取向的悲傷治療',
+    body: '反覆的罪惡感和自責性想法是悲傷中常見的認知模式，但當它們變得僵化且無法擺脫時，可能需要專業的協助來重新檢視。CBT 擅長處理這類認知困擾。',
+    suggestions: [
+      '認知行為治療可以幫助你辨識和調整不適應的想法模式',
+      '治療師會幫助你區分「合理的遺憾」和「不合理的自責」',
+      '同時處理可能伴隨的迴避行為',
+      '通常 12-20 週可以看到顯著改善',
+    ]
+  },
+  result_meaning: {
+    result: true,
+    title: '可能適合：意義重建取向',
+    body: '失落後感到生命失去意義，是一種深層的「意義危機」。Neimeyer 的意義重建取向專門幫助人在失落中重新建構意義和生活的方向。',
+    suggestions: [
+      '意義重建取向幫助你探索失落對你的人生觀帶來了什麼衝擊',
+      '透過敘事、書寫和創造性活動，在失落中尋找新的意義',
+      '這不是要你「從中獲益」，而是幫助你重新站穩腳步',
+      '存在主義取向的治療師也適合處理這類議題',
+    ]
+  },
+  result_trauma: {
+    result: true,
+    title: '可能適合：創傷聚焦取向（EMDR 或 PE）',
+    body: '當悲傷中夾雜了創傷反應——侵入性的死亡畫面、惡夢、過度警覺——這些創傷成分可能阻礙了正常的哀悼歷程。先處理創傷，悲傷才能自然流動。',
+    suggestions: [
+      'EMDR 或延長暴露治療（PE）可以有效處理創傷性記憶',
+      '治療目標是移除創傷的障礙，讓你能夠帶著悲傷（而非恐懼）回憶逝者',
+      '尋找同時受過創傷與悲傷治療訓練的心理師最為理想',
+      '如果死亡方式是暴力或自殺，也建議考慮專門的遺族支持',
+    ]
+  },
+  result_normal_waves: {
+    result: true,
+    title: '正常的「悲傷波浪」',
+    body: '在大部分時候能夠正常生活，但在特定時刻（紀念日、節日、特殊場景）悲傷會再度湧現——這是完全正常的「悲傷波浪」。失落不會被完全「克服」，而是逐漸被整合進生活中。',
+    suggestions: [
+      '這是正常的整合性悲傷模式，不需要為此擔心',
+      '在預期會特別困難的日子，提前做好自我照顧的計畫',
+      '允許自己在那些時刻感受悲傷，不需要強裝堅強',
+      '如果想要有人陪伴度過這些時刻，支持團體是很好的選擇',
+    ]
+  },
+  result_pgd: {
+    result: true,
+    title: '強烈建議尋求專業悲傷治療',
+    body: '超過一年後悲傷強度仍無減輕且嚴重影響生活，可能符合延長性悲傷障礙的表現。這是一個可以被有效治療的狀態——你不需要一直忍受這樣的痛苦。',
+    suggestions: [
+      '強烈建議尋求精神科或心理師的專業評估',
+      'CGT（複雜性悲傷治療）是目前最推薦的治療方案',
+      'CBT 取向的悲傷治療也有良好的療效證據',
+      '不要因為「已經過了這麼久」而不好意思求助——任何時候尋求幫助都不嫌晚',
+    ]
+  },
+  result_inhibited: {
+    result: true,
+    title: '可能的抑制性悲傷',
+    body: '有些人因為個性、文化期待、或需要「為了別人堅強」而壓抑了自己的悲傷。長期壓抑可能以其他方式表現——身體不適、焦慮、人際困難、莫名的空虛感。',
+    suggestions: [
+      '諮商可以提供一個安全的空間，允許你探索被壓抑的感受',
+      '敘事治療特別適合處理被文化或社會期待壓抑的悲傷',
+      '你不需要「大哭一場」才叫做悲傷——找到適合你自己的表達方式最重要',
+      '可以先從寫日記或創作開始，作為接觸內在感受的溫和方式',
+    ]
+  },
+  result_child: {
+    result: true,
+    title: '兒童悲傷的支持建議',
+    body: '兒童的悲傷表達方式與成人不同——可能透過行為問題、退化、身體不適來呈現。他們需要適齡的理解和支持。',
+    suggestions: [
+      '兒童遊戲治療或藝術治療是最適合的介入方式',
+      '尋找有兒童諮商專長的心理師',
+      '同時建議對照顧者提供親職諮詢，幫助家長理解和回應孩子的悲傷',
+      '用孩子能理解的語言，誠實但溫和地談論失落',
+      '維持生活的穩定和常規，給予孩子安全感',
+    ]
+  },
+  result_adolescent: {
+    result: true,
+    title: '青少年悲傷的支持建議',
+    body: '青少年面臨發展任務與悲傷的雙重挑戰。他們可能用看似「不在乎」的方式隱藏悲傷，或者透過冒險行為來表達痛苦。',
+    suggestions: [
+      '個別諮商搭配同儕支持團體通常效果最好',
+      '尊重青少年的自主性，不要強迫他們談論悲傷',
+      '學校輔導室可以提供第一線的支持',
+      '注意是否出現物質使用、自傷或嚴重行為問題等警訊',
+      '讓青少年知道你願意在他們準備好時傾聽',
+    ]
+  },
+  result_adult_support: {
+    result: true,
+    title: '如何支持悲傷中的成人',
+    body: '陪伴悲傷中的人，最重要的是「在場」而不是「解決問題」。',
+    suggestions: [
+      '傾聽比建議更重要——不需要找到「正確的話」說',
+      '避免說「他在更好的地方」「要堅強」等可能無效化悲傷的話',
+      '持續的關心比一次性的大力幫忙更有用——在幾週、幾月後仍然聯繫',
+      '具體的幫助（煮飯、陪伴、接送孩子）比「有需要跟我說」更有用',
+      '如果你擔心對方的狀態，可以溫和地建議尋求專業協助',
+      '照顧者也需要照顧自己——支持他人是消耗的',
+    ]
+  },
+  result_elderly: {
+    result: true,
+    title: '年長者的悲傷支持',
+    body: '年長者可能同時面對多重失落（配偶、同輩、健康、獨立性），且更容易因悲傷而出現身體健康問題。',
+    suggestions: [
+      '注意悲傷是否以身體症狀呈現（疼痛加劇、食慾下降、失眠）',
+      '許多年長者不習慣接受心理諮商——社區中的支持團體可能較容易接受',
+      '醫療照護提供者應注意篩檢悲傷相關的憂鬱',
+      '宗教或靈性的支持對許多年長者特別重要',
+      '關注實際需求（獨居安全、交通、社交連結）',
+    ]
+  },
+  result_prof_pgd: {
+    result: true,
+    title: '專業建議：CGT 為首選',
+    body: '持續超過預期的分離痛苦是延長性悲傷障礙的核心。CGT（Shear）是目前實證最充分的治療方案。',
+    suggestions: [
+      '使用 PG-13 或 ICG 進行正式評估',
+      'CGT 16 週方案：想像式重訪 + 情境暴露 + 復原導向目標設定',
+      '注意評估共病（MDD、PTSD、物質使用）',
+      '若合併 PTSD，考慮先處理創傷成分或選用 CGT（已整合暴露元素）',
+      '若個案抗拒結構化治療，意義重建取向可作為替代',
+    ]
+  },
+  result_prof_trauma: {
+    result: true,
+    title: '專業建議：創傷聚焦優先',
+    body: '當悲傷中的創傷成分阻礙了哀悼歷程，需要先處理創傷，再處理悲傷。',
+    suggestions: [
+      'EMDR 或 PE 處理創傷性記憶',
+      '使用 PCL-5 評估 PTSD 共病',
+      '治療順序：穩定化 → 創傷處理 → 悲傷工作',
+      '注意創傷性悲傷可能同時需要 CGT 的元素',
+      '若為自殺喪親，建議納入特定的自殺遺族議題處理',
+    ]
+  },
+  result_prof_cbt: {
+    result: true,
+    title: '專業建議：CBT 取向',
+    body: '當認知困擾（罪惡感、災難化、過度個人化）是維持悲傷的核心機制時，CBT 是有效的選擇。',
+    suggestions: [
+      '使用 Boelen 的認知行為模型進行個案概念化',
+      '結合認知重建與暴露練習的效果優於單一技術',
+      '特別注意「後見之明偏誤」和「全能思維」的認知扭曲',
+      '行為活化可同時處理伴隨的憂鬱症狀',
+      '若個案同時呈現強烈的意義困擾，可整合意義重建元素',
+    ]
+  },
+  result_prof_meaning: {
+    result: true,
+    title: '專業建議：意義重建取向',
+    body: '當失落撼動了個案的核心信念系統和生命意義感時，Neimeyer 的意義重建取向最為對症。',
+    suggestions: [
+      '評估個案的「意義製造」（sense-making）和「好處發現」（benefit-finding）程度',
+      '運用失落敘事書寫、意義地圖等技術',
+      '存在主義取向的探索可作為補充',
+      '注意區分正常的意義追尋和臨床程度的複雜性悲傷',
+      '如果同時有顯著的症狀困擾，考慮整合 CBT 元素',
+    ]
+  },
+  result_prof_art: {
+    result: true,
+    title: '專業建議：表達性藝術治療',
+    body: '對語言表達有限制的個案（兒童、發展障礙、創傷後語言封閉），藝術治療提供替代性的表達管道。',
+    suggestions: [
+      '根據個案年齡和偏好選擇媒材（繪畫、黏土、沙遊、音樂等）',
+      '兒童：遊戲治療整合藝術表達',
+      '注意藝術作品中的象徵性主題，但避免過度詮釋',
+      '同時進行照顧者的親職諮詢（針對兒童個案）',
+      '可搭配結構化的悲傷教育課程',
+    ]
+  },
+};
+
+let treePath = ['start'];
+let treeHistory = [];
+
+function renderTree() {
+  const container = document.getElementById('treeContainer');
+  const indicator = document.getElementById('stepIndicator');
+  container.innerHTML = '';
+
+  // Step indicator
+  const totalSteps = treePath.length;
+  indicator.innerHTML = treePath.map((_, i) => {
+    const cls = i < totalSteps - 1 ? 'filled' : 'current';
+    return `<span class="step-dot ${cls}"></span>`;
+  }).join('') + `<span style="margin-left:.3rem">步驟 ${totalSteps}</span>`;
+
+  const currentKey = treePath[treePath.length - 1];
+  const node = treeData[currentKey];
+
+  if (node.result) {
+    container.innerHTML = `
+      <div class="tree-result">
+        <h3>${node.title}</h3>
+        <p>${node.body}</p>
+        <ul>${node.suggestions.map(s => `<li>${s}</li>`).join('')}</ul>
+      </div>
+      <button class="tree-restart" onclick="restartTree()">重新開始</button>
+    `;
+    return;
+  }
+
+  // Show completed questions
+  for (let i = 0; i < treeHistory.length; i++) {
+    const h = treeHistory[i];
+    const n = treeData[h.nodeKey];
+    const selectedOpt = n.options[h.optionIndex];
+    container.innerHTML += `
+      <div class="tree-node completed">
+        <div class="tree-question">${n.question}</div>
+        <div class="tree-options">
+          <div class="tree-option selected" style="cursor:default">${selectedOpt.text}</div>
+        </div>
+      </div>`;
+  }
+
+  // Current question
+  const optionsHtml = node.options.map((opt, i) => `
+    <button class="tree-option" onclick="selectTreeOption('${currentKey}', ${i}, '${opt.next}')">${opt.text}</button>
+  `).join('');
+
+  container.innerHTML += `
+    <div class="tree-node active">
+      <div class="tree-question">${node.question}</div>
+      <div class="tree-options">${optionsHtml}</div>
+    </div>`;
+}
+
+function selectTreeOption(nodeKey, optionIndex, nextKey) {
+  treeHistory.push({ nodeKey, optionIndex });
+  treePath.push(nextKey);
+  renderTree();
+}
+
+function restartTree() {
+  treePath = ['start'];
+  treeHistory = [];
+  renderTree();
+}
+
+renderTree();
+
+/* ============================================================
+   TOOL 3: Worden's Four Tasks
+   ============================================================ */
+const wordenTasks = [
+  {
+    id: 'task1',
+    title: '任務一：接受失落的現實',
+    shortTitle: '任務一',
+    description: '在知性與情感層面都接受失落已經發生。這意味著不只是「知道」這個人離開了，而是在內心深處真正理解和感受到這個事實。',
+    reflections: [
+      { prompt: '當你想到逝去的人時，你是否有時仍然無法相信他/她已經離開了？這種感覺在什麼時候最強烈？', placeholder: '寫下你的感受和觀察...' },
+      { prompt: '有沒有什麼事物（物品、地點、習慣）你一直在迴避面對，因為它們讓失落變得太真實了？', placeholder: '寫下你想到的...' },
+      { prompt: '你是否能夠用自己的話，向別人述說你的失落經驗？還是這件事仍然「說不出口」？', placeholder: '試著寫下你的觀察...' },
+    ]
+  },
+  {
+    id: 'task2',
+    title: '任務二：處理悲傷的痛苦',
+    shortTitle: '任務二',
+    description: '允許自己經驗並表達悲傷帶來的各種痛苦——不只是情緒上的，也包括身體的、認知的和行為的。壓抑或逃避這些痛苦可能導致悲傷歷程停滯。',
+    reflections: [
+      { prompt: '你的悲傷除了情緒上的痛苦之外，還有什麼身體上的感受嗎？（如胸口緊、頭痛、疲累、食慾改變）', placeholder: '留意和記錄你身體的感受...' },
+      { prompt: '在你的環境中（家庭、職場、文化），你覺得自己「被允許」表達多少悲傷？有沒有壓力讓你覺得必須表現得「沒事」？', placeholder: '寫下你的觀察...' },
+      { prompt: '有什麼情緒是你特別難以面對的？（例如憤怒、罪惡感、被遺棄感、解脫感）為什麼這個情緒讓你不舒服？', placeholder: '嘗試探索這些感受...' },
+    ]
+  },
+  {
+    id: 'task3',
+    title: '任務三：適應沒有逝者的世界',
+    shortTitle: '任務三',
+    description: '這包括三個層面的適應：外在適應（承擔逝者原有的角色和功能）、內在適應（重新定義自我認同）、靈性適應（重建對世界的基本假設）。',
+    reflections: [
+      { prompt: '逝者離開後，你在生活中需要承擔哪些新的角色或責任？你如何看待這些改變？', placeholder: '思考你的日常生活變化...' },
+      { prompt: '「沒有了他/她的我，是誰？」——這個問題對你來說困難嗎？你如何重新定義自己？', placeholder: '寫下你的自我探索...' },
+      { prompt: '這次的失落有沒有改變你對生命、世界或人性的基本看法？如果有，是怎樣的改變？', placeholder: '探索你的信念變化...' },
+    ]
+  },
+  {
+    id: 'task4',
+    title: '任務四：在新生活中找到與逝者持續連結的方式',
+    shortTitle: '任務四',
+    description: '不是「放下」或「忘記」逝者，而是找到一種健康的方式，讓逝者的愛與記憶成為你繼續生活的一部分。在維持內在連結的同時，重新投入新的關係和生活。',
+    reflections: [
+      { prompt: '你用什麼方式與逝者保持連結？（例如：回憶、對話、紀念活動、保留物品、實踐他/她的價值觀）你覺得這些方式對你有幫助嗎？', placeholder: '思考你的持續連結方式...' },
+      { prompt: '你是否開始（或害怕開始）投入新的活動、關係或人生目標？是什麼讓你前進，又是什麼讓你猶豫？', placeholder: '寫下你的想法和感受...' },
+      { prompt: '如果逝者能看到現在的你，你覺得他/她會對你說什麼？', placeholder: '試著想像這段對話...' },
+    ]
+  },
+];
+
+let currentTaskIndex = 0;
+const STORAGE_KEY = 'worden_reflections';
+
+function loadSavedData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch { return {}; }
+}
+
+function saveData(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const notice = document.getElementById('saveNotice');
+    notice.classList.add('show');
+    setTimeout(() => notice.classList.remove('show'), 2000);
+  } catch {}
+}
+
+function getCompletionCount() {
+  const data = loadSavedData();
+  let completed = 0;
+  wordenTasks.forEach(task => {
+    const allFilled = task.reflections.every((_, ri) => {
+      const key = `${task.id}_r${ri}`;
+      return data[key] && data[key].trim().length > 0;
+    });
+    if (allFilled) completed++;
+  });
+  return completed;
+}
+
+function renderWordenNav() {
+  const nav = document.getElementById('taskNav');
+  const data = loadSavedData();
+  nav.innerHTML = wordenTasks.map((task, i) => {
+    const allFilled = task.reflections.every((_, ri) => {
+      const key = `${task.id}_r${ri}`;
+      return data[key] && data[key].trim().length > 0;
+    });
+    let cls = i === currentTaskIndex ? 'active' : '';
+    if (allFilled) cls += ' completed-task';
+    return `<button class="task-nav-btn ${cls}" onclick="switchTask(${i})">${task.shortTitle}</button>`;
+  }).join('');
+
+  // Update progress bar
+  const completed = getCompletionCount();
+  document.getElementById('wordenProgress').style.width = (completed / 4 * 100) + '%';
+}
+
+function renderWordenPanels() {
+  const panels = document.getElementById('taskPanels');
+  const data = loadSavedData();
+
+  panels.innerHTML = wordenTasks.map((task, i) => {
+    const activeClass = i === currentTaskIndex ? 'active' : '';
+    const reflectionsHtml = task.reflections.map((r, ri) => {
+      const key = `${task.id}_r${ri}`;
+      const value = data[key] || '';
+      return `
+        <div class="reflection-group">
+          <div class="reflection-label">${r.prompt}</div>
+          <textarea class="reflection-textarea" id="${key}"
+            placeholder="${r.placeholder}"
+            oninput="autoSaveReflection('${key}', this.value)">${value}</textarea>
+        </div>`;
+    }).join('');
+
+    const nextBtn = i < 3
+      ? `<button class="btn-primary" onclick="switchTask(${i+1})">前往${wordenTasks[i+1].shortTitle}</button>`
+      : `<button class="btn-primary" onclick="showWordenSummary()">查看完成狀態</button>`;
+    const prevBtn = i > 0
+      ? `<button class="btn-secondary" onclick="switchTask(${i-1})">回到${wordenTasks[i-1].shortTitle}</button>`
+      : '';
+
+    return `
+      <div class="task-panel ${activeClass}" id="panel-${task.id}">
+        <div class="task-description">
+          <h3>${task.title}</h3>
+          <p>${task.description}</p>
+        </div>
+        ${reflectionsHtml}
+        <div class="task-actions">${prevBtn}${nextBtn}</div>
+      </div>`;
+  }).join('');
+}
+
+let saveTimeout;
+function autoSaveReflection(key, value) {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    const data = loadSavedData();
+    data[key] = value;
+    saveData(data);
+    renderWordenNav();
+  }, 800);
+}
+
+function switchTask(index) {
+  currentTaskIndex = index;
+  renderWordenNav();
+  document.querySelectorAll('.task-panel').forEach((p, i) => {
+    p.classList.toggle('active', i === index);
+  });
+}
+
+function showWordenSummary() {
+  const completed = getCompletionCount();
+  const total = 4;
+  let msg = '';
+  if (completed === total) {
+    msg = '你已經完成了四項任務的反思。你可以隨時回來修改或補充。記住，這些任務不是線性的——你可能會在不同時期反覆經歷它們。';
+  } else {
+    msg = `你已完成 ${completed}/${total} 項任務的反思。沒有完成所有任務也完全沒關係——有些任務可能目前還不適用於你，或你還沒有準備好面對。`;
+  }
+  alert(msg);
+}
+
+renderWordenNav();
+renderWordenPanels();
+</script>
+
+</body>
+</html>

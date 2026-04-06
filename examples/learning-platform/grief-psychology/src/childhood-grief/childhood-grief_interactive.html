@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>兒童與青少年的悲傷 — 互動工具</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #5B6A8A;
+    --primary-dark: #44516B;
+    --primary-light: #7A89A8;
+    --primary-bg: #EEF1F6;
+    --accent: #C4956A;
+    --accent-dark: #A97A52;
+    --accent-light: #DDBFA5;
+    --accent-bg: #FBF5EF;
+    --text: #2C3345;
+    --text-light: #5A6377;
+    --bg: #F8F9FB;
+    --white: #FFFFFF;
+    --border: #D5DAE3;
+    --success: #5A8A6A;
+    --success-bg: #EBF5EE;
+    --warning: #8A7A5B;
+    --warning-bg: #F9F5EB;
+    --shadow-sm: 0 1px 3px rgba(44,51,69,0.08);
+    --shadow-md: 0 4px 12px rgba(44,51,69,0.1);
+    --shadow-lg: 0 8px 24px rgba(44,51,69,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+
+  h1 {
+    font-size: 1.6em;
+    color: var(--primary-dark);
+    text-align: center;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 0.92em;
+    margin-bottom: 24px;
+  }
+
+  /* Tab Navigation */
+  .tab-nav {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 10px 18px;
+    border: none;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 0.93em;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.25s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .tab-btn:hover { color: var(--primary); }
+
+  .tab-btn.active {
+    color: var(--primary-dark);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .card h3 {
+    font-size: 1.1em;
+    color: var(--primary-dark);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card h3 .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* Age Slider Tool */
+  .age-display {
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  .age-number {
+    font-size: 3em;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+  }
+
+  .age-label {
+    font-size: 0.95em;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+
+  .age-slider-wrap {
+    position: relative;
+    padding: 10px 0 32px;
+  }
+
+  .age-slider {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, var(--accent-light), var(--primary-light), var(--primary));
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .age-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--primary);
+    box-shadow: var(--shadow-md);
+    cursor: grab;
+  }
+
+  .age-slider::-moz-range-thumb {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--primary);
+    box-shadow: var(--shadow-md);
+    cursor: grab;
+  }
+
+  .age-ticks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.78em;
+    color: var(--text-light);
+  }
+
+  .stage-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .stage-preschool { background: #FDEBD0; color: #8B5E34; }
+  .stage-school { background: #D5E8D4; color: #3D6B3D; }
+  .stage-adolescent { background: #D4E3F5; color: #3A5A8A; }
+
+  /* Info Sections */
+  .info-grid {
+    display: grid;
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .info-block {
+    padding: 16px;
+    border-radius: var(--radius);
+    border-left: 4px solid var(--primary-light);
+    background: var(--primary-bg);
+  }
+
+  .info-block.accent {
+    border-left-color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  .info-block.success {
+    border-left-color: var(--success);
+    background: var(--success-bg);
+  }
+
+  .info-block h4 {
+    font-size: 0.92em;
+    color: var(--primary-dark);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .info-block.accent h4 { color: var(--accent-dark); }
+  .info-block.success h4 { color: var(--success); }
+
+  .info-block ul {
+    padding-left: 18px;
+    font-size: 0.9em;
+    color: var(--text);
+  }
+
+  .info-block ul li { margin-bottom: 4px; }
+
+  /* Strategy Tool */
+  .selector-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .selector-group label {
+    font-size: 0.88em;
+    font-weight: 600;
+    color: var(--text-light);
+    width: 100%;
+    margin-bottom: 2px;
+  }
+
+  .sel-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--text);
+    font-size: 0.88em;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .sel-btn:hover { border-color: var(--primary-light); background: var(--primary-bg); }
+
+  .sel-btn.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--white);
+  }
+
+  .do-dont {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .do-dont { grid-template-columns: 1fr; }
+  }
+
+  .do-box, .dont-box {
+    padding: 16px;
+    border-radius: var(--radius);
+    font-size: 0.9em;
+  }
+
+  .do-box {
+    background: var(--success-bg);
+    border: 1px solid #B5D4BC;
+  }
+
+  .do-box h4 { color: var(--success); margin-bottom: 8px; }
+
+  .dont-box {
+    background: #FDF0F0;
+    border: 1px solid #E8C4C4;
+  }
+
+  .dont-box h4 { color: #8A5B5B; margin-bottom: 8px; }
+
+  .do-box ul, .dont-box ul {
+    padding-left: 18px;
+    line-height: 1.7;
+  }
+
+  .do-box ul li { margin-bottom: 4px; }
+  .dont-box ul li { margin-bottom: 4px; }
+
+  .strategy-result {
+    display: none;
+  }
+
+  .strategy-result.visible {
+    display: block;
+  }
+
+  /* Timeline Tool */
+  .timeline-container {
+    position: relative;
+    padding: 20px 0 20px 32px;
+  }
+
+  .timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--accent-light), var(--primary-light), var(--primary));
+    border-radius: 2px;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 28px;
+    cursor: pointer;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--primary-light);
+    z-index: 1;
+    transition: all 0.3s;
+  }
+
+  .timeline-item.expanded::before {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .timeline-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .timeline-age {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1em;
+    white-space: nowrap;
+  }
+
+  .timeline-title {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.95em;
+  }
+
+  .timeline-eng {
+    font-size: 0.82em;
+    color: var(--text-light);
+    font-style: italic;
+  }
+
+  .timeline-detail {
+    display: none;
+    margin-top: 10px;
+    padding: 14px;
+    background: var(--primary-bg);
+    border-radius: var(--radius);
+    font-size: 0.9em;
+    line-height: 1.7;
+    border-left: 3px solid var(--primary-light);
+  }
+
+  .timeline-item.expanded .timeline-detail {
+    display: block;
+  }
+
+  .timeline-click-hint {
+    font-size: 0.82em;
+    color: var(--text-light);
+    text-align: center;
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+
+  /* Misc */
+  .note {
+    padding: 14px 16px;
+    background: var(--warning-bg);
+    border-radius: var(--radius);
+    font-size: 0.88em;
+    color: var(--warning);
+    border-left: 4px solid var(--warning);
+    margin-top: 16px;
+  }
+
+  .section-intro {
+    font-size: 0.93em;
+    color: var(--text-light);
+    margin-bottom: 20px;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 14px 10px; }
+    h1 { font-size: 1.3em; }
+    .tab-btn { padding: 8px 12px; font-size: 0.85em; }
+    .card { padding: 18px 14px; }
+    .age-number { font-size: 2.4em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>兒童與青少年的悲傷</h1>
+  <p class="subtitle">互動探索工具 — 理解不同發展階段的悲傷反應與支持策略</p>
+
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" role="tab" data-tab="explorer" aria-selected="true">發展階段探索器</button>
+    <button class="tab-btn" role="tab" data-tab="strategy" aria-selected="false">支持策略建議</button>
+    <button class="tab-btn" role="tab" data-tab="timeline" aria-selected="false">死亡概念里程碑</button>
+  </nav>
+
+  <!-- Tool 1: Age Explorer -->
+  <div class="tab-panel active" id="panel-explorer" role="tabpanel">
+    <p class="section-intro">拖動滑桿選擇年齡，探索該年齡兒童如何理解死亡、表達悲傷，以及我們可以如何支持他們。</p>
+
+    <div class="card">
+      <div class="age-display">
+        <div class="age-number" id="age-value">4</div>
+        <div class="age-label" id="age-stage-label">學齡前兒童</div>
+      </div>
+      <div class="age-slider-wrap">
+        <input type="range" class="age-slider" id="age-slider" min="1" max="18" value="4" step="1">
+        <div class="age-ticks">
+          <span>1歲</span><span>3</span><span>6</span><span>9</span><span>12</span><span>15</span><span>18歲</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="age-content">
+      <!-- dynamically filled -->
+    </div>
+  </div>
+
+  <!-- Tool 2: Strategy Advisor -->
+  <div class="tab-panel" id="panel-strategy" role="tabpanel">
+    <p class="section-intro">選擇兒童的年齡層與面臨的情境，獲得具體的支持策略建議，包括「該做的」和「不該做的」。</p>
+
+    <div class="card">
+      <h3><span class="icon" style="background:var(--primary-bg);color:var(--primary);">1</span> 選擇年齡層</h3>
+      <div class="selector-group" id="strategy-age-group">
+        <button class="sel-btn" data-val="preschool">幼兒 (2-5歲)</button>
+        <button class="sel-btn" data-val="school">學齡兒童 (6-11歲)</button>
+        <button class="sel-btn" data-val="teen">青少年 (12-18歲)</button>
+      </div>
+
+      <h3 style="margin-top:20px"><span class="icon" style="background:var(--accent-bg);color:var(--accent-dark);">2</span> 選擇情境</h3>
+      <div class="selector-group" id="strategy-situation">
+        <button class="sel-btn" data-val="telling">告知死訊</button>
+        <button class="sel-btn" data-val="funeral">參與告別式</button>
+        <button class="sel-btn" data-val="school">回到學校</button>
+        <button class="sel-btn" data-val="ongoing">日常持續支持</button>
+        <button class="sel-btn" data-val="regrief">再悲傷出現</button>
+      </div>
+    </div>
+
+    <div id="strategy-result" class="strategy-result">
+      <!-- dynamically filled -->
+    </div>
+  </div>
+
+  <!-- Tool 3: Milestone Timeline -->
+  <div class="tab-panel" id="panel-timeline" role="tabpanel">
+    <p class="section-intro">兒童對死亡的理解並非一蹴而就，而是隨著認知發展逐步建構。點擊各里程碑，了解每個概念的發展時程與具體表現。</p>
+
+    <div class="card">
+      <h3><span class="icon" style="background:var(--accent-bg);color:var(--accent-dark);">&#9672;</span> 死亡概念發展里程碑</h3>
+      <p class="timeline-click-hint">點擊各項目展開詳細說明</p>
+
+      <div class="timeline-container" id="timeline">
+        <div class="timeline-item" data-milestone="separation">
+          <div class="timeline-header">
+            <span class="timeline-age">0-2 歲</span>
+            <span class="timeline-title">感受分離與缺席</span>
+          </div>
+          <div class="timeline-eng">Sensing Separation & Absence</div>
+          <div class="timeline-detail">
+            <p>嬰幼兒尚未具備死亡概念，但能<strong>感受到照顧者的缺席</strong>與環境氛圍的改變。他們可能透過哭鬧、食慾改變、睡眠困擾來表達不安。</p>
+            <p style="margin-top:8px">此階段的關鍵不在於「解釋」死亡，而在於<strong>維持穩定的照顧環境</strong>與身體接觸，提供安全感。</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" data-milestone="temporary">
+          <div class="timeline-header">
+            <span class="timeline-age">2-4 歲</span>
+            <span class="timeline-title">死亡 = 暫時的分離</span>
+          </div>
+          <div class="timeline-eng">Death as Temporary Separation</div>
+          <div class="timeline-detail">
+            <p>根據 Nagy（1948）的第一階段描述，此年齡的兒童將死亡視為<strong>可逆的</strong>。他們可能反覆問「爺爺什麼時候回來？」，並認為死者仍有感覺和需求（「他在棺材裡面會不會肚子餓？」）。</p>
+            <p style="margin-top:8px"><strong>魔法思維</strong>（magical thinking）在此階段特別活躍，兒童可能相信自己的想法或行為導致了死亡，產生強烈的罪疚感。</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" data-milestone="irreversibility">
+          <div class="timeline-header">
+            <span class="timeline-age">5-7 歲</span>
+            <span class="timeline-title">不可逆性的理解</span>
+          </div>
+          <div class="timeline-eng">Understanding Irreversibility</div>
+          <div class="timeline-detail">
+            <p><strong>不可逆性</strong>（Irreversibility）是兒童通常最先獲得的成熟死亡概念組成要素。孩子開始理解死者<strong>不會再回來</strong>。</p>
+            <p style="margin-top:8px">然而，這個理解的建立通常是漸進的，而非突然的頓悟。孩子可能在某些時刻表現出理解，但在情緒激動時又退回到「希望他回來」的想法。</p>
+            <p style="margin-top:8px"><strong>同時期</strong>，普遍性（Universality）的理解也開始萌芽——孩子逐漸認識到所有生物都會死亡，包括自己和所愛的人。這可能引發新的焦慮：「媽媽也會死嗎？」</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" data-milestone="universality">
+          <div class="timeline-header">
+            <span class="timeline-age">5-8 歲</span>
+            <span class="timeline-title">普遍性的認識</span>
+          </div>
+          <div class="timeline-eng">Recognizing Universality</div>
+          <div class="timeline-detail">
+            <p><strong>普遍性</strong>（Universality）指的是理解死亡適用於所有生物——每個人、每隻動物最終都會死。</p>
+            <p style="margin-top:8px">在 Nagy 的第二階段（約 5-9 歲），兒童開始認識到死亡的終極性，但可能仍然認為某些人（特別是自己）可以逃避死亡。他們可能將死亡<strong>擬人化</strong>，想像成一個可以躲開的外在力量（如「死神」）。</p>
+            <p style="margin-top:8px">這個階段的孩子可能會問：「好人也會死嗎？」「如果我一直很健康，是不是就不會死？」</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" data-milestone="nonfunctionality">
+          <div class="timeline-header">
+            <span class="timeline-age">7-9 歲</span>
+            <span class="timeline-title">無功能性的理解</span>
+          </div>
+          <div class="timeline-eng">Understanding Nonfunctionality</div>
+          <div class="timeline-detail">
+            <p><strong>無功能性</strong>（Nonfunctionality）是指理解死亡後所有身體與心理功能都停止——不能呼吸、不能思考、不能感覺、不會痛。</p>
+            <p style="margin-top:8px">這個概念的完整獲得通常晚於不可逆性和普遍性。在此之前，孩子可能理解「人死了不會回來」但仍擔心「他在地下會不會冷？」</p>
+            <p style="margin-top:8px">當無功能性的理解建立後，孩子可能反而感到<strong>安慰</strong>——知道死者不再受苦。但也可能覺得更加悲傷，因為「他真的什麼都感覺不到了」意味著完全的失去。</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" data-milestone="causality">
+          <div class="timeline-header">
+            <span class="timeline-age">7-10 歲</span>
+            <span class="timeline-title">因果性的掌握</span>
+          </div>
+          <div class="timeline-eng">Grasping Causality</div>
+          <div class="timeline-detail">
+            <p><strong>因果性</strong>（Causality）是理解死亡由具體的生物原因（如疾病、器官衰竭、外傷）所導致，而非由魔法思維、道德行為或超自然力量所引起。</p>
+            <p style="margin-top:8px">這是四大死亡概念中通常<strong>最晚被完整掌握</strong>的。它的建立有助於減輕兒童的罪疚感——當孩子理解死亡有具體的醫學原因時，就比較不會認為「是我的錯」。</p>
+            <p style="margin-top:8px">然而，因果性的理解需要一定的邏輯推理能力，且受到教育程度和生活經驗的影響。有些兒童可能在某些方面理解因果性，但在其他方面仍保留魔法思維。</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" data-milestone="abstract">
+          <div class="timeline-header">
+            <span class="timeline-age">9-10 歲+</span>
+            <span class="timeline-title">完整的死亡概念</span>
+          </div>
+          <div class="timeline-eng">Complete Death Concept (Nagy Stage 3)</div>
+          <div class="timeline-detail">
+            <p>根據 Nagy 的第三階段，約 9-10 歲時，大多數兒童已能整合四大組成要素，形成<strong>完整且成熟的死亡概念</strong>：死亡是不可逆的、普遍的、會導致所有功能停止、且由生物原因所造成。</p>
+            <p style="margin-top:8px">此時的理解與成人的認知基本一致，但<strong>情緒處理</strong>能力仍在發展中。知識上的理解不等同於情緒上的接受。</p>
+          </div>
+        </div>
+
+        <div class="timeline-item" data-milestone="existential">
+          <div class="timeline-header">
+            <span class="timeline-age">12-18 歲</span>
+            <span class="timeline-title">存在性思考與意義探索</span>
+          </div>
+          <div class="timeline-eng">Existential Thinking & Meaning-Making</div>
+          <div class="timeline-detail">
+            <p>進入 Piaget 的形式運思期後，青少年不僅理解死亡的生物事實，還能進行<strong>抽象的存在性思考</strong>：「死亡的意義是什麼？」「人生為什麼要努力？」「死後有沒有意識？」</p>
+            <p style="margin-top:8px">這個階段的關鍵發展是<strong>意義建構</strong>（meaning-making）的能力——青少年開始嘗試在失落經驗中尋找或創造意義，這是悲傷適應的重要資源。</p>
+            <p style="margin-top:8px">然而，存在性思考也可能帶來<strong>存在焦慮</strong>，特別是當失落經驗與青春期的身份認同探索同時發生時。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>重要提醒：</strong>以上年齡範圍為一般性指引，個別差異可能很大。兒童的死亡概念發展受到認知能力、文化背景、個人經驗（如是否經歷過寵物或親人死亡）與家庭溝通模式的顯著影響（Corr, 2010）。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // === Tab Navigation ===
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  tabBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      tabBtns.forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      tabPanels.forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // === Tool 1: Age Explorer ===
+  var ageData = {
+    infant: {
+      range: [1, 2],
+      label: '嬰幼兒期',
+      badge: 'stage-preschool',
+      understanding: [
+        '尚未具備死亡概念',
+        '無法理解「永久消失」的意義',
+        '能感受到照顧者的缺席與環境氛圍的變化',
+        '以感官經驗（聲音、氣味、觸覺）記住照顧者'
+      ],
+      reactions: [
+        '哭鬧增加、作息混亂',
+        '食慾改變、睡眠困擾',
+        '對陌生人或新環境更加敏感',
+        '尋找消失的照顧者（轉頭、爬向門口）',
+        '對熟悉物品的依附增強'
+      ],
+      support: [
+        '維持穩定一致的照顧環境',
+        '大量的身體接觸——擁抱、撫摸、搖晃',
+        '保持熟悉的作息與感官刺激（如逝者慣用的毯子或氣味）',
+        '主要照顧者的情緒穩定是最關鍵的',
+        '替代照顧者應盡量維持原有照顧模式'
+      ]
+    },
+    preschool: {
+      range: [3, 5],
+      label: '學齡前兒童',
+      badge: 'stage-preschool',
+      understanding: [
+        '將死亡視為暫時的、可逆的（Nagy 第一階段）',
+        '認為死者仍有感覺與需求',
+        '具有魔法思維，可能認為自己的想法導致了死亡',
+        '自我中心思考——以自身經驗理解世界',
+        '逐漸開始理解「身體壞掉了」的概念'
+      ],
+      reactions: [
+        '反覆詢問「他什麼時候回來？」',
+        '退化行為（尿床、吸拇指、黏人）',
+        '分離焦慮加劇',
+        '在遊戲中重演死亡場景',
+        '「水坑式悲傷」——在悲傷與正常遊戲間快速切換',
+        '可能出現睡眠問題、食慾改變',
+        '罪疚感：「是不是因為我不乖？」'
+      ],
+      support: [
+        '使用清楚、具體的語言（「死了」而非「睡著了」「去了遠方」）',
+        '用身體功能來解釋（「不能呼吸、不能吃東西了」）',
+        '反覆說明「不是你的錯」——需要說很多次',
+        '允許反覆提問，每次耐心回答',
+        '提供遊戲作為表達管道（玩偶、角色扮演）',
+        '維持日常作息與安全感',
+        '建立簡單的紀念儀式'
+      ]
+    },
+    earlySchool: {
+      range: [6, 8],
+      label: '低年級學齡兒童',
+      badge: 'stage-school',
+      understanding: [
+        '開始理解不可逆性（死者不會回來）',
+        '逐漸認識普遍性（所有人都會死）',
+        '可能仍認為死亡可以被逃避（Nagy 第二階段）',
+        '對死亡的具體細節充滿好奇',
+        '開始發展因果性的理解，但仍可能殘留魔法思維'
+      ],
+      reactions: [
+        '大量具體的問題（「棺材裡面暗不暗？」）',
+        '害怕更多人會死（對存活親人的安全過度擔憂）',
+        '攻擊行為或行為化問題（特別在 6-8 歲）',
+        '學業表現下滑、注意力不集中',
+        '身體化症狀（頭痛、腹痛）',
+        '罪疚感（特別是如果曾與逝者有衝突）',
+        '可能隱藏悲傷以「融入」同儕'
+      ],
+      support: [
+        '誠實回答所有問題，不迴避',
+        '解釋死因時區分「一般疾病」和「致命疾病」，減少不必要的恐懼',
+        '提供表達管道：繪畫、書寫、音樂',
+        '正常化悲傷反應（「生氣是可以的」）',
+        '學校提供學業彈性與輔導支持',
+        '注意行為化的表達——行為背後的情緒需求',
+        '讓孩子維持正常的社交活動'
+      ]
+    },
+    lateSchool: {
+      range: [9, 11],
+      label: '高年級學齡兒童',
+      badge: 'stage-school',
+      understanding: [
+        '已具備較完整的死亡概念（Nagy 第三階段）',
+        '理解不可逆性、普遍性、無功能性',
+        '因果性的理解趨於成熟',
+        '能進行邏輯思考，理解死亡的生物性',
+        '開始思考死亡對「未來」的影響'
+      ],
+      reactions: [
+        '情緒壓抑——試圖「堅強」或照顧悲傷的父母',
+        '角色逆轉/親職化（照顧者角色）',
+        '對死亡的「公平性」產生質疑',
+        '學業表現波動',
+        '社交退縮或與同儕疏離（覺得同儕「不理解」）',
+        '焦慮傾向增加',
+        '可能出現強迫式的思考或行為'
+      ],
+      support: [
+        '解除「小大人」的重擔——明確告知照顧家庭不是他的責任',
+        '鼓勵情緒表達，但不強迫',
+        '提供「寫信給逝者」等結構化的表達方式',
+        '關注被隱藏的悲傷——「看起來很好」不等於「真的很好」',
+        '同儕支持小組可以特別有效',
+        '維持課外活動和社交，提供「正常」的感覺',
+        '在重要時刻（畢業、生日）預期可能的再悲傷'
+      ]
+    },
+    earlyTeen: {
+      range: [12, 14],
+      label: '青少年前期',
+      badge: 'stage-adolescent',
+      understanding: [
+        '具備完整且成熟的死亡概念',
+        '能進行抽象思考',
+        '開始探索死亡的存在意義',
+        '理解死亡的不公平性',
+        '能思考死亡對長期人生計畫的影響'
+      ],
+      reactions: [
+        '存在性提問（「人生有什麼意義？」）',
+        '憤怒（可能指向逝者、上天、存活的人）',
+        '風險行為的萌芽（作息混亂、衝動行為）',
+        '與同儕的關係緊張——覺得沒人懂',
+        '社交退縮或過度社交',
+        '身份認同的動搖（特別在失去父母時）',
+        '可能透過社群媒體表達或處理悲傷',
+        '情緒調節困難，大起大落'
+      ],
+      support: [
+        '以尊重、平等的態度溝通——不要「對他說教」',
+        '認真對待他們的存在性提問',
+        '允許他們以自己的方式悲傷（包括沉默）',
+        '提供選擇而非指令',
+        '關注風險行為但避免過度控制',
+        '鼓勵同儕支持與專業諮商的結合',
+        '引導健康的數位悲傷表達方式'
+      ]
+    },
+    lateTeen: {
+      range: [15, 18],
+      label: '青少年後期',
+      badge: 'stage-adolescent',
+      understanding: [
+        '成熟的死亡概念與存在性思考',
+        '能夠進行複雜的哲學與道德推理',
+        '理解悲傷的長期性與複雜性',
+        '有能力進行意義建構',
+        '更能理解他人的悲傷經驗'
+      ],
+      reactions: [
+        '強烈的存在焦慮',
+        '「雙重過渡」的壓力——發展性過渡 + 失落過渡',
+        '風險行為可能加劇（酒精、藥物、危險行為）',
+        '人生規劃受到衝擊',
+        '對未來的不確定感',
+        '可能假裝成熟、壓抑脆弱',
+        '與父母的關係可能更為緊張',
+        '尋求與同樣經歷者的連結'
+      ],
+      support: [
+        '將他們視為「接近成人但仍需要支持」的個體',
+        '不催促、不評判、持續提供可及的陪伴',
+        '鼓勵意義建構——日記、創作、志願服務',
+        '關注自殺風險（特別在同儕死亡、自殺後）',
+        '支持他們維持學業與未來規劃，但保持彈性',
+        '專業諮商可以非常有效——青少年常更願意對非家庭成員敞開',
+        '幫助他們建立健康的長期因應策略'
+      ]
+    }
+  };
+
+  function getAgeGroup(age) {
+    if (age <= 2) return 'infant';
+    if (age <= 5) return 'preschool';
+    if (age <= 8) return 'earlySchool';
+    if (age <= 11) return 'lateSchool';
+    if (age <= 14) return 'earlyTeen';
+    return 'lateTeen';
+  }
+
+  function renderAgeContent(age) {
+    var group = getAgeGroup(age);
+    var d = ageData[group];
+    var html = '';
+
+    html += '<div class="card">';
+    html += '<span class="stage-badge ' + d.badge + '">' + d.label + '（' + d.range[0] + '-' + d.range[1] + '歲）</span>';
+
+    html += '<div class="info-grid">';
+    html += '<div class="info-block">';
+    html += '<h4>&#128218; 如何理解死亡</h4><ul>';
+    d.understanding.forEach(function(item) { html += '<li>' + item + '</li>'; });
+    html += '</ul></div>';
+
+    html += '<div class="info-block accent">';
+    html += '<h4>&#128065; 常見的悲傷反應</h4><ul>';
+    d.reactions.forEach(function(item) { html += '<li>' + item + '</li>'; });
+    html += '</ul></div>';
+
+    html += '<div class="info-block success">';
+    html += '<h4>&#128147; 支持策略</h4><ul>';
+    d.support.forEach(function(item) { html += '<li>' + item + '</li>'; });
+    html += '</ul></div>';
+    html += '</div></div>';
+
+    document.getElementById('age-content').innerHTML = html;
+  }
+
+  var slider = document.getElementById('age-slider');
+  var ageValue = document.getElementById('age-value');
+  var ageStageLabel = document.getElementById('age-stage-label');
+
+  function updateAge() {
+    var age = parseInt(slider.value);
+    ageValue.textContent = age;
+    var group = getAgeGroup(age);
+    ageStageLabel.textContent = ageData[group].label;
+    renderAgeContent(age);
+  }
+
+  slider.addEventListener('input', updateAge);
+  updateAge();
+
+  // === Tool 2: Strategy Advisor ===
+  var strategyData = {
+    preschool: {
+      telling: {
+        doList: [
+          '使用簡單、具體的語言：「身體壞掉了，不能再修好了」',
+          '由最親近的照顧者在安靜的環境中告知',
+          '用身體功能解釋：「不能呼吸、不能走路了」',
+          '明確使用「死了」這個詞，而非委婉語',
+          '給孩子身體接觸的安慰（擁抱、握手）',
+          '告知「不是你的錯」——反覆說明'
+        ],
+        dontList: [
+          '不要說「睡著了」——會讓孩子害怕睡覺',
+          '不要說「去了很遠的地方」——會讓孩子等待或害怕旅行',
+          '不要隱瞞消息——孩子能感受到氛圍的異常',
+          '不要一次給予太多資訊，讓孩子自己決定提問的節奏',
+          '不要在孩子面前完全崩潰（適度的情緒表達是可以的）'
+        ]
+      },
+      funeral: {
+        doList: [
+          '事先用語言描述告別式的場景（會看到什麼、會發生什麼）',
+          '讓孩子選擇是否參加——提供選項而非強制',
+          '如果參加，安排一位可信賴的大人全程陪伴',
+          '讓孩子帶一樣東西（畫、玩具）放在逝者旁邊',
+          '隨時準備帶孩子離場——設定「暗號」讓孩子表達想離開'
+        ],
+        dontList: [
+          '不要強迫孩子親吻或觸碰遺體',
+          '不要因孩子在告別式中玩耍而責備他',
+          '不要讓孩子獨自待在靈堂——可能被嚇到',
+          '不要假設孩子「太小不懂」就排除他的參與權',
+          '不要期待孩子全程安靜端坐'
+        ]
+      },
+      school: {
+        doList: [
+          '事先與老師溝通孩子的狀況',
+          '讓老師知道孩子可能反覆提起此事，需要耐心回應',
+          '準備一個「過渡物品」讓孩子帶到學校（如照片、毯子）',
+          '維持正常的接送時間，提供可預測性',
+          '允許在學校有「難過的時刻」，提供安靜的休息空間'
+        ],
+        dontList: [
+          '不要讓老師在全班面前宣布孩子的家庭狀況（除非家長同意）',
+          '不要立即改變太多日常安排（換班、換老師）',
+          '不要期待孩子在學校「表現正常」',
+          '不要忽視可能出現的退化行為',
+          '不要過度保護到讓孩子無法正常社交'
+        ]
+      },
+      ongoing: {
+        doList: [
+          '持續、自然地提起逝者的名字和回憶',
+          '在日常中提供「說故事時間」——談談逝者',
+          '允許在遊戲中重演死亡場景——這是他們在處理',
+          '建立小型紀念儀式（睡前跟照片說晚安）',
+          '觀察情緒與行為的變化，保持敏感度',
+          '讓孩子看到大人也會想念逝者'
+        ],
+        dontList: [
+          '不要移除家中逝者的所有照片或物品',
+          '不要對孩子的反覆提問失去耐心',
+          '不要急於「讓生活恢復正常」——給孩子自己的節奏',
+          '不要禁止孩子在遊戲中「演死亡」',
+          '不要忽視身體症狀的可能心理意義'
+        ]
+      },
+      regrief: {
+        doList: [
+          '理解再悲傷是正常的發展歷程',
+          '重新用當前認知水平的語言解釋死亡',
+          '回答新階段出現的新問題',
+          '在發展里程碑時刻（上小學、生日）預先準備',
+          '讓孩子知道「想念是一直都可以的」'
+        ],
+        dontList: [
+          '不要說「都過了這麼久了還在想？」',
+          '不要驚訝或覺得「退步了」',
+          '不要認為之前的支持「沒有用」',
+          '不要忽視突然出現的行為變化的可能原因',
+          '不要急於安慰而跳過傾聽'
+        ]
+      }
+    },
+    school: {
+      telling: {
+        doList: [
+          '在安靜、私密的空間直接告知',
+          '給出具體的死因說明（「因為很嚴重很嚴重的心臟病」）',
+          '區分一般疾病和致命疾病，減少不必要的恐懼',
+          '允許孩子提問，誠實回答（包括「我不知道」）',
+          '告訴孩子接下來的安排（誰會照顧他、生活會怎樣）'
+        ],
+        dontList: [
+          '不要等太久才告知——孩子會從別處得到不完整的訊息',
+          '不要對孩子隱瞞死因（他們會自己想像更糟的原因）',
+          '不要只說「因為生病」而不進一步解釋（會害怕感冒也會死）',
+          '不要在孩子提問時打斷或轉移話題',
+          '不要同時交代太多「規則」（要堅強、要照顧弟妹等）'
+        ]
+      },
+      funeral: {
+        doList: [
+          '詳細解釋告別式的流程——會發生什麼、為什麼',
+          '讓孩子選擇參與的程度（全程、部分、不去）',
+          '給他一個「任務」——寫一封信、選一首歌、放一樣物品',
+          '安排一位他信任的大人在身邊',
+          '事後和孩子談談他看到了什麼、感覺怎麼樣'
+        ],
+        dontList: [
+          '不要強迫孩子在眾人面前「表現」（說話、敬禮等）',
+          '不要對他在告別式中的「奇怪問題」表示驚訝',
+          '不要限制他的情緒表達方式',
+          '不要讓孩子被不熟悉的親戚輪流抱來抱去',
+          '不要因為「怕嚇到他」就完全排除他參與'
+        ]
+      },
+      school: {
+        doList: [
+          '與班導師及輔導老師共同建立支持計畫',
+          '給予學業彈性（延長作業期限、調整考試安排）',
+          '在教室裡提供「安全撤退」的機制（可以去輔導室）',
+          '教師私下簡短關心，但不過度',
+          '注意行為化表達的信號——攻擊、退縮、過度順從'
+        ],
+        dontList: [
+          '不要因為學業下滑就施加額外壓力',
+          '不要在全班面前提到孩子的家庭狀況',
+          '不要用懲罰來回應行為問題（先理解背後的原因）',
+          '不要忽視「看起來很乖」的孩子——過度順從也是信號',
+          '不要催促「趕快回到正軌」'
+        ]
+      },
+      ongoing: {
+        doList: [
+          '提供多元表達管道：繪畫、寫信給逝者、音樂、日記',
+          '允許並鼓勵在自然時刻提起逝者',
+          '注意學業、社交、行為的長期變化趨勢',
+          '定期且不帶壓力地關心孩子的感受',
+          '在特殊日子（忌日、節日、生日）預先準備',
+          '考慮同儕悲傷支持小組'
+        ],
+        dontList: [
+          '不要假設「時間會治癒一切」而停止關注',
+          '不要賦予孩子「照顧家庭」的責任',
+          '不要讓孩子的悲傷成為「禁忌話題」',
+          '不要比較孩子的悲傷反應（「你弟弟就沒有這樣」）',
+          '不要忽視持續的身體化症狀'
+        ]
+      },
+      regrief: {
+        doList: [
+          '幫助孩子理解這是正常的——「因為你現在更懂了，所以會用新的方式想念他」',
+          '用符合當前認知水平的對話重新討論失落',
+          '在畢業、比賽、節日等時刻主動開啟對話',
+          '如果反應強烈或持續，考慮尋求專業支持',
+          '讓孩子知道再悲傷不代表「退步」'
+        ],
+        dontList: [
+          '不要對突然的情緒波動感到不耐煩',
+          '不要否定孩子的感受（「你不是已經好了嗎？」）',
+          '不要忽視可能的觸發因素（如在學校學到相關的課程內容）',
+          '不要認為之前的悲傷處理「失敗了」',
+          '不要將再悲傷與病態混淆'
+        ]
+      }
+    },
+    teen: {
+      telling: {
+        doList: [
+          '直接、尊重地告知——不繞彎子',
+          '提供事實，但允許他自己選擇了解多少細節',
+          '列舉可能的感受並正常化（「生氣、麻木、害怕都是可以的」）',
+          '不強迫立即回應——「你不用現在說什麼」',
+          '表達穩定的陪伴意願：「我在這裡，任何時候你想說話」'
+        ],
+        dontList: [
+          '不要像對小孩一樣簡化資訊',
+          '不要在告知時同時提出期待（「你要堅強」「你要振作」）',
+          '不要代替他的感受（「你一定很難過」——他可能現在是麻木的）',
+          '不要在他面前完全崩潰——適度的情緒表達可以，但要維持穩定感',
+          '不要催促反應——每個人的消化速度不同'
+        ]
+      },
+      funeral: {
+        doList: [
+          '讓他參與告別式的規劃與決策',
+          '尊重他選擇的參與方式（包括選擇不出席）',
+          '允許他帶朋友一起參加',
+          '如果他想致詞、選歌、寫悼文，給予支持',
+          '事後保持對話的開放——他可能在事後才有反應'
+        ],
+        dontList: [
+          '不要強迫他在眾人面前扮演特定角色',
+          '不要批評他的穿著或表現方式',
+          '不要要求他「照顧」弟妹或其他家人',
+          '不要對他在告別式中的冷靜或沉默做出評判',
+          '不要忽視他可能在告別式後才出現的強烈反應'
+        ]
+      },
+      school: {
+        doList: [
+          '讓他自己決定何時告訴同學、告訴多少',
+          '與學校合作提供學業彈性',
+          '指定一位他信任的教師或輔導老師作為學校裡的「安全基地」',
+          '對不當的同儕玩笑或評論進行班級教育',
+          '提供同儕悲傷支持團體的資訊'
+        ],
+        dontList: [
+          '不要未經同意就向全班宣布他的家庭狀況',
+          '不要因為「都這個年紀了」就期待他快速恢復',
+          '不要用懲罰來回應翹課或行為問題——先理解原因',
+          '不要讓他覺得悲傷是需要在學校「隱藏」的',
+          '不要只關注成績而忽視整體的身心狀態'
+        ]
+      },
+      ongoing: {
+        doList: [
+          '尊重他的隱私，但保持穩定且可及的存在',
+          '以平等的態度對話——不說教、不居高臨下',
+          '鼓勵但不強迫各種表達方式（日記、音樂、藝術、運動）',
+          '關注風險行為的信號（酒精、藥物、自我傷害）',
+          '定期自然地提及逝者——讓他知道「可以談」',
+          '專業諮商的選項保持開放——讓他自己決定何時需要'
+        ],
+        dontList: [
+          '不要監控他的社群媒體——但可以溫和地討論網路上的悲傷表達',
+          '不要催促他「振作起來」或「向前看」',
+          '不要將他的正常青少年行為過度歸因於悲傷',
+          '不要比較他的悲傷方式與其他人',
+          '不要因為他「看起來OK」就停止關注'
+        ]
+      },
+      regrief: {
+        doList: [
+          '幫助他理解「在人生的重要時刻想起逝者是正常的」',
+          '在畢業、考試、戀愛等時刻預先且溫和地開啟對話',
+          '鼓勵意義建構——將逝者的影響融入未來的計畫',
+          '提供或推薦適合青少年的悲傷資源',
+          '以同理而非同情的態度陪伴'
+        ],
+        dontList: [
+          '不要說「你不是已經接受了嗎？」',
+          '不要對他的情緒波動表示驚訝或失望',
+          '不要將再悲傷視為「倒退」或「有問題」',
+          '不要在他需要空間時過度介入',
+          '不要忽視再悲傷可能帶來的自殺風險（特別在壓力疊加時）'
+        ]
+      }
+    }
+  };
+
+  var ageLabels = { preschool: '幼兒 (2-5歲)', school: '學齡兒童 (6-11歲)', teen: '青少年 (12-18歲)' };
+  var sitLabels = { telling: '告知死訊', funeral: '參與告別式', school: '回到學校', ongoing: '日常持續支持', regrief: '再悲傷出現' };
+
+  var selectedAge = null;
+  var selectedSit = null;
+
+  function setupSelectors(containerId, callback) {
+    var container = document.getElementById(containerId);
+    var btns = container.querySelectorAll('.sel-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        callback(btn.dataset.val);
+      });
+    });
+  }
+
+  function renderStrategy() {
+    if (!selectedAge || !selectedSit) {
+      document.getElementById('strategy-result').classList.remove('visible');
+      return;
+    }
+    var d = strategyData[selectedAge][selectedSit];
+    var html = '<div class="card">';
+    html += '<h3><span class="icon" style="background:var(--success-bg);color:var(--success);">&#10003;</span> ' + ageLabels[selectedAge] + ' &mdash; ' + sitLabels[selectedSit] + '</h3>';
+
+    html += '<div class="do-dont">';
+    html += '<div class="do-box"><h4>&#10004; 建議做法</h4><ul>';
+    d.doList.forEach(function(item) { html += '<li>' + item + '</li>'; });
+    html += '</ul></div>';
+
+    html += '<div class="dont-box"><h4>&#10006; 避免做法</h4><ul>';
+    d.dontList.forEach(function(item) { html += '<li>' + item + '</li>'; });
+    html += '</ul></div>';
+    html += '</div></div>';
+
+    var el = document.getElementById('strategy-result');
+    el.innerHTML = html;
+    el.classList.add('visible');
+  }
+
+  setupSelectors('strategy-age-group', function(val) { selectedAge = val; renderStrategy(); });
+  setupSelectors('strategy-situation', function(val) { selectedSit = val; renderStrategy(); });
+
+  // === Tool 3: Timeline ===
+  var timelineItems = document.querySelectorAll('.timeline-item');
+  timelineItems.forEach(function(item) {
+    item.addEventListener('click', function() {
+      var wasExpanded = item.classList.contains('expanded');
+      timelineItems.forEach(function(i) { i.classList.remove('expanded'); });
+      if (!wasExpanded) item.classList.add('expanded');
+    });
+  });
+})();
+</script>
+</body>
+</html>

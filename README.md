@@ -10,6 +10,7 @@ Add the marketplace and install plugins:
 /plugin marketplace add cyyeh/skills-playground
 /plugin install paper-to-course@skills-playground
 /plugin install system-explorer@skills-playground
+/plugin install learning-platform@skills-playground
 ```
 
 ### Codex (Skill Installer)
@@ -22,6 +23,7 @@ $skill-installer install https://github.com/cyyeh/skills-playground/tree/main/sk
 $skill-installer install https://github.com/cyyeh/skills-playground/tree/main/skills/system-explorer/system-analyzer
 $skill-installer install https://github.com/cyyeh/skills-playground/tree/main/skills/system-explorer/system-finder
 $skill-installer install https://github.com/cyyeh/skills-playground/tree/main/skills/system-explorer/system-to-course
+$skill-installer install https://github.com/cyyeh/skills-playground/tree/main/skills/learning-platform/learning-platform
 ```
 
 Restart Codex after installation.
@@ -30,6 +32,7 @@ Restart Codex after installation.
 
 - paper-to-course: idea originated from [Codebase to Course](https://github.com/zarazhangrui/codebase-to-course)
 - system-explorer: explore and learn about any software system through a full pipeline — discover matching systems, deep-dive research, and generate an interactive HTML course
+- learning-platform: create structured interactive learning platforms for any field or subject
 
 ## Releasing a Plugin
 

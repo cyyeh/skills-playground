@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文化、儀式與悲傷 — 互動工具</title>
+<style>
+  :root {
+    --primary: #5B6A8A;
+    --primary-dark: #465372;
+    --primary-light: #7A8AAA;
+    --accent: #C4956A;
+    --accent-light: #D4AD89;
+    --accent-dark: #A87B52;
+    --bg: #F7F5F2;
+    --bg-card: #FFFFFF;
+    --text: #2D3142;
+    --text-light: #6B7280;
+    --border: #E5E1DC;
+    --shadow: 0 2px 12px rgba(45,49,66,0.08);
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+  h1 {
+    font-size: 1.6rem;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .subtitle {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+  }
+  /* Tab Navigation */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 0.92rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active {
+    color: var(--primary-dark);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+  .card h3 {
+    font-size: 1.1rem;
+    color: var(--primary-dark);
+    margin-bottom: 12px;
+  }
+  .card p, .card li {
+    font-size: 0.93rem;
+    color: var(--text);
+  }
+  /* World Map Tool */
+  .map-wrapper {
+    position: relative;
+    width: 100%;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .map-svg-container {
+    width: 100%;
+    padding: 16px;
+  }
+  .map-svg-container svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .region {
+    cursor: pointer;
+    transition: all 0.25s;
+    stroke: #fff;
+    stroke-width: 1;
+  }
+  .region:hover {
+    filter: brightness(1.15);
+    stroke-width: 2;
+    stroke: var(--accent);
+  }
+  .region.selected {
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    filter: brightness(1.1);
+  }
+  .map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(91,106,138,0.04);
+    border-top: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .info-panel {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-top: 16px;
+    min-height: 180px;
+  }
+  .info-panel h3 {
+    color: var(--primary-dark);
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+  }
+  .info-panel .region-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.78rem;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .info-section {
+    margin-bottom: 14px;
+  }
+  .info-section h4 {
+    font-size: 0.92rem;
+    color: var(--accent-dark);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .info-section p, .info-section li {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+  .info-section ul {
+    padding-left: 20px;
+  }
+  .info-section li {
+    margin-bottom: 4px;
+  }
+  .placeholder-text {
+    color: var(--text-light);
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 0.95rem;
+  }
+  .placeholder-text .icon {
+    font-size: 2.4rem;
+    display: block;
+    margin-bottom: 12px;
+  }
+  /* Ritual Analysis Tool */
+  .ritual-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .ritual-btn {
+    padding: 8px 18px;
+    border: 2px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 0.88rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-weight: 500;
+  }
+  .ritual-btn:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+  }
+  .ritual-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .function-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .function-card {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 18px;
+    border-left: 4px solid var(--border);
+    transition: all 0.3s;
+  }
+  .function-card.highlight {
+    border-left-color: var(--accent);
+    background: #FFF;
+    box-shadow: 0 2px 8px rgba(196,149,106,0.12);
+  }
+  .function-card h4 {
+    font-size: 0.95rem;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+  }
+  .function-card .label {
+    font-size: 0.78rem;
+    color: var(--accent-dark);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .function-card p {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.55;
+  }
+  .bar-chart {
+    margin-top: 20px;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+  .bar-label {
+    width: 80px;
+    font-size: 0.82rem;
+    color: var(--text);
+    text-align: right;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+  .bar-track {
+    flex: 1;
+    height: 24px;
+    background: var(--bg);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.6s ease;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 0.75rem;
+    color: #fff;
+    font-weight: 600;
+  }
+  .bar-fill.structure { background: linear-gradient(135deg, #5B6A8A, #7A8AAA); }
+  .bar-fill.meaning { background: linear-gradient(135deg, #C4956A, #D4AD89); }
+  .bar-fill.support { background: linear-gradient(135deg, #6B8F71, #8FB896); }
+  .bar-fill.transition { background: linear-gradient(135deg, #8B7BA8, #A99BC2); }
+  /* Comparison Tool */
+  .comparison-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .culture-chip {
+    padding: 7px 16px;
+    border: 2px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 0.85rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    font-weight: 500;
+    user-select: none;
+  }
+  .culture-chip:hover {
+    border-color: var(--primary-light);
+  }
+  .culture-chip.selected {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .culture-chip.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .comparison-hint {
+    font-size: 0.82rem;
+    color: var(--text-light);
+    margin-bottom: 12px;
+  }
+  .comparison-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .comparison-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.88rem;
+    min-width: 500px;
+  }
+  .comparison-table th {
+    background: var(--primary);
+    color: #fff;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .comparison-table th:first-child {
+    border-radius: 8px 0 0 0;
+    width: 140px;
+  }
+  .comparison-table th:last-child {
+    border-radius: 0 8px 0 0;
+  }
+  .comparison-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.55;
+  }
+  .comparison-table tr:last-child td:first-child {
+    border-radius: 0 0 0 8px;
+  }
+  .comparison-table tr:last-child td:last-child {
+    border-radius: 0 0 8px 0;
+  }
+  .comparison-table tbody tr:hover {
+    background: rgba(91,106,138,0.03);
+  }
+  .row-label {
+    font-weight: 600;
+    color: var(--primary-dark);
+    background: rgba(91,106,138,0.04);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text-light);
+  }
+  .empty-state .icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+  @media (max-width: 640px) {
+    .container { padding: 16px 12px; }
+    h1 { font-size: 1.3rem; }
+    .tab-btn { padding: 10px 14px; font-size: 0.84rem; }
+    .function-grid { grid-template-columns: 1fr; }
+    .card { padding: 18px; }
+    .info-panel { padding: 18px; }
+    .bar-label { width: 60px; font-size: 0.78rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>文化、儀式與悲傷</h1>
+  <p class="subtitle">透過互動工具探索世界各地的哀悼文化、儀式功能與悲傷規則</p>
+
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" role="tab" data-tab="map" aria-selected="true">世界哀悼文化地圖</button>
+    <button class="tab-btn" role="tab" data-tab="ritual" aria-selected="false">儀式功能分析</button>
+    <button class="tab-btn" role="tab" data-tab="compare" aria-selected="false">悲傷規則比較</button>
+  </nav>
+
+  <!-- Tab 1: World Map -->
+  <div id="tab-map" class="tab-panel active">
+    <div class="map-wrapper">
+      <div class="map-svg-container">
+        <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="世界哀悼文化地圖">
+          <!-- North America -->
+          <path class="region" data-region="north-america" fill="#7A8AAA" d="M80,50 L220,45 L240,80 L250,130 L220,170 L180,180 L140,170 L100,140 L70,100 Z" />
+          <text x="155" y="115" fill="#fff" font-size="11" text-anchor="middle" pointer-events="none" font-weight="600">北美</text>
+          <!-- Latin America -->
+          <path class="region" data-region="latin-america" fill="#C4956A" d="M140,180 L200,175 L220,200 L230,250 L210,310 L190,350 L170,370 L155,350 L145,300 L130,250 L120,210 Z" />
+          <text x="175" y="270" fill="#fff" font-size="11" text-anchor="middle" pointer-events="none" font-weight="600">拉丁美洲</text>
+          <!-- Europe -->
+          <path class="region" data-region="europe" fill="#8B7BA8" d="M340,55 L430,50 L450,70 L445,110 L430,140 L390,155 L350,145 L330,120 L325,85 Z" />
+          <text x="388" y="105" fill="#fff" font-size="11" text-anchor="middle" pointer-events="none" font-weight="600">歐洲</text>
+          <!-- Middle East -->
+          <path class="region" data-region="middle-east" fill="#D4AD89" d="M430,140 L500,125 L520,150 L510,190 L480,200 L445,195 L420,175 Z" />
+          <text x="470" y="168" fill="#fff" font-size="10" text-anchor="middle" pointer-events="none" font-weight="600">中東</text>
+          <!-- Africa -->
+          <path class="region" data-region="africa" fill="#6B8F71" d="M350,160 L420,155 L445,195 L460,250 L440,320 L400,360 L360,350 L340,300 L330,240 L335,195 Z" />
+          <text x="390" y="265" fill="#fff" font-size="11" text-anchor="middle" pointer-events="none" font-weight="600">非洲</text>
+          <!-- South Asia -->
+          <path class="region" data-region="south-asia" fill="#B8A089" d="M520,155 L580,150 L600,180 L590,220 L560,235 L530,225 L510,195 Z" />
+          <text x="555" y="195" fill="#fff" font-size="10" text-anchor="middle" pointer-events="none" font-weight="600">南亞</text>
+          <!-- East Asia -->
+          <path class="region" data-region="east-asia" fill="#5B6A8A" d="M600,60 L700,55 L720,85 L715,130 L690,155 L640,160 L600,145 L585,110 Z" />
+          <text x="652" y="112" fill="#fff" font-size="11" text-anchor="middle" pointer-events="none" font-weight="600">東亞</text>
+          <!-- Oceania -->
+          <path class="region" data-region="oceania" fill="#A89070" d="M640,280 L730,270 L750,300 L740,340 L700,355 L650,345 L630,315 Z" />
+          <text x="690" y="315" fill="#fff" font-size="11" text-anchor="middle" pointer-events="none" font-weight="600">大洋洲</text>
+        </svg>
+      </div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#7A8AAA"></div>北美</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C4956A"></div>拉丁美洲</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8B7BA8"></div>歐洲</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#D4AD89"></div>中東</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#6B8F71"></div>非洲</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#B8A089"></div>南亞</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#5B6A8A"></div>東亞</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#A89070"></div>大洋洲</div>
+      </div>
+    </div>
+    <div class="info-panel" id="region-info">
+      <div class="placeholder-text">
+        <span class="icon">&#127758;</span>
+        點擊地圖上的區域，探索該地區的哀悼文化、儀式與死亡信仰
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Ritual Analysis -->
+  <div id="tab-ritual" class="tab-panel">
+    <div class="card">
+      <h3>選擇一項哀悼儀式</h3>
+      <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:14px;">點擊下方按鈕，分析該儀式在四個核心心理功能上的表現</p>
+      <div class="ritual-selector">
+        <button class="ritual-btn" data-ritual="zuoqi">台灣做七</button>
+        <button class="ritual-btn" data-ritual="shiva">猶太教 Shiva</button>
+        <button class="ritual-btn" data-ritual="obon">日本盂蘭盆節</button>
+        <button class="ritual-btn" data-ritual="muertos">墨西哥亡靈節</button>
+        <button class="ritual-btn" data-ritual="african">非洲社群哀悼</button>
+        <button class="ritual-btn" data-ritual="digital">數位追思</button>
+      </div>
+    </div>
+
+    <div id="ritual-result" class="card" style="display:none;">
+      <h3 id="ritual-title"></h3>
+      <p id="ritual-desc" style="font-size:0.9rem;color:var(--text-light);margin-bottom:16px;"></p>
+
+      <div class="bar-chart" id="ritual-bars"></div>
+
+      <div class="function-grid" id="ritual-functions"></div>
+    </div>
+
+    <div id="ritual-placeholder" class="card">
+      <div class="placeholder-text">
+        <span class="icon">&#128220;</span>
+        選擇一項儀式，查看其心理功能分析
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Comparison -->
+  <div id="tab-compare" class="tab-panel">
+    <div class="card">
+      <h3>悲傷規則比較工具</h3>
+      <p class="comparison-hint">選擇 2-3 個文化進行比較（點擊選取或取消）</p>
+      <div class="comparison-controls" id="culture-chips"></div>
+    </div>
+
+    <div id="compare-result" style="display:none;">
+      <div class="comparison-table-wrapper">
+        <table class="comparison-table" id="compare-table">
+          <thead id="compare-head"></thead>
+          <tbody id="compare-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="compare-placeholder" class="card">
+      <div class="empty-state">
+        <span class="icon">&#128203;</span>
+        <p>選擇至少 2 個文化開始比較</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // --- Tab Navigation ---
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+      tabPanels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected','true');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // --- World Map Data ---
+  const regionData = {
+    'east-asia': {
+      name: '東亞（台灣、中國、日本、韓國）',
+      tag: '儒家・佛教・道教文化圈',
+      sections: [
+        { title: '核心死亡觀', text: '死亡被視為生命循環的一部分，而非終結。佛教的輪迴觀、道教的靈魂不滅觀、儒家的孝道傳統交織成複雜的死亡信仰體系。祖先崇拜是東亞文化中最重要的持續性連結實踐。' },
+        { title: '主要儀式', items: ['台灣/中國：做七（四十九天法事）、燒紙錢紙紮、清明掃墓、中元普渡', '日本：通夜與告別式、佛壇日常祭拜、盂蘭盆節（お盆）、戒名制度', '韓國：三日葬、祭祀（제사）、秋夕節掃墓'] },
+        { title: '悲傷表達特徵', text: '傾向內斂含蓄的情緒表達，但在特定儀式場合（如葬禮）可能有強烈的情感宣洩。重視透過行動（如儀式參與、照顧家庭）而非語言來表達悲傷。集體主義取向，悲傷是家庭共同承擔的。' },
+        { title: '持續性連結', text: '與逝者維持連結是文化核心價值。佛壇前的日常對話、定期掃墓、節慶祭拜——這些不是「放不下」，而是愛與責任的延續。' }
+      ]
+    },
+    'north-america': {
+      name: '北美（美國、加拿大）',
+      tag: '個體主義・多元文化',
+      sections: [
+        { title: '核心死亡觀', text: '受基督教傳統影響，死亡常被理解為靈魂進入天堂或與上帝重聚。現代世俗化趨勢下，越來越多人以個人化的方式理解死亡。醫療化的死亡觀（死亡被視為醫學的失敗）也很普遍。' },
+        { title: '主要儀式', items: ['瞻仰遺容（Viewing/Visitation）：在殯儀館公開瞻仰', '葬禮或追思禮拜（Funeral/Memorial Service）', '土葬或火葬，綠色殯葬運動興起', '生命慶祝會（Celebration of Life）：較新的趨勢，以歡慶的方式紀念逝者'] },
+        { title: '悲傷表達特徵', text: '強調個人的情緒處理與「悲傷工作」。鼓勵透過語言表達悲傷，心理諮商是主要的專業支持途徑。個人的情緒需求被優先考慮。近年來對悲傷的公開討論增加。' },
+        { title: '文化張力', text: '北美是多元文化社會，不同族群（非裔、拉丁裔、亞裔、原住民）各有傳統。主流文化與族群傳統之間的張力是常見的悲傷議題。' }
+      ]
+    },
+    'latin-america': {
+      name: '拉丁美洲（墨西哥、巴西等）',
+      tag: '天主教・原住民文化融合',
+      sections: [
+        { title: '核心死亡觀', text: '天主教信仰與前哥倫布時期原住民文化的融合，創造了獨特的死亡觀。死亡不被視為恐懼的對象，而是生命循環的自然部分。墨西哥文化中對死亡的幽默與親暱態度尤為著名。' },
+        { title: '主要儀式', items: ['墨西哥亡靈節（Dia de los Muertos, 11月1-2日）：祭壇、墓地野餐、糖骷髏', '天主教喪禮彌撒與守夜禱告（Velorio）', '巴西的 Saudade 文化：一種帶著甜蜜的思念與憂傷', '安地斯山區的融合儀式：結合天主教與印加傳統'] },
+        { title: '悲傷表達特徵', text: '開放、富有情感的悲傷表達。家庭與社區的緊密支持網絡。對逝者的幽默回憶與正面慶祝被視為健康的哀悼方式。悲傷是公共的、社區性的事件。' },
+        { title: '亡靈節的智慧', text: '亡靈節展示了一種獨特的文化智慧：透過歡慶、幽默與美食來面對死亡，將悲傷從私密的痛苦轉化為公共的慶祝。研究顯示，能以正面情緒面對失落的人，長期適應更好。' }
+      ]
+    },
+    'europe': {
+      name: '歐洲',
+      tag: '基督教傳統・世俗化',
+      sections: [
+        { title: '核心死亡觀', text: '基督教傳統深刻影響了歐洲的死亡觀，但現代世俗化程度高。北歐國家尤其世俗化，個人化的追思取代了傳統宗教儀式。南歐（如義大利、希臘）仍保留較多傳統。' },
+        { title: '主要儀式', items: ['英國：傳統上強調克制（stiff upper lip），近年來趨向個人化追思', '愛爾蘭：Wake（守靈）傳統，親友在遺體旁徹夜分享故事與飲酒', '希臘東正教：四十天哀悼期，定期的追思禮拜', '北歐：簡約而個人化的告別儀式，自然葬日漸普及'] },
+        { title: '悲傷表達特徵', text: '呈現南北差異：南歐文化允許更開放的情感表達；北歐與英國傳統上傾向克制。整體趨勢是從集體宗教儀式走向個人化的悼念方式，這在提供自由的同時也可能導致支持結構的缺失。' },
+        { title: '現代趨勢', text: '世俗化導致傳統喪禮儀式的衰退。越來越多歐洲人選擇非宗教的「生命慶祝會」。Death Cafe 運動（在咖啡館中開放討論死亡）起源於英國並擴展到全球。' }
+      ]
+    },
+    'middle-east': {
+      name: '中東',
+      tag: '伊斯蘭教・猶太教',
+      sections: [
+        { title: '核心死亡觀', text: '伊斯蘭教與猶太教都強調死亡是神的旨意。伊斯蘭教相信死後審判與來世；猶太教對來世的信念較多元，但強調在現世的哀悼儀式。兩者都有高度結構化的哀悼體系。' },
+        { title: '主要儀式', items: ['伊斯蘭教：死後盡快下葬（通常24小時內）、面朝麥加方向安葬、Iddah哀悼期（寡婦四個月又十天）、三日集中弔唁', '猶太教：Shiva（七天密集哀悼）、Shloshim（三十天過渡期）、Kaddish 禱詞（十一個月）、Yahrzeit 年度紀念'] },
+        { title: '悲傷表達特徵', text: '伊斯蘭文化中，悲傷被視為自然的，但過度的嚎哭被認為是對神旨意的不敬。猶太教允許並鼓勵在 Shiva 期間的情感表達。兩者都強調社區在哀悼中的角色。' },
+        { title: '猶太教 Shiva 的精妙設計', text: 'Shiva 體系是世界上最精密的悲傷支持系統之一：社區自動啟動支持（帶食物、陪伴、組成禱告團）、漸進式降低哀悼強度（七天到三十天到一年）、將個人嵌入社群之中。' }
+      ]
+    },
+    'africa': {
+      name: '非洲',
+      tag: '社群主義・祖先崇拜',
+      sections: [
+        { title: '核心死亡觀', text: '在多數非洲傳統信仰中，死亡不是終結，而是過渡到祖先世界。逝者成為守護家族的祖先靈魂，持續參與活人的生活。死亡是社群事件，而非個人事件。' },
+        { title: '主要儀式', items: ['社區聚集：整個村莊/社區停下來陪伴喪家，連續數日', '鼓樂、舞蹈與歌唱：表達悲傷與敬意，同時釋放情緒', '故事講述：口述傳統中分享逝者生命故事是核心儀式', '迦納的奇幻棺材：訂製棺材反映逝者的職業或熱情（如魚形、飛機形）', '馬達加斯加的翻屍節（Famadihana）：定期將逝者遺骨取出，重新包裹並共舞'] },
+        { title: '悲傷表達特徵', text: '開放而強烈的情緒表達。集體性是最大特徵——悲傷從不是個人獨自承擔的。鼓樂和舞蹈提供了身體性的情緒釋放管道。整個社群分擔實際照顧工作。' },
+        { title: '心理學啟示', text: '非洲社群哀悼模式挑戰了西方「悲傷是個人私事」的假設，展示了悲傷作為社群事件的可能性。將支持行為制度化、不依賴個人主動求助的做法，對現代社會有深刻啟示。' }
+      ]
+    },
+    'south-asia': {
+      name: '南亞（印度、尼泊爾、斯里蘭卡）',
+      tag: '印度教・佛教',
+      sections: [
+        { title: '核心死亡觀', text: '印度教相信靈魂輪迴（Samsara），死亡是靈魂從一個身體轉移到另一個身體的過程。業力（Karma）決定了來世的品質。佛教則強調涅槃——從輪迴中解脫。死亡被視為自然而非恐懼的對象。' },
+        { title: '主要儀式', items: ['印度教：河邊火葬（瓦拉納西的恒河邊尤為神聖）、十三天哀悼期（Tehrvi）、Shraddha 年度祭祖儀式', '佛教：僧侶誦經、功德迴向、布施', '白色為喪服顏色（與西方的黑色相反）', '寡婦傳統上需嚴格遵守哀悼規範（現代已大幅改變）'] },
+        { title: '悲傷表達特徵', text: '深受業力與輪迴觀念影響——死亡被理解為靈魂旅程的一部分，可能緩和悲傷的強度。但女性的悲傷表達往往比男性受到更多文化限制。社區在喪禮期間提供密集支持。' },
+        { title: '恒河火葬的意義', text: '印度教的火葬不是「處理遺體」，而是靈魂解放的儀式。在瓦拉納西恒河邊火葬被視為最神聖的死亡方式，因為它能幫助靈魂直接獲得解脫（Moksha），跳出輪迴。' }
+      ]
+    },
+    'oceania': {
+      name: '大洋洲（澳洲、紐西蘭、太平洋島國）',
+      tag: '原住民文化・多元融合',
+      sections: [
+        { title: '核心死亡觀', text: '澳洲原住民的「夢時代（Dreamtime）」觀念中，死亡是靈魂回到祖先精神世界的過程。毛利人相信靈魂（Wairua）會回到祖先之地 Hawaiki。太平洋島國各有獨特的靈魂與來世信仰。' },
+        { title: '主要儀式', items: ['澳洲原住民：吸煙儀式（Smoking Ceremony）淨化死亡之地、避免提及逝者姓名和觀看逝者照片', '毛利人 Tangi：在 Marae（聚會所）舉行的多日哀悼儀式，包括 Haka 舞蹈、吟唱與演說', '太平洋島國：豐盛的食物宴席、社區聚集、口述傳承逝者故事', '現代澳紐：多元文化融合，傳統與現代並存'] },
+        { title: '悲傷表達特徵', text: '原住民文化普遍具有強烈的社群性與靈性面向。毛利人的 Tangi 允許並鼓勵開放的情感表達，包括嚎哭和身體接觸。澳洲原住民的禁忌（如不提逝者名字）是對逝者靈魂的尊重。' },
+        { title: '毛利 Tangi 的力量', text: 'Tangi 通常持續三天以上。遺體被安放在 Marae 中央，親友輪流守護、演說、吟唱。整個過程是高度社群性的——悲傷由集體承載，個人在社群的擁抱中被支撐。' }
+      ]
+    }
+  };
+
+  // Render region info
+  const regionInfoEl = document.getElementById('region-info');
+  const regions = document.querySelectorAll('.region');
+  regions.forEach(r => {
+    r.addEventListener('click', function() {
+      regions.forEach(x => x.classList.remove('selected'));
+      this.classList.add('selected');
+      const key = this.dataset.region;
+      const data = regionData[key];
+      if (!data) return;
+      let html = '<span class="region-tag">' + data.tag + '</span>';
+      html += '<h3>' + data.name + '</h3>';
+      data.sections.forEach(s => {
+        html += '<div class="info-section"><h4>' + s.title + '</h4>';
+        if (s.text) html += '<p>' + s.text + '</p>';
+        if (s.items) {
+          html += '<ul>';
+          s.items.forEach(item => { html += '<li>' + item + '</li>'; });
+          html += '</ul>';
+        }
+        html += '</div>';
+      });
+      regionInfoEl.innerHTML = html;
+    });
+  });
+
+  // --- Ritual Analysis Data ---
+  const ritualData = {
+    zuoqi: {
+      title: '台灣做七（做旬）',
+      desc: '從亡者過世起每七天舉行法事，共七次（四十九天），融合佛教與道教傳統。',
+      scores: { structure: 95, meaning: 85, support: 75, transition: 90 },
+      functions: [
+        { label: '結構化', title: '高度結構化的時間框架', text: '每七天一次法事的規律節奏為悲傷提供了明確的時間結構。喪親者在混亂中有了「下一步該做什麼」的方向。從頭七到滿七，整個歷程有清晰的起點與終點。' },
+        { label: '意義建構', title: '佛教宇宙觀的意義框架', text: '四十九天中陰身的概念將死亡置於輪迴轉世的宇宙觀中——逝者不是「消失了」，而是「在過渡中」。法事為逝者祈福，讓生者感到自己仍能為逝者「做些什麼」。' },
+        { label: '社會支持', title: '家族與社區的自動啟動', text: '做七期間親友的探訪、奠儀（禮金）與實際幫助構成了支持網絡。文化規範使支持行為自動化，不需喪親者主動求助。但在現代都市化環境中，此功能可能減弱。' },
+        { label: '過渡標記', title: '多重過渡的儀式標記', text: '做七的七次法事標記了悲傷從急性到適應的漸進過渡。孝服的穿脫、百日、對年——每個節點都在宣告：一個階段結束了，新的階段開始了。' }
+      ]
+    },
+    shiva: {
+      title: '猶太教 Shiva',
+      desc: '為期七天的密集哀悼期，社區成員主動前來支持。',
+      scores: { structure: 90, meaning: 80, support: 98, transition: 95 },
+      functions: [
+        { label: '結構化', title: '精密的行為規範', text: '七天內有明確的行為指引：坐低矮椅子、覆蓋鏡子、不工作不娛樂。這些規定看似嚴格，實際上為喪親者免除了「該怎麼辦」的決策負擔，讓他們可以專注於悲傷。' },
+        { label: '意義建構', title: '宗教傳統中的安慰', text: '每日誦念 Kaddish（一首讚美上帝的禱詞），將個人的失落放入更大的信仰框架中。「這是上帝的旨意」提供了一種——即使不完美的——意義解釋。' },
+        { label: '社會支持', title: '制度化的社區支持（最高等級）', text: 'Shiva 體系中最精妙的設計：社區成員不需要被邀請就會前來。帶食物、陪伴、組成禱告 minyan 都是社區義務。喪親者不需要開口求助，文化已經安排好一切。' },
+        { label: '過渡標記', title: '漸進式的恢復設計', text: '從 Shiva（七天）到 Shloshim（三十天）到 Yahrzeit（一年），哀悼的限制逐步放寬。這個設計完美地對應了悲傷自然消退的軌跡——一個溫柔的減壓過程。' }
+      ]
+    },
+    obon: {
+      title: '日本盂蘭盆節（お盆）',
+      desc: '每年八月的年度儀式，迎接祖先靈魂回家探訪。',
+      scores: { structure: 70, meaning: 90, support: 65, transition: 60 },
+      functions: [
+        { label: '結構化', title: '年度性的規律節奏', text: '盂蘭盆節每年固定時間舉行，為與逝者的連結提供了規律的時間節點。但作為年度儀式，它不像做七或 Shiva 那樣提供失落初期的即時結構。其結構化功能主要在長期層面。' },
+        { label: '意義建構', title: '死亡觀的根本重構（最高等級）', text: '盂蘭盆節的核心信念——祖先靈魂會回來——從根本上重構了死亡的意義：死亡不是永別，而是另一種形式的連結。迎火與送火的儀式將「相聚與分離」編織成年復一年的節奏。' },
+        { label: '社會支持', title: '家族團聚的場合', text: '盂蘭盆節是日本重要的家族團聚時刻，分散各地的家人回到故鄉。但與 Shiva 的社區動員相比，盂蘭盆節的支持較多來自家族內部而非更廣泛的社區。' },
+        { label: '過渡標記', title: '年度性的連結維持', text: '盂蘭盆節不太具有過渡標記的功能——它的目的不是幫助喪親者「從悲傷中走出」，而是每年提供一個與逝者重新連結的安全空間。它維持的是一種持續性的、循環性的關係。' }
+      ]
+    },
+    muertos: {
+      title: '墨西哥亡靈節（Dia de los Muertos）',
+      desc: '每年11月1-2日，以色彩繽紛的方式慶祝逝者的生命。',
+      scores: { structure: 65, meaning: 95, support: 80, transition: 55 },
+      functions: [
+        { label: '結構化', title: '年度慶祝的框架', text: '亡靈節提供了固定日期的年度儀式框架，但與 Shiva 或做七相比，它在失落初期的結構化支持較弱。它的結構化功能主要體現在搭建祭壇（ofrenda）的具體行動上。' },
+        { label: '意義建構', title: '死亡意義的徹底重構（最高等級）', text: '亡靈節的最大貢獻：將死亡從恐懼的對象轉化為可以用幽默、歡慶和愛來面對的存在。「死亡是生命的一部分」——這個信念提供了一種強大而獨特的意義框架，與西方文化中對死亡的避諱形成鮮明對比。' },
+        { label: '社會支持', title: '公共慶祝中的社區連結', text: '亡靈節是公共節日，整個社區共同參與。在墓地的聚餐、街道上的遊行與慶祝活動創造了集體悼念的空間。家族團聚和共同準備祭壇也強化了家庭支持。' },
+        { label: '過渡標記', title: '維持連結而非標記過渡', text: '亡靈節的目的不是標記「從悲傷到復原」的過渡，而是年年確認逝者仍是家庭的一部分。它維持的是一種永恆的、歡樂的連結，而非推動喪親者「往前走」。' }
+      ]
+    },
+    african: {
+      title: '非洲社群哀悼傳統',
+      desc: '以社群為核心的集體哀悼方式，涵蓋多種非洲文化傳統。',
+      scores: { structure: 75, meaning: 80, support: 98, transition: 85 },
+      functions: [
+        { label: '結構化', title: '社區主導的哀悼節奏', text: '多數非洲文化有明確的社區聚集天數和儀式流程。葬禮可能持續數日，包含守夜、故事講述、鼓樂舞蹈與安葬等環節。但各文化間差異大，結構化程度不一。' },
+        { label: '意義建構', title: '祖先世界的過渡', text: '逝者不是「死了」，而是「成為祖先」——從可見的世界過渡到不可見的祖先世界，繼續守護家族。這個信念賦予死亡積極的意義：逝者的角色升級了。口述傳統中的故事講述也幫助建構逝者生命的意義。' },
+        { label: '社會支持', title: '整個社群的自動動員（最高等級）', text: '非洲社群哀悼的最大特點：整個村莊/社區自動停下日常活動，聚集在喪家分擔一切——做飯、照顧孩子、守夜陪伴、處理實務。悲傷從來不是個人獨自承擔的。這種制度化的支持不依賴個人求助。' },
+        { label: '過渡標記', title: '身份轉變的社群認證', text: '葬禮儀式標記了逝者「成為祖先」的過渡。同時，社群在儀式結束後幫助喪親者重新定位其社會角色。部分文化有特定的「恢復期」標記，如脫去喪服的儀式。' }
+      ]
+    },
+    digital: {
+      title: '數位追思與線上悼念',
+      desc: '社群媒體紀念帳號、線上追思網站、數位悼念實踐。',
+      scores: { structure: 30, meaning: 60, support: 55, transition: 20 },
+      functions: [
+        { label: '結構化', title: '缺乏明確結構（最弱項）', text: '數位悼念最大的挑戰：沒有明確的開始與結束。傳統儀式有固定的時間框架（如七天、四十九天），但數位空間中的悼念是永久的、無邊界的。逝者的帳號永遠「在那裡」，可能使某些喪親者難以感受到階段性的過渡。' },
+        { label: '意義建構', title: '多元化的敘事空間', text: '線上追思網站允許多人分享不同的記憶與故事，幫助建構更完整的逝者形象。留言、照片、影片構成了一個豐富的數位紀念檔案。但缺乏統一的文化意義框架（如宗教信仰），意義建構較依賴個人。' },
+        { label: '社會支持', title: '廣泛但淺薄的支持', text: '數位平台使得大量的人可以快速表達哀悼。但這種支持往往是短暫的（按讚和留言後就結束了），深度不如實體社區的持續陪伴。可能出現「悲傷表演」的疑慮。也可能觸及被傳統儀式排除的悲傷者（如不被認可的關係）。' },
+        { label: '過渡標記', title: '幾乎不具備過渡功能（最弱項）', text: '數位悼念缺乏傳統儀式的過渡標記功能。沒有「脫孝服」的等效動作。逝者的數位存在是永久的，不隨時間自然消退。這可能支持持續性連結，也可能妨礙自然的悲傷演變。是否需要某種「數位結束儀式」，是值得探討的新議題。' }
+      ]
+    }
+  };
+
+  // Render ritual analysis
+  const ritualBtns = document.querySelectorAll('.ritual-btn');
+  const ritualResult = document.getElementById('ritual-result');
+  const ritualPlaceholder = document.getElementById('ritual-placeholder');
+  const ritualTitle = document.getElementById('ritual-title');
+  const ritualDesc = document.getElementById('ritual-desc');
+  const ritualBars = document.getElementById('ritual-bars');
+  const ritualFunctions = document.getElementById('ritual-functions');
+
+  const barLabels = { structure: '結構化', meaning: '意義建構', support: '社會支持', transition: '過渡標記' };
+  const barClasses = { structure: 'structure', meaning: 'meaning', support: 'support', transition: 'transition' };
+
+  ritualBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      ritualBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const key = this.dataset.ritual;
+      const data = ritualData[key];
+      if (!data) return;
+      ritualPlaceholder.style.display = 'none';
+      ritualResult.style.display = 'block';
+      ritualTitle.textContent = data.title;
+      ritualDesc.textContent = data.desc;
+
+      // Bars
+      let barsHtml = '';
+      for (const [k, v] of Object.entries(data.scores)) {
+        barsHtml += '<div class="bar-row">';
+        barsHtml += '<span class="bar-label">' + barLabels[k] + '</span>';
+        barsHtml += '<div class="bar-track"><div class="bar-fill ' + barClasses[k] + '" style="width:0%">' + v + '%</div></div>';
+        barsHtml += '</div>';
+      }
+      ritualBars.innerHTML = barsHtml;
+      // Animate bars
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const fills = ritualBars.querySelectorAll('.bar-fill');
+          let i = 0;
+          for (const [k, v] of Object.entries(data.scores)) {
+            if (fills[i]) fills[i].style.width = v + '%';
+            i++;
+          }
+        });
+      });
+
+      // Function cards
+      let funcHtml = '';
+      data.functions.forEach(f => {
+        funcHtml += '<div class="function-card highlight">';
+        funcHtml += '<div class="label">' + f.label + '</div>';
+        funcHtml += '<h4>' + f.title + '</h4>';
+        funcHtml += '<p>' + f.text + '</p>';
+        funcHtml += '</div>';
+      });
+      ritualFunctions.innerHTML = funcHtml;
+    });
+  });
+
+  // --- Comparison Tool Data ---
+  const cultureData = {
+    taiwan: {
+      name: '台灣/華人',
+      whoGrieves: '以血緣親疏為核心的同心圓結構。孝服制度明確標示悲傷的「合法性」層級：五服制度區分斬衰（最親）到緦麻（最疏）。',
+      duration: '做七四十九天為密集哀悼期。百日、對年為重要節點。之後每年清明、中元持續祭拜，無明確「結束」。',
+      expression: '儀式場合允許強烈哭泣，但日常中傾向克制。「節哀順變」反映了對情緒節制的期待。男性被期待更為堅強。',
+      support: '家族與鄰里自動啟動支持。奠儀（禮金）制度化。親友幫忙處理喪禮事務。宗教團體（寺廟、教會）提供儀式支持。',
+      beliefAboutDead: '佛教：輪迴轉世。道教：靈魂在另一個世界繼續生活。祖先崇拜：逝者成為守護家庭的祖先。',
+      taboos: '避免在喪禮中穿紅色。喪期內不參加喜慶活動。某些傳統禁止孕婦參加喪禮。'
+    },
+    jewish: {
+      name: '猶太教',
+      whoGrieves: '七類直系親屬被定義為「哀悼者」（Avel）：父、母、子、女、兄、弟、姊妹、配偶。其他關係的悲傷不受 Shiva 規範保護。',
+      duration: 'Shiva 七天（密集哀悼）、Shloshim 三十天（過渡期）、十一個月念 Kaddish、Yahrzeit 每年忌日紀念。精確而漸進的時間框架。',
+      expression: 'Shiva 期間鼓勵開放的情緒表達。Kriah（撕裂衣服）是外化悲傷的儀式行為。鼓勵來訪者傾聽而非試圖安慰。',
+      support: '社區自動動員：不需邀請即前來探訪、帶食物（Se\'udat Havra\'ah 慰問餐）、組成禱告 Minyan。高度制度化的支持系統。',
+      beliefAboutDead: '對來世的信念多元：有些相信靈魂在 Olam Ha-Ba（來世）、有些強調此世的記憶。統一的是：活著的人有責任紀念逝者。',
+      taboos: 'Shiva 期間不工作、不洗澡（部分傳統）、不穿皮鞋、不照鏡子。哀悼者坐低矮椅子表示謙卑。'
+    },
+    japanese: {
+      name: '日本',
+      whoGrieves: '以家庭為核心。長子或長女通常承擔照顧佛壇與祭祀的主要責任。社會關係中的悲傷表達較為含蓄。',
+      duration: '通夜（守夜）與告別式為即時儀式。四十九日法要為重要節點。之後每年忌日與盂蘭盆節持續紀念。無明確的「結束」時間。',
+      expression: '傾向內斂含蓄。公開場合的克制被視為尊重與堅強。佛壇前的私密對話是常見的情緒出口。在盂蘭盆節等儀式場合可以更自由地表達。',
+      support: '含蓄而行動導向的支持：同事減輕工作量、鄰居送食物，但很少直接詢問感受。「不打擾但在場」的支持風格。寺院僧侶提供儀式與精神支持。',
+      beliefAboutDead: '佛教：成佛或輪迴。神道教：成為守護的神靈（神）。逝者被授予戒名（佛教法名），標記身份的轉化。祖先靈魂在盂蘭盆節回家探訪。',
+      taboos: '避免直接使用「死」字，以委婉語代替。喪禮使用白色（黑色也可）。忌諱在新年期間提及死亡相關話題。'
+    },
+    mexican: {
+      name: '墨西哥',
+      whoGrieves: '整個大家庭與社區。悲傷的圈子廣泛。亡靈節是全民參與的公共節日，不限於直系親屬。',
+      duration: '天主教喪禮後有九日禱告期（Novena）。亡靈節是每年固定的紀念。悲傷被視為自然的、不需要「結束」的。',
+      expression: '開放而富有情感的表達。允許哭泣，也允許歡笑與幽默。亡靈節中以幽默、歌唱、歡慶的方式紀念逝者是文化核心。悲傷與歡樂並存。',
+      support: '大家庭與社區緊密的支持網絡。鄰居自動前來幫忙。亡靈節的準備是家族集體活動。天主教教會提供靈性支持。',
+      beliefAboutDead: '天主教與前哥倫布原住民信仰的融合：亡靈節相信逝者的靈魂會在11月回來與家人團聚。死亡不是終結，而是另一種存在形式。',
+      taboos: '較少禁忌。對死亡持開放態度。討論死亡不被視為不吉利。骷髏意象被融入日常文化而非視為恐怖。'
+    },
+    african: {
+      name: '非洲社群',
+      whoGrieves: '整個村莊/社區。悲傷的界線遠超核心家庭。有時甚至鄰村的人也會前來參與。悲傷是社群事件。',
+      duration: '依文化而異，但通常有明確的社區聚集期（數日到數週）。之後的年度祭祖儀式持續維繫連結。',
+      expression: '高度開放。嚎哭、鼓樂、舞蹈、歌唱都是合法的悲傷表達管道。身體性的情緒釋放被鼓勵。故事講述是核心的悼念行為。',
+      support: '整個社群自動動員（最高等級）。分擔家務、照顧兒童、提供食物、日夜陪伴。支持是義務性的、不需要被邀請的。',
+      beliefAboutDead: '逝者成為祖先，從可見世界過渡到不可見的祖先世界。祖先持續守護家族，可以透過儀式與之溝通。死亡是「升級」而非「消失」。',
+      taboos: '依文化而異。某些文化避免在特定時間提及逝者姓名。部分文化要求在喪期內遵守飲食禁忌。寡婦可能有特定的行為限制。'
+    },
+    western: {
+      name: '現代西方（世俗化）',
+      whoGrieves: '以核心家庭為主。悲傷的「合法性」較個人化，但社會傾向認可直系親屬的悲傷。非傳統關係（如同性伴侶、前任）的悲傷歷史上較不被認可。',
+      duration: '無統一的文化規定。社會隱性期待通常是幾週到幾個月。喪假通常只有3-5天。「你還沒走出來嗎？」是常見的社會壓力。',
+      expression: '鼓勵語言化的情緒表達。心理諮商是主要支持途徑。「談論你的感受」被視為健康的做法。但也存在對男性情緒表達的限制。',
+      support: '較依賴個人社交網絡和專業服務。朋友的支持可能在初期密集但快速消退。悲傷支持團體和專業諮商是制度化的支持。',
+      beliefAboutDead: '多元：基督教的天堂觀、世俗的「他們活在我們記憶中」、不可知論的「我們不知道」。個人化的信念取代了統一的文化敘事。',
+      taboos: '避免談論死亡被視為「不健康」（近年來有所改變）。「你看起來很好」可能是迴避悲傷話題的社交策略。過度悲傷可能被病態化。'
+    }
+  };
+
+  const comparisonRows = [
+    { key: 'whoGrieves', label: '誰有權悲傷' },
+    { key: 'duration', label: '哀悼持續時間' },
+    { key: 'expression', label: '悲傷表達方式' },
+    { key: 'support', label: '社會支持系統' },
+    { key: 'beliefAboutDead', label: '對逝者的信念' },
+    { key: 'taboos', label: '禁忌與規範' }
+  ];
+
+  // Build culture chips
+  const chipsContainer = document.getElementById('culture-chips');
+  const selected = new Set();
+  const maxSelected = 3;
+
+  Object.entries(cultureData).forEach(([key, val]) => {
+    const chip = document.createElement('button');
+    chip.className = 'culture-chip';
+    chip.textContent = val.name;
+    chip.dataset.culture = key;
+    chip.addEventListener('click', () => toggleCulture(key, chip));
+    chipsContainer.appendChild(chip);
+  });
+
+  function toggleCulture(key, chip) {
+    if (selected.has(key)) {
+      selected.delete(key);
+      chip.classList.remove('selected');
+    } else {
+      if (selected.size >= maxSelected) return;
+      selected.add(key);
+      chip.classList.add('selected');
+    }
+    // Update disabled state
+    document.querySelectorAll('.culture-chip').forEach(c => {
+      if (!selected.has(c.dataset.culture) && selected.size >= maxSelected) {
+        c.classList.add('disabled');
+      } else {
+        c.classList.remove('disabled');
+      }
+    });
+    renderComparison();
+  }
+
+  function renderComparison() {
+    const resultEl = document.getElementById('compare-result');
+    const placeholderEl = document.getElementById('compare-placeholder');
+    if (selected.size < 2) {
+      resultEl.style.display = 'none';
+      placeholderEl.style.display = 'block';
+      return;
+    }
+    resultEl.style.display = 'block';
+    placeholderEl.style.display = 'none';
+
+    const keys = Array.from(selected);
+    // Head
+    let headHtml = '<tr><th>比較面向</th>';
+    keys.forEach(k => { headHtml += '<th>' + cultureData[k].name + '</th>'; });
+    headHtml += '</tr>';
+    document.getElementById('compare-head').innerHTML = headHtml;
+
+    // Body
+    let bodyHtml = '';
+    comparisonRows.forEach(row => {
+      bodyHtml += '<tr>';
+      bodyHtml += '<td class="row-label">' + row.label + '</td>';
+      keys.forEach(k => {
+        bodyHtml += '<td>' + cultureData[k][row.key] + '</td>';
+      });
+      bodyHtml += '</tr>';
+    });
+    document.getElementById('compare-body').innerHTML = bodyHtml;
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>複雜性悲傷——互動學習工具</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --primary:#5B6A8A;
+    --primary-light:#7A89A7;
+    --primary-dark:#3E4D6B;
+    --accent:#C4956A;
+    --accent-light:#D4AD89;
+    --accent-dark:#A87A50;
+    --bg:#F7F5F2;
+    --bg-card:#FFFFFF;
+    --text:#2C2C2C;
+    --text-light:#5A5A5A;
+    --text-muted:#8A8A8A;
+    --border:#DDD8D0;
+    --success:#5A8A6A;
+    --success-bg:#EDF5F0;
+    --warning:#8A7A5A;
+    --warning-bg:#FAF5EB;
+    --danger:#8A5A5A;
+    --danger-bg:#F5EDEE;
+    --radius:8px;
+    --shadow:0 2px 8px rgba(0,0,0,0.08);
+    --shadow-lg:0 4px 16px rgba(0,0,0,0.12);
+  }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.7;
+    min-height:100vh;padding:0;
+  }
+
+  /* Disclaimer banner */
+  .disclaimer-banner{
+    background:var(--warning-bg);border-left:4px solid var(--accent);
+    padding:14px 20px;margin:0 0 4px 0;font-size:0.88rem;color:var(--warning);
+    line-height:1.6;
+  }
+  .disclaimer-banner strong{color:var(--accent-dark)}
+
+  /* Header */
+  .page-header{
+    background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+    color:#fff;padding:28px 24px 20px;text-align:center;
+  }
+  .page-header h1{font-size:1.5rem;font-weight:700;margin-bottom:6px}
+  .page-header p{font-size:0.9rem;opacity:0.85}
+
+  /* Tabs */
+  .tab-bar{
+    display:flex;background:var(--bg-card);border-bottom:2px solid var(--border);
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+  }
+  .tab-btn{
+    flex:1 0 auto;padding:13px 16px;font-size:0.88rem;font-weight:600;
+    border:none;background:transparent;color:var(--text-muted);cursor:pointer;
+    white-space:nowrap;transition:all 0.2s;position:relative;
+    font-family:inherit;
+  }
+  .tab-btn:hover{color:var(--primary)}
+  .tab-btn.active{color:var(--primary)}
+  .tab-btn.active::after{
+    content:'';position:absolute;bottom:-2px;left:10%;width:80%;
+    height:3px;background:var(--accent);border-radius:3px 3px 0 0;
+  }
+
+  /* Tab content */
+  .tab-content{display:none;padding:20px;max-width:800px;margin:0 auto}
+  .tab-content.active{display:block}
+
+  /* Cards */
+  .card{
+    background:var(--bg-card);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:20px;margin-bottom:16px;
+  }
+  .card h3{
+    font-size:1.05rem;color:var(--primary-dark);margin-bottom:12px;
+    padding-bottom:8px;border-bottom:1px solid var(--border);
+  }
+
+  /* Section header */
+  .section-title{
+    font-size:1.15rem;font-weight:700;color:var(--primary-dark);
+    margin:20px 0 12px;
+  }
+  .section-desc{
+    font-size:0.9rem;color:var(--text-light);margin-bottom:16px;line-height:1.7;
+  }
+
+  /* ===== Tool 1: Risk Factor Checklist ===== */
+  .risk-category{margin-bottom:20px}
+  .risk-category-header{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 16px;background:var(--primary);color:#fff;
+    border-radius:var(--radius) var(--radius) 0 0;
+    font-weight:600;font-size:0.95rem;cursor:pointer;
+    transition:background 0.2s;
+  }
+  .risk-category-header:hover{background:var(--primary-light)}
+  .risk-category-header .icon{font-size:1.2rem}
+  .risk-category-header .toggle{margin-left:auto;font-size:0.8rem;opacity:0.8}
+  .risk-items{
+    border:1px solid var(--border);border-top:none;
+    border-radius:0 0 var(--radius) var(--radius);
+    overflow:hidden;
+  }
+  .risk-item{
+    display:flex;gap:12px;padding:12px 16px;
+    border-bottom:1px solid var(--border);
+    transition:background 0.15s;align-items:flex-start;
+  }
+  .risk-item:last-child{border-bottom:none}
+  .risk-item:hover{background:rgba(91,106,138,0.04)}
+  .risk-item input[type="checkbox"]{
+    margin-top:4px;width:18px;height:18px;accent-color:var(--accent);
+    flex-shrink:0;cursor:pointer;
+  }
+  .risk-item-content{flex:1}
+  .risk-item-label{font-weight:600;font-size:0.92rem;color:var(--text);cursor:pointer}
+  .risk-item-explain{font-size:0.82rem;color:var(--text-muted);margin-top:3px;line-height:1.6}
+
+  .risk-summary{
+    background:var(--bg);border-radius:var(--radius);
+    padding:20px;margin-top:20px;text-align:center;
+  }
+  .risk-summary h4{color:var(--primary-dark);margin-bottom:8px}
+  .risk-counter{
+    font-size:2rem;font-weight:700;color:var(--accent);margin:8px 0;
+  }
+  .risk-message{font-size:0.9rem;color:var(--text-light);line-height:1.7}
+  .risk-message.low{color:var(--success)}
+  .risk-message.mid{color:var(--warning)}
+  .risk-message.high{color:var(--danger)}
+
+  /* ===== Tool 2: Comparison ===== */
+  .comparison-intro{
+    font-size:0.9rem;color:var(--text-light);margin-bottom:16px;line-height:1.7;
+  }
+  .comparison-row{
+    display:grid;grid-template-columns:1fr 1fr;gap:0;
+    margin-bottom:2px;border-radius:var(--radius);overflow:hidden;
+  }
+  .comparison-header-row .comparison-cell{
+    font-weight:700;padding:12px 16px;font-size:0.95rem;
+  }
+  .comparison-cell{
+    padding:14px 16px;font-size:0.88rem;line-height:1.6;
+  }
+  .cell-normal{background:#EDF5F0;color:#3A6B4A;border-right:1px solid #D5E8DA}
+  .cell-complicated{background:#F5EDEE;color:#6B3A3A}
+  .comparison-dimension{
+    background:var(--primary);color:#fff;padding:10px 16px;
+    font-weight:600;font-size:0.88rem;text-align:center;
+    grid-column:1/-1;margin-top:8px;border-radius:var(--radius) var(--radius) 0 0;
+  }
+
+  /* Slider */
+  .slider-section{margin:24px 0}
+  .slider-label{
+    font-weight:600;color:var(--primary-dark);margin-bottom:8px;
+    font-size:0.95rem;
+  }
+  .slider-wrap{display:flex;align-items:center;gap:12px}
+  .slider-wrap input[type="range"]{
+    flex:1;accent-color:var(--accent);height:6px;cursor:pointer;
+  }
+  .slider-ends{
+    display:flex;justify-content:space-between;
+    font-size:0.78rem;color:var(--text-muted);margin-top:4px;
+  }
+  .slider-output{
+    background:var(--bg);border-radius:var(--radius);
+    padding:16px;margin-top:12px;font-size:0.9rem;
+    line-height:1.7;color:var(--text-light);
+    min-height:60px;transition:all 0.3s;
+  }
+
+  /* ===== Tool 3: Decision flowchart ===== */
+  .flow-node{
+    background:var(--bg-card);border:2px solid var(--border);
+    border-radius:var(--radius);padding:20px;margin-bottom:0;
+    text-align:center;position:relative;
+    transition:border-color 0.3s,box-shadow 0.3s;
+  }
+  .flow-node.active{border-color:var(--primary);box-shadow:var(--shadow-lg)}
+  .flow-node.result-yes{border-color:var(--accent);background:var(--warning-bg)}
+  .flow-node.result-no{border-color:var(--success);background:var(--success-bg)}
+  .flow-question{
+    font-size:1rem;font-weight:600;color:var(--primary-dark);
+    margin-bottom:14px;line-height:1.6;
+  }
+  .flow-explain{
+    font-size:0.85rem;color:var(--text-muted);margin-bottom:14px;line-height:1.6;
+  }
+  .flow-buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .flow-btn{
+    padding:10px 28px;border-radius:var(--radius);font-size:0.9rem;
+    font-weight:600;cursor:pointer;border:2px solid;
+    transition:all 0.2s;font-family:inherit;
+  }
+  .flow-btn-yes{
+    background:var(--accent);color:#fff;border-color:var(--accent);
+  }
+  .flow-btn-yes:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+  .flow-btn-no{
+    background:#fff;color:var(--primary);border-color:var(--primary);
+  }
+  .flow-btn-no:hover{background:var(--primary);color:#fff}
+
+  .flow-connector{
+    width:2px;height:28px;background:var(--border);margin:0 auto;
+    position:relative;
+  }
+  .flow-connector::after{
+    content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+    border-left:6px solid transparent;border-right:6px solid transparent;
+    border-top:8px solid var(--border);
+  }
+
+  .flow-result{
+    padding:20px;border-radius:var(--radius);margin-top:4px;
+    font-size:0.92rem;line-height:1.7;text-align:center;
+  }
+  .flow-result h4{margin-bottom:8px;font-size:1.05rem}
+  .flow-result ul{text-align:left;margin:10px 0 0 20px}
+  .flow-result li{margin-bottom:6px}
+
+  .flow-restart{
+    display:inline-block;margin-top:14px;padding:8px 24px;
+    background:var(--primary);color:#fff;border:none;border-radius:var(--radius);
+    cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;
+  }
+  .flow-restart:hover{background:var(--primary-dark)}
+
+  .flow-hidden{display:none}
+
+  /* Bottom disclaimer */
+  .bottom-disclaimer{
+    text-align:center;padding:20px;font-size:0.82rem;
+    color:var(--text-muted);line-height:1.7;
+    border-top:1px solid var(--border);margin-top:20px;
+  }
+  .bottom-disclaimer a{color:var(--accent)}
+
+  /* Responsive */
+  @media(max-width:600px){
+    .page-header{padding:20px 16px 16px}
+    .page-header h1{font-size:1.25rem}
+    .tab-btn{padding:11px 12px;font-size:0.82rem}
+    .tab-content{padding:16px}
+    .comparison-row{grid-template-columns:1fr}
+    .cell-normal{border-right:none;border-bottom:1px solid #D5E8DA}
+    .cell-normal::before{content:'正常悲傷：';font-weight:700}
+    .cell-complicated::before{content:'複雜性悲傷：';font-weight:700}
+    .comparison-header-row{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- Disclaimer -->
+<div class="disclaimer-banner">
+  <strong>教育用途聲明：</strong>本頁面所有工具僅供學習與認識複雜性悲傷之用，<strong>不具任何診斷功能</strong>，不能取代專業的心理健康評估。如果你正在經歷困難，請聯繫心理健康專業人員或撥打<strong>安心專線 1925</strong>（24 小時免費）。
+</div>
+
+<!-- Header -->
+<div class="page-header">
+  <h1>複雜性悲傷——互動學習工具</h1>
+  <p>透過互動方式認識複雜性悲傷的風險因子、特徵與求助時機</p>
+</div>
+
+<!-- Tab bar -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('risk')">風險因子檢核</button>
+  <button class="tab-btn" onclick="switchTab('compare')">正常 vs 複雜性悲傷</button>
+  <button class="tab-btn" onclick="switchTab('flowchart')">何時該尋求協助？</button>
+</div>
+
+<!-- ==================== TAB 1: Risk Factor Checklist ==================== -->
+<div id="tab-risk" class="tab-content active">
+  <div class="section-title">風險因子檢核工具</div>
+  <div class="section-desc">
+    以下列出了研究中已知與複雜性悲傷風險相關的因素。勾選以了解每項因子的意義。<br>
+    <strong>提醒：</strong>這不是診斷工具。擁有多個風險因子不代表一定會發展出複雜性悲傷，缺少風險因子也不保證不會。
+  </div>
+
+  <!-- Category 1: Individual -->
+  <div class="risk-category">
+    <div class="risk-category-header" onclick="toggleCategory(this)">
+      <span class="icon">&#9883;</span>
+      <span>個人因素</span>
+      <span class="toggle">&#9660;</span>
+    </div>
+    <div class="risk-items">
+      <div class="risk-item">
+        <input type="checkbox" id="r1" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r1">不安全依附風格（特別是焦慮型依附）</label>
+          <div class="risk-item-explain">在關係中容易感到不安、過度擔心被拋棄的人，在失去重要關係時可能更難調適。焦慮型依附者對分離的敏感性使悲傷反應更為強烈且持久。</div>
+        </div>
+      </div>
+      <div class="risk-item">
+        <input type="checkbox" id="r2" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r2">先前有憂鬱症或焦慮症病史</label>
+          <div class="risk-item-explain">既有的心理健康困擾可能削弱因應失落的資源，使個體更容易在悲傷歷程中陷入困境。</div>
+        </div>
+      </div>
+      <div class="risk-item">
+        <input type="checkbox" id="r3" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r3">童年時期曾經歷重大失落</label>
+          <div class="risk-item-explain">早年的失落經驗若未被充分處理，可能在成年後面對新的失落時被重新激活，形成累積效應。</div>
+        </div>
+      </div>
+      <div class="risk-item">
+        <input type="checkbox" id="r4" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r4">傾向反覆思索（rumination）</label>
+          <div class="risk-item-explain">習慣反覆想著「為什麼是我」、「如果當初...」等無法改變的事情，可能讓悲傷的情緒循環加深而難以跳脫。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category 2: Relationship -->
+  <div class="risk-category">
+    <div class="risk-category-header" onclick="toggleCategory(this)">
+      <span class="icon">&#9829;</span>
+      <span>關係因素</span>
+      <span class="toggle">&#9660;</span>
+    </div>
+    <div class="risk-items">
+      <div class="risk-item">
+        <input type="checkbox" id="r5" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r5">與逝者存在高度依賴關係</label>
+          <div class="risk-item-explain">當自我認同、日常生活或情緒支持高度仰賴逝者時，失去他們不僅是情感上的打擊，也是生活結構的全面崩解。</div>
+        </div>
+      </div>
+      <div class="risk-item">
+        <input type="checkbox" id="r6" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r6">失去的是子女（特別是未成年子女）</label>
+          <div class="risk-item-explain">白髮人送黑髮人被認為是最具破壞性的失落類型之一。父母的角色認同與對孩子未來的期待同時被剝奪。</div>
+        </div>
+      </div>
+      <div class="risk-item">
+        <input type="checkbox" id="r7" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r7">與逝者的關係中存在未解決的衝突</label>
+          <div class="risk-item-explain">未說出的道歉、未化解的誤會、複雜矛盾的感情，可能讓悲傷夾帶著罪惡感與遺憾，增加處理的難度。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category 3: Death circumstances -->
+  <div class="risk-category">
+    <div class="risk-category-header" onclick="toggleCategory(this)">
+      <span class="icon">&#9888;</span>
+      <span>死亡情境因素</span>
+      <span class="toggle">&#9660;</span>
+    </div>
+    <div class="risk-items">
+      <div class="risk-item">
+        <input type="checkbox" id="r8" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r8">突然且意外的死亡</label>
+          <div class="risk-item-explain">沒有心理準備的失落剝奪了告別的機會，使個體更難接受失落的現實。意外事故、突發疾病等皆屬此類。</div>
+        </div>
+      </div>
+      <div class="risk-item">
+        <input type="checkbox" id="r9" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r9">暴力性死亡（自殺、他殺、嚴重事故）</label>
+          <div class="risk-item-explain">暴力性死亡除了失落本身的痛苦，還附加了創傷反應、社會污名（尤其自殺）、以及對正義的追尋等複雜因素。</div>
+        </div>
+      </div>
+      <div class="risk-item">
+        <input type="checkbox" id="r10" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r10">未能在場告別或參與喪葬儀式</label>
+          <div class="risk-item-explain">無法陪伴臨終、無法參與喪禮可能導致「未完成的告別」感受，使個體更難在心理上接受失落。疫情期間這種情況尤為常見。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category 4: Social/environmental -->
+  <div class="risk-category">
+    <div class="risk-category-header" onclick="toggleCategory(this)">
+      <span class="icon">&#9962;</span>
+      <span>社會環境因素</span>
+      <span class="toggle">&#9660;</span>
+    </div>
+    <div class="risk-items">
+      <div class="risk-item">
+        <input type="checkbox" id="r11" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r11">缺乏社會支持</label>
+          <div class="risk-item-explain">身邊沒有可以傾訴的對象、社交網絡薄弱，使個體必須獨自面對悲傷，缺少外在的情感資源。</div>
+        </div>
+      </div>
+      <div class="risk-item">
+        <input type="checkbox" id="r12" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r12">悲傷不被社會認可（剝奪性悲傷）</label>
+          <div class="risk-item-explain">例如：前任伴侶、同性伴侶、流產、寵物的死亡等，當社會不承認你的悲傷「值得」悲傷時，哀悼變得更加困難。</div>
+        </div>
+      </div>
+      <div class="risk-item">
+        <input type="checkbox" id="r13" onchange="updateRiskCount()">
+        <div class="risk-item-content">
+          <label class="risk-item-label" for="r13">同時面臨其他重大生活壓力</label>
+          <div class="risk-item-explain">經濟困難、搬遷、失業、法律問題等次級壓力會消耗因應資源，使悲傷的調適更加困難。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="risk-summary">
+    <h4>風險因子認識小結</h4>
+    <div class="risk-counter" id="riskCount">0 / 13</div>
+    <div class="risk-message" id="riskMessage">
+      勾選上方的項目以了解各類風險因子。這個工具幫助你認識哪些因素可能增加複雜性悲傷的風險，但不具有任何診斷意義。
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 2: Comparison ==================== -->
+<div id="tab-compare" class="tab-content">
+  <div class="section-title">正常悲傷 vs 複雜性悲傷</div>
+  <div class="comparison-intro">
+    正常悲傷與複雜性悲傷並不是截然不同的兩種東西，而是一個連續光譜上的不同位置。以下的比較幫助你理解在不同面向上，兩者如何呈現不同的特徵。
+  </div>
+
+  <!-- Dimension 1 -->
+  <div class="comparison-dimension">思念的性質</div>
+  <div class="comparison-row comparison-header-row">
+    <div class="comparison-cell cell-normal">正常悲傷</div>
+    <div class="comparison-cell cell-complicated">複雜性悲傷</div>
+  </div>
+  <div class="comparison-row">
+    <div class="comparison-cell cell-normal">思念隨時間逐漸軟化，從尖銳的痛變成溫柔的懷念。想到逝者時，正向回憶的比例漸漸增加。</div>
+    <div class="comparison-cell cell-complicated">思念的強度幾乎不隨時間減弱，持續以強烈的渴望和痛苦為主。對逝者的思念佔據大部分清醒時間。</div>
+  </div>
+
+  <!-- Dimension 2 -->
+  <div class="comparison-dimension">接受失落的能力</div>
+  <div class="comparison-row comparison-header-row">
+    <div class="comparison-cell cell-normal">正常悲傷</div>
+    <div class="comparison-cell cell-complicated">複雜性悲傷</div>
+  </div>
+  <div class="comparison-row">
+    <div class="comparison-cell cell-normal">雖然痛苦，但逐漸能夠在理智與情感上接受失落的現實。能夠談論逝者的死亡。</div>
+    <div class="comparison-cell cell-complicated">在理智上可能知道，但在情感上持續難以相信或接受。可能反覆出現「這不是真的」的感受。</div>
+  </div>
+
+  <!-- Dimension 3 -->
+  <div class="comparison-dimension">日常功能</div>
+  <div class="comparison-row comparison-header-row">
+    <div class="comparison-cell cell-normal">正常悲傷</div>
+    <div class="comparison-cell cell-complicated">複雜性悲傷</div>
+  </div>
+  <div class="comparison-row">
+    <div class="comparison-cell cell-normal">初期功能可能暫時受損，但數週到數月內逐步恢復工作、社交與自我照顧的能力。</div>
+    <div class="comparison-cell cell-complicated">功能損害持續存在且無明顯改善。可能無法工作、維持人際關係或進行基本自我照顧，持續數月甚至數年。</div>
+  </div>
+
+  <!-- Dimension 4 -->
+  <div class="comparison-dimension">情緒模式</div>
+  <div class="comparison-row comparison-header-row">
+    <div class="comparison-cell cell-normal">正常悲傷</div>
+    <div class="comparison-cell cell-complicated">複雜性悲傷</div>
+  </div>
+  <div class="comparison-row">
+    <div class="comparison-cell cell-normal">情緒呈現「波浪」模式——悲傷一陣一陣地來，中間穿插著能夠感受到其他情緒（包括正向情緒）的時刻。</div>
+    <div class="comparison-cell cell-complicated">情緒可能持續處於高強度的痛苦中，或者相反地陷入麻木。正向情緒的體驗明顯減少。缺少正常的「擺盪」。</div>
+  </div>
+
+  <!-- Dimension 5 -->
+  <div class="comparison-dimension">身份認同</div>
+  <div class="comparison-row comparison-header-row">
+    <div class="comparison-cell cell-normal">正常悲傷</div>
+    <div class="comparison-cell cell-complicated">複雜性悲傷</div>
+  </div>
+  <div class="comparison-row">
+    <div class="comparison-cell cell-normal">雖然失落帶來角色的改變，但個體逐漸能夠發展新的身份認同，找到「沒有那個人的我是誰」。</div>
+    <div class="comparison-cell cell-complicated">感覺自我的核心部分隨逝者一起消失了。強烈的身份認同困惑，不知道「沒有他/她，我還是誰」。</div>
+  </div>
+
+  <!-- Dimension 6 -->
+  <div class="comparison-dimension">對未來的看法</div>
+  <div class="comparison-row comparison-header-row">
+    <div class="comparison-cell cell-normal">正常悲傷</div>
+    <div class="comparison-cell cell-complicated">複雜性悲傷</div>
+  </div>
+  <div class="comparison-row">
+    <div class="comparison-cell cell-normal">儘管最初可能覺得未來暗淡，但漸漸能夠設想和規劃未來，找到新的目標與意義。</div>
+    <div class="comparison-cell cell-complicated">對未來感到空白或無望。難以想像沒有逝者的有意義的未來。可能覺得繼續活著沒有意義。</div>
+  </div>
+
+  <!-- Slider: Time dimension -->
+  <div class="slider-section">
+    <div class="slider-label">時間軸探索：失落後的月份</div>
+    <div class="slider-wrap">
+      <span style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap">1 個月</span>
+      <input type="range" id="timeSlider" min="1" max="36" value="1" oninput="updateSlider(this.value)">
+      <span style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap">36 個月</span>
+    </div>
+    <div class="slider-ends">
+      <span>失落初期</span>
+      <span id="sliderMonthLabel" style="font-weight:600;color:var(--accent)">第 1 個月</span>
+      <span>三年後</span>
+    </div>
+    <div class="slider-output" id="sliderOutput">
+      <strong>第 1 個月</strong>——在失落初期，正常悲傷與後來可能發展為複雜性悲傷的反應幾乎無法區分。強烈的痛苦、思念、難以置信、功能受損在此時都是預期中的反應。不要急著給任何標籤。
+    </div>
+  </div>
+
+  <div class="card" style="background:var(--warning-bg);border-left:3px solid var(--accent)">
+    <p style="font-size:0.88rem;color:var(--warning);line-height:1.7">
+      <strong>重要提醒：</strong>正常悲傷與複雜性悲傷之間沒有明確的分界線。上述比較是簡化的教育呈現。每個人的悲傷經驗都是獨特的，如果你對自己或他人的狀況有疑慮，最好的做法是諮詢專業人員。
+    </p>
+  </div>
+</div>
+
+<!-- ==================== TAB 3: Decision Flowchart ==================== -->
+<div id="tab-flowchart" class="tab-content">
+  <div class="section-title">何時該尋求專業協助？</div>
+  <div class="section-desc">
+    回答以下問題，幫助你思考是否可能需要專業支持。這不是診斷工具，而是幫助你覺察自己狀態的參考。
+  </div>
+
+  <div id="flowContainer">
+    <!-- Node 0: Start -->
+    <div class="flow-node active" id="flowNode0">
+      <div class="flow-question">你或你關心的人正在經歷失去重要之人的悲傷嗎？</div>
+      <div class="flow-explain">這裡的「重要之人」包括家人、伴侶、摯友，或任何與你有深厚情感連結的人。</div>
+      <div class="flow-buttons">
+        <button class="flow-btn flow-btn-yes" onclick="flowNext(0,'yes')">是的</button>
+        <button class="flow-btn flow-btn-no" onclick="flowNext(0,'no')">不是</button>
+      </div>
+    </div>
+
+    <!-- Node 1 -->
+    <div class="flow-connector flow-hidden" id="conn0"></div>
+    <div class="flow-node flow-hidden" id="flowNode1">
+      <div class="flow-question">距離失落發生，已經過了多久？</div>
+      <div class="flow-explain">時間是判斷悲傷反應是否需要關注的重要（但非唯一）因素。</div>
+      <div class="flow-buttons">
+        <button class="flow-btn flow-btn-no" onclick="flowNext(1,'early')">少於 6 個月</button>
+        <button class="flow-btn flow-btn-yes" onclick="flowNext(1,'mid')">6-12 個月</button>
+        <button class="flow-btn flow-btn-yes" onclick="flowNext(1,'late')">超過 12 個月</button>
+      </div>
+    </div>
+
+    <!-- Node 2: Early grief -->
+    <div class="flow-connector flow-hidden" id="conn1a"></div>
+    <div class="flow-node flow-hidden" id="flowNode2">
+      <div class="flow-question">在這段初期悲傷中，你是否有以下任何狀況？</div>
+      <div class="flow-explain">即使在悲傷初期，某些信號仍然值得注意。</div>
+      <div class="flow-buttons" style="flex-direction:column;align-items:center">
+        <button class="flow-btn flow-btn-yes" style="width:100%;max-width:360px;text-align:left;padding-left:16px" onclick="flowNext(2,'crisis')">有傷害自己的想法，或覺得活著沒有意義</button>
+        <button class="flow-btn flow-btn-yes" style="width:100%;max-width:360px;text-align:left;padding-left:16px" onclick="flowNext(2,'substance')">明顯增加了酒精或藥物的使用</button>
+        <button class="flow-btn flow-btn-no" style="width:100%;max-width:360px;text-align:left;padding-left:16px" onclick="flowNext(2,'coping')">雖然很痛苦，但沒有以上狀況</button>
+      </div>
+    </div>
+
+    <!-- Node 3: 6-12 month check -->
+    <div class="flow-connector flow-hidden" id="conn1b"></div>
+    <div class="flow-node flow-hidden" id="flowNode3">
+      <div class="flow-question">悲傷的強度是否有隨時間逐漸減輕的趨勢？</div>
+      <div class="flow-explain">「減輕」不代表不再悲傷，而是痛苦不再時時刻刻佔據全部的心理空間，偶爾能感受到其他情緒。</div>
+      <div class="flow-buttons">
+        <button class="flow-btn flow-btn-no" onclick="flowNext(3,'improving')">是的，雖然緩慢但有改善</button>
+        <button class="flow-btn flow-btn-yes" onclick="flowNext(3,'stuck')">沒有，感覺一直卡在同樣的強度</button>
+      </div>
+    </div>
+
+    <!-- Node 4: >12 months -->
+    <div class="flow-connector flow-hidden" id="conn1c"></div>
+    <div class="flow-node flow-hidden" id="flowNode4">
+      <div class="flow-question">以下情況中，有幾項符合你目前的狀態？</div>
+      <div class="flow-explain" style="text-align:left">
+        1. 對逝者的思念幾乎佔據每天大部分時間<br>
+        2. 難以接受死亡是真實的（即使理智上知道）<br>
+        3. 極力迴避會提醒你那個人已經不在的事物<br>
+        4. 工作、社交、自我照顧的功能嚴重受損<br>
+        5. 感覺自己的一部分也跟著死了<br>
+        6. 對未來感到完全空白或沒有意義
+      </div>
+      <div class="flow-buttons">
+        <button class="flow-btn flow-btn-no" onclick="flowNext(4,'few')">0-1 項</button>
+        <button class="flow-btn flow-btn-yes" onclick="flowNext(4,'some')">2-3 項</button>
+        <button class="flow-btn flow-btn-yes" onclick="flowNext(4,'many')">4 項以上</button>
+      </div>
+    </div>
+
+    <!-- ===== RESULT NODES ===== -->
+
+    <!-- Result: Not grieving -->
+    <div class="flow-connector flow-hidden" id="connR0"></div>
+    <div class="flow-node flow-hidden result-no" id="resultNotGrieving">
+      <div class="flow-result">
+        <h4>這個工具可能不適合你目前的狀況</h4>
+        <p>這個決策流程是針對正在經歷喪親悲傷的人設計的。如果你正在面對其他形式的心理困擾，同樣值得尋求專業支持。</p>
+        <button class="flow-restart" onclick="resetFlow()">重新開始</button>
+      </div>
+    </div>
+
+    <!-- Result: Crisis -->
+    <div class="flow-connector flow-hidden" id="connR1"></div>
+    <div class="flow-node flow-hidden result-yes" id="resultCrisis">
+      <div class="flow-result">
+        <h4>建議盡快聯繫專業資源</h4>
+        <p>無論悲傷持續多久，如果你有傷害自己的想法或明顯增加物質使用，請盡快尋求協助。這不代表你「有問題」——這代表你正在經歷超出一般因應能力的痛苦，你值得被支持。</p>
+        <ul>
+          <li><strong>安心專線 1925</strong>（24 小時免費）</li>
+          <li><strong>生命線 1995</strong></li>
+          <li><strong>張老師專線 1980</strong></li>
+          <li>或前往最近的醫療機構急診</li>
+        </ul>
+        <button class="flow-restart" onclick="resetFlow()">重新開始</button>
+      </div>
+    </div>
+
+    <!-- Result: Early normal -->
+    <div class="flow-connector flow-hidden" id="connR2"></div>
+    <div class="flow-node flow-hidden result-no" id="resultEarlyNormal">
+      <div class="flow-result">
+        <h4>你正在經歷的可能是正常的悲傷反應</h4>
+        <p>在失落的前幾個月，強烈的悲傷反應是完全預期中的。給自己時間和空間，同時注意以下幾點：</p>
+        <ul>
+          <li>維持基本的生活規律（飲食、睡眠、活動）</li>
+          <li>不要拒絕身邊人的關心和支持</li>
+          <li>允許自己悲傷，但也允許自己有喘息的時刻</li>
+          <li>如果情況惡化或你感到不安，隨時可以尋求專業諮詢</li>
+        </ul>
+        <button class="flow-restart" onclick="resetFlow()">重新開始</button>
+      </div>
+    </div>
+
+    <!-- Result: Improving -->
+    <div class="flow-connector flow-hidden" id="connR3"></div>
+    <div class="flow-node flow-hidden result-no" id="resultImproving">
+      <div class="flow-result">
+        <h4>你的悲傷似乎在自然的軌道上</h4>
+        <p>即使進展緩慢，只要有逐漸改善的趨勢，通常表示悲傷歷程在正常進行中。繼續善待自己，如果你覺得需要額外的支持，悲傷支持團體或短期諮商也是很好的選擇。</p>
+        <button class="flow-restart" onclick="resetFlow()">重新開始</button>
+      </div>
+    </div>
+
+    <!-- Result: Consider help -->
+    <div class="flow-connector flow-hidden" id="connR4"></div>
+    <div class="flow-node flow-hidden result-yes" id="resultConsiderHelp">
+      <div class="flow-result">
+        <h4>建議考慮尋求專業支持</h4>
+        <p>你描述的狀態顯示悲傷的歷程可能遇到了一些困難。這不代表你「悲傷得不對」——而是你可能需要一些專業的陪伴來幫助悲傷重新流動。</p>
+        <ul>
+          <li>預約心理諮商或臨床心理師</li>
+          <li>向家庭醫師討論你的狀況</li>
+          <li>參加悲傷支持團體</li>
+          <li>台灣心理諮商資訊網可以幫助你尋找合適的治療師</li>
+        </ul>
+        <button class="flow-restart" onclick="resetFlow()">重新開始</button>
+      </div>
+    </div>
+
+    <!-- Result: Strongly recommend -->
+    <div class="flow-connector flow-hidden" id="connR5"></div>
+    <div class="flow-node flow-hidden result-yes" id="resultStronglyRecommend">
+      <div class="flow-result">
+        <h4>強烈建議尋求專業協助</h4>
+        <p>你描述的狀態有多項特徵與複雜性悲傷相符。好消息是——針對這類困難已有經過研究驗證的有效治療方法。尋求協助是你能為自己做的最勇敢的事之一。</p>
+        <ul>
+          <li><strong>優先</strong>：預約具有悲傷治療經驗的心理師</li>
+          <li>向精神科或身心科醫師諮詢</li>
+          <li>如果不知道從哪裡開始，可以先撥打<strong>安心專線 1925</strong></li>
+        </ul>
+        <button class="flow-restart" onclick="resetFlow()">重新開始</button>
+      </div>
+    </div>
+
+    <!-- Result: Few symptoms > 12m -->
+    <div class="flow-connector flow-hidden" id="connR6"></div>
+    <div class="flow-node flow-hidden result-no" id="resultFewLate">
+      <div class="flow-result">
+        <h4>你的適應狀況看起來不錯</h4>
+        <p>儘管已經超過一年，你的悲傷似乎沒有造成嚴重的功能困擾。持續悲傷本身不是問題——重要的是你仍然能夠投入生活。如果未來有任何變化讓你擔心，隨時可以尋求支持。</p>
+        <button class="flow-restart" onclick="resetFlow()">重新開始</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom disclaimer -->
+<div class="bottom-disclaimer">
+  本頁面所有工具僅供教育用途，不構成醫療或心理健康診斷。<br>
+  如需專業協助，請聯繫合格的心理健康專業人員或撥打 <a href="tel:1925">安心專線 1925</a>。
+</div>
+
+<script>
+/* ===== Tab switching ===== */
+function switchTab(id){
+  document.querySelectorAll('.tab-content').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.tab-btn').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('tab-'+id).classList.add('active');
+  var btns=document.querySelectorAll('.tab-btn');
+  var map={risk:0,compare:1,flowchart:2};
+  if(map[id]!==undefined)btns[map[id]].classList.add('active');
+}
+
+/* ===== Tool 1: Risk factor checklist ===== */
+function toggleCategory(header){
+  var items=header.nextElementSibling;
+  var toggle=header.querySelector('.toggle');
+  if(items.style.display==='none'){
+    items.style.display='';
+    toggle.innerHTML='&#9660;';
+  }else{
+    items.style.display='none';
+    toggle.innerHTML='&#9654;';
+  }
+}
+
+function updateRiskCount(){
+  var checks=document.querySelectorAll('#tab-risk input[type="checkbox"]');
+  var count=0;
+  checks.forEach(function(c){if(c.checked)count++});
+  document.getElementById('riskCount').textContent=count+' / 13';
+  var msg=document.getElementById('riskMessage');
+  if(count===0){
+    msg.className='risk-message';
+    msg.textContent='勾選上方的項目以了解各類風險因子。這個工具幫助你認識哪些因素可能增加複雜性悲傷的風險，但不具有任何診斷意義。';
+  }else if(count<=3){
+    msg.className='risk-message low';
+    msg.textContent='你勾選了 '+count+' 項已知的風險因子。記住，擁有風險因子不代表一定會發展出複雜性悲傷。許多具有風險因子的人依然展現出良好的適應力。';
+  }else if(count<=7){
+    msg.className='risk-message mid';
+    msg.textContent='你勾選了 '+count+' 項已知的風險因子。多個風險因子的存在確實可能增加挑戰。如果你目前正在經歷失落，關注自己的狀態並保持社會支持可能特別重要。如有疑慮，考慮諮詢專業人員。';
+  }else{
+    msg.className='risk-message high';
+    msg.textContent='你勾選了 '+count+' 項已知的風險因子。較多的風險因子疊加可能需要更多關注。如果你目前正在經歷失落或為他人擔憂，建議主動尋求專業支持，這是對自己負責任的表現。';
+  }
+}
+
+/* ===== Tool 2: Comparison slider ===== */
+var sliderData={
+  1:{label:'第 1 個月',text:'在失落初期，正常悲傷與後來可能發展為複雜性悲傷的反應幾乎無法區分。強烈的痛苦、思念、難以置信、功能受損在此時都是預期中的反應。不要急著給任何標籤。'},
+  3:{label:'第 3 個月',text:'大多數人仍處於急性悲傷階段。情緒波動劇烈，日常功能可能還沒有完全恢復。但有些人可能開始出現「擺盪」——在悲傷與日常事務之間來回。有些人可能還沒有進入完整的悲傷反應（這不一定是問題）。'},
+  6:{label:'第 6 個月',text:'ICD-11 的時間門檻。多數遵循正常悲傷軌跡的人，此時悲傷的強度已有所減緩，雖然某些時刻仍然很痛。如果此時強烈的悲傷反應完全沒有減弱的跡象且嚴重影響功能，可能值得留意。但六個月仍然很短，不需要過度擔心。'},
+  12:{label:'第 12 個月',text:'DSM-5-TR 的成人時間門檻。第一個週年日往往是情緒的重要觸發點。對大多數人來說，此時悲傷已經逐漸「整合」到生活中。如果到了這個時間點，核心悲傷反應仍然與失落初期一樣強烈，且日常功能持續受損，這可能是尋求專業評估的適當時機。'},
+  18:{label:'第 18 個月',text:'在一年半的時間裡，如果悲傷反應仍然沒有明顯改善的趨勢，複雜性悲傷的可能性增加。但也要考慮文化因素——在某些文化中，較長時間的哀悼期是被期待的。關鍵不只是時間，而是功能損害的程度。'},
+  24:{label:'第 24 個月',text:'兩年後，正常悲傷軌跡的人通常已經在生活中找到了新的平衡——悲傷仍然存在，但不再主導日常生活。複雜性悲傷者此時可能仍然覺得被「凍結」在失落的那一刻。如果你或你關心的人在兩年後仍處於這種狀態，尋求專業協助是強烈建議的。'},
+  36:{label:'第 36 個月',text:'三年是一段相當長的時間。大多數研究顯示，在沒有治療介入的情況下，複雜性悲傷可能持續數年甚至更久。好消息是，即使在悲傷發生很久之後，專業治療仍然可以帶來顯著的改善。任何時候尋求幫助都不嫌晚。'}
+};
+
+function updateSlider(val){
+  val=parseInt(val);
+  document.getElementById('sliderMonthLabel').textContent='第 '+val+' 個月';
+  var keys=Object.keys(sliderData).map(Number).sort(function(a,b){return a-b});
+  var bestKey=keys[0];
+  for(var i=0;i<keys.length;i++){
+    if(keys[i]<=val)bestKey=keys[i];
+    else break;
+  }
+  var d=sliderData[bestKey];
+  document.getElementById('sliderOutput').innerHTML='<strong>'+d.label+'</strong>——'+d.text;
+}
+
+/* ===== Tool 3: Flowchart ===== */
+var flowHistory=[];
+
+function showNode(id){
+  var el=document.getElementById(id);
+  if(el){el.classList.remove('flow-hidden');el.classList.add('active')}
+}
+function showConn(id){
+  var el=document.getElementById(id);
+  if(el)el.classList.remove('flow-hidden');
+}
+function hideAllAfter(){
+  /* hide all nodes & connectors except those in history */
+  var allNodes=document.querySelectorAll('#flowContainer .flow-node, #flowContainer .flow-connector');
+  var keep=new Set(['flowNode0']);
+  flowHistory.forEach(function(h){keep.add(h.conn);keep.add(h.node)});
+  allNodes.forEach(function(el){
+    if(!keep.has(el.id)){el.classList.add('flow-hidden');el.classList.remove('active')}
+  });
+}
+
+function flowNext(fromNode,answer){
+  /* Disable buttons on answered node */
+  var fromEl=document.getElementById('flowNode'+fromNode);
+  if(fromEl){
+    fromEl.querySelectorAll('.flow-btn').forEach(function(b){b.disabled=true;b.style.opacity='0.5'});
+    fromEl.classList.remove('active');
+  }
+
+  var target={conn:'',node:''};
+
+  if(fromNode===0){
+    if(answer==='yes'){target={conn:'conn0',node:'flowNode1'}}
+    else{target={conn:'connR0',node:'resultNotGrieving'}}
+  }else if(fromNode===1){
+    if(answer==='early'){target={conn:'conn1a',node:'flowNode2'}}
+    else if(answer==='mid'){target={conn:'conn1b',node:'flowNode3'}}
+    else{target={conn:'conn1c',node:'flowNode4'}}
+  }else if(fromNode===2){
+    if(answer==='crisis'||answer==='substance'){target={conn:'connR1',node:'resultCrisis'}}
+    else{target={conn:'connR2',node:'resultEarlyNormal'}}
+  }else if(fromNode===3){
+    if(answer==='improving'){target={conn:'connR3',node:'resultImproving'}}
+    else{target={conn:'connR4',node:'resultConsiderHelp'}}
+  }else if(fromNode===4){
+    if(answer==='few'){target={conn:'connR6',node:'resultFewLate'}}
+    else if(answer==='some'){target={conn:'connR4',node:'resultConsiderHelp'}}
+    else{target={conn:'connR5',node:'resultStronglyRecommend'}}
+  }
+
+  flowHistory.push(target);
+  showConn(target.conn);
+  showNode(target.node);
+  /* scroll to new node */
+  setTimeout(function(){
+    var el=document.getElementById(target.node);
+    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+}
+
+function resetFlow(){
+  flowHistory=[];
+  var allNodes=document.querySelectorAll('#flowContainer .flow-node');
+  allNodes.forEach(function(el){
+    el.classList.add('flow-hidden');el.classList.remove('active');
+    el.classList.remove('result-yes');el.classList.remove('result-no');
+    el.querySelectorAll('.flow-btn').forEach(function(b){b.disabled=false;b.style.opacity='1'});
+  });
+  var allConns=document.querySelectorAll('#flowContainer .flow-connector');
+  allConns.forEach(function(el){el.classList.add('flow-hidden')});
+  /* restore result node classes */
+  var rYes=['resultCrisis','resultConsiderHelp','resultStronglyRecommend'];
+  rYes.forEach(function(id){var e=document.getElementById(id);if(e)e.classList.add('result-yes')});
+  var rNo=['resultNotGrieving','resultEarlyNormal','resultImproving','resultFewLate'];
+  rNo.forEach(function(id){var e=document.getElementById(id);if(e)e.classList.add('result-no')});
+  /* show first node */
+  var first=document.getElementById('flowNode0');
+  first.classList.remove('flow-hidden');first.classList.add('active');
+  first.scrollIntoView({behavior:'smooth',block:'center'});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雙軌擺盪模型 — 互動工具</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #5B6A8A;
+    --primary-light: #7A89A7;
+    --primary-dark: #3E4D6B;
+    --accent: #C4956A;
+    --accent-light: #D4AD8A;
+    --accent-dark: #A87A50;
+    --bg: #F7F5F2;
+    --bg-card: #FFFFFF;
+    --text: #2D3142;
+    --text-light: #6B7280;
+    --text-muted: #9CA3AF;
+    --border: #E5E2DD;
+    --lo-color: #5B6A8A;
+    --ro-color: #C4956A;
+    --lo-bg: #EEF0F5;
+    --ro-bg: #FBF3EC;
+    --shadow: 0 2px 8px rgba(45,49,66,0.08);
+    --shadow-lg: 0 4px 16px rgba(45,49,66,0.12);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .app-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+  }
+
+  .app-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 24px 16px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: var(--radius);
+    color: #fff;
+  }
+
+  .app-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .app-header p {
+    font-size: 0.9rem;
+    opacity: 0.85;
+  }
+
+  /* Tabs */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 4px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 8px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-light);
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .tab-btn:hover { background: var(--bg); color: var(--text); }
+
+  .tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(91,106,138,0.3);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .card h2 {
+    font-size: 1.15rem;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    color: var(--primary);
+    margin: 16px 0 8px;
+  }
+
+  .card p.desc {
+    font-size: 0.88rem;
+    color: var(--text-light);
+    margin-bottom: 16px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: var(--accent-dark); }
+  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+
+  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ===== Tool 1: Oscillation Simulator ===== */
+  .sim-canvas-wrap {
+    position: relative;
+    width: 100%;
+    background: #FAFAF8;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  #simCanvas { display: block; width: 100%; }
+
+  .sim-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .sim-controls label {
+    font-size: 0.82rem;
+    color: var(--text-light);
+  }
+
+  .sim-controls input[type="range"] {
+    width: 100px;
+    accent-color: var(--primary);
+  }
+
+  .sim-legend {
+    display: flex;
+    gap: 20px;
+    font-size: 0.82rem;
+    color: var(--text-light);
+    margin-top: 8px;
+  }
+
+  .sim-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: -1px;
+  }
+
+  .legend-lo::before { background: var(--lo-color); }
+  .legend-ro::before { background: var(--ro-color); }
+  .legend-line::before { background: #4A5568; }
+
+  .sim-status {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    font-size: 0.85rem;
+  }
+
+  .sim-status-item {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+  }
+
+  .sim-status-lo { background: var(--lo-bg); color: var(--lo-color); }
+  .sim-status-ro { background: var(--ro-bg); color: var(--ro-color); }
+
+  .sim-status-item .status-label { font-size: 0.75rem; display: block; margin-bottom: 2px; }
+  .sim-status-item .status-value { font-size: 1.1rem; font-weight: 700; }
+
+  .phase-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .phase-btn {
+    padding: 6px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    background: transparent;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-light);
+  }
+
+  .phase-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+  .phase-btn:hover:not(.active) { border-color: var(--primary-light); color: var(--primary); }
+
+  /* ===== Tool 2: Coping Strategy Analyzer ===== */
+  .analyzer-input-area {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .analyzer-input-area input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .analyzer-input-area input:focus { border-color: var(--primary); }
+
+  .category-btns {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .cat-btn {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .cat-btn:hover { transform: translateY(-1px); }
+  .cat-btn.cat-lo { border-color: var(--lo-color); background: var(--lo-bg); }
+  .cat-btn.cat-ro { border-color: var(--ro-color); background: var(--ro-bg); }
+  .cat-btn .cat-label { font-size: 0.78rem; color: var(--text-light); display: block; }
+  .cat-btn .cat-name { font-size: 0.95rem; font-weight: 600; }
+  .cat-btn.cat-lo .cat-name { color: var(--lo-color); }
+  .cat-btn.cat-ro .cat-name { color: var(--ro-color); }
+
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .activity-item.lo-item { background: var(--lo-bg); }
+  .activity-item.ro-item { background: var(--ro-bg); }
+
+  .activity-item .act-tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .lo-item .act-tag { background: var(--lo-color); }
+  .ro-item .act-tag { background: var(--ro-color); }
+
+  .activity-item .act-text { flex: 1; }
+
+  .activity-item .act-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    padding: 0 4px;
+    transition: color 0.2s;
+  }
+
+  .activity-item .act-remove:hover { color: #E53E3E; }
+
+  .balance-bar-wrap {
+    margin: 16px 0;
+  }
+
+  .balance-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+
+  .balance-bar {
+    height: 28px;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    background: var(--border);
+  }
+
+  .balance-lo {
+    height: 100%;
+    background: linear-gradient(90deg, var(--lo-color), var(--primary-light));
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 0;
+  }
+
+  .balance-ro {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-light), var(--ro-color));
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 0;
+  }
+
+  .balance-feedback {
+    margin-top: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    border-left: 4px solid var(--primary);
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .preset-activities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .preset-chip {
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    background: var(--bg-card);
+    color: var(--text-light);
+    transition: all 0.2s;
+  }
+
+  .preset-chip:hover { border-color: var(--primary); color: var(--primary); }
+  .preset-chip.chip-lo:hover { border-color: var(--lo-color); color: var(--lo-color); }
+  .preset-chip.chip-ro:hover { border-color: var(--ro-color); color: var(--ro-color); }
+
+  /* ===== Tool 3: DPM Interactive Diagram ===== */
+  .diagram-container {
+    position: relative;
+    width: 100%;
+    min-height: 420px;
+  }
+
+  .diagram-svg-wrap {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .diagram-svg-wrap svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .dpm-node {
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+  }
+
+  .dpm-node:hover { filter: brightness(1.05); }
+
+  .detail-panel {
+    display: none;
+    margin-top: 16px;
+    padding: 18px 20px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .detail-panel.show { display: block; }
+
+  .detail-panel h4 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .detail-panel h4.lo-title { color: var(--lo-color); }
+  .detail-panel h4.ro-title { color: var(--ro-color); }
+  .detail-panel h4.osc-title { color: var(--primary-dark); }
+
+  .detail-panel p { font-size: 0.88rem; color: var(--text); line-height: 1.7; margin-bottom: 8px; }
+
+  .detail-panel ul {
+    margin: 8px 0 8px 20px;
+    font-size: 0.86rem;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .detail-close {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    text-decoration: underline;
+  }
+
+  .detail-close:hover { color: var(--text); }
+
+  .diagram-hint {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .app-container { padding: 12px 10px 32px; }
+    .app-header h1 { font-size: 1.25rem; }
+    .card { padding: 16px; }
+    .tab-btn { font-size: 0.75rem; padding: 8px 6px; }
+    .sim-status { flex-direction: column; gap: 8px; }
+    .analyzer-input-area { flex-direction: column; }
+    .category-btns { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <div class="app-header">
+    <h1>雙軌擺盪模型 互動工具</h1>
+    <p>透過模擬、分析與圖解，深入理解 DPM 的核心概念</p>
+  </div>
+
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" role="tab" data-tab="simulator">擺盪歷程模擬器</button>
+    <button class="tab-btn" role="tab" data-tab="analyzer">因應策略分析</button>
+    <button class="tab-btn" role="tab" data-tab="diagram">DPM 互動圖解</button>
+  </nav>
+
+  <!-- ==================== Tool 1: Oscillation Simulator ==================== -->
+  <div class="tab-panel active" id="panel-simulator" role="tabpanel">
+    <div class="card">
+      <h2>擺盪歷程模擬器</h2>
+      <p class="desc">觀察喪親者在不同階段中，失落導向（LO）與復原導向（RO）因應如何動態擺盪。曲線向上代表偏向失落導向，向下代表偏向復原導向。</p>
+
+      <div class="phase-selector">
+        <button class="phase-btn active" data-phase="early">早期（1-3 個月）</button>
+        <button class="phase-btn" data-phase="mid">中期（3-12 個月）</button>
+        <button class="phase-btn" data-phase="late">後期（1 年以上）</button>
+        <button class="phase-btn" data-phase="stuck-lo">困境：過度 LO</button>
+        <button class="phase-btn" data-phase="stuck-ro">困境：過度 RO</button>
+      </div>
+
+      <div class="sim-controls">
+        <button class="btn btn-primary btn-sm" id="simPlayBtn">&#9654; 播放</button>
+        <button class="btn btn-outline btn-sm" id="simResetBtn">&#8635; 重置</button>
+        <label>速度：<input type="range" id="simSpeed" min="1" max="5" value="3"></label>
+      </div>
+
+      <div class="sim-canvas-wrap">
+        <canvas id="simCanvas" height="260"></canvas>
+      </div>
+
+      <div class="sim-legend">
+        <span class="legend-lo">失落導向區域</span>
+        <span class="legend-ro">復原導向區域</span>
+        <span class="legend-line">擺盪曲線</span>
+      </div>
+
+      <div class="sim-status">
+        <div class="sim-status-item sim-status-lo">
+          <span class="status-label">失落導向比重</span>
+          <span class="status-value" id="loPercent">--</span>
+        </div>
+        <div class="sim-status-item sim-status-ro">
+          <span class="status-label">復原導向比重</span>
+          <span class="status-value" id="roPercent">--</span>
+        </div>
+      </div>
+
+      <div id="phaseDescription" class="balance-feedback" style="margin-top:16px;">
+        選擇一個階段並按下「播放」，觀察擺盪模式的變化。
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Tool 2: Coping Strategy Analyzer ==================== -->
+  <div class="tab-panel" id="panel-analyzer" role="tabpanel">
+    <div class="card">
+      <h2>因應策略分析工具</h2>
+      <p class="desc">將你（或個案）日常生活中的活動分類為失落導向或復原導向，觀察目前的因應平衡狀態。你可以輸入自訂活動，或點選下方的常見活動。</p>
+
+      <h3>常見活動（點選加入）</h3>
+      <div class="preset-activities" id="presetList"></div>
+
+      <h3>自訂活動</h3>
+      <div class="analyzer-input-area">
+        <input type="text" id="actInput" placeholder="輸入一項日常活動，例如「看老照片」..." maxlength="50">
+      </div>
+      <div class="category-btns">
+        <button class="cat-btn cat-lo" id="addLO">
+          <span class="cat-label">歸類為</span>
+          <span class="cat-name">失落導向 (LO)</span>
+        </button>
+        <button class="cat-btn cat-ro" id="addRO">
+          <span class="cat-label">歸類為</span>
+          <span class="cat-name">復原導向 (RO)</span>
+        </button>
+      </div>
+
+      <h3>已記錄的活動</h3>
+      <div class="activity-list" id="activityList">
+        <div class="empty-state" id="emptyState">尚未加入任何活動。試試點選上方的常見活動，或輸入自訂活動。</div>
+      </div>
+
+      <div class="balance-bar-wrap" id="balanceWrap" style="display:none;">
+        <h3>因應平衡分析</h3>
+        <div class="balance-bar-labels">
+          <span>失落導向 (LO)</span>
+          <span>復原導向 (RO)</span>
+        </div>
+        <div class="balance-bar">
+          <div class="balance-lo" id="balanceLO" style="width:50%"></div>
+          <div class="balance-ro" id="balanceRO" style="width:50%"></div>
+        </div>
+        <div class="balance-feedback" id="balanceFeedback"></div>
+      </div>
+
+      <div class="btn-group" style="margin-top:12px;">
+        <button class="btn btn-outline btn-sm" id="clearAll">清除全部</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Tool 3: DPM Interactive Diagram ==================== -->
+  <div class="tab-panel" id="panel-diagram" role="tabpanel">
+    <div class="card">
+      <h2>DPM 模型互動圖解</h2>
+      <p class="desc">點擊圖中的各個元素，了解雙軌擺盪模型的組成部分及其運作方式。</p>
+
+      <div class="diagram-svg-wrap">
+        <svg id="dpmDiagram" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background experience box -->
+          <rect x="40" y="30" width="720" height="420" rx="16" fill="#F7F5F2" stroke="#E5E2DD" stroke-width="1.5"/>
+          <text x="400" y="62" text-anchor="middle" font-size="14" fill="#9CA3AF" font-weight="500">日常生活經驗</text>
+
+          <!-- LO Box -->
+          <g class="dpm-node" data-node="lo">
+            <rect x="70" y="90" width="290" height="280" rx="12" fill="#EEF0F5" stroke="#5B6A8A" stroke-width="2"/>
+            <text x="215" y="125" text-anchor="middle" font-size="16" fill="#3E4D6B" font-weight="700">失落導向因應</text>
+            <text x="215" y="148" text-anchor="middle" font-size="12" fill="#7A89A7">Loss-Oriented Coping</text>
+
+            <text x="100" y="185" font-size="13" fill="#5B6A8A">&#8226; 思念與渴望</text>
+            <text x="100" y="210" font-size="13" fill="#5B6A8A">&#8226; 悲傷工作</text>
+            <text x="100" y="235" font-size="13" fill="#5B6A8A">&#8226; 回憶與哭泣</text>
+            <text x="100" y="260" font-size="13" fill="#5B6A8A">&#8226; 反芻思考</text>
+            <text x="100" y="285" font-size="13" fill="#5B6A8A">&#8226; 持續性連結</text>
+            <text x="100" y="310" font-size="13" fill="#5B6A8A">&#8226; 面對失落的痛苦</text>
+
+            <text x="215" y="350" text-anchor="middle" font-size="11" fill="#9CA3AF" font-style="italic">點擊查看詳情</text>
+          </g>
+
+          <!-- RO Box -->
+          <g class="dpm-node" data-node="ro">
+            <rect x="440" y="90" width="290" height="280" rx="12" fill="#FBF3EC" stroke="#C4956A" stroke-width="2"/>
+            <text x="585" y="125" text-anchor="middle" font-size="16" fill="#A87A50" font-weight="700">復原導向因應</text>
+            <text x="585" y="148" text-anchor="middle" font-size="12" fill="#C4956A">Restoration-Oriented Coping</text>
+
+            <text x="470" y="185" font-size="13" fill="#A87A50">&#8226; 新角色適應</text>
+            <text x="470" y="210" font-size="13" fill="#A87A50">&#8226; 身份重建</text>
+            <text x="470" y="235" font-size="13" fill="#A87A50">&#8226; 新關係建立</text>
+            <text x="470" y="260" font-size="13" fill="#A87A50">&#8226; 生活重組</text>
+            <text x="470" y="285" font-size="13" fill="#A87A50">&#8226; 分心與迴避</text>
+            <text x="470" y="310" font-size="13" fill="#A87A50">&#8226; 處理生活變化</text>
+
+            <text x="585" y="350" text-anchor="middle" font-size="11" fill="#9CA3AF" font-style="italic">點擊查看詳情</text>
+          </g>
+
+          <!-- Oscillation arrows -->
+          <g class="dpm-node" data-node="osc">
+            <rect x="345" y="185" width="110" height="100" rx="55" fill="white" stroke="#3E4D6B" stroke-width="2" stroke-dasharray="6,3"/>
+            <text x="400" y="226" text-anchor="middle" font-size="15" fill="#3E4D6B" font-weight="700">擺盪</text>
+            <text x="400" y="246" text-anchor="middle" font-size="11" fill="#7A89A7">Oscillation</text>
+            <text x="400" y="270" text-anchor="middle" font-size="10" fill="#9CA3AF">點擊了解</text>
+
+            <!-- Left arrow -->
+            <path d="M358 210 L370 200 L370 205 L395 205 L395 215 L370 215 L370 220 Z" fill="#5B6A8A" opacity="0.7">
+              <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/>
+            </path>
+            <!-- Right arrow -->
+            <path d="M442 260 L430 250 L430 255 L405 255 L405 265 L430 265 L430 270 Z" fill="#C4956A" opacity="0.7">
+              <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite" begin="1s"/>
+            </path>
+          </g>
+
+          <!-- Overload indicator -->
+          <g class="dpm-node" data-node="overload">
+            <rect x="290" y="400" width="220" height="36" rx="18" fill="#FEF3F2" stroke="#E53E3E" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="400" y="423" text-anchor="middle" font-size="12" fill="#C53030" font-weight="600">過載 Overload &#8599;</text>
+          </g>
+        </svg>
+      </div>
+
+      <p class="diagram-hint">點擊圖中的各區域（失落導向、復原導向、擺盪、過載）查看詳細說明</p>
+
+      <div class="detail-panel" id="detailPanel">
+        <div id="detailContent"></div>
+        <button class="detail-close" id="detailClose">收起</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ===== Tab Navigation ===== */
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  tabBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      tabBtns.forEach(function(b) { b.classList.remove('active'); });
+      tabPanels.forEach(function(p) { p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* ===== Tool 1: Oscillation Simulator ===== */
+  var canvas = document.getElementById('simCanvas');
+  var ctx = canvas.getContext('2d');
+  var simPlaying = false;
+  var simAnimId = null;
+  var simTime = 0;
+  var simPhase = 'early';
+  var simSpeed = 3;
+
+  var phaseDescriptions = {
+    early: '早期階段（1-3 個月）：擺盪幅度大、頻率高。喪親者在強烈的悲傷（LO）與必要的日常功能維持（RO）之間快速來回。失落導向佔比較高，擺盪往往不受控制、由外在觸發（如遺物、回憶）驅動。',
+    mid: '中期階段（3-12 個月）：擺盪逐漸變得較為平緩。失落導向仍然存在但強度降低，復原導向的比重增加。擺盪開始出現一定的規律性，個體開始能更有意識地在兩軌之間切換。',
+    late: '後期階段（1 年以上）：擺盪幅度明顯縮小，兩軌趨向平衡。失落導向以較溫和的形式持續（如偶爾的思念），復原導向成為日常的主要模式。偶爾仍會有較大的 LO 擺盪（如紀念日），但整體已趨於穩定。',
+    'stuck-lo': '困境：過度失落導向。個體長時間停留在強烈的悲傷中，很少或無法擺盪到復原導向。日常功能嚴重受損，可能需要臨床關注。這種模式可能指向延長性悲傷障礙。',
+    'stuck-ro': '困境：過度復原導向。個體持續以忙碌、迴避的方式因應，很少允許自己進入失落導向。表面功能良好，但悲傷未被處理。可能在未來某個觸發點出現延遲性的悲傷爆發。'
+  };
+
+  var phaseParams = {
+    early:     { loBase: 0.35, amplitude: 0.38, freq: 1.8, noise: 0.12, decay: 0.0005 },
+    mid:       { loBase: 0.20, amplitude: 0.25, freq: 1.2, noise: 0.08, decay: 0.001 },
+    late:      { loBase: 0.10, amplitude: 0.12, freq: 0.8, noise: 0.05, decay: 0.002 },
+    'stuck-lo':{ loBase: 0.55, amplitude: 0.08, freq: 0.5, noise: 0.04, decay: 0.0002 },
+    'stuck-ro':{ loBase:-0.35, amplitude: 0.06, freq: 0.4, noise: 0.03, decay: 0.0003 }
+  };
+
+  function resizeCanvas() {
+    var wrap = canvas.parentElement;
+    canvas.width = wrap.clientWidth;
+    canvas.height = 260;
+  }
+
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  var simPoints = [];
+
+  function getOscValue(t, params) {
+    var p = params;
+    var base = p.loBase * Math.exp(-p.decay * t);
+    var osc = p.amplitude * Math.sin(p.freq * t * 0.05) * Math.exp(-p.decay * t * 0.5);
+    var noise = (Math.sin(t * 0.23) * 0.4 + Math.sin(t * 0.47) * 0.3 + Math.sin(t * 0.97) * 0.3) * p.noise;
+    return Math.max(-0.85, Math.min(0.85, base + osc + noise));
+  }
+
+  function drawSim() {
+    var w = canvas.width;
+    var h = canvas.height;
+    var midY = h / 2;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Background zones
+    ctx.fillStyle = 'rgba(91,106,138,0.06)';
+    ctx.fillRect(0, 0, w, midY);
+    ctx.fillStyle = 'rgba(196,149,106,0.06)';
+    ctx.fillRect(0, midY, w, midY);
+
+    // Center line
+    ctx.strokeStyle = '#E5E2DD';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, midY);
+    ctx.lineTo(w, midY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Labels
+    ctx.fillStyle = 'rgba(91,106,138,0.3)';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('失落導向 (LO)', 8, 20);
+    ctx.fillStyle = 'rgba(196,149,106,0.3)';
+    ctx.fillText('復原導向 (RO)', 8, h - 8);
+
+    if (simPoints.length < 2) return;
+
+    // Draw filled areas
+    var drawW = w - 40;
+    var startX = 20;
+    var step = drawW / Math.max(simPoints.length - 1, 1);
+
+    // LO fill
+    ctx.beginPath();
+    ctx.moveTo(startX, midY);
+    for (var i = 0; i < simPoints.length; i++) {
+      var x = startX + i * step;
+      var val = simPoints[i];
+      if (val > 0) {
+        ctx.lineTo(x, midY - val * midY * 0.9);
+      } else {
+        ctx.lineTo(x, midY);
+      }
+    }
+    ctx.lineTo(startX + (simPoints.length - 1) * step, midY);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(91,106,138,0.15)';
+    ctx.fill();
+
+    // RO fill
+    ctx.beginPath();
+    ctx.moveTo(startX, midY);
+    for (var j = 0; j < simPoints.length; j++) {
+      var x2 = startX + j * step;
+      var val2 = simPoints[j];
+      if (val2 < 0) {
+        ctx.lineTo(x2, midY - val2 * midY * 0.9);
+      } else {
+        ctx.lineTo(x2, midY);
+      }
+    }
+    ctx.lineTo(startX + (simPoints.length - 1) * step, midY);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(196,149,106,0.15)';
+    ctx.fill();
+
+    // Draw line
+    ctx.beginPath();
+    for (var k = 0; k < simPoints.length; k++) {
+      var x3 = startX + k * step;
+      var y3 = midY - simPoints[k] * midY * 0.9;
+      if (k === 0) ctx.moveTo(x3, y3);
+      else ctx.lineTo(x3, y3);
+    }
+    ctx.strokeStyle = '#4A5568';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // Current dot
+    if (simPoints.length > 0) {
+      var lastX = startX + (simPoints.length - 1) * step;
+      var lastY = midY - simPoints[simPoints.length - 1] * midY * 0.9;
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
+      ctx.fillStyle = simPoints[simPoints.length - 1] > 0 ? '#5B6A8A' : '#C4956A';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+
+  function updatePercents() {
+    if (simPoints.length === 0) {
+      document.getElementById('loPercent').textContent = '--';
+      document.getElementById('roPercent').textContent = '--';
+      return;
+    }
+    var loCount = 0;
+    var total = simPoints.length;
+    for (var i = 0; i < total; i++) {
+      if (simPoints[i] > 0) loCount++;
+    }
+    var loPct = Math.round(loCount / total * 100);
+    var roPct = 100 - loPct;
+    document.getElementById('loPercent').textContent = loPct + '%';
+    document.getElementById('roPercent').textContent = roPct + '%';
+  }
+
+  function simStep() {
+    var params = phaseParams[simPhase];
+    var speed = parseInt(document.getElementById('simSpeed').value);
+    var maxPoints = 300;
+
+    for (var s = 0; s < speed; s++) {
+      simTime++;
+      simPoints.push(getOscValue(simTime, params));
+      if (simPoints.length > maxPoints) simPoints.shift();
+    }
+
+    drawSim();
+    updatePercents();
+
+    if (simPlaying) {
+      simAnimId = requestAnimationFrame(simStep);
+    }
+  }
+
+  document.getElementById('simPlayBtn').addEventListener('click', function() {
+    if (simPlaying) {
+      simPlaying = false;
+      cancelAnimationFrame(simAnimId);
+      this.innerHTML = '&#9654; 播放';
+    } else {
+      simPlaying = true;
+      this.innerHTML = '&#9646;&#9646; 暫停';
+      simStep();
+    }
+  });
+
+  document.getElementById('simResetBtn').addEventListener('click', function() {
+    simPlaying = false;
+    cancelAnimationFrame(simAnimId);
+    document.getElementById('simPlayBtn').innerHTML = '&#9654; 播放';
+    simTime = 0;
+    simPoints = [];
+    drawSim();
+    updatePercents();
+  });
+
+  document.querySelectorAll('.phase-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.phase-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      simPhase = btn.dataset.phase;
+      document.getElementById('phaseDescription').textContent = phaseDescriptions[simPhase];
+      // Reset
+      simPlaying = false;
+      cancelAnimationFrame(simAnimId);
+      document.getElementById('simPlayBtn').innerHTML = '&#9654; 播放';
+      simTime = 0;
+      simPoints = [];
+      drawSim();
+      updatePercents();
+    });
+  });
+
+  drawSim();
+
+  /* ===== Tool 2: Coping Strategy Analyzer ===== */
+  var activities = [];
+
+  var presets = [
+    { text: '翻看逝者的照片', type: 'lo' },
+    { text: '到墓園或靈堂探望', type: 'lo' },
+    { text: '和朋友聊起逝者', type: 'lo' },
+    { text: '整理逝者的遺物', type: 'lo' },
+    { text: '寫日記記錄思念', type: 'lo' },
+    { text: '在特殊日子緬懷', type: 'lo' },
+    { text: '哭泣或情緒宣洩', type: 'lo' },
+    { text: '專注於工作任務', type: 'ro' },
+    { text: '學習新的生活技能', type: 'ro' },
+    { text: '和新朋友社交', type: 'ro' },
+    { text: '運動或健身', type: 'ro' },
+    { text: '重新佈置家裡', type: 'ro' },
+    { text: '參加社團或課程', type: 'ro' },
+    { text: '處理財務或行政事務', type: 'ro' },
+    { text: '照顧孩子的日常', type: 'ro' },
+  ];
+
+  var presetListEl = document.getElementById('presetList');
+  presets.forEach(function(p) {
+    var chip = document.createElement('button');
+    chip.className = 'preset-chip chip-' + p.type;
+    chip.textContent = p.text;
+    chip.addEventListener('click', function() {
+      addActivity(p.text, p.type);
+    });
+    presetListEl.appendChild(chip);
+  });
+
+  function addActivity(text, type) {
+    if (!text.trim()) return;
+    // Avoid duplicates
+    for (var i = 0; i < activities.length; i++) {
+      if (activities[i].text === text.trim()) return;
+    }
+    activities.push({ text: text.trim(), type: type });
+    document.getElementById('actInput').value = '';
+    renderActivities();
+  }
+
+  function removeActivity(index) {
+    activities.splice(index, 1);
+    renderActivities();
+  }
+
+  function renderActivities() {
+    var listEl = document.getElementById('activityList');
+    var emptyEl = document.getElementById('emptyState');
+    var balanceWrap = document.getElementById('balanceWrap');
+
+    if (activities.length === 0) {
+      listEl.innerHTML = '';
+      listEl.appendChild(emptyEl);
+      emptyEl.style.display = 'block';
+      balanceWrap.style.display = 'none';
+      return;
+    }
+
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = '';
+
+    activities.forEach(function(act, idx) {
+      var div = document.createElement('div');
+      div.className = 'activity-item ' + act.type + '-item';
+      div.innerHTML =
+        '<span class="act-tag">' + (act.type === 'lo' ? 'LO' : 'RO') + '</span>' +
+        '<span class="act-text">' + escHtml(act.text) + '</span>' +
+        '<button class="act-remove" title="移除">&times;</button>';
+      div.querySelector('.act-remove').addEventListener('click', function() { removeActivity(idx); });
+      listEl.appendChild(div);
+    });
+
+    // Balance
+    var loCount = activities.filter(function(a) { return a.type === 'lo'; }).length;
+    var roCount = activities.length - loCount;
+    var loPct = Math.round(loCount / activities.length * 100);
+    var roPct = 100 - loPct;
+
+    balanceWrap.style.display = 'block';
+    document.getElementById('balanceLO').style.width = loPct + '%';
+    document.getElementById('balanceLO').textContent = loPct > 8 ? loPct + '%' : '';
+    document.getElementById('balanceRO').style.width = roPct + '%';
+    document.getElementById('balanceRO').textContent = roPct > 8 ? roPct + '%' : '';
+
+    // Feedback
+    var fb = document.getElementById('balanceFeedback');
+    if (activities.length < 3) {
+      fb.textContent = '加入更多活動以獲得更準確的分析。建議至少記錄 5 項日常活動。';
+    } else if (loPct > 75) {
+      fb.innerHTML = '<strong>目前因應模式偏向失落導向。</strong>你花了較多時間在面對與處理失落的痛苦上。這在喪親早期是完全正常的。如果已經過了較長時間且感到功能受損，可以考慮增加一些復原導向的活動，如散步、學習新技能、或與朋友聚會，為自己創造喘息的空間。';
+    } else if (roPct > 75) {
+      fb.innerHTML = '<strong>目前因應模式偏向復原導向。</strong>你花了較多時間在處理生活事務與重建日常上。忙碌可以是一種有效的因應方式，但也請留意是否有時需要給自己空間來面對失落的情感。試著在安全的時刻允許自己想念、回憶或感受悲傷。';
+    } else if (Math.abs(loPct - 50) <= 15) {
+      fb.innerHTML = '<strong>目前因應模式相對均衡。</strong>你在失落導向與復原導向之間有較好的平衡，這通常反映了健康的擺盪模式。記住，這個平衡不需要是精確的 50/50——重要的是你能在兩者之間靈活移動。';
+    } else if (loPct > 50) {
+      fb.innerHTML = '<strong>目前因應模式略偏失落導向。</strong>你投入了較多的時間在面對悲傷上，同時也有一些復原導向的活動。這個比例在悲傷的不同階段可能會自然變化，不需要刻意調整。';
+    } else {
+      fb.innerHTML = '<strong>目前因應模式略偏復原導向。</strong>你在維持日常功能的同時，也有一些面對失落的時刻。這是一個常見且健康的模式，尤其在悲傷的中後期。';
+    }
+  }
+
+  document.getElementById('addLO').addEventListener('click', function() {
+    addActivity(document.getElementById('actInput').value, 'lo');
+  });
+
+  document.getElementById('addRO').addEventListener('click', function() {
+    addActivity(document.getElementById('actInput').value, 'ro');
+  });
+
+  document.getElementById('actInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      // Default to LO if user just presses Enter
+      addActivity(this.value, 'lo');
+    }
+  });
+
+  document.getElementById('clearAll').addEventListener('click', function() {
+    activities = [];
+    renderActivities();
+  });
+
+  function escHtml(str) {
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  /* ===== Tool 3: DPM Interactive Diagram ===== */
+  var detailData = {
+    lo: {
+      title: '失落導向因應 (Loss-Oriented Coping)',
+      titleClass: 'lo-title',
+      content: '<p><strong>失落導向因應</strong>是指直接面對與處理失落本身的心理歷程。當一個人處於失落導向時，他/她正在與悲傷的核心情感進行接觸。</p>' +
+        '<p><strong>主要表現包括：</strong></p>' +
+        '<ul>' +
+        '<li><strong>思念與渴望</strong>：強烈渴望與逝者重聚，反覆回想共同經歷的時光</li>' +
+        '<li><strong>悲傷工作</strong>：主動面對與處理失落帶來的痛苦情緒，而非迴避</li>' +
+        '<li><strong>回憶與哭泣</strong>：翻看照片、造訪紀念地、整理遺物時的情緒釋放</li>' +
+        '<li><strong>反芻思考</strong>：反覆思索死亡的原因、「如果...」的假設情境</li>' +
+        '<li><strong>持續性連結</strong>：透過內在對話、紀念儀式維持與逝者的情感聯繫</li>' +
+        '</ul>' +
+        '<p>失落導向因應的核心功能是<strong>處理失落的情緒核心</strong>——承認現實、經歷痛苦、將失落整合進生命敘事。在悲傷早期，這通常佔據較大的比重。</p>'
+    },
+    ro: {
+      title: '復原導向因應 (Restoration-Oriented Coping)',
+      titleClass: 'ro-title',
+      content: '<p><strong>復原導向因應</strong>是指應對失落帶來的<strong>次級變化</strong>——那些因為重要他人離去而必須面對的生活調整與角色轉換。</p>' +
+        '<p><strong>主要表現包括：</strong></p>' +
+        '<ul>' +
+        '<li><strong>新角色適應</strong>：學習逝者原本負責的事務，如財務管理、家務、育兒</li>' +
+        '<li><strong>身份重建</strong>：從「某人的配偶/父母」調整為新的自我認同</li>' +
+        '<li><strong>新關係建立</strong>：發展新的社交連結，重建支持網絡</li>' +
+        '<li><strong>生活重組</strong>：建立新的作息、調整居住安排、規劃未來</li>' +
+        '<li><strong>分心與迴避</strong>：暫時轉移注意力，給自己從悲傷中喘息的空間</li>' +
+        '</ul>' +
+        '<p>特別重要的是：復原導向中的「迴避」與「分心」<strong>並非病態表現</strong>，而是適應歷程中的必要成分。Stroebe 與 Schut 強調，沒有人能持續不斷地沈浸在悲傷中——適度的迴避是心理的自我保護。</p>'
+    },
+    osc: {
+      title: '擺盪 (Oscillation)',
+      titleClass: 'osc-title',
+      content: '<p><strong>擺盪</strong>是 DPM 模型中最核心、最獨特的概念。它描述的是個體在失落導向與復原導向之間<strong>自然地、動態地來回移動</strong>的歷程。</p>' +
+        '<p><strong>擺盪的關鍵特徵：</strong></p>' +
+        '<ul>' +
+        '<li><strong>動態性</strong>：兩種因應之間的轉換是流動的，沒有固定的節奏或時間表</li>' +
+        '<li><strong>非自主性</strong>：擺盪往往不完全受意識控制，可能被外在觸發（如遺物、音樂）或內在觸發（如記憶、夢境）</li>' +
+        '<li><strong>適應性</strong>：健康的擺盪讓個體既能處理悲傷，又不會被悲傷完全淹沒</li>' +
+        '<li><strong>時間變化</strong>：隨著時間推移，擺盪的頻率與幅度通常會逐漸改變</li>' +
+        '</ul>' +
+        '<p><strong>健康擺盪 vs. 困難擺盪：</strong></p>' +
+        '<ul>' +
+        '<li>健康的擺盪：能在 LO 與 RO 之間<strong>靈活切換</strong>，兩邊都能去</li>' +
+        '<li>過度 LO：長期沈溺在悲傷中，無法進行日常功能（可能指向複雜性悲傷）</li>' +
+        '<li>過度 RO：持續迴避悲傷，完全投入忙碌（可能導致延遲性悲傷反應）</li>' +
+        '</ul>'
+    },
+    overload: {
+      title: '過載 (Overload)',
+      titleClass: 'osc-title',
+      content: '<p><strong>過載</strong>是 Stroebe 與 Schut 在 2016 年修訂版 DPM 中新增的重要概念。</p>' +
+        '<p>過載發生在個體的<strong>因應需求超過其可用因應資源</strong>時。這可能出現在兩個方向：</p>' +
+        '<ul>' +
+        '<li><strong>LO 過載</strong>：失落的情緒衝擊過於巨大（如突然的、創傷性的死亡、多重失落），超過個體的情緒處理能力</li>' +
+        '<li><strong>RO 過載</strong>：生活變化的需求過於繁重（如同時失去經濟來源、需要搬家、獨自照顧多個孩子），超過個體的實際因應能力</li>' +
+        '</ul>' +
+        '<p>當過載發生時，正常的擺盪機制會受到干擾——個體可能被「卡住」在某一軌，或出現混亂的擺盪模式。</p>' +
+        '<p><strong>臨床意義</strong>：識別過載狀態有助於治療師確定介入的優先順序。處於過載的個案可能需要先獲得<strong>實際資源的支持</strong>（如經濟援助、育兒協助、社會服務），才能恢復健康的擺盪功能。</p>'
+    }
+  };
+
+  document.querySelectorAll('.dpm-node').forEach(function(node) {
+    node.addEventListener('click', function() {
+      var key = node.dataset.node;
+      var data = detailData[key];
+      if (!data) return;
+      var panel = document.getElementById('detailPanel');
+      var content = document.getElementById('detailContent');
+      content.innerHTML = '<h4 class="' + data.titleClass + '">' + data.title + '</h4>' + data.content;
+      panel.classList.add('show');
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+
+  document.getElementById('detailClose').addEventListener('click', function() {
+    document.getElementById('detailPanel').classList.remove('show');
+  });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "skill_name": "learning-platform",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to create a learning platform about cognitive psychology. Let's do it in English, aimed at curious beginners — maybe college students who haven't taken a psych class yet. Start with 5 topics and suggest what they should be.",
+      "expected_output": "Should present a curriculum plan with 5 psychology topics, each with an interactive tool idea, learning roadmap, and glossary scope. Should ask for approval before generating any content.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我想建立一個關於古典物理學的學習平台，用繁體中文，適合高中生程度。先幫我規劃 6 個主題。",
+      "expected_output": "Should present a curriculum plan in Traditional Chinese for classical physics with 6 topics. Should include topic names, interactive tool ideas (e.g., projectile simulator, wave visualizer), and ask for approval before generating.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I already have a learning platform in my current directory about psychology-101. Can you suggest what topics I should add next? I've covered cognitive biases, memory, learning theories, perception, and emotions so far.",
+      "expected_output": "Should detect expand mode, analyze existing topics, and propose 5-10 complementary topics with rationale for each (e.g., social psychology, developmental psychology, neuroscience basics). Should let the user pick which to generate.",
+      "files": []
+    }
+  ]
+}

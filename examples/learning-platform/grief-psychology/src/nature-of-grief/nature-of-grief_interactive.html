@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>悲傷的本質與功能 — 互動工具</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #5B6A8A;
+    --primary-light: #7A89A7;
+    --primary-dark: #3E4D6B;
+    --accent: #C4956A;
+    --accent-light: #D4AD8A;
+    --accent-dark: #A87A50;
+    --bg: #F7F5F2;
+    --bg-card: #FFFFFF;
+    --text: #2D3142;
+    --text-light: #5A5F72;
+    --text-muted: #8E92A4;
+    --border: #E0DDD8;
+    --success: #6B9E7A;
+    --warning: #D4A54A;
+    --shadow-sm: 0 1px 3px rgba(45,49,66,0.08);
+    --shadow-md: 0 4px 12px rgba(45,49,66,0.1);
+    --shadow-lg: 0 8px 24px rgba(45,49,66,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.6em;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.92em;
+    margin-bottom: 24px;
+  }
+
+  /* Tab Navigation */
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    border-color: var(--primary-light);
+    color: var(--primary);
+    background: #EEF0F5;
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.35s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    font-size: 1.15em;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+  }
+  .card .card-desc {
+    color: var(--text-muted);
+    font-size: 0.88em;
+    margin-bottom: 16px;
+  }
+
+  /* Tool 1: Checklist */
+  .dimension-section {
+    margin-bottom: 20px;
+  }
+  .dimension-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  .dimension-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+    flex-shrink: 0;
+  }
+  .dim-emotional .dimension-icon { background: #F3E5F5; }
+  .dim-cognitive .dimension-icon { background: #E3F2FD; }
+  .dim-behavioral .dimension-icon { background: #E8F5E9; }
+  .dim-physical .dimension-icon { background: #FFF3E0; }
+
+  .dimension-header h3 {
+    font-size: 1em;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .dimension-header .count-badge {
+    margin-left: auto;
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 0.78em;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 2px;
+  }
+  .checklist-item:hover { background: #F5F4F1; }
+
+  .checklist-item input[type="checkbox"] {
+    display: none;
+  }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 0.7em;
+    color: transparent;
+  }
+  .checklist-item.checked .check-box {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+  .checklist-item label {
+    font-size: 0.92em;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Result Panel */
+  .result-panel {
+    background: linear-gradient(135deg, #F7F5F2 0%, #EEF0F5 100%);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    display: none;
+  }
+  .result-panel.visible { display: block; animation: fadeIn 0.4s ease; }
+  .result-panel h3 { font-size: 1.05em; color: var(--primary-dark); margin-bottom: 12px; }
+
+  .result-bars { display: flex; flex-direction: column; gap: 10px; }
+  .result-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .result-bar-label {
+    width: 80px;
+    font-size: 0.85em;
+    color: var(--text-light);
+    text-align: right;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+  .result-bar-track {
+    flex: 1;
+    height: 22px;
+    background: #E8E6E2;
+    border-radius: 11px;
+    overflow: hidden;
+  }
+  .result-bar-fill {
+    height: 100%;
+    border-radius: 11px;
+    transition: width 0.6s ease;
+    min-width: 0;
+  }
+  .result-bar-fill.bar-emotional { background: linear-gradient(90deg, #CE93D8, #AB47BC); }
+  .result-bar-fill.bar-cognitive { background: linear-gradient(90deg, #64B5F6, #1E88E5); }
+  .result-bar-fill.bar-behavioral { background: linear-gradient(90deg, #81C784, #43A047); }
+  .result-bar-fill.bar-physical { background: linear-gradient(90deg, #FFB74D, #FB8C00); }
+
+  .result-bar-value {
+    width: 40px;
+    font-size: 0.82em;
+    color: var(--text-muted);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .result-message {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    font-size: 0.9em;
+    color: var(--text);
+    line-height: 1.7;
+    border-left: 4px solid var(--accent);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-primary:hover { background: var(--primary-dark); box-shadow: var(--shadow-md); }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    border-radius: 50px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-outline:hover { background: var(--primary); color: #fff; }
+
+  .btn-group { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+  /* Tool 2: Grief Type Explorer */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .type-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .type-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .type-card:hover {
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .type-card:hover::before { opacity: 1; }
+  .type-card.expanded {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+  }
+  .type-card.expanded::before { opacity: 1; background: var(--accent); }
+
+  .type-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .type-card-icon {
+    font-size: 1.4em;
+    flex-shrink: 0;
+  }
+  .type-card-title {
+    font-size: 1em;
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+  .type-card-en {
+    font-size: 0.78em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .type-card-brief {
+    font-size: 0.88em;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+  .type-card-detail {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.88em;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .type-card.expanded .type-card-detail { display: block; animation: fadeIn 0.3s ease; }
+
+  .type-card-detail h4 {
+    font-size: 0.9em;
+    color: var(--accent-dark);
+    margin: 10px 0 4px 0;
+    font-weight: 700;
+  }
+  .type-card-detail h4:first-child { margin-top: 0; }
+  .type-card-detail ul {
+    margin: 4px 0 0 18px;
+    font-size: 0.95em;
+    color: var(--text-light);
+  }
+  .type-card-detail ul li { margin-bottom: 3px; }
+
+  .type-card-toggle {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.82em;
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Tool 3: Radar Chart */
+  .radar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  .radar-svg-wrap {
+    width: 100%;
+    max-width: 420px;
+  }
+  .radar-svg-wrap svg { width: 100%; height: auto; }
+
+  .radar-sliders {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .slider-label {
+    width: 90px;
+    font-size: 0.88em;
+    font-weight: 600;
+    color: var(--text);
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .slider-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-emotional { background: #AB47BC; }
+  .dot-cognitive { background: #1E88E5; }
+  .dot-behavioral { background: #43A047; }
+  .dot-physical { background: #FB8C00; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 6px;
+    background: #E0DDD8;
+    border-radius: 3px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    transition: transform 0.15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+  .slider-value {
+    width: 32px;
+    text-align: center;
+    font-size: 0.88em;
+    font-weight: 700;
+    color: var(--primary);
+    flex-shrink: 0;
+  }
+
+  .radar-presets {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 4px;
+  }
+  .preset-btn {
+    padding: 7px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    background: var(--bg-card);
+    color: var(--text-light);
+    font-size: 0.82em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .preset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent-dark);
+    background: #FFF8F2;
+  }
+  .preset-btn.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .radar-insight {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    border-left: 4px solid var(--accent);
+    font-size: 0.9em;
+    color: var(--text);
+    line-height: 1.7;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .disclaimer {
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: #FFF8E1;
+    border-radius: var(--radius);
+    font-size: 0.82em;
+    color: #8D6E28;
+    line-height: 1.6;
+    border: 1px solid #F5E6B8;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 14px; }
+    h1 { font-size: 1.3em; }
+    .tab-btn { padding: 8px 14px; font-size: 0.82em; }
+    .card { padding: 18px; }
+    .type-grid { grid-template-columns: 1fr; }
+    .result-bar-label { width: 60px; font-size: 0.78em; }
+    .slider-label { width: 70px; font-size: 0.82em; }
+  }
+</style>
+</head>
+<body>
+
+<h1>悲傷的本質與功能</h1>
+<p class="subtitle">互動探索工具 — 透過自我覺察與視覺化來理解悲傷</p>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="awareness">悲傷反應自我覺察</button>
+  <button class="tab-btn" data-tab="types">悲傷類型探索器</button>
+  <button class="tab-btn" data-tab="radar">多面向雷達圖</button>
+</nav>
+
+<!-- ==================== Tool 1: Awareness Checklist ==================== -->
+<div id="tab-awareness" class="tab-panel active">
+  <div class="card">
+    <h2>悲傷反應自我覺察工具</h2>
+    <p class="card-desc">勾選你目前或曾經經歷過的悲傷反應。此工具僅供自我覺察與教育用途，不具診斷功能。</p>
+
+    <div class="dimension-section dim-emotional">
+      <div class="dimension-header">
+        <div class="dimension-icon">&#x1F49C;</div>
+        <h3>情感維度</h3>
+        <span class="count-badge" id="count-emotional">0 / 7</span>
+      </div>
+      <div class="checklist-group" data-dimension="emotional">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>深層的悲痛、心痛或渴望感</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>對特定人事物（包括逝者本人）感到憤怒</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>罪惡感或自責（「我應該做更多」）</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>強烈的焦慮或對未來的恐懼</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>即使身處人群中仍感到深刻的孤獨</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>情感麻木——什麼都感覺不到</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>解脫感（伴隨對解脫感本身的罪惡感）</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="dimension-section dim-cognitive">
+      <div class="dimension-header">
+        <div class="dimension-icon">&#x1F9E0;</div>
+        <h3>認知維度</h3>
+        <span class="count-badge" id="count-cognitive">0 / 6</span>
+      </div>
+      <div class="checklist-group" data-dimension="cognitive">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>難以相信或接受失落的事實</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>注意力渙散、記憶力下降（悲傷腦霧）</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>反覆想著「如果當初……」的假設情境</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>感覺「看到」或「聽到」逝者的存在</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>難以做決定，即使是日常小事</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>不斷追問失落的意義或原因</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="dimension-section dim-behavioral">
+      <div class="dimension-header">
+        <div class="dimension-icon">&#x1F3C3;</div>
+        <h3>行為維度</h3>
+        <span class="count-badge" id="count-behavioral">0 / 6</span>
+      </div>
+      <div class="checklist-group" data-dimension="behavioral">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>迴避社交場合或減少與人互動</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>不自覺地尋找逝者或前往共同去過的地方</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>以忙碌來逃避悲傷感受</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>頻繁哭泣或嘆息</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>緊握逝者遺物不放，或完全迴避任何提醒物</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>反覆夢見逝者</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="dimension-section dim-physical">
+      <div class="dimension-header">
+        <div class="dimension-icon">&#x1FA7A;</div>
+        <h3>生理維度</h3>
+        <span class="count-badge" id="count-physical">0 / 6</span>
+      </div>
+      <div class="checklist-group" data-dimension="physical">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>胸口疼痛或緊縮感</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>失眠、早醒或過度嗜睡</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>食慾明顯改變（喪失或暴食）</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>全身無力、極度疲勞</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>容易生病（感冒、感染等）</label>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <input type="checkbox"><span class="check-box">&#10003;</span>
+          <label>胃腸不適、頭痛或肌肉緊繃</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn-primary" onclick="showAwarenessResult()">查看我的覺察結果</button>
+      <button class="btn-outline" onclick="resetChecklist()">重新填寫</button>
+    </div>
+  </div>
+
+  <div class="result-panel" id="awareness-result">
+    <h3>你的悲傷反應覺察結果</h3>
+    <div class="result-bars">
+      <div class="result-bar-row">
+        <span class="result-bar-label">情感</span>
+        <div class="result-bar-track"><div class="result-bar-fill bar-emotional" id="bar-emotional" style="width:0%"></div></div>
+        <span class="result-bar-value" id="val-emotional">0%</span>
+      </div>
+      <div class="result-bar-row">
+        <span class="result-bar-label">認知</span>
+        <div class="result-bar-track"><div class="result-bar-fill bar-cognitive" id="bar-cognitive" style="width:0%"></div></div>
+        <span class="result-bar-value" id="val-cognitive">0%</span>
+      </div>
+      <div class="result-bar-row">
+        <span class="result-bar-label">行為</span>
+        <div class="result-bar-track"><div class="result-bar-fill bar-behavioral" id="bar-behavioral" style="width:0%"></div></div>
+        <span class="result-bar-value" id="val-behavioral">0%</span>
+      </div>
+      <div class="result-bar-row">
+        <span class="result-bar-label">生理</span>
+        <div class="result-bar-track"><div class="result-bar-fill bar-physical" id="bar-physical" style="width:0%"></div></div>
+        <span class="result-bar-value" id="val-physical">0%</span>
+      </div>
+    </div>
+    <div class="result-message" id="awareness-message"></div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>重要聲明：</strong>此工具僅供教育與自我覺察用途，不構成心理健康診斷或專業建議。如果你正經歷嚴重的悲傷反應，影響了日常生活功能，請尋求專業心理健康服務。台灣安心專線：1925（24小時免費）。
+  </div>
+</div>
+
+<!-- ==================== Tool 2: Grief Type Explorer ==================== -->
+<div id="tab-types" class="tab-panel">
+  <div class="card">
+    <h2>悲傷類型探索器</h2>
+    <p class="card-desc">點擊卡片展開詳細說明。了解不同類型的悲傷，有助於理解自己或他人正在經歷的過程。</p>
+  </div>
+
+  <div class="type-grid">
+
+    <div class="type-card" onclick="toggleTypeCard(this)">
+      <div class="type-card-header">
+        <span class="type-card-icon">&#x1F525;</span>
+        <span class="type-card-title">急性悲傷</span>
+      </div>
+      <div class="type-card-en">Acute Grief</div>
+      <div class="type-card-brief">失落發生後初期最強烈的悲傷反應，如同剛被燙到的劇痛。</div>
+      <div class="type-card-detail">
+        <h4>核心特徵</h4>
+        <ul>
+          <li>強烈的渴望與思念浪潮，一波接一波</li>
+          <li>難以接受失落的現實（即使理智上知道）</li>
+          <li>情緒極度起伏，可能在短時間內經歷多種情緒</li>
+          <li>生理功能顯著受影響（睡眠、食慾、免疫力）</li>
+        </ul>
+        <h4>典型時間線</h4>
+        <ul>
+          <li>通常在失落後數天至數週內最為劇烈</li>
+          <li>強度隨時間逐漸減弱，但沒有固定時間表</li>
+        </ul>
+        <h4>案例情境</h4>
+        <ul>
+          <li>妻子在丈夫猝逝後的第一個月，每天早晨醒來轉身看向空枕頭時，都重新感受到一波劇烈的心痛</li>
+        </ul>
+      </div>
+      <span class="type-card-toggle">&#9662; 展開詳情</span>
+    </div>
+
+    <div class="type-card" onclick="toggleTypeCard(this)">
+      <div class="type-card-header">
+        <span class="type-card-icon">&#x1F333;</span>
+        <span class="type-card-title">整合性悲傷</span>
+      </div>
+      <div class="type-card-en">Integrated Grief</div>
+      <div class="type-card-brief">悲傷找到了它在生命中的位置——傷疤還在，但你已學會帶著它生活。</div>
+      <div class="type-card-detail">
+        <h4>核心特徵</h4>
+        <ul>
+          <li>悲傷仍然存在，但不再主宰日常生活</li>
+          <li>能夠在回憶逝者時同時感受到愛與哀傷</li>
+          <li>重新投入有意義的活動與關係</li>
+          <li>與逝者維持「持續性連結」（continuing bonds）</li>
+        </ul>
+        <h4>重要觀念</h4>
+        <ul>
+          <li>整合性悲傷不是「悲傷的結束」</li>
+          <li>如 Tonkin 所說：悲傷不會縮小，是生命在悲傷周圍長大</li>
+        </ul>
+        <h4>案例情境</h4>
+        <ul>
+          <li>一位母親在女兒過世兩年後，能夠在女兒的生日做她最愛吃的蛋糕，帶著微笑和淚水回憶她</li>
+        </ul>
+      </div>
+      <span class="type-card-toggle">&#9662; 展開詳情</span>
+    </div>
+
+    <div class="type-card" onclick="toggleTypeCard(this)">
+      <div class="type-card-header">
+        <span class="type-card-icon">&#x23F3;</span>
+        <span class="type-card-title">預期性悲傷</span>
+      </div>
+      <div class="type-card-en">Anticipatory Grief</div>
+      <div class="type-card-brief">在失落真正發生之前就開始的悲傷——人還在，心已經在為離別做準備。</div>
+      <div class="type-card-detail">
+        <h4>核心特徵</h4>
+        <ul>
+          <li>悲傷在實際死亡之前就已經開始</li>
+          <li>常涉及一系列漸進式的「微型失落」</li>
+          <li>矛盾的情感：希望對方留下，又希望對方不再受苦</li>
+          <li>不會「抵消」未來實際失落後的悲傷</li>
+        </ul>
+        <h4>常見情境</h4>
+        <ul>
+          <li>末期疾病患者的家屬與照護者</li>
+          <li>失智症患者的親人（反覆失去「認識的那個人」）</li>
+          <li>面臨離婚或分離的個體</li>
+        </ul>
+        <h4>案例情境</h4>
+        <ul>
+          <li>一位兒子在母親被診斷為阿茲海默症後，每次她忘記一件事，他都感到失去了「那個記得他的媽媽」</li>
+        </ul>
+      </div>
+      <span class="type-card-toggle">&#9662; 展開詳情</span>
+    </div>
+
+    <div class="type-card" onclick="toggleTypeCard(this)">
+      <div class="type-card-header">
+        <span class="type-card-icon">&#x1F6AB;</span>
+        <span class="type-card-title">被剝奪的悲傷</span>
+      </div>
+      <div class="type-card-en">Disenfranchised Grief</div>
+      <div class="type-card-brief">不被社會承認或支持的悲傷——「你沒有資格這麼傷心。」</div>
+      <div class="type-card-detail">
+        <h4>四種被剝奪的面向</h4>
+        <ul>
+          <li><strong>關係不被承認：</strong>前伴侶、同性伴侶、非正式照護者的悲傷</li>
+          <li><strong>失落不被承認：</strong>寵物去世、流產、失業、移民後的文化失落</li>
+          <li><strong>悲傷者不被承認：</strong>兒童、老年人、智能障礙者的悲傷</li>
+          <li><strong>悲傷方式不被承認：</strong>以憤怒或行動表達悲傷而非哭泣</li>
+        </ul>
+        <h4>為什麼特別有害</h4>
+        <ul>
+          <li>缺乏社會支持會顯著阻礙悲傷的適應歷程</li>
+          <li>悲傷者可能開始懷疑自己感受的合法性</li>
+          <li>悲傷被壓入更深處，反而更難處理</li>
+        </ul>
+        <h4>案例情境</h4>
+        <ul>
+          <li>一位女性在養了 14 年的貓過世後崩潰大哭，但被朋友說「不過就是一隻貓，再養一隻就好」</li>
+        </ul>
+      </div>
+      <span class="type-card-toggle">&#9662; 展開詳情</span>
+    </div>
+
+    <div class="type-card" onclick="toggleTypeCard(this)">
+      <div class="type-card-header">
+        <span class="type-card-icon">&#x1F55B;</span>
+        <span class="type-card-title">複雜性悲傷</span>
+      </div>
+      <div class="type-card-en">Complicated / Prolonged Grief</div>
+      <div class="type-card-brief">急性悲傷未能轉化為整合性悲傷，持續強烈地影響日常功能。</div>
+      <div class="type-card-detail">
+        <h4>核心特徵</h4>
+        <ul>
+          <li>悲傷的強度在失落後一年以上仍未減輕</li>
+          <li>持續的渴望和思念嚴重干擾日常功能</li>
+          <li>無法接受失落的永久性</li>
+          <li>對未來感到毫無意義或極度空虛</li>
+        </ul>
+        <h4>重要資訊</h4>
+        <ul>
+          <li>2022 年正式納入 DSM-5-TR 與 ICD-11 為「延長哀傷症」（PGD）</li>
+          <li>約佔喪慟者的 10-15%</li>
+          <li>有效的治療方法存在（如 Shear 的複雜性悲傷治療）</li>
+          <li>如有疑慮，應尋求專業評估</li>
+        </ul>
+        <h4>風險因素</h4>
+        <ul>
+          <li>突發性或暴力性死亡</li>
+          <li>失去的是孩子或年輕的伴侶</li>
+          <li>缺乏社會支持</li>
+          <li>既往的心理健康問題</li>
+        </ul>
+      </div>
+      <span class="type-card-toggle">&#9662; 展開詳情</span>
+    </div>
+
+    <div class="type-card" onclick="toggleTypeCard(this)">
+      <div class="type-card-header">
+        <span class="type-card-icon">&#x1F30D;</span>
+        <span class="type-card-title">集體悲傷</span>
+      </div>
+      <div class="type-card-en">Collective Grief</div>
+      <div class="type-card-brief">群體共同經歷的失落感——災難、疫情、社會巨變後的共同哀傷。</div>
+      <div class="type-card-detail">
+        <h4>核心特徵</h4>
+        <ul>
+          <li>整個社群或社會共同經歷失落</li>
+          <li>個人悲傷與集體悲傷相互影響</li>
+          <li>可能觸發社會層面的意義追尋</li>
+          <li>哀悼儀式具有社區凝聚的功能</li>
+        </ul>
+        <h4>常見觸發事件</h4>
+        <ul>
+          <li>自然災害（地震、颱風）</li>
+          <li>恐怖攻擊或大規模暴力事件</li>
+          <li>疫情（如 COVID-19 大流行）</li>
+          <li>重要公眾人物的離世</li>
+        </ul>
+        <h4>案例情境</h4>
+        <ul>
+          <li>COVID-19 疫情期間，許多人無法與臨終的家人告別，整個社會共同承受了失落與無助感</li>
+        </ul>
+      </div>
+      <span class="type-card-toggle">&#9662; 展開詳情</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== Tool 3: Radar Chart ==================== -->
+<div id="tab-radar" class="tab-panel">
+  <div class="card">
+    <h2>悲傷的多面向雷達圖</h2>
+    <p class="card-desc">調整滑桿來視覺化你在悲傷四個維度上的強度感受，或選擇預設情境來探索不同的悲傷模式。</p>
+
+    <div class="radar-container">
+      <div class="radar-svg-wrap">
+        <svg id="radarSvg" viewBox="0 0 400 400"></svg>
+      </div>
+
+      <div class="radar-sliders">
+        <div class="slider-row">
+          <span class="slider-label">情感維度</span>
+          <span class="slider-dot dot-emotional"></span>
+          <input type="range" id="slider-emotional" min="0" max="10" value="5" oninput="updateRadar()">
+          <span class="slider-value" id="sval-emotional">5</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">認知維度</span>
+          <span class="slider-dot dot-cognitive"></span>
+          <input type="range" id="slider-cognitive" min="0" max="10" value="5" oninput="updateRadar()">
+          <span class="slider-value" id="sval-cognitive">5</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">行為維度</span>
+          <span class="slider-dot dot-behavioral"></span>
+          <input type="range" id="slider-behavioral" min="0" max="10" value="5" oninput="updateRadar()">
+          <span class="slider-value" id="sval-behavioral">5</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">生理維度</span>
+          <span class="slider-dot dot-physical"></span>
+          <input type="range" id="slider-physical" min="0" max="10" value="5" oninput="updateRadar()">
+          <span class="slider-value" id="sval-physical">5</span>
+        </div>
+      </div>
+
+      <div class="radar-presets">
+        <button class="preset-btn" onclick="applyPreset(this,'acute')">急性悲傷</button>
+        <button class="preset-btn" onclick="applyPreset(this,'integrated')">整合性悲傷</button>
+        <button class="preset-btn" onclick="applyPreset(this,'anticipatory')">預期性悲傷</button>
+        <button class="preset-btn" onclick="applyPreset(this,'disenfranchised')">被剝奪的悲傷</button>
+        <button class="preset-btn" onclick="applyPreset(this,'resilient')">韌性軌跡</button>
+      </div>
+
+      <div class="radar-insight" id="radar-insight">
+        調整滑桿或選擇預設情境，即可看到對應的解讀。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Tab Navigation ===== */
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'radar') { updateRadar(); }
+  });
+});
+
+/* ===== Tool 1: Awareness Checklist ===== */
+function toggleCheck(item) {
+  var cb = item.querySelector('input[type="checkbox"]');
+  cb.checked = !cb.checked;
+  item.classList.toggle('checked', cb.checked);
+  updateCounts();
+}
+
+function updateCounts() {
+  var dims = ['emotional', 'cognitive', 'behavioral', 'physical'];
+  dims.forEach(function(d) {
+    var group = document.querySelector('[data-dimension="' + d + '"]');
+    var total = group.querySelectorAll('.checklist-item').length;
+    var checked = group.querySelectorAll('.checklist-item.checked').length;
+    document.getElementById('count-' + d).textContent = checked + ' / ' + total;
+  });
+}
+
+function showAwarenessResult() {
+  var dims = ['emotional', 'cognitive', 'behavioral', 'physical'];
+  var scores = {};
+  var total = 0;
+  dims.forEach(function(d) {
+    var group = document.querySelector('[data-dimension="' + d + '"]');
+    var all = group.querySelectorAll('.checklist-item').length;
+    var checked = group.querySelectorAll('.checklist-item.checked').length;
+    var pct = Math.round((checked / all) * 100);
+    scores[d] = pct;
+    total += checked;
+    document.getElementById('bar-' + d).style.width = pct + '%';
+    document.getElementById('val-' + d).textContent = pct + '%';
+  });
+
+  var panel = document.getElementById('awareness-result');
+  panel.classList.add('visible');
+
+  var msg = '';
+  if (total === 0) {
+    msg = '你沒有勾選任何項目。如果你目前沒有經歷悲傷反應，這是完全正常的。你也可以回想過去的失落經驗來填寫。';
+  } else if (total <= 5) {
+    msg = '你辨識出了少量的悲傷反應。每個人的悲傷表現方式不同，有些人可能不會經歷所有類型的反應。覺察到自己有哪些反應，本身就是一個重要的自我照顧步驟。';
+  } else if (total <= 12) {
+    msg = '你辨識出了中等程度的悲傷反應，分布在多個維度。這反映了悲傷確實是一個全身性的經驗——不只是情緒，也包括思考、行為和身體。記得照顧自己的身體需求（睡眠、飲食、運動），並在需要時尋求支持。';
+  } else {
+    msg = '你辨識出了較多的悲傷反應。這可能意味著你正在經歷一段相當強烈的悲傷歷程。請記住：這些反應都是正常的、有意義的，它們反映了你與失去之人/事物的深度連結。如果這些反應嚴重影響了你的日常功能（工作、自我照顧），建議尋求專業心理健康服務的支持。';
+  }
+
+  var highest = '';
+  var highVal = 0;
+  var labels = { emotional: '情感', cognitive: '認知', behavioral: '行為', physical: '生理' };
+  dims.forEach(function(d) {
+    if (scores[d] > highVal) { highVal = scores[d]; highest = d; }
+  });
+  if (total > 0 && highVal > 0) {
+    msg += '<br><br><strong>你最突出的維度是「' + labels[highest] + '維度」（' + highVal + '%）。</strong>這表示你的悲傷反應在' + labels[highest] + '層面表現得最為明顯。了解自己的悲傷「模式」有助於更有針對性地進行自我照顧。';
+  }
+
+  document.getElementById('awareness-message').innerHTML = msg;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetChecklist() {
+  document.querySelectorAll('.checklist-item').forEach(function(item) {
+    item.classList.remove('checked');
+    item.querySelector('input[type="checkbox"]').checked = false;
+  });
+  updateCounts();
+  document.getElementById('awareness-result').classList.remove('visible');
+}
+
+/* ===== Tool 2: Grief Type Explorer ===== */
+function toggleTypeCard(card) {
+  var wasExpanded = card.classList.contains('expanded');
+  card.classList.toggle('expanded');
+  var toggleEl = card.querySelector('.type-card-toggle');
+  if (toggleEl) {
+    toggleEl.innerHTML = wasExpanded ? '&#9662; 展開詳情' : '&#9652; 收起詳情';
+  }
+}
+
+/* ===== Tool 3: Radar Chart ===== */
+var radarDims = [
+  { key: 'emotional', label: '情感', color: '#AB47BC' },
+  { key: 'cognitive', label: '認知', color: '#1E88E5' },
+  { key: 'behavioral', label: '行為', color: '#43A047' },
+  { key: 'physical', label: '生理', color: '#FB8C00' }
+];
+
+var presets = {
+  acute:           { emotional: 9, cognitive: 7, behavioral: 8, physical: 8 },
+  integrated:      { emotional: 3, cognitive: 2, behavioral: 2, physical: 1 },
+  anticipatory:    { emotional: 7, cognitive: 8, behavioral: 4, physical: 5 },
+  disenfranchised: { emotional: 8, cognitive: 6, behavioral: 3, physical: 5 },
+  resilient:       { emotional: 3, cognitive: 2, behavioral: 1, physical: 1 }
+};
+
+var presetInsights = {
+  acute: '<strong>急性悲傷模式：</strong>所有維度都呈現高強度反應，情感與生理維度尤為突出。這反映了失落初期大腦與身體的「全面警戒」狀態。強烈的渴望、心痛、失眠、免疫力下降等都是常見的。這個階段需要特別注意基本的生理照顧。',
+  integrated: '<strong>整合性悲傷模式：</strong>各維度強度均較低，但情感維度仍有些許反應。這並非「不再悲傷」，而是悲傷已被整合進生命中。偶爾在特定觸發點（紀念日、熟悉的歌曲）仍會出現悲傷波動，但不再主宰日常生活。',
+  anticipatory: '<strong>預期性悲傷模式：</strong>認知維度特別突出——反覆思考未來的失去、不斷追問「之後會怎樣」。情感維度也很高，但行為和生理的影響相對較低，因為日常照護的責任往往迫使人維持功能。這種模式常見於末期疾病家屬。',
+  disenfranchised: '<strong>被剝奪悲傷模式：</strong>情感維度極高（因為悲傷是真實的），但行為維度偏低（因為社會環境不允許公開表達）。這種內外落差本身就是壓力來源。被壓抑的悲傷可能透過生理症狀「說話」。',
+  resilient: '<strong>韌性軌跡模式：</strong>各維度強度均低。這不是「冷漠」或「壓抑」——根據 Bonanno 的研究，這是約 50-60% 的人面對失落時的自然反應。韌性來自內在的彈性思維、穩固的社會連結、以及過去成功適應經驗的累積。'
+};
+
+function applyPreset(btn, key) {
+  document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  var p = presets[key];
+  radarDims.forEach(function(d) {
+    document.getElementById('slider-' + d.key).value = p[d.key];
+    document.getElementById('sval-' + d.key).textContent = p[d.key];
+  });
+  updateRadar();
+  document.getElementById('radar-insight').innerHTML = presetInsights[key];
+}
+
+function updateRadar() {
+  var values = [];
+  radarDims.forEach(function(d) {
+    var v = parseInt(document.getElementById('slider-' + d.key).value);
+    document.getElementById('sval-' + d.key).textContent = v;
+    values.push(v);
+  });
+  drawRadar(values);
+
+  var activePreset = document.querySelector('.preset-btn.active');
+  if (!activePreset) {
+    var sum = values.reduce(function(a, b) { return a + b; }, 0);
+    var avg = sum / values.length;
+    var insight = '';
+    if (avg <= 2) {
+      insight = '整體強度較低。這可能表示你目前沒有經歷強烈的悲傷反應，或者你的悲傷處於整合階段。';
+    } else if (avg <= 5) {
+      insight = '整體呈現中等強度的悲傷反應。留意各維度之間的差異——強度較高的維度可能需要更多的關注和照顧。';
+    } else {
+      insight = '整體呈現較高強度的悲傷反應。這可能意味著你正處於悲傷的活躍階段。記得照顧自己，必要時尋求支持。';
+    }
+    var maxDim = 0; var maxIdx = 0;
+    values.forEach(function(v, i) { if (v > maxDim) { maxDim = v; maxIdx = i; } });
+    if (maxDim > 0) {
+      insight += ' 目前最突出的維度是<strong>「' + radarDims[maxIdx].label + '」</strong>。';
+    }
+    document.getElementById('radar-insight').innerHTML = insight;
+  }
+}
+
+function drawRadar(values) {
+  var svg = document.getElementById('radarSvg');
+  var cx = 200, cy = 200, maxR = 150;
+  var n = 4;
+  var angles = [];
+  for (var i = 0; i < n; i++) {
+    angles.push(-Math.PI / 2 + (2 * Math.PI * i) / n);
+  }
+
+  var html = '';
+
+  /* Grid rings */
+  for (var ring = 1; ring <= 5; ring++) {
+    var r = (ring / 5) * maxR;
+    var pts = [];
+    for (var a = 0; a < n; a++) {
+      pts.push((cx + r * Math.cos(angles[a])).toFixed(1) + ',' + (cy + r * Math.sin(angles[a])).toFixed(1));
+    }
+    html += '<polygon points="' + pts.join(' ') + '" fill="none" stroke="#D8D5D0" stroke-width="1" opacity="' + (ring === 5 ? 0.8 : 0.5) + '"/>';
+    if (ring % 2 === 0) {
+      html += '<text x="' + (cx + 8) + '" y="' + (cy - r + 4) + '" fill="#B0ADAA" font-size="10">' + (ring * 2) + '</text>';
+    }
+  }
+
+  /* Axis lines */
+  for (var a = 0; a < n; a++) {
+    var ex = cx + maxR * Math.cos(angles[a]);
+    var ey = cy + maxR * Math.sin(angles[a]);
+    html += '<line x1="' + cx + '" y1="' + cy + '" x2="' + ex.toFixed(1) + '" y2="' + ey.toFixed(1) + '" stroke="#D8D5D0" stroke-width="1"/>';
+  }
+
+  /* Data polygon */
+  var dataPts = [];
+  for (var a = 0; a < n; a++) {
+    var vr = (values[a] / 10) * maxR;
+    dataPts.push({
+      x: cx + vr * Math.cos(angles[a]),
+      y: cy + vr * Math.sin(angles[a])
+    });
+  }
+  var polyPts = dataPts.map(function(p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
+  html += '<polygon points="' + polyPts + '" fill="rgba(91,106,138,0.18)" stroke="' + 'rgba(91,106,138,0.7)' + '" stroke-width="2.5"/>';
+
+  /* Data points + labels */
+  for (var a = 0; a < n; a++) {
+    var p = dataPts[a];
+    html += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="5" fill="' + radarDims[a].color + '" stroke="#fff" stroke-width="2"/>';
+
+    var lx = cx + (maxR + 28) * Math.cos(angles[a]);
+    var ly = cy + (maxR + 28) * Math.sin(angles[a]);
+    var anchor = 'middle';
+    if (Math.abs(Math.cos(angles[a])) > 0.3) {
+      anchor = Math.cos(angles[a]) > 0 ? 'start' : 'end';
+    }
+    var dy = Math.sin(angles[a]) > 0.3 ? 14 : (Math.sin(angles[a]) < -0.3 ? -4 : 5);
+    html += '<text x="' + lx.toFixed(1) + '" y="' + (ly + dy).toFixed(1) + '" text-anchor="' + anchor + '" fill="' + radarDims[a].color + '" font-size="13" font-weight="700">' + radarDims[a].label + '</text>';
+  }
+
+  svg.innerHTML = html;
+}
+
+/* Init radar on load */
+updateRadar();
+</script>
+</body>
+</html>
