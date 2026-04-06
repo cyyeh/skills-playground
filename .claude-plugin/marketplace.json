@@ -10,7 +10,7 @@
     {
       "name": "learning-platform",
       "description": "Create structured interactive learning platforms for any field or subject",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "source": "./skills/learning-platform/",
       "strict": false,
       "skills": [
