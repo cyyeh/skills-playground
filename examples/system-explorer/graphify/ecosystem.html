@@ -293,9 +293,6 @@ gods = god_nodes(G)</code></pre>
 </div>
 <script>
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open')}
-[l]||['beginner'];
-  document.querySelectorAll('[data-level]').forEach(el=>el.classList.toggle('hidden',!s.includes(el.dataset.level)));
-}
 
 const EXPLANATIONS={
   'quiz-1':{correct:'Exactly! Code is deterministic and can be parsed free via tree-sitter AST. Only unstructured content (docs, papers, images) needs expensive LLM calls.',wrong:'Not quite. The two passes serve different content types: Pass 1 (AST) for code, Pass 2 (LLM) for docs/images.'},

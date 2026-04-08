@@ -201,18 +201,7 @@ tr:hover{background:#f8fafc}
   </div>
 </div>
 <script>
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('open');
-}
-);
-  const show={beginner:['beginner'],intermediate:['beginner','intermediate'],advanced:['beginner','intermediate','advanced']}[level]||['beginner'];
-  document.querySelectorAll('[data-level]').forEach(el=>{
-    el.classList.toggle('hidden',!show.includes(el.dataset.level));
-  });
-}
-  b.addEventListener('click',()=>setLevel(b.dataset.setLevel));
-});
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open')}
 </script>
 </body>
 </html>
