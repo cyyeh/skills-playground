@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Core Concepts — Graphify Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#2563eb;--primary-light:#3b82f6;--sidebar:#1e293b;--sidebar-text:#94a3b8;--sidebar-active:#f1f5f9;--bg:#f8fafc;--text:#1e293b;--text-secondary:#64748b;--card-bg:#ffffff;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,0.08)}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:'JetBrains Mono',monospace;font-size:0.88em;background:#e2e8f0;padding:2px 6px;border-radius:4px}
+pre{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:#1e293b;color:#e2e8f0;padding:20px;border-radius:8px;overflow-x:auto;line-height:1.6;margin:16px 0}
+pre code{background:none;padding:0;color:inherit}
+.sidebar{width:260px;background:var(--sidebar);color:var(--sidebar-text);padding:24px 0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;transition:transform 0.3s}
+.sidebar-brand{padding:0 24px 24px;border-bottom:1px solid #334155}
+.sidebar-brand h2{color:#f1f5f9;font-size:1.25rem;font-weight:700}
+.sidebar-brand p{font-size:0.75rem;color:#64748b;margin-top:4px}
+.sidebar nav{padding:16px 0}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 24px;color:var(--sidebar-text);font-size:0.9rem;font-weight:500;transition:all 0.15s;border-left:3px solid transparent}
+.sidebar nav a:hover{background:#334155;color:#e2e8f0;text-decoration:none}
+.sidebar nav a.active{background:rgba(37,99,235,0.15);color:var(--primary-light);border-left-color:var(--primary)}
+.sidebar nav a .nav-icon{width:20px;text-align:center;font-size:1rem}
+.main{margin-left:260px;flex:1;min-width:0}
+.topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.breadcrumb{font-size:0.85rem;color:var(--text-secondary)}
+.content{padding:40px;max-width:900px}
+.content h1{font-size:2rem;font-weight:700;margin-bottom:8px}
+.content h2{font-size:1.4rem;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.1rem;font-weight:600;margin:28px 0 12px}
+.content p{margin:12px 0}
+.content ul,.content ol{margin:12px 0 12px 24px}
+.content li{margin:6px 0}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:16px 0;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.9rem}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f1f5f9;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-amber{background:#fef3c7;color:#b45309}
+.badge-red{background:#fee2e2;color:#b91c1c}
+.badge-purple{background:#f3e8ff;color:#7c3aed}
+.interactive{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0;box-shadow:var(--shadow)}
+.interactive-title{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);font-weight:600;margin-bottom:16px}
+.graph-container{position:relative;width:100%;height:350px;background:#f1f5f9;border-radius:8px;overflow:hidden}
+.graph-container svg{width:100%;height:100%}
+.tooltip{position:absolute;background:var(--sidebar);color:#e2e8f0;padding:10px 14px;border-radius:8px;font-size:0.8rem;pointer-events:none;opacity:0;transition:opacity 0.15s;max-width:220px;z-index:10}
+.confidence-bar{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.confidence-bar:last-child{border-bottom:none}
+.conf-label{width:110px;font-weight:600;font-size:0.9rem}
+.conf-track{flex:1;height:28px;background:#e2e8f0;border-radius:6px;position:relative;overflow:hidden}
+.conf-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:0.75rem;font-weight:600;color:white;transition:width 0.5s}
+.conf-desc{font-size:0.8rem;color:var(--text-secondary);width:200px;text-align:right}
+.community-viz{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+.community-group{padding:16px;border-radius:12px;min-width:140px;text-align:center;cursor:pointer;transition:all 0.2s}
+.community-group:hover{transform:scale(1.05)}
+.community-group h4{font-size:0.85rem;margin-bottom:8px}
+.community-group .nodes{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.community-group .node-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:600;color:white;cursor:pointer;transition:transform 0.15s}
+.community-group .node-dot:hover{transform:scale(1.3)}
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--sidebar);color:white;border:none;padding:8px 12px;border-radius:8px;font-size:1.2rem;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:90}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .mobile-toggle{display:block}.overlay.open{display:block}
+  .main{margin-left:0}.topbar{padding:12px 16px}.content{padding:24px 16px}
+  .conf-desc{display:none}
+}
+</style>
+</head>
+<body>
+<button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><h2>Graphify</h2><p>Interactive Course</p></div>
+  <nav>
+    <a href="index.html"><span class="nav-icon">&#127968;</span> Home</a>
+    <a href="concepts.html" class="active"><span class="nav-icon">&#128161;</span> Core Concepts</a>
+    <a href="architecture.html"><span class="nav-icon">&#128736;</span> Architecture</a>
+    <a href="implementation.html"><span class="nav-icon">&#128268;</span> Implementation</a>
+    <a href="use-cases.html"><span class="nav-icon">&#128640;</span> Use Cases</a>
+    <a href="ecosystem.html"><span class="nav-icon">&#127760;</span> Ecosystem</a>
+  </nav>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <span class="breadcrumb">Home &rsaquo; Core Concepts</span>
+  </div>
+  <div class="content">
+    <h1>Core Concepts</h1>
+    <p style="color:var(--text-secondary)">The mental models you need to understand how Graphify works.</p>
+
+    <!-- KNOWLEDGE GRAPH MODEL -->
+    <div>
+      <h2>The Knowledge Graph Model</h2>
+      <p>A knowledge graph is a network of <strong>nodes</strong> (things) connected by <strong>edges</strong> (relationships). In Graphify:</p>
+      <ul>
+        <li><strong>Nodes</strong> represent code entities (functions, classes, modules), concepts from documents, and rationale fragments (design decisions from comments)</li>
+        <li><strong>Edges</strong> represent relationships: <code>calls</code>, <code>imports</code>, <code>contains</code>, <code>inherits</code>, <code>semantically_similar_to</code>, <code>rationale_for</code></li>
+        <li><strong>Communities</strong> are clusters of densely-connected nodes discovered automatically</li>
+      </ul>
+
+      <div class="interactive">
+        <div class="interactive-title">Interactive: Example Knowledge Graph</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px">Click a node to see its details. Hover over edges to see relationship types.</p>
+        <div class="graph-container" id="graph-demo">
+          <svg viewBox="0 0 600 350">
+            <!-- edges -->
+            <line class="graph-edge" x1="150" y1="100" x2="300" y2="80" stroke="#cbd5e1" stroke-width="2" data-edge="imports"/>
+            <line class="graph-edge" x1="300" y1="80" x2="450" y2="110" stroke="#cbd5e1" stroke-width="2" data-edge="calls"/>
+            <line class="graph-edge" x1="150" y1="100" x2="200" y2="200" stroke="#cbd5e1" stroke-width="2" data-edge="contains"/>
+            <line class="graph-edge" x1="200" y1="200" x2="350" y2="220" stroke="#cbd5e1" stroke-width="2" data-edge="calls"/>
+            <line class="graph-edge" x1="300" y1="80" x2="350" y2="220" stroke="#cbd5e1" stroke-width="2" data-edge="contains"/>
+            <line class="graph-edge" x1="450" y1="110" x2="480" y2="230" stroke="#cbd5e1" stroke-width="2" data-edge="rationale_for"/>
+            <line class="graph-edge" x1="350" y1="220" x2="250" y2="300" stroke="#93c5fd" stroke-width="2" stroke-dasharray="6,4" data-edge="semantically_similar_to"/>
+            <line class="graph-edge" x1="150" y1="100" x2="100" y2="260" stroke="#cbd5e1" stroke-width="2" data-edge="imports"/>
+            <!-- nodes -->
+            <g class="graph-node" data-info="auth_module|Module|code|6 edges" style="cursor:pointer">
+              <circle cx="150" cy="100" r="22" fill="#2563eb"/><text x="150" y="104" text-anchor="middle" fill="white" font-size="10" font-weight="600">auth</text>
+            </g>
+            <g class="graph-node" data-info="UserService|Class|code|4 edges" style="cursor:pointer">
+              <circle cx="300" cy="80" r="22" fill="#2563eb"/><text x="300" y="84" text-anchor="middle" fill="white" font-size="10" font-weight="600">UserSvc</text>
+            </g>
+            <g class="graph-node" data-info="hash_password()|Function|code|2 edges" style="cursor:pointer">
+              <circle cx="450" cy="110" r="18" fill="#3b82f6"/><text x="450" y="114" text-anchor="middle" fill="white" font-size="9" font-weight="500">hash_pw</text>
+            </g>
+            <g class="graph-node" data-info="validate_token()|Function|code|2 edges" style="cursor:pointer">
+              <circle cx="200" cy="200" r="18" fill="#3b82f6"/><text x="200" y="204" text-anchor="middle" fill="white" font-size="9" font-weight="500">validate</text>
+            </g>
+            <g class="graph-node" data-info="create_session()|Function|code|3 edges" style="cursor:pointer">
+              <circle cx="350" cy="220" r="18" fill="#3b82f6"/><text x="350" y="224" text-anchor="middle" fill="white" font-size="9" font-weight="500">session</text>
+            </g>
+            <g class="graph-node" data-info="# WHY: bcrypt chosen for...|Rationale|rationale|1 edge" style="cursor:pointer">
+              <circle cx="480" cy="230" r="16" fill="#f59e0b"/><text x="480" y="234" text-anchor="middle" fill="white" font-size="8" font-weight="500">WHY</text>
+            </g>
+            <g class="graph-node" data-info="Session Management|Concept|document|1 edge" style="cursor:pointer">
+              <circle cx="250" cy="300" r="18" fill="#7c3aed"/><text x="250" y="304" text-anchor="middle" fill="white" font-size="8" font-weight="500">concept</text>
+            </g>
+            <g class="graph-node" data-info="jwt_library|Import|code|1 edge" style="cursor:pointer">
+              <circle cx="100" cy="260" r="16" fill="#64748b"/><text x="100" y="264" text-anchor="middle" fill="white" font-size="8" font-weight="500">jwt</text>
+            </g>
+          </svg>
+          <div class="tooltip" id="graph-tooltip"></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;font-size:0.8rem">
+          <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#2563eb;vertical-align:middle"></span> Class/Module</span>
+          <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#3b82f6;vertical-align:middle"></span> Function</span>
+          <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f59e0b;vertical-align:middle"></span> Rationale</span>
+          <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#7c3aed;vertical-align:middle"></span> Concept</span>
+          <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#64748b;vertical-align:middle"></span> Import</span>
+          <span><span style="display:inline-block;width:20px;height:2px;background:#93c5fd;vertical-align:middle;border-top:2px dashed #93c5fd"></span> Inferred</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIDENCE TIERS -->
+    <div>
+      <h2>Confidence Tiers</h2>
+      <p>Every relationship in the graph is tagged with a confidence level. This is Graphify's <strong>honesty mechanism</strong> &mdash; you always know what was found vs. what was guessed.</p>
+
+      <div class="interactive">
+        <div class="interactive-title">Confidence Levels</div>
+        <div class="confidence-bar">
+          <div class="conf-label"><span class="badge badge-green">EXTRACTED</span></div>
+          <div class="conf-track"><div class="conf-fill" style="width:100%;background:#22c55e">1.0</div></div>
+          <div class="conf-desc">Found directly in source</div>
+        </div>
+        <div class="confidence-bar">
+          <div class="conf-label"><span class="badge badge-blue">INFERRED</span></div>
+          <div class="conf-track"><div class="conf-fill" style="width:70%;background:#3b82f6">0.5 &ndash; 0.9</div></div>
+          <div class="conf-desc">Reasonable deduction</div>
+        </div>
+        <div class="confidence-bar">
+          <div class="conf-label"><span class="badge badge-amber">AMBIGUOUS</span></div>
+          <div class="conf-track"><div class="conf-fill" style="width:35%;background:#f59e0b">???</div></div>
+          <div class="conf-desc">Uncertain &mdash; flagged for review</div>
+        </div>
+      </div>
+
+      <table>
+        <thead><tr><th>Tier</th><th>Score</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-green">EXTRACTED</span></td><td>1.0 (always)</td><td>An <code>import</code> statement, a direct function call</td></tr>
+          <tr><td><span class="badge badge-blue">INFERRED</span></td><td>0.5 &ndash; 0.9</td><td>Two functions likely calling each other (name matching)</td></tr>
+          <tr><td><span class="badge badge-amber">AMBIGUOUS</span></td><td>Unscored</td><td>A possible relationship flagged for human review</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h3>How Confidence Influences the System</h3>
+      <div class="card">
+        <ul>
+          <li><strong>Report sorting:</strong> AMBIGUOUS connections surface first in "surprising connections"</li>
+          <li><strong>Question generation:</strong> The system generates questions about ambiguous and inferred relationships</li>
+          <li><strong>Surprise scoring:</strong> Lower confidence + cross-file-type = higher surprise score</li>
+          <li><strong>God node filtering:</strong> INFERRED edges on god nodes trigger review questions</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- NODE TYPES -->
+    <div>
+      <h2>Node Types</h2>
+      <table>
+        <thead><tr><th>Type</th><th><code>file_type</code></th><th>Created By</th></tr></thead>
+        <tbody>
+          <tr><td>Function</td><td><code>code</code></td><td>tree-sitter AST parsing</td></tr>
+          <tr><td>Class</td><td><code>code</code></td><td>tree-sitter AST parsing</td></tr>
+          <tr><td>Import / Module</td><td><code>code</code></td><td>tree-sitter AST parsing</td></tr>
+          <tr><td>Concept</td><td><code>document</code> / <code>paper</code></td><td>Claude semantic extraction</td></tr>
+          <tr><td>Visual Concept</td><td><code>image</code></td><td>Claude vision extraction</td></tr>
+          <tr><td>Rationale</td><td><code>rationale</code></td><td>Comment patterns: <code># WHY:</code>, <code># NOTE:</code>, <code># HACK:</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- COMMUNITIES -->
+    <div>
+      <h2>Communities</h2>
+      <p>Graphify automatically groups related nodes into <strong>communities</strong>. Think of them as neighborhoods in your codebase &mdash; nodes that are densely connected end up grouped together.</p>
+
+      <div class="interactive">
+        <div class="interactive-title">Interactive: Community Clusters</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:16px">Hover over a community to highlight its connections.</p>
+        <div class="community-viz" id="community-viz">
+          <div class="community-group" style="background:#dbeafe;border:2px solid #93c5fd" data-community="0">
+            <h4 style="color:#1d4ed8">Authentication</h4>
+            <div class="nodes">
+              <div class="node-dot" style="background:#2563eb" title="login()">log</div>
+              <div class="node-dot" style="background:#2563eb" title="session">ses</div>
+              <div class="node-dot" style="background:#2563eb" title="token">tok</div>
+              <div class="node-dot" style="background:#2563eb" title="validate()">val</div>
+            </div>
+          </div>
+          <div class="community-group" style="background:#dcfce7;border:2px solid #86efac" data-community="1">
+            <h4 style="color:#15803d">Database</h4>
+            <div class="nodes">
+              <div class="node-dot" style="background:#22c55e" title="UserModel">Usr</div>
+              <div class="node-dot" style="background:#22c55e" title="query()">qry</div>
+              <div class="node-dot" style="background:#22c55e" title="migrate()">mig</div>
+            </div>
+          </div>
+          <div class="community-group" style="background:#f3e8ff;border:2px solid #c4b5fd" data-community="2">
+            <h4 style="color:#7c3aed">API Layer</h4>
+            <div class="nodes">
+              <div class="node-dot" style="background:#7c3aed" title="router">rtr</div>
+              <div class="node-dot" style="background:#7c3aed" title="handler()">hnd</div>
+              <div class="node-dot" style="background:#7c3aed" title="middleware">mid</div>
+              <div class="node-dot" style="background:#7c3aed" title="response">res</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Topology-Based, Not Embedding-Based</h3>
+      <div class="card">
+        <p>The clustering is <strong>graph-topology-based</strong>. There is no separate vector database or embedding step. Semantic similarity edges that Claude extracts (<code>semantically_similar_to</code>) are already in the graph as INFERRED edges, so they influence community detection directly.</p>
+        <p style="margin-top:12px"><strong>Leiden vs Louvain:</strong> Leiden (via graspologic) is preferred &mdash; it guarantees well-connected communities and runs faster. If graspologic is not installed, Graphify falls back to NetworkX's Louvain with tuned parameters (<code>max_level=10</code>, <code>threshold=1e-4</code>).</p>
+      </div>
+    </div>
+
+    <div>
+      <h3>Oversized Community Splitting</h3>
+      <div class="card">
+        <p>If a community contains more than <strong>25% of graph nodes</strong> (and at least 10 nodes), Graphify recursively extracts its subgraph and re-runs Leiden. This prevents one giant cluster from dominating the analysis.</p>
+        <p style="margin-top:12px"><strong>Cohesion score:</strong> Each community gets a score = <code>actual_intra_edges / max_possible_edges</code> (range 0.0&ndash;1.0). Communities below 0.15 are flagged as candidates for splitting.</p>
+      </div>
+    </div>
+
+    <!-- GOD NODES -->
+    <div>
+      <h2>God Nodes</h2>
+      <p><strong>God nodes</strong> are the highest-degree concepts &mdash; what everything connects through. They're the architectural pillars. If you remove a god node, large parts of the graph would disconnect.</p>
+    </div>
+
+    <div>
+      <h3>God Node Filtering</h3>
+      <div class="card">
+        <p>Nodes are sorted by degree (edge count), then filtered:</p>
+        <ol>
+          <li>Remove file-level hubs (label matches source filename &mdash; just containers)</li>
+          <li>Remove method stubs (<code>.method_name()</code> &mdash; too granular)</li>
+          <li>Remove isolates (degree &le; 1 &mdash; not well-connected)</li>
+          <li>Remove concept nodes (empty <code>source_file</code> &mdash; manually injected)</li>
+          <li>Return top N remaining by degree</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- SURPRISING CONNECTIONS -->
+    <div>
+      <h2>Surprising Connections</h2>
+      <p>Edges ranked by a multi-factor <strong>surprise score</strong>:</p>
+
+      <div class="interactive">
+        <div class="interactive-title">Surprise Score Breakdown</div>
+        <div id="surprise-calc">
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;font-size:0.9rem">
+            <label>Confidence tier:</label>
+            <select id="sc-conf" style="padding:6px;border-radius:6px;border:1px solid var(--border);font-family:inherit">
+              <option value="1">EXTRACTED (+1)</option>
+              <option value="2" selected>INFERRED (+2)</option>
+              <option value="3">AMBIGUOUS (+3)</option>
+            </select>
+            <label>Crosses file types (code &harr; paper)?</label>
+            <input type="checkbox" id="sc-filetype" checked style="width:20px;height:20px">
+            <label>Different top-level dirs?</label>
+            <input type="checkbox" id="sc-repo" style="width:20px;height:20px">
+            <label>Cross-community?</label>
+            <input type="checkbox" id="sc-community" checked style="width:20px;height:20px">
+            <label>Semantic similarity edge?</label>
+            <input type="checkbox" id="sc-semantic" style="width:20px;height:20px">
+            <label>Peripheral to hub?</label>
+            <input type="checkbox" id="sc-hub" style="width:20px;height:20px">
+          </div>
+          <div style="margin-top:16px;padding:16px;background:#f1f5f9;border-radius:8px;text-align:center">
+            <span style="font-size:0.85rem;color:var(--text-secondary)">Surprise Score:</span>
+            <span id="sc-result" style="font-size:2rem;font-weight:700;color:var(--primary);display:block"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HYPEREDGES -->
+    <div>
+      <h2>Hyperedges</h2>
+      <p>Some relationships connect <strong>3+ nodes</strong> and can't be expressed as pairwise edges. Examples:</p>
+      <ul>
+        <li>All classes implementing a shared protocol</li>
+        <li>All functions in an authentication flow</li>
+        <li>All concepts from a paper section forming one idea</li>
+      </ul>
+      <div class="interactive">
+        <div class="interactive-title">Hyperedge Visualization</div>
+        <svg viewBox="0 0 400 200" style="width:100%;max-width:400px;display:block;margin:0 auto">
+          <ellipse cx="200" cy="100" rx="160" ry="70" fill="rgba(37,99,235,0.1)" stroke="#93c5fd" stroke-width="2" stroke-dasharray="6,4"/>
+          <text x="200" y="30" text-anchor="middle" fill="var(--text-secondary)" font-size="11" font-weight="600">Authentication Flow (hyperedge)</text>
+          <circle cx="100" cy="100" r="20" fill="#2563eb"/><text x="100" y="104" text-anchor="middle" fill="white" font-size="9" font-weight="600">login</text>
+          <circle cx="200" cy="80" r="20" fill="#2563eb"/><text x="200" y="84" text-anchor="middle" fill="white" font-size="9" font-weight="600">verify</text>
+          <circle cx="300" cy="100" r="20" fill="#2563eb"/><text x="300" y="104" text-anchor="middle" fill="white" font-size="9" font-weight="600">token</text>
+          <circle cx="200" cy="140" r="20" fill="#2563eb"/><text x="200" y="144" text-anchor="middle" fill="white" font-size="9" font-weight="600">session</text>
+        </svg>
+        <p style="text-align:center;font-size:0.85rem;color:var(--text-secondary);margin-top:8px">Hyperedges are rendered as shaded convex hulls in graph.html</p>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;padding:40px 0 20px;font-size:0.9rem">
+      <a href="index.html">&larr; Home</a>
+      <a href="architecture.html">Architecture &rarr;</a>
+    </div>
+  </div>
+</div>
+<script>
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open')}
+[l]||['beginner'];
+  document.querySelectorAll('[data-level]').forEach(el=>el.classList.toggle('hidden',!s.includes(el.dataset.level)));
+}
+
+// Graph node click
+const tooltip=document.getElementById('graph-tooltip');
+document.querySelectorAll('.graph-node').forEach(n=>{
+  n.addEventListener('click',e=>{
+    const parts=n.dataset.info.split('|');
+    tooltip.innerHTML=`<strong>${parts[0]}</strong><br>Type: ${parts[1]}<br>File: ${parts[2]}<br>${parts[3]}`;
+    const r=n.querySelector('circle').getBoundingClientRect();
+    const c=document.getElementById('graph-demo').getBoundingClientRect();
+    tooltip.style.left=(r.left-c.left+r.width/2-60)+'px';
+    tooltip.style.top=(r.top-c.top-50)+'px';
+    tooltip.style.opacity='1';
+    setTimeout(()=>tooltip.style.opacity='0',2500);
+  });
+});
+
+// Surprise score calculator
+function calcSurprise(){
+  let s=parseInt(document.getElementById('sc-conf').value);
+  if(document.getElementById('sc-filetype').checked) s+=2;
+  if(document.getElementById('sc-repo').checked) s+=2;
+  if(document.getElementById('sc-community').checked) s+=1;
+  if(document.getElementById('sc-semantic').checked) s=Math.round(s*1.5*10)/10;
+  if(document.getElementById('sc-hub').checked) s+=1;
+  document.getElementById('sc-result').textContent=s;
+}
+document.querySelectorAll('#surprise-calc input, #surprise-calc select').forEach(el=>el.addEventListener('change',calcSurprise));
+calcSurprise();
+
+// Community hover
+document.querySelectorAll('.community-group').forEach(g=>{
+  g.addEventListener('mouseenter',()=>{
+    document.querySelectorAll('.community-group').forEach(o=>{
+      if(o!==g) o.style.opacity='0.4';
+    });
+  });
+  g.addEventListener('mouseleave',()=>{
+    document.querySelectorAll('.community-group').forEach(o=>o.style.opacity='1');
+  });
+});
+</script>
+</body>
+</html>

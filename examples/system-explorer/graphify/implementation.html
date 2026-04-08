@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Implementation — Graphify Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#2563eb;--primary-light:#3b82f6;--sidebar:#1e293b;--sidebar-text:#94a3b8;--bg:#f8fafc;--text:#1e293b;--text-secondary:#64748b;--card-bg:#ffffff;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,0.08)}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:'JetBrains Mono',monospace;font-size:0.88em;background:#e2e8f0;padding:2px 6px;border-radius:4px}
+pre{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:#1e293b;color:#e2e8f0;padding:20px;border-radius:8px;overflow-x:auto;line-height:1.6;margin:16px 0}
+pre code{background:none;padding:0;color:inherit}
+.sidebar{width:260px;background:var(--sidebar);color:var(--sidebar-text);padding:24px 0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;transition:transform 0.3s}
+.sidebar-brand{padding:0 24px 24px;border-bottom:1px solid #334155}
+.sidebar-brand h2{color:#f1f5f9;font-size:1.25rem;font-weight:700}
+.sidebar-brand p{font-size:0.75rem;color:#64748b;margin-top:4px}
+.sidebar nav{padding:16px 0}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 24px;color:var(--sidebar-text);font-size:0.9rem;font-weight:500;transition:all 0.15s;border-left:3px solid transparent}
+.sidebar nav a:hover{background:#334155;color:#e2e8f0;text-decoration:none}
+.sidebar nav a.active{background:rgba(37,99,235,0.15);color:var(--primary-light);border-left-color:var(--primary)}
+.sidebar nav a .nav-icon{width:20px;text-align:center;font-size:1rem}
+.main{margin-left:260px;flex:1;min-width:0}
+.topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.breadcrumb{font-size:0.85rem;color:var(--text-secondary)}
+.content{padding:40px;max-width:900px}
+.content h1{font-size:2rem;font-weight:700;margin-bottom:8px}
+.content h2{font-size:1.4rem;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.1rem;font-weight:600;margin:28px 0 12px}
+.content p{margin:12px 0}
+.content ul,.content ol{margin:12px 0 12px 24px}
+.content li{margin:6px 0}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:16px 0;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.9rem}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f1f5f9;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-amber{background:#fef3c7;color:#b45309}
+.badge-red{background:#fee2e2;color:#b91c1c}
+.badge-purple{background:#f3e8ff;color:#7c3aed}
+.interactive{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0;box-shadow:var(--shadow)}
+.interactive-title{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);font-weight:600;margin-bottom:16px}
+.classifier-input{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:inherit;transition:border-color 0.15s}
+.classifier-input:focus{outline:none;border-color:var(--primary)}
+.classifier-result{margin-top:12px;padding:14px;border-radius:8px;font-size:0.9rem;display:none}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.code-panel{background:#f1f5f9;border-radius:8px;padding:16px;overflow-x:auto}
+.code-panel h4{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:8px}
+.security-step{display:flex;align-items:center;gap:12px;padding:12px;border-radius:8px;margin:8px 0;background:#f1f5f9;font-size:0.9rem;transition:all 0.2s}
+.security-step.pass{background:#dcfce7;border-left:3px solid #22c55e}
+.security-step.fail{background:#fee2e2;border-left:3px solid #ef4444}
+.security-step .icon{font-size:1.2rem}
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--sidebar);color:white;border:none;padding:8px 12px;border-radius:8px;font-size:1.2rem;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:90}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .mobile-toggle{display:block}.overlay.open{display:block}
+  .main{margin-left:0}.topbar{padding:12px 16px}.content{padding:24px 16px}
+  .code-compare{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><h2>Graphify</h2><p>Interactive Course</p></div>
+  <nav>
+    <a href="index.html"><span class="nav-icon">&#127968;</span> Home</a>
+    <a href="concepts.html"><span class="nav-icon">&#128161;</span> Core Concepts</a>
+    <a href="architecture.html"><span class="nav-icon">&#128736;</span> Architecture</a>
+    <a href="implementation.html" class="active"><span class="nav-icon">&#128268;</span> Implementation</a>
+    <a href="use-cases.html"><span class="nav-icon">&#128640;</span> Use Cases</a>
+    <a href="ecosystem.html"><span class="nav-icon">&#127760;</span> Ecosystem</a>
+  </nav>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <span class="breadcrumb">Home &rsaquo; Implementation Deep Dive</span>
+  </div>
+  <div class="content">
+    <h1>Implementation Deep Dive</h1>
+    <p style="color:var(--text-secondary)">How the key modules work under the hood.</p>
+
+    <!-- FILE DETECTION -->
+    <div>
+      <h2>File Detection</h2>
+      <p>The <code>detect.py</code> module classifies files using a <code>FileType</code> enum: CODE, DOCUMENT, PAPER, IMAGE.</p>
+
+      <div class="interactive">
+        <div class="interactive-title">Try It: File Classifier</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px">Enter a filename to see how Graphify classifies it.</p>
+        <input type="text" class="classifier-input" id="classifier-input" placeholder="e.g., auth.py, README.md, paper.pdf, diagram.png, .env">
+        <div class="classifier-result" id="classifier-result"></div>
+      </div>
+
+      <h3>Paper Detection Heuristic</h3>
+      <div class="card">
+        <p>PDFs aren't automatically classified as PAPER. Graphify scans the first 3000 characters for <strong>3+ signals</strong>:</p>
+        <ul>
+          <li>arXiv ID patterns (<code>arXiv:1706.03762</code>)</li>
+          <li><code>"doi:"</code> references</li>
+          <li><code>"abstract"</code> section headers</li>
+          <li>Citation patterns (<code>[1]</code>, <code>(Smith et al.)</code>)</li>
+          <li><code>"we propose"</code>, <code>"literature"</code> keywords</li>
+        </ul>
+        <p>This avoids treating every PDF invoice as an academic paper.</p>
+      </div>
+
+      <h3>Security Filtering</h3>
+      <p>The <code>_is_sensitive()</code> function blocks files matching patterns for:</p>
+      <table>
+        <thead><tr><th>Pattern</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>.env*</code></td><td>.env, .env.local</td></tr>
+          <tr><td><code>*.pem, *.key</code></td><td>server.key, cert.pem</td></tr>
+          <tr><td><code>credentials*</code></td><td>credentials.json</td></tr>
+          <tr><td><code>*service-account*</code></td><td>gcp-service-account.json</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- AST EXTRACTION -->
+    <div>
+      <h2>AST Extraction</h2>
+      <p>The core of Pass 1: tree-sitter parses source code into a concrete syntax tree, then Graphify walks the tree to extract nodes and edges.</p>
+
+      <div class="interactive">
+        <div class="interactive-title">Code &rarr; Extraction</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px">See how Python code maps to graph nodes and edges.</p>
+        <div class="code-compare">
+          <div class="code-panel">
+            <h4>Source Code</h4>
+<pre style="background:#1e293b;margin:0"><code><span style="color:#93c5fd">class</span> <span id="src-class" style="color:#fbbf24;cursor:pointer" onmouseover="highlight('class')" onmouseout="unhighlight()">UserService</span>:
+    <span style="color:#6b7280">"""Handles user authentication"""</span>
+
+    <span style="color:#93c5fd">def</span> <span id="src-fn1" style="color:#34d399;cursor:pointer" onmouseover="highlight('fn1')" onmouseout="unhighlight()">login</span>(self, email, pw):
+        <span style="color:#6b7280"># WHY: bcrypt chosen for timing-attack resistance</span>
+        hashed = <span id="src-call" style="color:#f472b6;cursor:pointer" onmouseover="highlight('call')" onmouseout="unhighlight()">hash_password</span>(pw)
+        return self.<span id="src-fn2" style="color:#34d399;cursor:pointer" onmouseover="highlight('fn2')" onmouseout="unhighlight()">create_session</span>(email)
+
+    <span style="color:#93c5fd">def</span> <span style="color:#34d399">create_session</span>(self, email):
+        <span style="color:#93c5fd">return</span> Session(email)</code></pre>
+          </div>
+          <div class="code-panel">
+            <h4>Extracted Graph</h4>
+            <div style="font-size:0.85rem;line-height:2">
+              <div id="ext-class" style="transition:all 0.15s"><strong>Node:</strong> <span class="badge badge-blue">CLASS</span> UserService <span style="color:var(--text-secondary)">(L1-L9)</span></div>
+              <div id="ext-fn1" style="transition:all 0.15s"><strong>Node:</strong> <span class="badge badge-green">FUNC</span> login() <span style="color:var(--text-secondary)">(L4-L7)</span></div>
+              <div id="ext-fn2" style="transition:all 0.15s"><strong>Node:</strong> <span class="badge badge-green">FUNC</span> create_session() <span style="color:var(--text-secondary)">(L9-L10)</span></div>
+              <div id="ext-call" style="transition:all 0.15s"><strong>Edge:</strong> login <span style="color:var(--primary)">&rarr; calls &rarr;</span> hash_password <span class="badge badge-amber">INFERRED</span></div>
+              <div><strong>Edge:</strong> login <span style="color:var(--primary)">&rarr; calls &rarr;</span> create_session <span class="badge badge-green">EXTRACTED</span></div>
+              <div><strong>Edge:</strong> UserService <span style="color:var(--primary)">&rarr; contains &rarr;</span> login <span class="badge badge-green">EXTRACTED</span></div>
+              <div><strong>Rationale:</strong> <span class="badge badge-purple">WHY</span> bcrypt chosen for timing-attack resistance</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3>The LanguageConfig Pattern</h3>
+      <div class="card">
+        <p>All 19 languages share one generic walker (<code>_extract_generic</code>) parameterized by a <code>LanguageConfig</code> dataclass:</p>
+<pre><code>class LanguageConfig:
+    ts_module: str              # "tree_sitter_python"
+    class_types: frozenset      # {"class_definition"}
+    function_types: frozenset   # {"function_definition"}
+    call_types: frozenset       # {"call"}
+    import_types: frozenset     # {"import_statement", "import_from_statement"}
+    name_field: str             # "name"
+    body_field: str             # "body"
+    call_function_field: str    # "function"
+    call_accessor_node_types: frozenset  # {"attribute"}
+    resolve_function_name_fn    # C/C++ declarator handling
+    extra_walk_fn               # JS arrow functions, C# namespaces</code></pre>
+        <p>Language-specific quirks are handled through the customization points rather than separate extraction functions.</p>
+      </div>
+
+      <h3>Two-Pass Call Graph</h3>
+      <div class="card">
+        <p><strong>Pass 1:</strong> Walk AST, collect basic structure (classes, functions, imports).</p>
+        <p><strong>Pass 2:</strong> Walk function bodies to find call sites. Build a "call name" by concatenating the callee expression:</p>
+        <ul>
+          <li><code>helper()</code> &rarr; <code>helper</code></li>
+          <li><code>self.validate()</code> &rarr; <code>self_validate</code></li>
+          <li><code>auth.service.login()</code> &rarr; <code>auth_service_login</code></li>
+        </ul>
+        <p>Then match against known function IDs. Matches become <span class="badge badge-blue">INFERRED</span> "calls" edges with confidence based on name uniqueness.</p>
+      </div>
+
+      <h3>Node Deduplication (Three Layers)</h3>
+      <div class="card">
+        <ol>
+          <li><strong>Within file:</strong> <code>seen_ids</code> set tracks emitted node IDs per file</li>
+          <li><strong>Between files:</strong> NetworkX <code>add_node()</code> is idempotent; semantic nodes intentionally overwrite AST nodes</li>
+          <li><strong>Pre-build merge:</strong> Skill deduplicates cached and new semantic extractions</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- COMMUNITY DETECTION -->
+    <div>
+      <h2>Community Detection</h2>
+      <div class="card">
+        <h3>Leiden Algorithm</h3>
+        <p>Leiden optimizes modularity &mdash; a measure of how densely connected nodes are within communities vs. between them. It guarantees well-connected communities (unlike Louvain, which can produce poorly-connected ones).</p>
+        <p style="margin-top:12px"><strong>Implementation:</strong> Via graspologic library. Falls back to NetworkX Louvain with <code>max_level=10, threshold=1e-4</code> (tuned to prevent hangs on large sparse graphs).</p>
+      </div>
+
+      <div class="card">
+        <h3>Oversized Community Splitting</h3>
+<pre><code>if len(community) > 0.25 * len(G.nodes) and len(community) >= 10:
+    subgraph = G.subgraph(community)
+    sub_communities = leiden(subgraph)  # recursive split</code></pre>
+        <p>This prevents one giant cluster from dominating. Communities are re-indexed by size (community 0 = largest).</p>
+      </div>
+
+      <div class="card">
+        <h3>Cohesion Score</h3>
+<pre><code>cohesion = actual_intra_edges / max_possible_edges
+# where max_possible = n * (n - 1) / 2 for n nodes</code></pre>
+        <p>Range 0.0&ndash;1.0. Communities below <strong>0.15</strong> are flagged in suggested questions as splitting candidates.</p>
+      </div>
+    </div>
+
+    <!-- CACHING -->
+    <div>
+      <h2>Caching Strategy</h2>
+      <div class="card">
+        <h3>SHA256 Content Hashing</h3>
+        <p>Cache key = SHA256 of <strong>file contents + resolved path</strong>. This means:</p>
+        <ul>
+          <li>Identical files in different locations share one cache entry</li>
+          <li>Renaming a file (same content) = cache hit</li>
+          <li>Modifying a file (different content) = cache miss</li>
+        </ul>
+      </div>
+
+      <div class="interactive">
+        <div class="interactive-title">Cache Flow</div>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;text-align:center;font-size:0.85rem">
+          <div style="background:#dbeafe;padding:14px;border-radius:8px">
+            <strong>File List</strong>
+            <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:4px">from detect()</div>
+          </div>
+          <div>&rarr;</div>
+          <div style="background:#fef3c7;padding:14px;border-radius:8px">
+            <strong>check_semantic_cache()</strong>
+            <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:4px">SHA256 lookup</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;text-align:center;font-size:0.85rem">
+          <div style="background:#dcfce7;padding:14px;border-radius:8px">
+            <strong>Cache Hit</strong>
+            <div style="font-size:0.8rem;color:#166534;margin-top:4px">Load cached {nodes, edges}<br>No LLM cost</div>
+          </div>
+          <div style="background:#fee2e2;padding:14px;border-radius:8px">
+            <strong>Cache Miss</strong>
+            <div style="font-size:0.8rem;color:#991b1b;margin-top:4px">Send to LLM extraction<br>Save result to cache</div>
+          </div>
+        </div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:12px;text-align:center"><strong>Atomic writes:</strong> Results write to <code>.tmp</code> file first, then rename. Prevents corruption from interrupted writes.</p>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div>
+      <h2>Security Model</h2>
+      <p>Defense-in-depth approach: all external input is validated before use.</p>
+
+      <table>
+        <thead><tr><th>Layer</th><th>Function</th><th>Threat</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-red">URL</span></td><td><code>validate_url()</code></td><td>SSRF &mdash; blocks <code>file://</code>, private IPs, cloud metadata</td></tr>
+          <tr><td><span class="badge badge-red">Download</span></td><td><code>safe_fetch()</code></td><td>DoS &mdash; streaming with 50MB cap</td></tr>
+          <tr><td><span class="badge badge-red">Path</span></td><td><code>validate_graph_path()</code></td><td>Path traversal &mdash; must resolve inside <code>graphify-out/</code></td></tr>
+          <tr><td><span class="badge badge-red">Label</span></td><td><code>sanitize_label()</code></td><td>XSS + prompt injection &mdash; strip control chars, HTML-escape, 256 char cap</td></tr>
+        </tbody>
+      </table>
+
+      <div class="interactive">
+        <div class="interactive-title">Try It: URL Validator</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px">Enter a URL to see the validation steps.</p>
+        <input type="text" class="classifier-input" id="url-input" placeholder="e.g., https://example.com, file:///etc/passwd, http://169.254.169.254">
+        <div id="url-steps" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Advanced Security Details</h3>
+      <div class="card">
+        <ul>
+          <li><strong>Redirect safety:</strong> <code>_NoFileRedirectHandler</code> intercepts HTTP redirects and blocks any resolving to <code>file://</code> (open redirect &rarr; SSRF)</li>
+          <li><strong>YAML injection:</strong> <code>_yaml_str()</code> escapes quotes and newlines in frontmatter values when ingesting URLs</li>
+          <li><strong>Cypher injection:</strong> Node labels sanitized before generating Neo4j <code>CREATE</code> statements</li>
+          <li><strong>IP resolution:</strong> Hostnames resolved and checked against <code>ipaddress</code> module ranges (127.x, 10.x, 172.16.x, 192.168.x, 169.254.x)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TESTING -->
+    <div>
+      <h2>Testing Philosophy</h2>
+      <div class="card">
+        <p><strong>All tests are pure unit tests</strong> &mdash; no network calls, no file system side effects outside <code>tmp_path</code>.</p>
+        <ul>
+          <li><strong>1:1 mapping:</strong> Each module has a corresponding test file</li>
+          <li><strong>Fixture-based:</strong> Sample files in <code>tests/fixtures/</code> (Python, JS, JSON extractions)</li>
+          <li><strong>CI matrix:</strong> Python 3.10 + 3.12 via GitHub Actions</li>
+          <li><strong>No mocks for core logic:</strong> Functions are pure, so fixtures suffice</li>
+        </ul>
+      </div>
+
+      <table>
+        <thead><tr><th>Test File</th><th>Covers</th></tr></thead>
+        <tbody>
+          <tr><td><code>test_detect.py</code></td><td>File classification, .graphifyignore, symlink safety</td></tr>
+          <tr><td><code>test_extract.py</code></td><td>AST extraction for all 19 languages</td></tr>
+          <tr><td><code>test_build.py</code></td><td>Graph assembly, deduplication, hyperedges</td></tr>
+          <tr><td><code>test_cluster.py</code></td><td>Community detection, cohesion, splitting</td></tr>
+          <tr><td><code>test_security.py</code></td><td>URL validation, path traversal, sanitization</td></tr>
+          <tr><td><code>test_languages.py</code></td><td>Multi-language extraction</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;padding:40px 0 20px;font-size:0.9rem">
+      <a href="architecture.html">&larr; Architecture</a>
+      <a href="use-cases.html">Use Cases &rarr;</a>
+    </div>
+  </div>
+</div>
+<script>
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open')}
+[l]||['beginner'];
+  document.querySelectorAll('[data-level]').forEach(el=>el.classList.toggle('hidden',!s.includes(el.dataset.level)));
+}
+
+// File classifier
+const EXT_MAP={
+  py:'CODE',js:'CODE',ts:'CODE',go:'CODE',rs:'CODE',java:'CODE',c:'CODE',cpp:'CODE',rb:'CODE',cs:'CODE',
+  kt:'CODE',scala:'CODE',php:'CODE',swift:'CODE',lua:'CODE',zig:'CODE',ps1:'CODE',ex:'CODE',exs:'CODE',m:'CODE',mm:'CODE',
+  md:'DOCUMENT',txt:'DOCUMENT',rst:'DOCUMENT',
+  pdf:'PAPER (if 3+ academic signals)',
+  png:'IMAGE',jpg:'IMAGE',jpeg:'IMAGE',webp:'IMAGE',gif:'IMAGE',
+  docx:'DOCUMENT (via office extra)',xlsx:'DOCUMENT (via office extra)'
+};
+const SENSITIVE=['.env','credentials','.pem','.key','service-account','id_rsa'];
+document.getElementById('classifier-input').addEventListener('input',function(){
+  const v=this.value.trim();const r=document.getElementById('classifier-result');
+  if(!v){r.style.display='none';return;}
+  r.style.display='block';
+  if(SENSITIVE.some(s=>v.toLowerCase().includes(s))){
+    r.style.background='#fee2e2';r.innerHTML='<strong>BLOCKED</strong> &mdash; Sensitive file detected. Graphify skips this file for security.';return;
+  }
+  const ext=v.split('.').pop().toLowerCase();
+  const type=EXT_MAP[ext];
+  if(type){
+    r.style.background='#dcfce7';r.innerHTML='<strong>'+type+'</strong> &mdash; Extension <code>.'+ext+'</code> maps to '+type+' file type.';
+  } else {
+    r.style.background='#fef3c7';r.innerHTML='<strong>SKIPPED</strong> &mdash; Extension <code>.'+ext+'</code> is not recognized. File will be ignored.';
+  }
+});
+
+// Code highlight
+function highlight(id){
+  const el=document.getElementById('ext-'+id);
+  if(el){el.style.background='#dbeafe';el.style.borderRadius='4px';el.style.padding='2px 6px'}
+  const src=document.getElementById('src-'+id);
+  if(src){src.style.background='#fbbf24';src.style.borderRadius='3px'}
+}
+function unhighlight(){
+  ['class','fn1','fn2','call'].forEach(id=>{
+    const el=document.getElementById('ext-'+id);if(el){el.style.background='';el.style.padding=''}
+    const src=document.getElementById('src-'+id);if(src){src.style.background=''}
+  });
+}
+
+// URL validator
+document.getElementById('url-input').addEventListener('input',function(){
+  const url=this.value.trim();const c=document.getElementById('url-steps');
+  if(!url){c.innerHTML='';return;}
+  const steps=[];
+  // scheme check
+  const hasScheme=/^https?:\/\//.test(url);
+  steps.push({pass:hasScheme,text:'Scheme check: '+(hasScheme?'http/https detected':'blocked (only http/https allowed)')});
+  if(!hasScheme&&/^file:/.test(url)) steps[0]={pass:false,text:'Scheme check: file:// blocked (SSRF prevention)'};
+  // IP check
+  const ipMatch=url.match(/\/\/(\d+\.\d+\.\d+\.\d+)/);
+  if(ipMatch){
+    const ip=ipMatch[1];
+    const isPrivate=ip.startsWith('127.')||ip.startsWith('10.')||ip.startsWith('192.168.')||ip.startsWith('169.254.')||ip.startsWith('172.16.');
+    steps.push({pass:!isPrivate,text:'IP check: '+ip+(isPrivate?' is private/reserved (blocked)':' is public (allowed)')});
+  } else if(hasScheme){
+    steps.push({pass:true,text:'IP check: hostname will be resolved and checked at runtime'});
+  }
+  // metadata check
+  const isMetadata=url.includes('169.254.169.254')||url.includes('metadata.google');
+  if(isMetadata) steps.push({pass:false,text:'Cloud metadata endpoint detected (blocked)'});
+  // size cap
+  if(hasScheme) steps.push({pass:true,text:'Download: streaming with 50MB cap enforced'});
+  c.innerHTML=steps.map(s=>`<div class="security-step ${s.pass?'pass':'fail'}"><span class="icon">${s.pass?'&#10003;':'&#10007;'}</span>${s.text}</div>`).join('');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graphify — Interactive Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#2563eb;--primary-light:#3b82f6;--sidebar:#1e293b;--sidebar-text:#94a3b8;--sidebar-active:#f1f5f9;--bg:#f8fafc;--text:#1e293b;--text-secondary:#64748b;--card-bg:#ffffff;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,0.08)}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:'JetBrains Mono',monospace;font-size:0.88em;background:#e2e8f0;padding:2px 6px;border-radius:4px}
+pre{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:#1e293b;color:#e2e8f0;padding:20px;border-radius:8px;overflow-x:auto;line-height:1.6;margin:16px 0}
+pre code{background:none;padding:0;color:inherit}
+.sidebar{width:260px;background:var(--sidebar);color:var(--sidebar-text);padding:24px 0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;transition:transform 0.3s}
+.sidebar-brand{padding:0 24px 24px;border-bottom:1px solid #334155}
+.sidebar-brand h2{color:#f1f5f9;font-size:1.25rem;font-weight:700}
+.sidebar-brand p{font-size:0.75rem;color:#64748b;margin-top:4px}
+.sidebar nav{padding:16px 0}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 24px;color:var(--sidebar-text);font-size:0.9rem;font-weight:500;transition:all 0.15s;border-left:3px solid transparent}
+.sidebar nav a:hover{background:#334155;color:#e2e8f0;text-decoration:none}
+.sidebar nav a.active{background:rgba(37,99,235,0.15);color:var(--primary-light);border-left-color:var(--primary)}
+.sidebar nav a .nav-icon{width:20px;text-align:center;font-size:1rem}
+.main{margin-left:260px;flex:1;min-width:0}
+.topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.breadcrumb{font-size:0.85rem;color:var(--text-secondary)}
+.content{padding:40px;max-width:900px}
+.content h1{font-size:2rem;font-weight:700;margin-bottom:8px;line-height:1.3}
+.content h2{font-size:1.4rem;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.1rem;font-weight:600;margin:28px 0 12px}
+.content p{margin:12px 0;color:var(--text)}
+.content ul,.content ol{margin:12px 0 12px 24px}
+.content li{margin:6px 0}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:16px 0;box-shadow:var(--shadow)}
+.card h3{margin:0 0 8px}
+.card p{margin:4px 0;color:var(--text-secondary);font-size:0.9rem}
+.hero{text-align:center;padding:60px 0 40px}
+.hero h1{font-size:2.5rem;background:linear-gradient(135deg,var(--primary),#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero .tagline{font-size:1.15rem;color:var(--text-secondary);margin:12px 0 32px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}
+.stat{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;box-shadow:var(--shadow)}
+.stat .number{font-size:2rem;font-weight:700;color:var(--primary)}
+.stat .label{font-size:0.85rem;color:var(--text-secondary);margin-top:4px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:16px 0}
+.nav-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);transition:all 0.2s;cursor:pointer;display:block}
+.nav-card:hover{border-color:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,0.15);text-decoration:none;transform:translateY(-2px)}
+.nav-card .card-icon{font-size:1.5rem;margin-bottom:8px}
+.nav-card h3{color:var(--text);font-size:1rem;margin:0 0 6px}
+.nav-card p{color:var(--text-secondary);font-size:0.85rem;margin:0}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.9rem}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f1f5f9;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)}
+tr:hover{background:#f8fafc}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-amber{background:#fef3c7;color:#b45309}
+.badge-purple{background:#f3e8ff;color:#7c3aed}
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--sidebar);color:white;border:none;padding:8px 12px;border-radius:8px;font-size:1.2rem;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:90}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .mobile-toggle{display:block}
+  .overlay.open{display:block}
+  .main{margin-left:0}
+  .topbar{padding:12px 16px}
+  .content{padding:24px 16px}
+  .hero h1{font-size:1.8rem}
+  .stats{grid-template-columns:1fr}
+  .grid-2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <h2>Graphify</h2>
+    <p>Interactive Course</p>
+  </div>
+  <nav>
+    <a href="index.html" class="active"><span class="nav-icon">&#127968;</span> Home</a>
+    <a href="concepts.html"><span class="nav-icon">&#128161;</span> Core Concepts</a>
+    <a href="architecture.html"><span class="nav-icon">&#128736;</span> Architecture</a>
+    <a href="implementation.html"><span class="nav-icon">&#128268;</span> Implementation</a>
+    <a href="use-cases.html"><span class="nav-icon">&#128640;</span> Use Cases</a>
+    <a href="ecosystem.html"><span class="nav-icon">&#127760;</span> Ecosystem</a>
+  </nav>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <span class="breadcrumb">Home</span>
+  </div>
+  <div class="content">
+    <div class="hero">
+      <h1>Graphify</h1>
+      <p class="tagline">Turn any folder into a queryable knowledge graph</p>
+      <p style="color:var(--text-secondary);font-size:0.95rem;">An AI coding assistant skill that reads your files, builds a persistent knowledge graph, and gives you back structure you didn't know was there.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="number">71.5x</div><div class="label">Fewer tokens per query</div></div>
+      <div class="stat"><div class="number">19</div><div class="label">Languages supported</div></div>
+      <div class="stat"><div class="number">0</div><div class="label">Infrastructure required</div></div>
+    </div>
+
+    <h2>The Problem</h2>
+    <div class="card">
+      <p>AI coding assistants have <strong>no persistent memory</strong> of your codebase. Every session, they re-read raw files to establish context. This is expensive in tokens and loses structural understanding &mdash; the AI sees text, not architecture.</p>
+      <p style="margin-top:12px">Graphify creates a <strong>compact, structured representation</strong> that persists across sessions. You pay the indexing cost once; every subsequent query reads the graph instead of raw files.</p>
+    </div>
+
+    <div>
+      <h2>Origin Story</h2>
+      <div class="card">
+        <p>On April 2, 2026, <strong>Andrej Karpathy</strong> posted about his <code>raw/</code> folder workflow &mdash; dropping papers, code, screenshots, and notes into a folder for LLM consumption &mdash; and issued a public challenge:</p>
+        <blockquote style="border-left:3px solid var(--primary);padding:12px 16px;margin:16px 0;color:var(--text-secondary);font-style:italic;background:#f1f5f9;border-radius:0 8px 8px 0">"I think there is room here for an incredible new product instead of a hacky collection of scripts."</blockquote>
+        <p>Safi Shamsi built Graphify within <strong>48 hours</strong>.</p>
+      </div>
+    </div>
+
+    <h2>What You Get</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3><code>graph.html</code></h3>
+        <p>Interactive graph visualization. Click nodes, search, filter by community.</p>
+      </div>
+      <div class="card">
+        <h3><code>GRAPH_REPORT.md</code></h3>
+        <p>God nodes, surprising connections, suggested questions &mdash; a one-page architecture overview.</p>
+      </div>
+      <div class="card">
+        <h3><code>graph.json</code></h3>
+        <p>Persistent graph for querying weeks later without re-reading files.</p>
+      </div>
+      <div class="card">
+        <h3><code>cache/</code></h3>
+        <p>SHA256 cache &mdash; re-runs only process changed files.</p>
+      </div>
+    </div>
+
+    <h2>What You'll Learn</h2>
+    <div class="grid-2">
+      <a href="concepts.html" class="nav-card">
+        <div class="card-icon">&#128161;</div>
+        <h3>Core Concepts</h3>
+        <p>Knowledge graphs, confidence tiers, communities, god nodes, and the surprise score algorithm.</p>
+      </a>
+      <a href="architecture.html" class="nav-card">
+        <div class="card-icon">&#128736;</div>
+        <h3>Architecture &amp; Pipeline</h3>
+        <p>The 7-stage pipeline, module map, data flow, and design principles that make it composable.</p>
+      </a>
+      <a href="implementation.html" class="nav-card">
+        <div class="card-icon">&#128268;</div>
+        <h3>Implementation Deep Dive</h3>
+        <p>AST extraction, Leiden clustering, security model, caching strategy, and testing.</p>
+      </a>
+      <a href="use-cases.html" class="nav-card">
+        <div class="card-icon">&#128640;</div>
+        <h3>Use Cases &amp; Workflows</h3>
+        <p>Onboarding, research integration, code review, incremental builds, and CLI commands.</p>
+      </a>
+      <a href="ecosystem.html" class="nav-card">
+        <div class="card-icon">&#127760;</div>
+        <h3>Tech Stack &amp; Ecosystem</h3>
+        <p>NetworkX, tree-sitter, Leiden, vis.js, platform integrations, and how to extend Graphify.</p>
+      </a>
+    </div>
+
+    <div>
+      <h2>How It Compares</h2>
+      <table>
+        <thead><tr><th>Tool</th><th>Approach</th><th>Key Difference</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Graphify</strong></td><td>AST + LLM hybrid</td><td>Code parsed free via tree-sitter; LLM only for docs/images</td></tr>
+          <tr><td>Microsoft GraphRAG</td><td>Fully LLM-driven</td><td>Designed for enterprise text, not codebases; needs vector DB</td></tr>
+          <tr><td>code-review-graph</td><td>tree-sitter + SQLite</td><td>Narrower scope &mdash; optimizes review file sets only</td></tr>
+          <tr><td>FalkorDB CodeGraph</td><td>GraphRAG-SDK + Neo4j</td><td>Heavy infrastructure; requires external database</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h2>Key Architectural Insight</h2>
+      <div class="card">
+        <p>Graphify splits extraction into <strong>two passes</strong>:</p>
+        <p><span class="badge badge-green">Pass 1</span> Deterministic AST parsing via tree-sitter for code &mdash; free, fast, reproducible. Same source always produces the same extraction.</p>
+        <p style="margin-top:8px"><span class="badge badge-purple">Pass 2</span> LLM subagents (Claude/GPT-4) for docs, papers, and images &mdash; probabilistic but honest via confidence tiers (EXTRACTED / INFERRED / AMBIGUOUS).</p>
+        <p style="margin-top:12px">This hybrid means you only pay LLM costs for unstructured content. On a mixed corpus, code extraction is instant and free; semantic extraction costs tokens but only runs on changed files (cached by SHA256).</p>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:40px 0 20px;color:var(--text-secondary);font-size:0.85rem">
+      <p>Built from <a href="https://github.com/safishamsi/graphify" target="_blank">safishamsi/graphify</a></p>
+    </div>
+  </div>
+</div>
+<script>
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+);
+  const show={beginner:['beginner'],intermediate:['beginner','intermediate'],advanced:['beginner','intermediate','advanced']}[level]||['beginner'];
+  document.querySelectorAll('[data-level]').forEach(el=>{
+    el.classList.toggle('hidden',!show.includes(el.dataset.level));
+  });
+}
+  b.addEventListener('click',()=>setLevel(b.dataset.setLevel));
+});
+</script>
+</body>
+</html>

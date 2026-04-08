@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Use Cases — Graphify Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#2563eb;--primary-light:#3b82f6;--sidebar:#1e293b;--sidebar-text:#94a3b8;--bg:#f8fafc;--text:#1e293b;--text-secondary:#64748b;--card-bg:#ffffff;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,0.08)}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:'JetBrains Mono',monospace;font-size:0.88em;background:#e2e8f0;padding:2px 6px;border-radius:4px}
+pre{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:#1e293b;color:#e2e8f0;padding:20px;border-radius:8px;overflow-x:auto;line-height:1.6;margin:16px 0}
+pre code{background:none;padding:0;color:inherit}
+.sidebar{width:260px;background:var(--sidebar);color:var(--sidebar-text);padding:24px 0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;transition:transform 0.3s}
+.sidebar-brand{padding:0 24px 24px;border-bottom:1px solid #334155}
+.sidebar-brand h2{color:#f1f5f9;font-size:1.25rem;font-weight:700}
+.sidebar-brand p{font-size:0.75rem;color:#64748b;margin-top:4px}
+.sidebar nav{padding:16px 0}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 24px;color:var(--sidebar-text);font-size:0.9rem;font-weight:500;transition:all 0.15s;border-left:3px solid transparent}
+.sidebar nav a:hover{background:#334155;color:#e2e8f0;text-decoration:none}
+.sidebar nav a.active{background:rgba(37,99,235,0.15);color:var(--primary-light);border-left-color:var(--primary)}
+.sidebar nav a .nav-icon{width:20px;text-align:center;font-size:1rem}
+.main{margin-left:260px;flex:1;min-width:0}
+.topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.breadcrumb{font-size:0.85rem;color:var(--text-secondary)}
+.content{padding:40px;max-width:900px}
+.content h1{font-size:2rem;font-weight:700;margin-bottom:8px}
+.content h2{font-size:1.4rem;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.1rem;font-weight:600;margin:28px 0 12px}
+.content p{margin:12px 0}
+.content ul,.content ol{margin:12px 0 12px 24px}
+.content li{margin:6px 0}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:16px 0;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.9rem}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f1f5f9;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-green{background:#dcfce7;color:#15803d}
+.interactive{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0;box-shadow:var(--shadow)}
+.interactive-title{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);font-weight:600;margin-bottom:16px}
+.cmd-block{background:#1e293b;border-radius:8px;padding:16px 20px;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:#e2e8f0;position:relative;cursor:pointer;transition:background 0.15s}
+.cmd-block:hover{background:#334155}
+.cmd-block .cmd-comment{color:#64748b}
+.cmd-block .cmd-flag{color:#93c5fd}
+.cmd-block::after{content:'click to copy';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:0.7rem;color:#64748b;font-family:'Inter',sans-serif}
+.cmd-block.copied::after{content:'copied!';color:#22c55e}
+.workflow{counter-reset:workflow}
+.workflow-step{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid var(--border);counter-increment:workflow}
+.workflow-step:last-child{border-bottom:none}
+.workflow-step::before{content:counter(workflow);width:32px;height:32px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0}
+.workflow-step .step-content{flex:1}
+.workflow-step .step-content strong{display:block;margin-bottom:4px}
+.workflow-step .step-content p{margin:0;font-size:0.9rem;color:var(--text-secondary)}
+.usecase-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:16px 0;box-shadow:var(--shadow);border-left:4px solid var(--primary)}
+.usecase-card h3{margin:0 0 8px;font-size:1rem}
+.usecase-card p{margin:4px 0;color:var(--text-secondary);font-size:0.9rem}
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--sidebar);color:white;border:none;padding:8px 12px;border-radius:8px;font-size:1.2rem;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:90}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .mobile-toggle{display:block}.overlay.open{display:block}
+  .main{margin-left:0}.topbar{padding:12px 16px}.content{padding:24px 16px}
+}
+</style>
+</head>
+<body>
+<button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><h2>Graphify</h2><p>Interactive Course</p></div>
+  <nav>
+    <a href="index.html"><span class="nav-icon">&#127968;</span> Home</a>
+    <a href="concepts.html"><span class="nav-icon">&#128161;</span> Core Concepts</a>
+    <a href="architecture.html"><span class="nav-icon">&#128736;</span> Architecture</a>
+    <a href="implementation.html"><span class="nav-icon">&#128268;</span> Implementation</a>
+    <a href="use-cases.html" class="active"><span class="nav-icon">&#128640;</span> Use Cases</a>
+    <a href="ecosystem.html"><span class="nav-icon">&#127760;</span> Ecosystem</a>
+  </nav>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <span class="breadcrumb">Home &rsaquo; Use Cases &amp; Workflows</span>
+  </div>
+  <div class="content">
+    <h1>Use Cases &amp; Workflows</h1>
+    <p style="color:var(--text-secondary)">Practical scenarios and the CLI commands to handle them.</p>
+
+    <!-- BASIC USE CASES -->
+    <div>
+      <h2>Core Use Cases</h2>
+
+      <div class="usecase-card">
+        <h3>Onboarding to a New Codebase</h3>
+        <p>Drop into a new project, run <code>/graphify .</code>, and immediately see which modules are the architectural pillars (god nodes), how the codebase clusters into logical areas (communities), and surprising connections you'd miss reading files linearly.</p>
+      </div>
+
+      <div class="usecase-card">
+        <h3>Research Paper + Code Integration</h3>
+        <p>Working with academic papers alongside code (common in ML)? Graphify connects concepts across both. Paper concepts link to code implementations via <code>semantically_similar_to</code> edges. Query "what connects attention to the optimizer?" to traverse both paper and code nodes.</p>
+      </div>
+
+      <div class="usecase-card">
+        <h3>Architecture Documentation</h3>
+        <p>The <code>GRAPH_REPORT.md</code> is an auto-generated architecture document that stays current with your code. With the always-on hook, your AI assistant reads this report before answering architecture questions.</p>
+      </div>
+
+      <div class="usecase-card">
+        <h3>Code Review Context</h3>
+        <p>Before reviewing a PR, query the graph to understand the blast radius: which god nodes and communities are affected by the changed files.</p>
+      </div>
+    </div>
+
+    <!-- CLI COMMANDS -->
+    <div>
+      <h2>Essential Commands</h2>
+
+      <div class="interactive">
+        <div class="interactive-title">Quick Reference (click to copy)</div>
+
+        <div class="cmd-block" onclick="copyCmd(this)">
+          <span class="cmd-comment"># Build graph for current directory</span><br>
+          /graphify .
+        </div>
+
+        <div class="cmd-block" onclick="copyCmd(this)">
+          <span class="cmd-comment"># Build graph for a specific folder</span><br>
+          /graphify ./src
+        </div>
+
+        <div class="cmd-block" onclick="copyCmd(this)">
+          <span class="cmd-comment"># Query the graph</span><br>
+          /graphify query <span class="cmd-flag">"what connects auth to the database?"</span>
+        </div>
+
+        <div class="cmd-block" onclick="copyCmd(this)">
+          <span class="cmd-comment"># Trace a path between two nodes</span><br>
+          /graphify path <span class="cmd-flag">"UserService"</span> <span class="cmd-flag">"DatabasePool"</span>
+        </div>
+
+        <div class="cmd-block" onclick="copyCmd(this)">
+          <span class="cmd-comment"># Explain a specific concept</span><br>
+          /graphify explain <span class="cmd-flag">"CausalSelfAttention"</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKFLOWS -->
+    <div>
+      <h2>Workflows</h2>
+
+      <h3>First-Time Setup</h3>
+      <div class="card">
+        <div class="workflow">
+          <div class="workflow-step">
+            <div class="step-content">
+              <strong>Install Graphify</strong>
+              <p><code>pip install graphifyy && graphify install</code></p>
+            </div>
+          </div>
+          <div class="workflow-step">
+            <div class="step-content">
+              <strong>Build initial graph</strong>
+              <p><code>/graphify .</code> &mdash; reads all files, builds graph, exports to <code>graphify-out/</code></p>
+            </div>
+          </div>
+          <div class="workflow-step">
+            <div class="step-content">
+              <strong>Enable always-on hook</strong>
+              <p><code>graphify claude install</code> &mdash; writes CLAUDE.md section + PreToolUse hook</p>
+            </div>
+          </div>
+          <div class="workflow-step">
+            <div class="step-content">
+              <strong>Install git hooks (optional)</strong>
+              <p><code>graphify hook install</code> &mdash; auto-rebuild on commit and branch switch</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Daily Development</h3>
+      <div class="card">
+        <div class="workflow">
+          <div class="workflow-step">
+            <div class="step-content">
+              <strong>Code changes auto-tracked</strong>
+              <p>Git hooks rebuild the graph after each commit (AST only, no LLM cost)</p>
+            </div>
+          </div>
+          <div class="workflow-step">
+            <div class="step-content">
+              <strong>Ask architecture questions</strong>
+              <p>The always-on hook means Claude reads GRAPH_REPORT.md before searching files</p>
+            </div>
+          </div>
+          <div class="workflow-step">
+            <div class="step-content">
+              <strong>Deep queries when needed</strong>
+              <p><code>/graphify query "..."</code> traverses the raw graph for edge-level detail</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Adding New Content</h3>
+      <div class="card">
+        <div class="cmd-block" onclick="copyCmd(this)">
+          <span class="cmd-comment"># Add a paper</span><br>
+          /graphify add <span class="cmd-flag">https://arxiv.org/abs/1706.03762</span>
+        </div>
+        <div class="cmd-block" onclick="copyCmd(this)">
+          <span class="cmd-comment"># Add a tweet</span><br>
+          /graphify add <span class="cmd-flag">https://x.com/karpathy/status/...</span>
+        </div>
+        <div class="cmd-block" onclick="copyCmd(this)">
+          <span class="cmd-comment"># Update graph with new files</span><br>
+          /graphify . <span class="cmd-flag">--update</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADVANCED COMMANDS -->
+    <div>
+      <h2>Advanced Commands</h2>
+
+      <table>
+        <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>--mode deep</code></td><td>More aggressive INFERRED edge extraction</td></tr>
+          <tr><td><code>--update</code></td><td>Only re-extract changed files, merge into existing graph</td></tr>
+          <tr><td><code>--cluster-only</code></td><td>Rerun clustering without re-extraction</td></tr>
+          <tr><td><code>--no-viz</code></td><td>Skip HTML, just produce report + JSON</td></tr>
+          <tr><td><code>--watch</code></td><td>Auto-sync graph as files change</td></tr>
+          <tr><td><code>--wiki</code></td><td>Build agent-crawlable wiki</td></tr>
+          <tr><td><code>--obsidian</code></td><td>Generate Obsidian vault</td></tr>
+          <tr><td><code>--svg</code></td><td>Export static SVG diagram</td></tr>
+          <tr><td><code>--graphml</code></td><td>Export for Gephi/yEd</td></tr>
+          <tr><td><code>--neo4j</code></td><td>Generate Cypher statements</td></tr>
+          <tr><td><code>--neo4j-push bolt://...</code></td><td>Push directly to Neo4j</td></tr>
+          <tr><td><code>--mcp</code></td><td>Start MCP stdio server</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TOKEN EFFICIENCY -->
+    <div>
+      <h2>Token Efficiency</h2>
+      <div class="interactive">
+        <div class="interactive-title">Token Reduction by Corpus Size</div>
+        <table>
+          <thead><tr><th>Corpus</th><th>Files</th><th>Naive Tokens</th><th>Graph Query</th><th>Reduction</th></tr></thead>
+          <tbody>
+            <tr><td>Karpathy repos + papers + images</td><td>52</td><td>~123K</td><td>~1.7K</td><td style="font-weight:700;color:var(--primary)">71.5x</td></tr>
+            <tr><td>graphify source + Transformer paper</td><td>4</td><td>~12K</td><td>~2.2K</td><td style="font-weight:700;color:var(--primary)">5.4x</td></tr>
+            <tr><td>httpx (synthetic, 6 files)</td><td>6</td><td>~6K</td><td>~5K</td><td style="color:var(--text-secondary)">~1x</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:12px"><strong>Key insight:</strong> Token reduction scales with corpus size. Small projects (~6 files) fit in a context window anyway. At 52+ files, you get 71x+ savings. The first run costs tokens to build; every subsequent query saves them.</p>
+      </div>
+    </div>
+
+    <!-- KNOWN LIMITATIONS -->
+    <div>
+      <h2>Known Limitations</h2>
+      <div class="card">
+        <ol>
+          <li><strong>Graph drift on incremental updates:</strong> Stale relationships from earlier runs can persist. Recommendation: full re-index after major structural changes.</li>
+          <li style="margin-top:12px"><strong>Semantic extraction is probabilistic:</strong> Claude/GPT-4 extraction varies by model version. Confidence scores mitigate this but don't eliminate it.</li>
+          <li style="margin-top:12px"><strong>Louvain fallback on sparse graphs:</strong> Can be slow without tuned parameters (fixed in v0.3.10).</li>
+          <li style="margin-top:12px"><strong>PyPI name:</strong> Package is <code>graphifyy</code> (name <code>graphify</code> being reclaimed).</li>
+        </ol>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;padding:40px 0 20px;font-size:0.9rem">
+      <a href="implementation.html">&larr; Implementation</a>
+      <a href="ecosystem.html">Ecosystem &rarr;</a>
+    </div>
+  </div>
+</div>
+<script>
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open')}
+[l]||['beginner'];
+  document.querySelectorAll('[data-level]').forEach(el=>el.classList.toggle('hidden',!s.includes(el.dataset.level)));
+}
+
+function copyCmd(el){
+  const text=el.innerText.replace(/^#.*\n/gm,'').replace('click to copy','').trim();
+  navigator.clipboard.writeText(text).then(()=>{
+    el.classList.add('copied');
+    setTimeout(()=>el.classList.remove('copied'),1500);
+  });
+}
+</script>
+</body>
+</html>

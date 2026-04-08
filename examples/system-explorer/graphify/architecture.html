@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architecture — Graphify Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#2563eb;--primary-light:#3b82f6;--sidebar:#1e293b;--sidebar-text:#94a3b8;--bg:#f8fafc;--text:#1e293b;--text-secondary:#64748b;--card-bg:#ffffff;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,0.08)}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:'JetBrains Mono',monospace;font-size:0.88em;background:#e2e8f0;padding:2px 6px;border-radius:4px}
+pre{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:#1e293b;color:#e2e8f0;padding:20px;border-radius:8px;overflow-x:auto;line-height:1.6;margin:16px 0}
+pre code{background:none;padding:0;color:inherit}
+.sidebar{width:260px;background:var(--sidebar);color:var(--sidebar-text);padding:24px 0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;transition:transform 0.3s}
+.sidebar-brand{padding:0 24px 24px;border-bottom:1px solid #334155}
+.sidebar-brand h2{color:#f1f5f9;font-size:1.25rem;font-weight:700}
+.sidebar-brand p{font-size:0.75rem;color:#64748b;margin-top:4px}
+.sidebar nav{padding:16px 0}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 24px;color:var(--sidebar-text);font-size:0.9rem;font-weight:500;transition:all 0.15s;border-left:3px solid transparent}
+.sidebar nav a:hover{background:#334155;color:#e2e8f0;text-decoration:none}
+.sidebar nav a.active{background:rgba(37,99,235,0.15);color:var(--primary-light);border-left-color:var(--primary)}
+.sidebar nav a .nav-icon{width:20px;text-align:center;font-size:1rem}
+.main{margin-left:260px;flex:1;min-width:0}
+.topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.breadcrumb{font-size:0.85rem;color:var(--text-secondary)}
+.content{padding:40px;max-width:900px}
+.content h1{font-size:2rem;font-weight:700;margin-bottom:8px}
+.content h2{font-size:1.4rem;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.1rem;font-weight:600;margin:28px 0 12px}
+.content p{margin:12px 0}
+.content ul,.content ol{margin:12px 0 12px 24px}
+.content li{margin:6px 0}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:16px 0;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.9rem}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f1f5f9;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-amber{background:#fef3c7;color:#b45309}
+.badge-purple{background:#f3e8ff;color:#7c3aed}
+.interactive{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0;box-shadow:var(--shadow)}
+.interactive-title{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);font-weight:600;margin-bottom:16px}
+.pipeline{display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center;margin:16px 0}
+.pipeline-step{background:var(--card-bg);border:2px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center;cursor:pointer;transition:all 0.2s;min-width:100px;position:relative}
+.pipeline-step:hover,.pipeline-step.active{border-color:var(--primary);background:#eff6ff;transform:translateY(-2px)}
+.pipeline-step .step-name{font-weight:600;font-size:0.85rem}
+.pipeline-step .step-module{font-size:0.7rem;color:var(--text-secondary);margin-top:2px}
+.pipeline-arrow{font-size:1.2rem;color:var(--text-secondary);padding:0 4px}
+.step-detail{background:#f1f5f9;border-radius:8px;padding:16px;margin-top:16px;display:none;font-size:0.9rem}
+.step-detail.visible{display:block}
+.step-detail h4{font-size:0.9rem;margin-bottom:8px;color:var(--primary)}
+.module-card{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;margin:8px 0;overflow:hidden;transition:all 0.2s}
+.module-header{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:0.9rem}
+.module-header:hover{background:#f1f5f9}
+.module-body{padding:0 16px 16px;display:none;font-size:0.85rem}
+.module-body.open{display:block}
+.module-header .arrow{transition:transform 0.2s;font-size:0.8rem}
+.module-header .arrow.open{transform:rotate(90deg)}
+.flow-step{display:flex;align-items:flex-start;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.flow-step:last-child{border-bottom:none}
+.flow-num{width:32px;height:32px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0}
+.flow-content{flex:1}
+.flow-content strong{display:block;margin-bottom:4px}
+.flow-content p{margin:0;font-size:0.9rem;color:var(--text-secondary)}
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--sidebar);color:white;border:none;padding:8px 12px;border-radius:8px;font-size:1.2rem;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:90}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .mobile-toggle{display:block}.overlay.open{display:block}
+  .main{margin-left:0}.topbar{padding:12px 16px}.content{padding:24px 16px}
+  .pipeline{gap:8px}.pipeline-arrow{display:none}
+}
+</style>
+</head>
+<body>
+<button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><h2>Graphify</h2><p>Interactive Course</p></div>
+  <nav>
+    <a href="index.html"><span class="nav-icon">&#127968;</span> Home</a>
+    <a href="concepts.html"><span class="nav-icon">&#128161;</span> Core Concepts</a>
+    <a href="architecture.html" class="active"><span class="nav-icon">&#128736;</span> Architecture</a>
+    <a href="implementation.html"><span class="nav-icon">&#128268;</span> Implementation</a>
+    <a href="use-cases.html"><span class="nav-icon">&#128640;</span> Use Cases</a>
+    <a href="ecosystem.html"><span class="nav-icon">&#127760;</span> Ecosystem</a>
+  </nav>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <span class="breadcrumb">Home &rsaquo; Architecture &amp; Pipeline</span>
+  </div>
+  <div class="content">
+    <h1>Architecture &amp; Pipeline</h1>
+    <p style="color:var(--text-secondary)">How Graphify transforms files into a knowledge graph, step by step.</p>
+
+    <!-- PIPELINE OVERVIEW -->
+    <div>
+      <h2>The 7-Stage Pipeline</h2>
+      <p>Each stage is a <strong>pure function</strong> in its own module. They communicate through plain Python dicts and NetworkX graphs &mdash; no shared state, no side effects outside <code>graphify-out/</code>.</p>
+
+      <div class="interactive">
+        <div class="interactive-title">Click a stage to see details</div>
+        <div class="pipeline">
+          <div class="pipeline-step" data-step="0"><div class="step-name">detect</div><div class="step-module">detect.py</div></div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step" data-step="1"><div class="step-name">extract</div><div class="step-module">extract.py</div></div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step" data-step="2"><div class="step-name">build</div><div class="step-module">build.py</div></div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step" data-step="3"><div class="step-name">cluster</div><div class="step-module">cluster.py</div></div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step" data-step="4"><div class="step-name">analyze</div><div class="step-module">analyze.py</div></div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step" data-step="5"><div class="step-name">report</div><div class="step-module">report.py</div></div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step" data-step="6"><div class="step-name">export</div><div class="step-module">export.py</div></div>
+        </div>
+        <div id="step-details">
+          <div class="step-detail" data-step-detail="0"><h4>1. Detect</h4><p><strong>Input:</strong> Directory path<br><strong>Output:</strong> Classified file list <code>{code: [...], doc: [...], paper: [...], image: [...]}</code><br><strong>What happens:</strong> Recursively walks the directory, classifies files by extension and heuristics, filters sensitive files, applies <code>.graphifyignore</code> patterns, reports corpus health.</p></div>
+          <div class="step-detail" data-step-detail="1"><h4>2. Extract</h4><p><strong>Input:</strong> File paths<br><strong>Output:</strong> <code>{nodes: [...], edges: [...]}</code> dicts<br><strong>What happens:</strong> Code files get tree-sitter AST parsing (Pass 1, deterministic). Docs/papers/images get Claude semantic extraction (Pass 2, via parallel subagents). Both produce the same schema.</p></div>
+          <div class="step-detail" data-step-detail="2"><h4>3. Build</h4><p><strong>Input:</strong> List of extraction dicts<br><strong>Output:</strong> <code>nx.Graph</code><br><strong>What happens:</strong> Validates extractions against schema, merges all nodes and edges into a single NetworkX graph. Handles deduplication and dangling edge removal.</p></div>
+          <div class="step-detail" data-step-detail="3"><h4>4. Cluster</h4><p><strong>Input:</strong> <code>nx.Graph</code><br><strong>Output:</strong> Graph with <code>community</code> attribute on each node<br><strong>What happens:</strong> Runs Leiden (or Louvain fallback) community detection. Splits oversized communities. Computes cohesion scores.</p></div>
+          <div class="step-detail" data-step-detail="4"><h4>5. Analyze</h4><p><strong>Input:</strong> Graph + communities<br><strong>Output:</strong> Analysis dict (god nodes, surprises, questions)<br><strong>What happens:</strong> Identifies highest-degree nodes, ranks cross-community edges by surprise score, generates suggested questions, computes graph diff (if update mode).</p></div>
+          <div class="step-detail" data-step-detail="5"><h4>6. Report</h4><p><strong>Input:</strong> Graph + analysis<br><strong>Output:</strong> <code>GRAPH_REPORT.md</code> string<br><strong>What happens:</strong> Renders a human-readable audit report with god nodes, surprising connections, hyperedges, suggested questions, rationale nodes, and token cost.</p></div>
+          <div class="step-detail" data-step-detail="6"><h4>7. Export</h4><p><strong>Input:</strong> Graph + communities + output dir<br><strong>Output:</strong> <code>graph.json</code>, <code>graph.html</code>, optionally Obsidian vault, SVG, GraphML, Cypher<br><strong>What happens:</strong> Serializes graph to multiple formats. HTML uses vis.js for interactive visualization. Obsidian creates backlinked markdown notes.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE MAP -->
+    <div>
+      <h2>Module Map</h2>
+      <h3>Core Pipeline</h3>
+      <div id="module-list">
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>detect.py &mdash; File Discovery</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body"><code>collect_files(root)</code> &rarr; directory &rarr; filtered <code>[Path]</code> list<br><code>detect(root)</code> &rarr; classified dict with file counts &amp; health warnings<br><code>detect_incremental(root)</code> &rarr; only new/modified files via manifest mtime comparison<br><code>classify_file(path)</code> &rarr; FileType enum (CODE, DOCUMENT, PAPER, IMAGE)</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>extract.py &mdash; AST Extraction</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body"><code>extract(paths)</code> &rarr; merged <code>{nodes, edges}</code> from all files<br><code>_extract_generic(path, config)</code> &rarr; generic tree-sitter walker for all 19 languages<br><code>extract_python(path)</code> &rarr; Python-specific extraction with decorators &amp; inheritance<br>Each language defined as a <code>LanguageConfig</code> dataclass instance</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>build.py &mdash; Graph Assembly</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body"><code>build_from_json(extraction)</code> &rarr; single extraction dict &rarr; <code>nx.Graph</code><br><code>build(extractions)</code> &rarr; multiple dicts &rarr; merged graph<br>Validates schema, drops dangling edges, preserves direction metadata</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>cluster.py &mdash; Community Detection</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body"><code>cluster(G)</code> &rarr; <code>{community_id: [node_ids]}</code><br><code>_partition(G)</code> &rarr; Leiden (graspologic) or Louvain (NetworkX) fallback<br><code>_split_community(G, nodes)</code> &rarr; recursive split for oversized clusters<br><code>cohesion_score(G, nodes)</code> &rarr; intra-edge density (0.0&ndash;1.0)</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>analyze.py &mdash; Structural Analysis</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body"><code>god_nodes(G, top_n)</code> &rarr; highest-degree nodes after filtering<br><code>surprising_connections(G, communities, top_n)</code> &rarr; cross-community edges by surprise score<br><code>suggest_questions(G, communities)</code> &rarr; 4&ndash;7 targeted questions<br><code>graph_diff(G_old, G_new)</code> &rarr; added/removed nodes &amp; edges</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>report.py &mdash; Audit Report</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body"><code>render_report(G, analysis)</code> &rarr; <code>GRAPH_REPORT.md</code> markdown string<br>Sections: corpus check, summary stats, god nodes, surprises, hyperedges, questions, rationale, token cost</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>export.py &mdash; Multi-Format Output</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body"><code>export(G, out_dir, ...)</code> &rarr; graph.json, graph.html, and optional formats<br>HTML: vis.js force-directed layout with sidebar search, community legend, node info<br>JSON: NetworkX node-link format<br>Also: SVG, GraphML, Cypher, Obsidian vault</div>
+        </div>
+      </div>
+
+      <h3>Supporting Modules</h3>
+      <div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>cache.py &mdash; Extraction Caching</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body">SHA256 content hashing. <code>check_semantic_cache(files)</code> splits into cached/uncached. <code>save_semantic_cache()</code> writes per-file cache entries. Atomic writes via <code>.tmp</code> &rarr; rename.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>security.py &mdash; Input Validation</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body"><code>validate_url()</code> blocks SSRF. <code>safe_fetch()</code> enforces size caps. <code>validate_graph_path()</code> prevents path traversal. <code>sanitize_label()</code> prevents XSS/injection.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>validate.py &mdash; Schema Validation</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body">Enforces extraction output schema: required node fields (id, label, file_type, source_file), required edge fields (source, target, relation, confidence), enum validation, reference checks.</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header" onclick="toggleModule(this)"><span>serve.py, watch.py, hooks.py, ingest.py, benchmark.py, wiki.py</span><span class="arrow">&#9654;</span></div>
+          <div class="module-body"><strong>serve.py:</strong> MCP stdio server for agent queries (BFS/DFS traversal + token budgets)<br><strong>watch.py:</strong> File system monitoring via watchdog (code: instant rebuild, docs: notify user)<br><strong>hooks.py:</strong> Git post-commit/post-checkout hook install/uninstall<br><strong>ingest.py:</strong> URL fetching (tweets, papers, webpages) with security validation<br><strong>benchmark.py:</strong> Token reduction measurement (corpus tokens vs graph query tokens)<br><strong>wiki.py:</strong> Wikipedia-style markdown articles per community</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA FLOW -->
+    <div>
+      <h2>Data Flow</h2>
+      <h3>Main Pipeline</h3>
+      <div class="card">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-content"><strong>detect(root)</strong><p>Walk directory, classify files into <code>{code, doc, paper, image}</code>, filter sensitive files, apply <code>.graphifyignore</code></p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-content"><strong>extract(code_files) &mdash; Pass 1</strong><p>Deterministic AST parsing via tree-sitter. Free, fast, reproducible. Produces <code>{nodes, edges}</code> with EXTRACTED confidence.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-content"><strong>[parallel subagents] &mdash; Pass 2</strong><p>Claude extracts concepts from docs, papers, images. Runs in parallel. Produces INFERRED and AMBIGUOUS edges with confidence scores.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">4</div>
+          <div class="flow-content"><strong>build([code_extraction, semantic_extraction])</strong><p>Merge all extractions into a single NetworkX graph. Validate schema. Remove dangling edges.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">5</div>
+          <div class="flow-content"><strong>cluster(G)</strong><p>Leiden community detection. Split oversized communities. Compute cohesion scores.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">6</div>
+          <div class="flow-content"><strong>analyze(G) + report(G)</strong><p>God nodes, surprising connections, suggested questions &rarr; GRAPH_REPORT.md</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">7</div>
+          <div class="flow-content"><strong>export(G)</strong><p>Write graph.json, graph.html, and optional formats to <code>graphify-out/</code></p></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Incremental Update (<code>--update</code>)</h3>
+      <div class="card">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-content"><strong>detect_incremental(root)</strong><p>Compare file mtimes against manifest. Return only new/modified files.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-content"><strong>Re-extract only changed files</strong><p>Unchanged files loaded from SHA256 cache. Only new/modified files go through extraction.</p></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-content"><strong>Merge &amp; rebuild</strong><p>Load existing graph.json, merge with new extractions, re-cluster, re-analyze, re-export.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESIGN PRINCIPLES -->
+    <div>
+      <h2>Design Principles</h2>
+
+      <div class="card">
+        <h3>Pure Composition, No Shared State</h3>
+        <p>Each module consumes dicts/graphs and produces dicts/graphs. No globals, no hidden dependencies. This enables:</p>
+        <ul>
+          <li><strong>Testing:</strong> Unit tests with fixtures, no complex setup</li>
+          <li><strong>Parallelism:</strong> Subagent dispatch for semantic extraction</li>
+          <li><strong>Composability:</strong> Use functions programmatically (<code>from graphify import god_nodes</code>)</li>
+          <li><strong>Debugging:</strong> Inspect/modify/replay intermediate outputs</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Two-Pass Extraction: Why?</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
+          <div style="background:#dcfce7;padding:16px;border-radius:8px">
+            <strong style="color:#15803d">Pass 1: Deterministic AST</strong>
+            <ul style="margin-top:8px;font-size:0.85rem;color:#166534">
+              <li>Free (no LLM calls)</li>
+              <li>Fast (milliseconds)</li>
+              <li>Reproducible (same input = same output)</li>
+              <li>19 languages via tree-sitter</li>
+            </ul>
+          </div>
+          <div style="background:#dbeafe;padding:16px;border-radius:8px">
+            <strong style="color:#1d4ed8">Pass 2: LLM Semantic</strong>
+            <ul style="margin-top:8px;font-size:0.85rem;color:#1e40af">
+              <li>Costs tokens (Claude/GPT-4)</li>
+              <li>Slower (seconds per file)</li>
+              <li>Probabilistic (confidence scores)</li>
+              <li>Handles docs, papers, images</li>
+            </ul>
+          </div>
+        </div>
+        <p style="margin-top:12px;font-size:0.9rem">The hybrid approach means <strong>code is always free</strong>. You only pay LLM costs for unstructured content that can't be parsed deterministically.</p>
+      </div>
+
+      <div class="card">
+        <h3>Lazy Imports for Skill Bootstrap</h3>
+        <p><code>__init__.py</code> uses <code>__getattr__</code> to defer imports until needed. Why? Because <code>graphify install</code> must work <em>before</em> heavy dependencies (tree-sitter, NetworkX, graspologic) are installed. The skill framework may be installed in a minimal environment.</p>
+      </div>
+
+      <div class="card">
+        <h3>Language-Agnostic Extraction Schema</h3>
+        <p>One <code>LanguageConfig</code> dataclass template supports all 19 languages. Customization points are AST node type names, field names, import handlers, and post-processing functions. Adding a new language = defining a new <code>LanguageConfig</code> instance.</p>
+      </div>
+    </div>
+
+    <!-- EXTRACTION SCHEMA -->
+    <div>
+      <h2>Extraction Schema</h2>
+      <p>Every extractor (AST or semantic) returns the same shape:</p>
+
+      <div class="interactive">
+        <div class="interactive-title">Click a field to see its description</div>
+        <pre><code id="schema-code">{
+  "<span class="schema-field" data-desc="Unique identifier derived from class/function path">nodes</span>": [
+    {
+      "<span class="schema-field" data-desc="Stable ID derived from file path + entity name (e.g., 'auth.py::UserService')">id</span>": "auth.py::UserService",
+      "<span class="schema-field" data-desc="Human-readable name shown in visualizations and reports">label</span>": "UserService",
+      "<span class="schema-field" data-desc="One of: code, document, paper, image, rationale">file_type</span>": "code",
+      "<span class="schema-field" data-desc="Path to the source file this node was extracted from">source_file</span>": "auth.py",
+      "<span class="schema-field" data-desc="Line range in source (e.g., 'L42-L67'). Helps navigation.">source_location</span>": "L12-L45",
+      "<span class="schema-field" data-desc="Docstring extracted from class/function definition">docstring</span>": "Handles user authentication...",
+      "<span class="schema-field" data-desc="Design rationale from WHY/NOTE/HACK comments near this entity">rationale</span>": ""
+    }
+  ],
+  "<span class="schema-field" data-desc="Relationships between nodes">edges</span>": [
+    {
+      "<span class="schema-field" data-desc="ID of the source node (must exist in nodes list or be external)">source</span>": "auth.py::UserService",
+      "<span class="schema-field" data-desc="ID of the target node">target</span>": "auth.py::hash_password",
+      "<span class="schema-field" data-desc="Relationship type: calls, imports, contains, inherits, semantically_similar_to, rationale_for">relation</span>": "calls",
+      "<span class="schema-field" data-desc="EXTRACTED (found in source), INFERRED (deduced), or AMBIGUOUS (uncertain)">confidence</span>": "EXTRACTED",
+      "<span class="schema-field" data-desc="Numeric score 0.0-1.0 for INFERRED edges. EXTRACTED is always 1.0.">confidence_score</span>": 1.0,
+      "<span class="schema-field" data-desc="File where this relationship was found">source_file</span>": "auth.py"
+    }
+  ]
+}</code></pre>
+        <div id="schema-desc" style="padding:12px;background:#f1f5f9;border-radius:8px;margin-top:8px;font-size:0.85rem;color:var(--text-secondary);min-height:40px">Click a <span style="color:var(--primary);text-decoration:underline;cursor:pointer">highlighted field</span> above to see its description.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;padding:40px 0 20px;font-size:0.9rem">
+      <a href="concepts.html">&larr; Core Concepts</a>
+      <a href="implementation.html">Implementation &rarr;</a>
+    </div>
+  </div>
+</div>
+<script>
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open')}
+[l]||['beginner'];
+  document.querySelectorAll('[data-level]').forEach(el=>el.classList.toggle('hidden',!s.includes(el.dataset.level)));
+}
+
+// Pipeline step interaction
+document.querySelectorAll('.pipeline-step').forEach(step=>{
+  step.addEventListener('click',()=>{
+    document.querySelectorAll('.pipeline-step').forEach(s=>s.classList.remove('active'));
+    step.classList.add('active');
+    document.querySelectorAll('.step-detail').forEach(d=>d.classList.remove('visible'));
+    const detail=document.querySelector(`[data-step-detail="${step.dataset.step}"]`);
+    if(detail) detail.classList.add('visible');
+  });
+});
+
+// Module accordion
+function toggleModule(header){
+  const body=header.nextElementSibling;
+  const arrow=header.querySelector('.arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// Schema field interaction
+document.querySelectorAll('.schema-field').forEach(f=>{
+  f.style.color='var(--primary)';f.style.cursor='pointer';f.style.textDecoration='underline';
+  f.addEventListener('click',()=>{
+    document.getElementById('schema-desc').innerHTML='<strong>'+f.textContent+':</strong> '+f.dataset.desc;
+  });
+});
+</script>
+</body>
+</html>

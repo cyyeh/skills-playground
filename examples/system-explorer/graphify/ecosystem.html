@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecosystem — Graphify Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#2563eb;--primary-light:#3b82f6;--sidebar:#1e293b;--sidebar-text:#94a3b8;--bg:#f8fafc;--text:#1e293b;--text-secondary:#64748b;--card-bg:#ffffff;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,0.08)}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:'JetBrains Mono',monospace;font-size:0.88em;background:#e2e8f0;padding:2px 6px;border-radius:4px}
+pre{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:#1e293b;color:#e2e8f0;padding:20px;border-radius:8px;overflow-x:auto;line-height:1.6;margin:16px 0}
+pre code{background:none;padding:0;color:inherit}
+.sidebar{width:260px;background:var(--sidebar);color:var(--sidebar-text);padding:24px 0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;transition:transform 0.3s}
+.sidebar-brand{padding:0 24px 24px;border-bottom:1px solid #334155}
+.sidebar-brand h2{color:#f1f5f9;font-size:1.25rem;font-weight:700}
+.sidebar-brand p{font-size:0.75rem;color:#64748b;margin-top:4px}
+.sidebar nav{padding:16px 0}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 24px;color:var(--sidebar-text);font-size:0.9rem;font-weight:500;transition:all 0.15s;border-left:3px solid transparent}
+.sidebar nav a:hover{background:#334155;color:#e2e8f0;text-decoration:none}
+.sidebar nav a.active{background:rgba(37,99,235,0.15);color:var(--primary-light);border-left-color:var(--primary)}
+.sidebar nav a .nav-icon{width:20px;text-align:center;font-size:1rem}
+.main{margin-left:260px;flex:1;min-width:0}
+.topbar{background:var(--card-bg);border-bottom:1px solid var(--border);padding:12px 40px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.breadcrumb{font-size:0.85rem;color:var(--text-secondary)}
+.content{padding:40px;max-width:900px}
+.content h1{font-size:2rem;font-weight:700;margin-bottom:8px}
+.content h2{font-size:1.4rem;font-weight:700;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.1rem;font-weight:600;margin:28px 0 12px}
+.content p{margin:12px 0}
+.content ul,.content ol{margin:12px 0 12px 24px}
+.content li{margin:6px 0}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:16px 0;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.9rem}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f1f5f9;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-amber{background:#fef3c7;color:#b45309}
+.badge-purple{background:#f3e8ff;color:#7c3aed}
+.interactive{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0;box-shadow:var(--shadow)}
+.interactive-title{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);font-weight:600;margin-bottom:16px}
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin:16px 0}
+.tech-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);transition:all 0.2s}
+.tech-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.tech-card h4{font-size:0.95rem;margin-bottom:6px}
+.tech-card p{font-size:0.85rem;color:var(--text-secondary);margin:0}
+.tech-card .tech-role{font-size:0.75rem;color:var(--primary);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.platform-row{display:flex;align-items:center;gap:16px;padding:16px;border-bottom:1px solid var(--border)}
+.platform-row:last-child{border-bottom:none}
+.platform-name{font-weight:600;width:140px;flex-shrink:0}
+.platform-detail{flex:1;font-size:0.9rem;color:var(--text-secondary)}
+.extend-step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);font-size:0.9rem}
+.extend-step:last-child{border-bottom:none}
+.extend-num{width:24px;height:24px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;margin-top:2px}
+.quiz-option{display:block;padding:12px 16px;margin:8px 0;border:2px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s;font-size:0.9rem}
+.quiz-option:hover{border-color:var(--primary);background:#eff6ff}
+.quiz-option.correct{border-color:#22c55e;background:#dcfce7}
+.quiz-option.wrong{border-color:#ef4444;background:#fee2e2}
+.quiz-feedback{margin-top:12px;padding:12px;border-radius:8px;font-size:0.9rem;display:none}
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--sidebar);color:white;border:none;padding:8px 12px;border-radius:8px;font-size:1.2rem;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:90}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .mobile-toggle{display:block}.overlay.open{display:block}
+  .main{margin-left:0}.topbar{padding:12px 16px}.content{padding:24px 16px}
+}
+</style>
+</head>
+<body>
+<button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><h2>Graphify</h2><p>Interactive Course</p></div>
+  <nav>
+    <a href="index.html"><span class="nav-icon">&#127968;</span> Home</a>
+    <a href="concepts.html"><span class="nav-icon">&#128161;</span> Core Concepts</a>
+    <a href="architecture.html"><span class="nav-icon">&#128736;</span> Architecture</a>
+    <a href="implementation.html"><span class="nav-icon">&#128268;</span> Implementation</a>
+    <a href="use-cases.html"><span class="nav-icon">&#128640;</span> Use Cases</a>
+    <a href="ecosystem.html" class="active"><span class="nav-icon">&#127760;</span> Ecosystem</a>
+  </nav>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <span class="breadcrumb">Home &rsaquo; Tech Stack &amp; Ecosystem</span>
+  </div>
+  <div class="content">
+    <h1>Tech Stack &amp; Ecosystem</h1>
+    <p style="color:var(--text-secondary)">The technologies powering Graphify and how it fits into the broader AI coding landscape.</p>
+
+    <!-- TECH STACK -->
+    <div>
+      <h2>Core Technologies</h2>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <div class="tech-role">Language</div>
+          <h4>Python 3.10+</h4>
+          <p>Core language. Chosen for ecosystem compatibility with tree-sitter, NetworkX, and AI model SDKs.</p>
+        </div>
+        <div class="tech-card">
+          <div class="tech-role">Graph Engine</div>
+          <h4>NetworkX</h4>
+          <p>In-memory graph data structure and algorithms. No database needed &mdash; the graph serializes to JSON.</p>
+        </div>
+        <div class="tech-card">
+          <div class="tech-role">Code Parsing</div>
+          <h4>tree-sitter</h4>
+          <p>Parser generator for concrete syntax trees. 19 languages. Deterministic, fast, local &mdash; no LLM calls.</p>
+        </div>
+        <div class="tech-card">
+          <div class="tech-role">Visualization</div>
+          <h4>vis.js</h4>
+          <p>Interactive force-directed graph layout in the browser. Search, filter, click-to-explore.</p>
+        </div>
+        <div class="tech-card">
+          <div class="tech-role">Clustering</div>
+          <h4>Leiden (graspologic)</h4>
+          <p>Community detection algorithm. Finds clusters by edge density &mdash; no embeddings or vector DB.</p>
+        </div>
+        <div class="tech-card">
+          <div class="tech-role">Semantic Extraction</div>
+          <h4>Claude / GPT-4</h4>
+          <p>Parallel subagents extract concepts from docs, papers, and images. Only for non-code content.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTIONAL DEPS -->
+    <div>
+      <h2>Optional Dependencies</h2>
+      <table>
+        <thead><tr><th>Extra</th><th>Package(s)</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>[mcp]</code></td><td>mcp</td><td>MCP stdio server for agent queries</td></tr>
+          <tr><td><code>[neo4j]</code></td><td>neo4j</td><td>Direct push to Neo4j instance</td></tr>
+          <tr><td><code>[pdf]</code></td><td>pypdf, html2text</td><td>PDF text extraction</td></tr>
+          <tr><td><code>[watch]</code></td><td>watchdog</td><td>File system monitoring for auto-rebuild</td></tr>
+          <tr><td><code>[leiden]</code></td><td>graspologic</td><td>Leiden community detection (preferred over Louvain)</td></tr>
+          <tr><td><code>[office]</code></td><td>python-docx, openpyxl</td><td>.docx and .xlsx support</td></tr>
+          <tr><td><code>[all]</code></td><td>all of the above</td><td>Install everything</td></tr>
+        </tbody>
+      </table>
+      <pre><code>pip install graphifyy[all]   # install with all extras</code></pre>
+    </div>
+
+    <!-- PLATFORM INTEGRATION -->
+    <div>
+      <h2>Platform Integration</h2>
+      <div class="card">
+        <div class="platform-row">
+          <div class="platform-name">Claude Code</div>
+          <div class="platform-detail">Deepest integration. <code>CLAUDE.md</code> + PreToolUse hook fires before Glob/Grep calls, surfacing graph context automatically.</div>
+        </div>
+        <div class="platform-row">
+          <div class="platform-name">Codex</div>
+          <div class="platform-detail">Trigger: <code>$graphify</code>. Uses <code>AGENTS.md</code> for always-on instructions. Needs <code>multi_agent = true</code> for parallel extraction.</div>
+        </div>
+        <div class="platform-row">
+          <div class="platform-name">OpenCode</div>
+          <div class="platform-detail">Trigger: <code>/graphify</code>. Uses <code>AGENTS.md</code>. Standard skill installation.</div>
+        </div>
+        <div class="platform-row">
+          <div class="platform-name">OpenClaw</div>
+          <div class="platform-detail">Trigger: <code>/graphify</code>. Uses <code>AGENTS.md</code>. Sequential extraction only (parallel agent support is early).</div>
+        </div>
+        <div class="platform-row">
+          <div class="platform-name">Factory Droid</div>
+          <div class="platform-detail">Trigger: <code>/graphify</code>. Uses <code>AGENTS.md</code>. Parallel extraction via <code>Task</code> tool.</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Always-On vs. Explicit Commands</h3>
+      <div class="interactive">
+        <div class="interactive-title">Two Modes of Operation</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="background:#dcfce7;padding:20px;border-radius:8px">
+            <strong style="color:#15803d;font-size:0.9rem">Always-On Hook</strong>
+            <ul style="margin-top:8px;font-size:0.85rem;color:#166534">
+              <li>Reads GRAPH_REPORT.md before file searches</li>
+              <li>Gives the AI a "map" of the codebase</li>
+              <li>Passive &mdash; no user action needed</li>
+              <li>Best for: everyday navigation</li>
+            </ul>
+          </div>
+          <div style="background:#dbeafe;padding:20px;border-radius:8px">
+            <strong style="color:#1d4ed8;font-size:0.9rem">Explicit Commands</strong>
+            <ul style="margin-top:8px;font-size:0.85rem;color:#1e40af">
+              <li>Traverses raw graph.json hop by hop</li>
+              <li>Traces exact paths between nodes</li>
+              <li>Active &mdash; user asks specific questions</li>
+              <li>Best for: deep investigation</li>
+            </ul>
+          </div>
+        </div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:12px;text-align:center">The hook gives your assistant a map. The commands let it navigate the map precisely.</p>
+      </div>
+    </div>
+
+    <!-- SUPPORTED FILE TYPES -->
+    <div>
+      <h2>Supported File Types</h2>
+      <table>
+        <thead><tr><th>Type</th><th>Extensions</th><th>Extraction Method</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-blue">Code</span></td><td>.py .ts .js .go .rs .java .c .cpp .rb .cs .kt .scala .php .swift .lua .zig .ps1 .ex .exs .m .mm</td><td>tree-sitter AST + call-graph + rationale</td></tr>
+          <tr><td><span class="badge badge-green">Docs</span></td><td>.md .txt .rst</td><td>Claude concept extraction</td></tr>
+          <tr><td><span class="badge badge-purple">Office</span></td><td>.docx .xlsx</td><td>Convert to markdown, then Claude</td></tr>
+          <tr><td><span class="badge badge-amber">Papers</span></td><td>.pdf</td><td>Citation mining + concept extraction</td></tr>
+          <tr><td><span class="badge badge-purple">Images</span></td><td>.png .jpg .webp .gif</td><td>Claude vision</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- EXTENDING GRAPHIFY -->
+    <div>
+      <h2>Extending Graphify</h2>
+
+      <h3>Adding a New Language</h3>
+      <div class="card">
+        <div class="extend-step"><div class="extend-num">1</div><div>Define a <code>LanguageConfig</code> instance with AST node types for the language</div></div>
+        <div class="extend-step"><div class="extend-num">2</div><div>Add a <code>_import_&lt;lang&gt;()</code> function for language-specific import handling</div></div>
+        <div class="extend-step"><div class="extend-num">3</div><div>Register the file suffix in <code>extract()</code> dispatch and <code>collect_files()</code></div></div>
+        <div class="extend-step"><div class="extend-num">4</div><div>Add suffix to <code>CODE_EXTENSIONS</code> in <code>detect.py</code> and <code>_WATCHED_EXTENSIONS</code> in <code>watch.py</code></div></div>
+        <div class="extend-step"><div class="extend-num">5</div><div>Add tree-sitter package to <code>pyproject.toml</code> dependencies</div></div>
+        <div class="extend-step"><div class="extend-num">6</div><div>Add fixture to <code>tests/fixtures/</code> and tests to <code>tests/test_languages.py</code></div></div>
+      </div>
+
+      <h3>Programmatic Usage</h3>
+      <pre><code>from graphify.detect import detect
+from graphify.extract import extract
+from graphify.build import build_from_json
+from graphify.cluster import cluster
+from graphify.analyze import god_nodes, surprising_connections
+
+files = detect("./my-project")
+extractions = extract(files["files"]["code"])
+G = build_from_json(extractions)
+communities = cluster(G)
+gods = god_nodes(G)</code></pre>
+    </div>
+
+    <!-- QUIZ -->
+    <div>
+      <h2>Knowledge Check</h2>
+      <div class="interactive">
+        <div class="interactive-title">Quiz: Test Your Understanding</div>
+
+        <div class="quiz" id="quiz-1">
+          <p><strong>1. Why does Graphify use two extraction passes instead of one?</strong></p>
+          <div class="quiz-option" data-correct="false" onclick="checkQuiz('quiz-1',this)">To extract code twice for better accuracy</div>
+          <div class="quiz-option" data-correct="true" onclick="checkQuiz('quiz-1',this)">Code is parsed free via AST; only docs/images need LLM calls</div>
+          <div class="quiz-option" data-correct="false" onclick="checkQuiz('quiz-1',this)">The first pass is a draft and the second pass refines it</div>
+          <div class="quiz-feedback" id="quiz-1-fb"></div>
+        </div>
+
+        <div class="quiz" id="quiz-2" style="margin-top:24px">
+          <p><strong>2. What does the EXTRACTED confidence tier mean?</strong></p>
+          <div class="quiz-option" data-correct="false" onclick="checkQuiz('quiz-2',this)">The LLM extracted it with high confidence</div>
+          <div class="quiz-option" data-correct="false" onclick="checkQuiz('quiz-2',this)">It was extracted from documentation</div>
+          <div class="quiz-option" data-correct="true" onclick="checkQuiz('quiz-2',this)">Found directly in source code (import statement, direct call)</div>
+          <div class="quiz-feedback" id="quiz-2-fb"></div>
+        </div>
+
+        <div class="quiz" id="quiz-3" style="margin-top:24px">
+          <p><strong>3. How does Graphify detect communities?</strong></p>
+          <div class="quiz-option" data-correct="false" onclick="checkQuiz('quiz-3',this)">Using embeddings and a vector database</div>
+          <div class="quiz-option" data-correct="true" onclick="checkQuiz('quiz-3',this)">Graph topology via the Leiden algorithm (edge density)</div>
+          <div class="quiz-option" data-correct="false" onclick="checkQuiz('quiz-3',this)">By grouping files in the same directory</div>
+          <div class="quiz-feedback" id="quiz-3-fb"></div>
+        </div>
+
+        <div class="quiz" id="quiz-4" style="margin-top:24px">
+          <p><strong>4. What happens when you run <code>/graphify . --update</code>?</strong></p>
+          <div class="quiz-option" data-correct="false" onclick="checkQuiz('quiz-4',this)">Rebuilds the entire graph from scratch</div>
+          <div class="quiz-option" data-correct="true" onclick="checkQuiz('quiz-4',this)">Only re-extracts changed files, merges into existing graph</div>
+          <div class="quiz-option" data-correct="false" onclick="checkQuiz('quiz-4',this)">Updates the graph visualization CSS</div>
+          <div class="quiz-feedback" id="quiz-4-fb"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:40px 0 20px">
+      <p style="color:var(--text-secondary);font-size:0.85rem">Built from <a href="https://github.com/safishamsi/graphify" target="_blank">safishamsi/graphify</a></p>
+      <a href="index.html" style="font-size:0.9rem">&larr; Back to Home</a>
+    </div>
+  </div>
+</div>
+<script>
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open')}
+[l]||['beginner'];
+  document.querySelectorAll('[data-level]').forEach(el=>el.classList.toggle('hidden',!s.includes(el.dataset.level)));
+}
+
+const EXPLANATIONS={
+  'quiz-1':{correct:'Exactly! Code is deterministic and can be parsed free via tree-sitter AST. Only unstructured content (docs, papers, images) needs expensive LLM calls.',wrong:'Not quite. The two passes serve different content types: Pass 1 (AST) for code, Pass 2 (LLM) for docs/images.'},
+  'quiz-2':{correct:'Right! EXTRACTED means found directly in source code with confidence 1.0. No guessing involved.',wrong:'EXTRACTED means found directly in the source code (like an import statement), not by the LLM.'},
+  'quiz-3':{correct:'Correct! Leiden finds communities by edge density (modularity optimization). No embeddings or vector database needed.',wrong:'Graphify uses graph topology, not embeddings. The Leiden algorithm finds densely-connected clusters directly from the graph structure.'},
+  'quiz-4':{correct:'Yes! The --update flag uses SHA256 caching to only re-process changed files, then merges with the existing graph.',wrong:'--update is incremental. It only re-extracts changed files (detected via SHA256 hash) and merges them into the existing graph.'}
+};
+
+function checkQuiz(qid,el){
+  const quiz=document.getElementById(qid);
+  if(quiz.dataset.answered) return;
+  quiz.dataset.answered='true';
+  const correct=el.dataset.correct==='true';
+  el.classList.add(correct?'correct':'wrong');
+  if(!correct){
+    quiz.querySelector('[data-correct="true"]').classList.add('correct');
+  }
+  const fb=document.getElementById(qid+'-fb');
+  fb.style.display='block';
+  fb.style.background=correct?'#dcfce7':'#fef3c7';
+  fb.style.color=correct?'#166534':'#92400e';
+  fb.textContent=correct?EXPLANATIONS[qid].correct:EXPLANATIONS[qid].wrong;
+}
+</script>
+</body>
+</html>
