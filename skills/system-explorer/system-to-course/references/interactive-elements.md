@@ -1714,4 +1714,4 @@ Small colored pill badge showing content difficulty level. Used in navigation he
 }
 ```
 
-**Usage:** Place inline with headings or navigation links. The badge is purely informational -- level filtering is handled by `data-level` attributes on content sections, not by the badge itself.
+**Usage:** Place inline with headings or navigation links. The badge is purely informational -- it indicates content difficulty level for visual clarity.

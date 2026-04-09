@@ -207,7 +207,7 @@ A: [Answer]
 
 ## Skill 3: `system-to-course`
 
-**Purpose:** Transform `analysis.md` into a multi-page static HTML site with level-based content filtering.
+**Purpose:** Transform `analysis.md` into a multi-page static HTML site with inline level badges for visual clarity.
 
 **Trigger phrases:** "generate course for...", "build HTML for this analysis", "turn this into a course"
 
@@ -228,21 +228,11 @@ dist/[system-name]/
 
 Pages are generated dynamically — only pages with substantial content from the analysis are created.
 
-### Level Selector
-
-Persistent header bar with three toggles: **Beginner / Intermediate / Advanced**.
-
-- Each content section is tagged with `data-level="beginner|intermediate|advanced"`
-- Toggling a level shows/hides relevant sections across the current page
-- Default: all levels visible
-- State persisted in localStorage so it carries across pages
-
 ### Shared Navigation
 
 Consistent across all pages:
 - System name + description
 - Page list with current page highlighted
-- Level selector in header
 - Progress indicator (visited pages tracked in localStorage)
 
 ### Design System
@@ -280,7 +270,7 @@ Adapted from `paper-to-course` with key modifications:
 1. Read `analysis.md` and parse sections by heading
 2. Determine which pages to generate based on content presence
 3. Generate `index.html` first (landing page with links to all pages)
-4. Generate each content page with shared nav, level selector, and interactive elements
+4. Generate each content page with shared nav and interactive elements
 5. Write all files to `dist/[system-name]/`
 
 ---
@@ -346,7 +336,6 @@ User query
    - `/system-analyzer` with "Apache Kafka" → verify analysis.md structure and level tags
    - `/system-to-course` with a sample analysis.md → verify multi-page HTML generation
 3. **Orchestrator test** — Invoke `/system-explorer` with "I want to understand event-driven architectures" → verify full pipeline
-4. **Level selector** — Verify toggling levels shows/hides content correctly in generated HTML
-5. **Cross-page navigation** — Verify all page links work and navigation state persists
+4. **Cross-page navigation** — Verify all page links work and navigation state persists
 6. **Mobile responsiveness** — Verify pages work on mobile viewport
 7. **Evals** — Run eval cases defined in `evals.json`

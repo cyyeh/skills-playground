@@ -118,7 +118,7 @@ Wait for user confirmation before proceeding.
 Invoke the system-to-course skill process, passing `[output-dir]` as the output directory:
 
 1. Read analysis files from `[output-dir]` (auto-detects multi-file `analysis.json` or legacy `analysis.md`)
-2. Generate multi-page HTML with level selector (Beginner / Intermediate / Advanced)
+2. Generate multi-page HTML course
 3. Write all HTML files to `[output-dir]`
 4. Open `index.html` in the browser for review
 
@@ -131,10 +131,9 @@ After the course is generated, perform a final end-to-end review of the complete
 **Review checklist:**
 1. **Finder → Analyzer consistency** — Does the analysis match what the finder report said? If the finder highlighted specific strengths/trade-offs, are they reflected in the analysis section files?
 2. **Analyzer → Course consistency** — Does the HTML course cover all sections from the analysis files? Are any sections missing or empty in the HTML?
-3. **Level selector** — Do all pages have proper `data-level` tags? Does toggling levels actually hide/show content?
-4. **Navigation** — Do all cross-page links work? Is the current page highlighted in the nav?
-5. **Content quality** — Read through each page in the browser. Are there walls of text that should be interactive elements? Missing analogies? Generic filler?
-6. **Interactive elements** — Does each page have at least one interactive element (diagram, quiz, decision tree, code snippet)?
+3. **Navigation** — Do all cross-page links work? Is the current page highlighted in the nav?
+4. **Content quality** — Read through each page in the browser. Are there walls of text that should be interactive elements? Missing analogies? Generic filler?
+5. **Interactive elements** — Does each page have at least one interactive element (diagram, quiz, decision tree, code snippet)?
 
 **Fix loop:** If any check fails, fix the source (analysis.md or HTML) and re-run the check. Iterate until all checks pass. Then present the final result to the user.
 
@@ -144,7 +143,6 @@ The final output is a multi-page static HTML site in the user-chosen `[output-di
 
 - `index.html` -- Landing page with navigation
 - Individual content pages (`concepts.html`, `architecture.html`, etc.)
-- Level-based content filtering (Beginner / Intermediate / Advanced)
 - `analysis.json` + section files (`00-metadata.md` through `09-tradeoffs.md`) -- Source reference from Phase 4
 - `finder-report.md` -- Discovery report from Phase 3 (if finder was run)
 

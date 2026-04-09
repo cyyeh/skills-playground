@@ -138,7 +138,7 @@ Complete CSS design tokens for multi-page system courses. Copy the `:root` block
   /* --- MULTI-PAGE LAYOUT --- */
   --content-width:      800px;   /* standard reading width */
   --content-width-wide: 1000px;  /* diagrams, side-by-side layouts */
-  --nav-height:         60px;    /* taller than paper-to-course for level selector */
+  --nav-height:         48px;    /* standard navigation height */
   --sidebar-width:      240px;   /* optional sidebar nav on desktop */
 
   --radius-sm:   8px;
